@@ -1,0 +1,372 @@
+/* Al-Warda Luxury Header */
+.warda-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(9, 7, 5, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.warda-nav {
+  height: 4.8rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* LEFT NAVIGATION */
+.warda-nav__left {
+  display: flex;
+  align-items: center;
+}
+
+.warda-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.warda-nav__item {
+  display: inline-flex;
+}
+
+.warda-nav__item .nav__link {
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c2b59b;
+  text-decoration: none;
+  position: relative;
+  padding: 0.4rem 0;
+  transition: color 0.3s ease;
+}
+
+.warda-nav__item .nav__link:hover,
+.warda-nav__item .nav__link.active-link {
+  color: #d4af37;
+}
+
+.warda-nav__item .nav__link.active-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #d4af37;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.6);
+}
+
+/* ==========================================================================
+   НАСТРОЙКИ ЛОГОТИПА AL-WARDA (РАЗМЕР И ПОЛОЖЕНИЕ)
+   Редактируйте эти 4 значения для точной настройки:
+   ========================================================================== */
+:root {
+  --logo-height: 130px; /* ВЫСОТА ЛОГОТИПА (например: 100px, 120px, 140px, 160px) */
+  --logo-max-width: 160px; /* МАКСИМАЛЬНАЯ ШИРИНА (например: 140px, 160px, 200px) */
+  --logo-top: 20%; /* ВЕРТИКАЛЬНОЕ ПОЛОЖЕНИЕ: 50% - по центру шапки; 40% или 30% - выше; 60% - ниже */
+  --logo-offset-y: 0px; /* ТОЧНЫЙ СДВИГ ВВЕРХ/ВНИЗ: -10px (поднять выше), +10px (опустить ниже) */
+}
+
+/* CENTER PROMINENT LOGO - EMBLEM WITHOUT FRAMES */
+.warda-nav__center {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--logo-max-width, 160px);
+}
+
+.warda-nav__crest-logo {
+  position: absolute;
+  left: 50%;
+  top: var(--logo-top, 50%);
+  transform: translate(-50%, calc(-50% + var(--logo-offset-y, 0px)));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 105;
+  text-decoration: none;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.warda-nav__crest-logo:hover {
+  transform: translate(-50%, calc(-50% + var(--logo-offset-y, 0px))) scale(1.05);
+}
+
+/* Big, visible emblem without any frames */
+.warda-nav__crest-img {
+  height: var(--logo-height, 130px);
+  width: auto;
+  max-width: var(--logo-max-width, 160px);
+  object-fit: contain;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  /* Gold luminescence & deep shadow to stand out with high clarity */
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5))
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95));
+  transition: filter 0.35s ease;
+}
+
+.warda-nav__crest-logo:hover .warda-nav__crest-img {
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8))
+    drop-shadow(0 6px 22px rgba(0, 0, 0, 1));
+}
+
+/* HORIZONTAL DIVIDER LINE SEPARATING HEADER FROM BODY */
+.warda-header__divider-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 101;
+}
+
+.warda-header__line-half {
+  flex: 1;
+  height: 1px;
+}
+
+.warda-header__line-half--left {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(197, 160, 89, 0.3) 30%,
+    rgba(212, 175, 55, 0.65) 100%
+  );
+}
+
+.warda-header__line-half--right {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.65) 0%,
+    rgba(197, 160, 89, 0.3) 70%,
+    transparent 100%
+  );
+}
+
+.warda-header__line-gap {
+  width: 155px; /* Clean gap matching the emblem width */
+  height: 1px;
+  flex-shrink: 0;
+}
+
+/* RIGHT ACTIONS */
+.warda-nav__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+}
+
+.warda-nav__action-btn {
+  background: transparent;
+  border: none;
+  color: #e8d08d;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  position: relative;
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+  text-decoration: none;
+}
+
+.warda-nav__action-btn:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.warda-nav__badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background-color: #d4af37;
+  color: #090705;
+  font-family: var(--body-font, "Montserrat", sans-serif);
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.warda-nav__lang-btn {
+  background: transparent;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  color: #c5a059;
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.warda-nav__lang-btn:hover {
+  background-color: #c5a059;
+  color: #090705;
+}
+
+/* Profile Dropdown */
+.nav__profile-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav__profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 14rem;
+  background-color: #0e0a07;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.nav__profile-header {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+  background-color: #080604;
+}
+
+.nav__profile-welcome {
+  display: block;
+  font-size: 0.75rem;
+  color: #9c9183;
+}
+
+.nav__profile-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f7ede2;
+}
+
+.nav__profile-role {
+  display: block;
+  font-size: 0.7rem;
+  color: #c5a059;
+  margin-top: 0.2rem;
+}
+
+.nav__profile-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.nav__profile-item a,
+.nav__profile-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 1rem;
+  color: #c2b59b;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav__profile-item a:hover,
+.nav__profile-logout-btn:hover {
+  background-color: rgba(197, 160, 89, 0.12);
+  color: #d4af37;
+}
+
+.nav__profile-divider {
+  height: 1px;
+  background-color: rgba(197, 160, 89, 0.2);
+  margin: 0.4rem 0;
+}
+
+/* RESPONSIVE */
+@media screen and (max-width: 900px) {
+  .warda-nav {
+    height: 4.4rem;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
+  .warda-nav__links {
+    gap: 1.1rem;
+  }
+  .warda-nav__item .nav__link {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+  .warda-nav__crest-img {
+    height: 105px;
+    max-width: 130px;
+  }
+  .warda-header__line-gap {
+    width: 125px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .warda-nav__links {
+    display: none;
+  }
+  .warda-nav {
+    display: flex;
+    justify-content: space-between;
+  }
+  .warda-nav__center {
+    width: auto;
+  }
+  .warda-nav__crest-logo {
+    top: 50%;
+  }
+  .warda-nav__crest-img {
+    height: 90px;
+    max-width: 110px;
+  }
+  .warda-header__line-gap {
+    width: 105px;
+  }
+}

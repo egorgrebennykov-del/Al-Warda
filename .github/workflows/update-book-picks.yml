@@ -1,0 +1,42 @@
+name: Update Book Picks
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/update-book-picks.yml"
+      - "Litera/.github/updateBookPicks.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-book-picks:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: Litera/.github
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Litera/.github/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Collect and save Book Picks
+        run: node updateBookPicks.js
+        env:
+          ZYTE_API_KEY: ${{ secrets.ZYTE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

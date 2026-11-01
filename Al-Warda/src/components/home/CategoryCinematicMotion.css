@@ -1,0 +1,569 @@
+/* ==========================================================================
+   CATEGORY CINEMATIC MOTION: SLOW, SEAMLESS CYCLIC LIVING ELEMENTS
+   Smoke, Leaves, Water ripples & Petals with NO visible start or end
+   ========================================================================== */
+
+.warda-cm-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+}
+
+.warda-cm-container--back {
+  z-index: 0;
+}
+
+.warda-cm-container--front {
+  z-index: 2;
+}
+
+/* Activate smoothly on hover without any sudden jumps */
+.warda-cat-slide:hover .warda-cm-container {
+  opacity: 1;
+}
+
+.warda-cm-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   1. ТЛЕЮЩИЕ ИСКРЫ И ВОЛНЫ ТЕПЛА (ORGANIC INCENSE EMBERS & WARMTH)
+   100% round, natural soft glowing light particles with zero hard edges
+   ========================================================================== */
+
+/* Slow natural incense & spice embers */
+.warda-cm-ember {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    #ffffff 0%,
+    #ffedd5 30%,
+    #f97316 70%,
+    rgba(234, 88, 12, 0) 100%
+  );
+  box-shadow:
+    0 0 6px rgba(255, 247, 237, 0.95),
+    0 0 14px rgba(249, 115, 22, 0.8),
+    0 0 24px rgba(234, 88, 12, 0.5);
+  filter: blur(0.2px);
+  will-change: transform, opacity;
+}
+
+.warda-cm-ember--1 {
+  width: 5px;
+  height: 5px;
+  left: 30%;
+  bottom: 22%;
+  animation: seamlessEmberFloat1 8.5s ease-in-out infinite;
+}
+
+.warda-cm-ember--2 {
+  width: 4px;
+  height: 4px;
+  right: 28%;
+  bottom: 26%;
+  animation: seamlessEmberFloat2 10.2s ease-in-out infinite;
+}
+
+.warda-cm-ember--3 {
+  width: 5.5px;
+  height: 5.5px;
+  left: 54%;
+  bottom: 18%;
+  animation: seamlessEmberFloat1 9.4s ease-in-out infinite 1.8s;
+}
+
+.warda-cm-ember--4 {
+  width: 3.5px;
+  height: 3.5px;
+  left: 40%;
+  bottom: 32%;
+  animation: seamlessEmberFloat2 11s ease-in-out infinite 0.7s;
+}
+
+.warda-cm-ember--5 {
+  width: 4px;
+  height: 4px;
+  right: 36%;
+  bottom: 16%;
+  animation: seamlessEmberFloat1 8s ease-in-out infinite 2.5s;
+}
+
+.warda-cm-ember--gold {
+  width: 5px;
+  height: 5px;
+  left: 45%;
+  bottom: 28%;
+  background: radial-gradient(
+    circle at center,
+    #ffffff 0%,
+    #fef08a 35%,
+    #eab308 75%,
+    rgba(202, 138, 4, 0) 100%
+  );
+  box-shadow:
+    0 0 8px rgba(254, 240, 138, 0.95),
+    0 0 16px rgba(234, 179, 8, 0.75);
+  animation: seamlessEmberFloat1 9s ease-in-out infinite;
+}
+
+.warda-cm-ember--gold-2 {
+  width: 3.5px;
+  height: 3.5px;
+  right: 34%;
+  bottom: 22%;
+  background: radial-gradient(
+    circle at center,
+    #ffffff 0%,
+    #fef08a 35%,
+    #eab308 75%,
+    rgba(202, 138, 4, 0) 100%
+  );
+  box-shadow:
+    0 0 6px rgba(254, 240, 138, 0.9),
+    0 0 12px rgba(234, 179, 8, 0.7);
+  animation: seamlessEmberFloat2 10.5s ease-in-out infinite 2s;
+}
+
+.warda-cm-ember--gold-3 {
+  width: 4px;
+  height: 4px;
+  left: 32%;
+  bottom: 20%;
+  background: radial-gradient(
+    circle at center,
+    #ffffff 0%,
+    #fef08a 35%,
+    #eab308 75%,
+    rgba(202, 138, 4, 0) 100%
+  );
+  box-shadow:
+    0 0 8px rgba(254, 240, 138, 0.9),
+    0 0 14px rgba(234, 179, 8, 0.7);
+  animation: seamlessEmberFloat1 8.8s ease-in-out infinite 1.2s;
+}
+
+@keyframes seamlessEmberFloat1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    opacity: 0.35;
+  }
+  35% {
+    transform: translate3d(10px, -18px, 0) scale(1.15);
+    opacity: 0.95;
+  }
+  70% {
+    transform: translate3d(18px, -38px, 0) scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    opacity: 0.35;
+  }
+}
+
+@keyframes seamlessEmberFloat2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0.3;
+  }
+  40% {
+    transform: translate3d(-12px, -22px, 0) scale(1.2);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translate3d(-18px, -42px, 0) scale(1);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0.3;
+  }
+}
+
+/* ==========================================================================
+   2. ЛИСТЬЯ (LEAVES) - SLOW, SEAMLESS 3D SWAYING (CITRUS / FRESH / FOUGERE)
+   Harmonic Lissajous sway with 0% === 100%
+   ========================================================================== */
+
+.warda-cm-leaf {
+  position: absolute;
+  will-change: transform;
+}
+
+/* Citrus Back Leaves */
+.warda-cm-leaf--back-1 {
+  width: 38px;
+  height: 38px;
+  top: 15%;
+  left: 8%;
+  animation: seamlessLeafSway1 9.5s ease-in-out infinite;
+}
+
+.warda-cm-leaf--back-2 {
+  width: 34px;
+  height: 34px;
+  bottom: 22%;
+  right: 8%;
+  animation: seamlessLeafSway2 11s ease-in-out infinite;
+}
+
+/* Citrus Foreground 3D Swaying Leaves */
+.warda-cm-leaf--front-1 {
+  width: 44px;
+  height: 44px;
+  top: 12%;
+  right: 14%;
+  animation: seamlessLeafSway2 9s ease-in-out infinite;
+}
+
+.warda-cm-leaf--front-2 {
+  width: 32px;
+  height: 32px;
+  bottom: 18%;
+  left: 12%;
+  animation: seamlessLeafSway1 10.5s ease-in-out infinite;
+}
+
+/* Fresh Mint Leaf */
+.warda-cm-leaf--mint {
+  width: 36px;
+  height: 36px;
+  bottom: 24%;
+  left: 14%;
+  animation: seamlessLeafSway1 9.2s ease-in-out infinite;
+}
+
+/* Floral Rose Leaf */
+.warda-cm-leaf--rose {
+  width: 30px;
+  height: 30px;
+  bottom: 20%;
+  left: 16%;
+  animation: seamlessLeafSway2 10s ease-in-out infinite;
+}
+
+/* Fougère Oak Leaves */
+.warda-cm-leaf--oak-back {
+  width: 42px;
+  height: 42px;
+  top: 16%;
+  left: 8%;
+  animation: seamlessLeafSway1 11.5s ease-in-out infinite;
+}
+
+.warda-cm-leaf--oak-front {
+  width: 46px;
+  height: 46px;
+  top: 18%;
+  right: 12%;
+  animation: seamlessLeafSway2 9.8s ease-in-out infinite;
+}
+
+.warda-cm-leaf--forest-front {
+  width: 34px;
+  height: 34px;
+  bottom: 20%;
+  left: 12%;
+  animation: seamlessLeafSway1 10.2s ease-in-out infinite;
+}
+
+@keyframes seamlessLeafSway1 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) rotateY(0deg) scale(1);
+  }
+  25% {
+    transform: translate3d(10px, -6px, 0) rotate(6deg) rotateY(20deg) scale(1.03);
+  }
+  50% {
+    transform: translate3d(16px, 4px, 0) rotate(12deg) rotateY(35deg) scale(1.05);
+  }
+  75% {
+    transform: translate3d(6px, 8px, 0) rotate(5deg) rotateY(15deg) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) rotateY(0deg) scale(1);
+  }
+}
+
+@keyframes seamlessLeafSway2 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) rotateX(0deg) scale(1);
+  }
+  30% {
+    transform: translate3d(-12px, 8px, 0) rotate(-8deg) rotateX(25deg) scale(1.04);
+  }
+  60% {
+    transform: translate3d(-18px, -6px, 0) rotate(-14deg) rotateX(40deg) scale(1.06);
+  }
+  85% {
+    transform: translate3d(-6px, -10px, 0) rotate(-5deg) rotateX(18deg) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) rotateX(0deg) scale(1);
+  }
+}
+
+/* ==========================================================================
+   3. ВОДА (WATER) - CONTINUOUS BREATHING RIPPLES & SPECULAR DROPS
+   ========================================================================== */
+
+.warda-cm-ripple {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  width: 78%;
+  aspect-ratio: 2.8 / 1;
+  border-radius: 50%;
+  border: 1.5px solid rgba(125, 211, 252, 0.65);
+  box-shadow:
+    0 0 12px rgba(56, 189, 248, 0.4),
+    inset 0 0 10px rgba(56, 189, 248, 0.25);
+  will-change: transform, opacity;
+}
+
+.warda-cm-ripple--1 {
+  animation: seamlessWaterRipple1 8s ease-in-out infinite;
+}
+
+.warda-cm-ripple--2 {
+  animation: seamlessWaterRipple2 8s ease-in-out infinite;
+}
+
+@keyframes seamlessWaterRipple1 {
+  0% {
+    transform: translateX(-50%) scale(0.7);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.22);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-50%) scale(0.7);
+    opacity: 0.25;
+  }
+}
+
+@keyframes seamlessWaterRipple2 {
+  0% {
+    transform: translateX(-50%) scale(1.18);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(-50%) scale(0.68);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateX(-50%) scale(1.18);
+    opacity: 0.75;
+  }
+}
+
+.warda-cm-drop {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+.warda-cm-drop--aqua-1 {
+  bottom: 22%;
+  right: 20%;
+  animation: seamlessDropFloat 7.5s ease-in-out infinite;
+}
+
+.warda-cm-drop--aqua-2 {
+  bottom: 32%;
+  left: 22%;
+  animation: seamlessDropFloat 9s ease-in-out infinite;
+}
+
+.warda-cm-drop--citrus-1 {
+  bottom: 25%;
+  right: 22%;
+  animation: seamlessDropFloat 8.2s ease-in-out infinite;
+}
+
+@keyframes seamlessDropFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate3d(-5px, -16px, 0) scale(1.15);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.65;
+  }
+}
+
+/* ==========================================================================
+   4. ЛЕПЕСТКИ (PETALS) - VELVET ROSE PETALS SLOW SEAMLESS SWAY
+   ========================================================================== */
+
+.warda-cm-petal {
+  position: absolute;
+  will-change: transform;
+}
+
+.warda-cm-petal--back-1 {
+  width: 32px;
+  height: 32px;
+  top: 15%;
+  left: 12%;
+  animation: seamlessPetalDrift1 10.5s ease-in-out infinite;
+}
+
+.warda-cm-petal--front-1 {
+  width: 36px;
+  height: 36px;
+  top: 18%;
+  right: 16%;
+  animation: seamlessPetalDrift2 9.5s ease-in-out infinite;
+}
+
+.warda-cm-petal--front-2 {
+  width: 28px;
+  height: 28px;
+  bottom: 24%;
+  left: 20%;
+  animation: seamlessPetalDrift1 11.5s ease-in-out infinite;
+}
+
+@keyframes seamlessPetalDrift1 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  30% {
+    transform: translate3d(14px, -12px, 0) rotate(12deg) scale(1.05);
+  }
+  65% {
+    transform: translate3d(20px, 8px, 0) rotate(18deg) scale(1.02);
+  }
+  85% {
+    transform: translate3d(8px, 12px, 0) rotate(8deg) scale(0.98);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes seamlessPetalDrift2 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  35% {
+    transform: translate3d(-14px, 10px, 0) rotate(-14deg) scale(1.06);
+  }
+  70% {
+    transform: translate3d(-20px, -10px, 0) rotate(-22deg) scale(1.02);
+  }
+  90% {
+    transform: translate3d(-6px, -12px, 0) rotate(-8deg) scale(0.97);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* ==========================================================================
+   6. VOLUMETRIC AURA BLOOM & ANAMORPHIC GLASS SHEEN
+   ========================================================================== */
+
+.warda-cm-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 85%;
+  height: 85%;
+  transform: translate(-50%, -50%) scale(0.7);
+  border-radius: 50%;
+  filter: blur(22px);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.warda-cat-slide:hover .warda-cm-aura {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+.warda-cm--oud .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(251, 191, 36, 0.55) 0%, rgba(217, 119, 6, 0.32) 42%, rgba(180, 83, 9, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--citrus .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(250, 204, 21, 0.55) 0%, rgba(217, 119, 6, 0.3) 42%, rgba(180, 83, 9, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--fresh .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.55) 0%, rgba(14, 116, 144, 0.28) 42%, rgba(8, 76, 96, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--floral .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(244, 63, 94, 0.5) 0%, rgba(159, 18, 57, 0.28) 42%, rgba(100, 10, 36, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--fougere .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.48) 0%, rgba(20, 83, 45, 0.28) 42%, rgba(10, 50, 26, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--spices .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(249, 115, 22, 0.58) 0%, rgba(220, 38, 38, 0.32) 42%, rgba(153, 27, 27, 0.12) 65%, transparent 75%);
+}
+
+.warda-cm--gourmand .warda-cm-aura {
+  background: radial-gradient(circle at center, rgba(245, 158, 11, 0.52) 0%, rgba(180, 83, 9, 0.28) 42%, rgba(120, 53, 15, 0.12) 65%, transparent 75%);
+}
+
+/* Diagonal glass prism sheen sweep */
+.warda-cm-glass-sheen {
+  position: absolute;
+  top: -40%;
+  left: -80%;
+  width: 45%;
+  height: 200%;
+  background: linear-gradient(
+    108deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 35%,
+    rgba(255, 235, 180, 0.35) 50%,
+    rgba(255, 255, 255, 0.6) 52%,
+    rgba(255, 235, 180, 0.35) 54%,
+    rgba(255, 255, 255, 0.02) 65%,
+    transparent 100%
+  );
+  transform: rotate(24deg) translateX(-140%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.warda-cat-slide:hover .warda-cm-glass-sheen {
+  opacity: 1;
+  animation: glassSheenGlide 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glassSheenGlide {
+  0% {
+    transform: rotate(24deg) translateX(-150%);
+  }
+  100% {
+    transform: rotate(24deg) translateX(360%);
+  }
+}

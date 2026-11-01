@@ -1,0 +1,576 @@
+/* Al-Warda Home Luxury Aesthetic */
+.warda-home {
+  background-color: var(--body-color, #080605);
+  color: var(--text-color, #c2b59b);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+  overflow-x: hidden;
+}
+
+/* 1. HERO SECTION */
+.warda-hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 3.5rem;
+  padding-top: 3.5rem; /* Balanced top clearance */
+  padding-bottom: 3.5rem;
+  position: relative;
+}
+
+.warda-hero__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+}
+
+.warda-hero__title {
+  font-family: var(--second-font, "Playfair Display", Georgia, serif);
+  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--title-color, #f7ede2);
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+}
+
+.warda-hero__subtitle {
+  font-family: var(--body-font, "Montserrat", sans-serif);
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 300;
+  color: var(--text-color, #c2b59b);
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.04em;
+}
+
+.warda-hero__action {
+  display: flex;
+  align-items: center;
+}
+
+/* Buttons */
+.warda-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  background-color: #0c0907;
+  color: #d4af37;
+  border: 1px solid rgba(197, 160, 89, 0.6);
+  padding: 0.85rem 1.85rem;
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.warda-btn:hover {
+  background-color: #d4af37;
+  color: #0b0806;
+  border-color: #d4af37;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
+  transform: translateY(-2px);
+}
+
+.warda-btn__arrow {
+  font-size: 1.1rem;
+  transition: transform 0.25s ease;
+}
+
+.warda-btn:hover .warda-btn__arrow {
+  transform: translateX(4px);
+}
+
+.warda-btn--card {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  background-color: #0a0705;
+}
+
+.warda-btn--card:hover {
+  background-color: #c5a059;
+  color: #080605;
+}
+
+.warda-btn--added {
+  background-color: #c5a059 !important;
+  color: #080605 !important;
+  border-color: #c5a059 !important;
+}
+
+/* Hero Visual */
+.warda-hero__visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.warda-hero__img-frame {
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8);
+}
+
+.warda-hero__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.warda-hero__img-frame:hover .warda-hero__img {
+  transform: scale(1.03);
+}
+
+.warda-hero__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 60% 40%,
+    rgba(212, 175, 55, 0.12) 0%,
+    transparent 70%
+  );
+}
+
+/* 2. CATEGORIES CAROUSEL (BRIGHT, SEAMLESS, REALISTIC WITHOUT FRAMES) */
+.warda-categories-section {
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.warda-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.warda-categories-carousel {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 1.5rem 0 2.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+}
+
+.warda-categories-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Category Slide: Exactly 3 elements visible simultaneously */
+.warda-cat-slide {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  flex: 0 0 calc((100% - 4rem) / 3);
+  min-width: calc((100% - 4rem) / 3);
+  max-width: calc((100% - 4rem) / 3);
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  background: transparent !important;
+  border: none !important;
+  outline: none;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+  perspective: 900px;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.45s ease,
+    filter 0.45s ease;
+}
+
+@media (max-width: 991px) {
+  .warda-cat-slide {
+    flex: 0 0 calc((100% - 2rem) / 2);
+    min-width: calc((100% - 2rem) / 2);
+    max-width: calc((100% - 2rem) / 2);
+  }
+}
+
+@media (max-width: 600px) {
+  .warda-cat-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Sibling focus pull: softly dim other slides */
+.warda-categories-carousel:hover .warda-cat-slide:not(:hover) {
+  opacity: 0.42;
+  filter: brightness(0.85);
+  transform: scale(0.985);
+}
+
+.warda-cat-slide:hover {
+  transform: translateY(-8px);
+  z-index: 5;
+}
+
+/* Seamless photo media container with 3D tilt responsiveness */
+.warda-cat-slide__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.18 / 1;
+  overflow: visible;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+/* Flacon Imagery with enhanced film grade & depth shadow */
+.warda-cat-slide__img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.85));
+  will-change: transform, filter;
+  transition: filter 0.5s ease;
+}
+
+/* Hover: slow, seamless cyclic breathing motion with NO visible start or end (0% === 100%) */
+.warda-cat-slide:hover .warda-cat-slide__img {
+  animation: cinematicImageBreathe 8.5s ease-in-out infinite;
+  filter:
+    drop-shadow(0 20px 32px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 0 24px rgba(212, 175, 55, 0.38))
+    drop-shadow(0 0 8px rgba(254, 240, 138, 0.45))
+    contrast(1.06)
+    saturate(1.1)
+    brightness(1.05);
+}
+
+@keyframes cinematicImageBreathe {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.025);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Category Title & Indicator */
+.warda-cat-slide__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.95rem 0.25rem 0.25rem;
+}
+
+.warda-cat-slide__title {
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--gold-light, #e8d08d);
+  text-transform: uppercase;
+  transition:
+    color 0.4s ease,
+    letter-spacing 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    text-shadow 0.4s ease;
+}
+
+.warda-cat-slide:hover .warda-cat-slide__title {
+  color: #ffffff;
+  letter-spacing: 0.22em;
+  text-shadow:
+    0 0 14px rgba(232, 208, 141, 0.6),
+    0 0 28px rgba(212, 175, 55, 0.25);
+}
+
+.warda-cat-slide__arrow {
+  color: var(--primary-gold, #c5a059);
+  font-size: 1.15rem;
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.4s ease,
+    text-shadow 0.4s ease;
+}
+
+.warda-cat-slide:hover .warda-cat-slide__arrow {
+  transform: translateX(6px) scale(1.1);
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+}
+
+/* Carousel Buttons */
+.warda-carousel-btn {
+  position: absolute;
+  top: calc(50% - 1.25rem);
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(14, 10, 7, 0.92);
+  border: 1px solid rgba(197, 160, 89, 0.5);
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.85);
+  transition: all 0.25s ease;
+}
+
+.warda-carousel-btn--prev {
+  left: -22px;
+}
+
+.warda-carousel-btn--next {
+  right: -22px;
+}
+
+.warda-carousel-btn:hover:not(:disabled) {
+  background: #d4af37;
+  color: #080605;
+  border-color: #d4af37;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.warda-carousel-btn--disabled,
+.warda-carousel-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 3. BEST SELLERS GRID */
+.warda-bestsellers__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+.warda-perfume-card {
+  cursor: pointer;
+  padding: 1.25rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #090604;
+  text-align: center;
+}
+
+.warda-perfume-card__media {
+  width: 100%;
+  height: 285px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  position: relative;
+  background:
+    radial-gradient(circle 180px at 50% 44%, rgba(240, 215, 140, 0.18) 0%, rgba(212, 175, 55, 0.08) 45%, transparent 72%),
+    radial-gradient(ellipse 75% 26% at 50% 88%, rgba(212, 175, 55, 0.22) 0%, rgba(26, 20, 14, 0.3) 40%, transparent 75%);
+  border-radius: 0;
+  border: none !important;
+  overflow: visible;
+  padding: 0.5rem 0.75rem 10px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+}
+
+/* Glowing luxury podium disc beneath floating bottle */
+.warda-perfume-card__media::before {
+  content: "";
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 76%;
+  height: 22px;
+  background: radial-gradient(ellipse at center, rgba(240, 215, 140, 0.55) 0%, rgba(212, 175, 55, 0.22) 42%, rgba(180, 130, 40, 0.04) 65%, transparent 75%);
+  border-radius: 50%;
+  filter: blur(3px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Soft ambient shadow below floating bottle */
+.warda-perfume-card__media::after {
+  content: "";
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54%;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.2) 55%, transparent 80%);
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating, levitating perfume flacon with normal luxury size */
+.warda-perfume-card__img {
+  max-width: 92%;
+  height: 220px !important;
+  max-height: 220px;
+  width: auto;
+  object-fit: contain !important;
+  position: relative;
+  z-index: 2;
+  transform: translateY(-20px);
+  filter:
+    drop-shadow(0 0 1.2px rgba(245, 220, 150, 0.45))
+    drop-shadow(0 14px 26px rgba(0, 0, 0, 0.8));
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.45s ease;
+  -webkit-box-reflect: below 14px linear-gradient(to bottom, transparent 62%, rgba(255, 255, 255, 0.04) 82%, rgba(255, 255, 255, 0.18) 100%);
+}
+
+.warda-perfume-card:hover .warda-perfume-card__img {
+  transform: translateY(-26px) scale(1.03);
+  filter:
+    drop-shadow(0 0 1.5px rgba(255, 235, 170, 0.6))
+    drop-shadow(0 18px 30px rgba(0, 0, 0, 0.9))
+    brightness(1.05);
+}
+
+.warda-perfume-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.warda-perfume-card__title {
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold-light, #e8d08d);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.warda-perfume-card__notes {
+  font-family: var(--body-font, "Montserrat", sans-serif);
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: #a89882;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.warda-perfume-card__price {
+  font-family: var(--second-font, "Cinzel", serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-gold, #c5a059);
+  margin-top: 0.35rem;
+}
+
+.warda-perfume-card__currency {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #7d705e;
+}
+
+.warda-perfume-card__action {
+  margin-top: auto;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+@media screen and (max-width: 1024px) {
+  .warda-cat-slide {
+    flex: 0 0 calc(33.333% - 1.2rem);
+  }
+  .warda-carousel-btn--prev {
+    left: -12px;
+  }
+  .warda-carousel-btn--next {
+    right: -12px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .warda-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+    padding-top: 3.5rem;
+  }
+  .warda-hero__content {
+    align-items: center;
+  }
+  .warda-hero__img-frame {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .warda-bestsellers__grid {
+    gap: 1.25rem;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .warda-cat-slide {
+    flex: 0 0 calc(50% - 0.9rem);
+    min-width: 180px;
+  }
+  .warda-categories-carousel {
+    gap: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .warda-cat-slide {
+    flex: 0 0 78%;
+  }
+  .warda-bestsellers__grid {
+    grid-template-columns: 1fr;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .warda-hero__title {
+    font-size: 2.2rem;
+  }
+}

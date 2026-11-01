@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloudflare Worker Service — litera (f41b7453a8dde719bf229f7ad93ccde1)</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
+    <style>
+      :root {
+        --bg-main: #0d1117;
+        --bg-panel: #161b22;
+        --bg-card: #1c2128;
+        --border: #30363d;
+        --text-main: #e6edf3;
+        --text-muted: #8b949e;
+        --cf-orange: #f6821f;
+        --cf-orange-dim: rgba(246, 130, 31, 0.15);
+        --green: #3fb950;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 14px 24px;
+        background: var(--bg-panel);
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        background: var(--cf-orange-dim);
+        color: var(--cf-orange);
+        border: 1px solid rgba(246, 130, 31, 0.4);
+        padding: 3px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .badge-online {
+        background: rgba(63, 185, 80, 0.15);
+        color: var(--green);
+        border: 1px solid rgba(63, 185, 80, 0.4);
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        background: #21262d;
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 13px;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn:hover {
+        background: #30363d;
+      }
+      .btn-primary {
+        background: var(--cf-orange);
+        color: #0d1117;
+        border-color: var(--cf-orange);
+        font-weight: 600;
+      }
+      .btn-primary:hover {
+        background: #ff9338;
+      }
+      .container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+      }
+      .card-value {
+        font-size: 18px;
+        font-weight: 600;
+        word-break: break-all;
+      }
+      .card-sub {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      th {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 12px;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      pre {
+        margin: 0;
+        background: #090d11;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        color: #a5d6ff;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span>☁️ Cloudflare Workers &amp; Pages — Service View</span>
+        <span class="badge">service: litera</span>
+        <span class="badge">account: f41b7453a8dde719bf229f7ad93ccde1</span>
+        <span class="badge badge-online" id="healthBadge">● Checking health...</span>
+      </div>
+      <div class="actions">
+        <a
+          class="btn"
+          href="https://dash.cloudflare.com/f41b7453a8dde719bf229f7ad93ccde1/workers/services/view/litera"
+          target="_blank"
+          rel="noopener"
+        >
+          Open Cloudflare Dashboard ↗
+        </a>
+        <a class="btn" href="/supabase.html">⚡ Supabase Explorer</a>
+        <a class="btn btn-primary" href="/">← Back to Litera Store</a>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="grid">
+        <div class="card">
+          <h3>Worker Service Name</h3>
+          <div class="card-value">litera</div>
+          <div class="card-sub">Entry: server/worker.js</div>
+        </div>
+        <div class="card">
+          <h3>Production Route / Domain</h3>
+          <div class="card-value">
+            <a href="https://litera.egor-grebennykov.workers.dev" style="color: var(--cf-orange); text-decoration: none;">
+              litera.egor-grebennykov.workers.dev
+            </a>
+          </div>
+          <div class="card-sub">Assets binding: ./dist (SPA mode)</div>
+        </div>
+        <div class="card">
+          <h3>Scheduled Cron Trigger</h3>
+          <div class="card-value">0 3 * * * (03:00 UTC)</div>
+          <div class="card-sub">Daily rates &amp; discounts · Weekly new/picks · Monthly home</div>
+        </div>
+        <div class="card">
+          <h3>Runtime Compatibility</h3>
+          <div class="card-value">nodejs_compat</div>
+          <div class="card-sub">compatibility_date: 2026-10-01</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Scheduled Catalog &amp; Sync Actions Status (Live from Worker /api/actions-status)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Action ID</th>
+              <th>Workflow</th>
+              <th>Schedule</th>
+              <th>Status</th>
+              <th>Last Run</th>
+            </tr>
+          </thead>
+          <tbody id="actionsTableBody">
+            <tr>
+              <td colspan="5" style="color: var(--text-muted)">Loading live status from Worker...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Worker API Endpoints (run_worker_first: ["/api/*", "/health"])</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+              <th>Test Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/health</code></td>
+              <td>Worker health check</td>
+              <td><a class="btn" href="/health" target="_blank">Open JSON ↗</a></td>
+            </tr>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/api/actions-status</code></td>
+              <td>Scheduled catalog synchronization statuses</td>
+              <td><a class="btn" href="/api/actions-status" target="_blank">Open JSON ↗</a></td>
+            </tr>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/api/search-librarius?q=Кристи&amp;fast=1</code></td>
+              <td>Real-time bookstore scraper (Librarius)</td>
+              <td><a class="btn" href="/api/search-librarius?q=%D0%9A%D1%80%D0%B8%D1%81%D1%82%D0%B8&fast=1" target="_blank">Open JSON ↗</a></td>
+            </tr>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/api/enhance-image?url=...</code></td>
+              <td>Edge-cached book cover proxy &amp; optimizer</td>
+              <td><code>Cache-Control: immutable</code></td>
+            </tr>
+            <tr>
+              <td><code>POST</code></td>
+              <td><code>/api/litera-chat</code></td>
+              <td>Litera AI Book Assistant (SSE streaming)</td>
+              <td><code>text/event-stream</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>wrangler.jsonc Configuration</h3>
+        <pre>{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "litera",
+  "main": "server/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/health"]
+  }
+}</pre>
+      </div>
+    </div>
+
+    <script>
+      const SCHEDULES = {
+        "update-exchange-rate": "Daily at 03:00 UTC (0 3 * * *)",
+        "update-discounts": "Daily at 03:00 UTC (0 3 * * *)",
+        "update-new-books": "Weekly on Monday at 03:00 UTC (0 3 * * 1)",
+        "update-book-picks": "Weekly on Monday at 03:00 UTC (0 3 * * 1)",
+        "update-home-books": "Monthly on the 1st at 03:00 UTC (0 3 1 * *)",
+      };
+
+      fetch("/health")
+        .then((r) => r.json())
+        .then((d) => {
+          const el = document.getElementById("healthBadge");
+          if (d && d.ok) {
+            el.textContent = "● Worker Online (HTTP 200 OK)";
+          }
+        })
+        .catch(() => {});
+
+      fetch("/api/actions-status")
+        .then((r) => r.json())
+        .then((d) => {
+          const tbody = document.getElementById("actionsTableBody");
+          const actions = d?.actions || {};
+          const keys = Object.keys(SCHEDULES);
+          tbody.innerHTML = keys
+            .map((id) => {
+              const item = actions[id] || { status: "idle", lastRun: null };
+              return `<tr>
+                <td><code>${id}</code></td>
+                <td><code>${id}.yml</code></td>
+                <td>${SCHEDULES[id]}</td>
+                <td><span class="badge">${item.status || "idle"}</span></td>
+                <td>${item.lastRun || "Scheduled"}</td>
+              </tr>`;
+            })
+            .join("");
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>

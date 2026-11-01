@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru" class="dark-theme">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al-Warda Parfumes | Timeless Arabian Fragrances</title>
+    <meta name="description" content="Discover your signature scent with Al-Warda Parfumes. Timeless Arabian fragrances, rare oud, precious amber, and Taif roses." />
+    <meta name="application-name" content="Al-Warda Parfumes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Al-Warda" />
+    <meta name="theme-color" content="#0b0806" />
+    <link rel="icon" type="image/png" sizes="128x128" href="/assets/img/favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/icon-512.png" />
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      (function () {
+        try {
+          var m = document.cookie.match(/(?:^|;\s*)alwarda_theme=([^;]+)/) || document.cookie.match(/(?:^|;\s*)litera_theme=([^;]+)/);
+          if (m && decodeURIComponent(m[1]) === "light") {
+            document.documentElement.classList.remove("dark-theme");
+          } else {
+            document.documentElement.classList.add("dark-theme");
+          }
+        } catch (e) {
+          document.documentElement.classList.add("dark-theme");
+        }
+      })();
+    </script>
+    <style>
+      .warda-boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        background-color: #0b0806;
+        color: #f7ede2;
+        font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+      }
+      .warda-boot-loader__ring-wrap {
+        position: relative;
+        width: 90px;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .warda-boot-loader__ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(212, 175, 55, 0.2);
+        border-top-color: #d4af37;
+        animation: wardaBootSpin 1s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+      }
+      .warda-boot-loader__logo {
+        width: 54px;
+        height: 54px;
+        object-fit: contain;
+        animation: wardaBootPulse 2s ease-in-out infinite;
+      }
+      .warda-boot-loader__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #d4af37;
+        margin: 0;
+      }
+      .warda-boot-loader__subtitle {
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #a89882;
+        margin: -0.85rem 0 0;
+        font-family: 'Montserrat', sans-serif;
+      }
+      .warda-boot-loader__bar {
+        width: 140px;
+        height: 2px;
+        background: rgba(212, 175, 55, 0.2);
+        overflow: hidden;
+        position: relative;
+      }
+      .warda-boot-loader__bar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -45%;
+        width: 45%;
+        height: 100%;
+        background: #d4af37;
+        animation: wardaBootSlide 1.3s ease-in-out infinite;
+      }
+      @keyframes wardaBootSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes wardaBootPulse {
+        0%, 100% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
+        }
+        50% {
+          transform: scale(1.08);
+          filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+        }
+      }
+      @keyframes wardaBootSlide {
+        0% {
+          left: -45%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preconnect" href="https://mfvenfrmlkxqgvdtedet.supabase.co" crossorigin />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <div class="warda-boot-loader" role="status" aria-label="Loading Al-Warda Parfumes">
+        <div class="warda-boot-loader__ring-wrap">
+          <div class="warda-boot-loader__ring"></div>
+          <img
+            src="/assets/img/logo.png"
+            alt="Al-Warda"
+            class="warda-boot-loader__logo"
+          />
+        </div>
+        <p class="warda-boot-loader__title">Al-Warda</p>
+        <span class="warda-boot-loader__subtitle">Parfumes</span>
+        <div class="warda-boot-loader__bar"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

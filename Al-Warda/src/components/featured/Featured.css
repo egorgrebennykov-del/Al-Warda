@@ -1,0 +1,152 @@
+.warda-shop-page {
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+.warda-shop-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3rem;
+}
+
+.warda-shop-title {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: #f7ede2;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
+.warda-shop-subtitle {
+  font-size: 0.95rem;
+  color: #a89882;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.warda-shop-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.warda-tab-btn {
+  background: transparent;
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  color: #c2b59b;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  padding: 0.55rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.warda-tab-btn:hover {
+  border-color: #d4af37;
+  color: #d4af37;
+}
+
+.warda-tab-btn--active {
+  background-color: #d4af37;
+  border-color: #d4af37;
+  color: #080605;
+}
+
+.warda-brands-bar {
+  margin-top: 1.5rem;
+  width: 100%;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.warda-brands-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.warda-brands-bar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+.warda-brands-bar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 4px;
+}
+
+.warda-brands-scroll {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.warda-filter-pill {
+  padding: 0.45rem 0.95rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: #a0a0ab;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+
+.warda-filter-pill:hover {
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.warda-filter-pill.active {
+  background: linear-gradient(135deg, #d4af37, #aa820a);
+  color: #0b0b10;
+  border-color: #d4af37;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
+}
+
+.warda-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+.warda-shop-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: #d4af37;
+}
+
+.warda-shop-empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: #7d705e;
+}
+
+@media screen and (max-width: 900px) {
+  .warda-shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .warda-shop-grid {
+    grid-template-columns: 1fr;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+}

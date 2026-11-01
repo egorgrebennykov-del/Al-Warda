@@ -1,0 +1,352 @@
+.warda-details-page {
+  background-color: var(--body-color, #080605);
+  color: #c2b59b;
+  min-height: 85vh;
+  padding: 2.5rem 0 4rem;
+}
+
+.warda-details-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  margin-bottom: 2.5rem;
+  color: #7d705e;
+}
+
+.warda-details-breadcrumb a {
+  color: #a89882;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.warda-details-breadcrumb a:hover {
+  color: #d4af37;
+}
+
+.warda-breadcrumb-sep {
+  color: #4a4034;
+}
+
+.warda-breadcrumb-current {
+  color: #d4af37;
+}
+
+.warda-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 3.5rem;
+  align-items: start;
+}
+
+.warda-details-card {
+  padding: 1.25rem 0.75rem;
+  background: #090604;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 4px;
+}
+
+.warda-details-img-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 520px;
+  height: 520px;
+  position: relative;
+  padding: 2rem 1.5rem;
+  background:
+    radial-gradient(circle 320px at 50% 48%, rgba(255, 245, 230, 0.16) 0%, rgba(212, 175, 55, 0.10) 38%, rgba(180, 130, 40, 0.04) 65%, transparent 80%),
+    radial-gradient(ellipse 85% 32% at 50% 86%, rgba(212, 175, 55, 0.20) 0%, rgba(26, 20, 14, 0.3) 45%, transparent 80%);
+  border-radius: 6px;
+  border: none !important;
+  overflow: visible;
+}
+
+/* Volumetric Golden Ambient Aura behind the flacon */
+.warda-details-aura {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  height: 380px;
+  border-radius: 50%;
+  filter: blur(32px);
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 245, 230, 0.22) 0%,
+    rgba(212, 175, 55, 0.12) 42%,
+    rgba(180, 130, 40, 0.04) 68%,
+    transparent 80%
+  );
+  z-index: 1;
+}
+
+/* Glowing luxury podium disc beneath floating bottle */
+.warda-details-img-wrap::before {
+  content: "";
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 62%;
+  height: 18px;
+  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.75) 0%, rgba(212, 175, 55, 0.35) 45%, rgba(180, 130, 40, 0.08) 68%, transparent 78%);
+  border-radius: 50%;
+  filter: blur(5px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating, levitating perfume flacon with elegant breathing room */
+.warda-details-img {
+  max-width: 86%;
+  height: 370px !important;
+  max-height: 370px;
+  width: auto;
+  object-fit: contain !important;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 24px;
+  filter:
+    drop-shadow(0 0 2px rgba(255, 235, 170, 0.65))
+    drop-shadow(0 0 24px rgba(251, 191, 36, 0.40))
+    drop-shadow(0 0 50px rgba(212, 175, 55, 0.20))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.65));
+}
+
+.warda-details-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.warda-details-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.warda-tag-category {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 0.2rem 0.6rem;
+}
+
+.warda-tag-badge {
+  font-size: 0.75rem;
+  color: #9c9183;
+}
+
+.warda-details-title {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #f7ede2;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.warda-details-subtitle {
+  font-size: 0.95rem;
+  color: #a89882;
+  margin-bottom: 1.25rem;
+}
+
+.warda-details-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.warda-stars {
+  color: #d4af37;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+}
+
+.warda-rating-num {
+  font-weight: 600;
+  color: #f7ede2;
+  font-size: 0.85rem;
+}
+
+.warda-reviews-count {
+  font-size: 0.8rem;
+  color: #7d705e;
+}
+
+.warda-details-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(197, 160, 89, 0.2);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+  margin-bottom: 1.5rem;
+}
+
+.warda-details-price {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 2rem;
+  font-weight: 600;
+  color: #d4af37;
+}
+
+.warda-details-price-mdl {
+  font-size: 1rem;
+  color: #9c9183;
+}
+
+.warda-stock-status {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #4ade80;
+}
+
+.warda-details-desc {
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: #c2b59b;
+  margin-bottom: 2rem;
+}
+
+/* Olfactory Pyramid */
+.warda-pyramid {
+  background: #0c0906;
+  border: 1px solid rgba(197, 160, 89, 0.25);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.warda-pyramid-title {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4af37;
+  margin: 0 0 1rem;
+}
+
+.warda-pyramid-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.warda-pyramid-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.warda-step-name {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8c7e6c;
+}
+
+.warda-notes-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.warda-note-tag {
+  background: rgba(197, 160, 89, 0.1);
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  color: #e8d08d;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+}
+
+/* Specs Row */
+.warda-specs-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.warda-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-left: 2px solid #d4af37;
+  padding-left: 0.75rem;
+}
+
+.warda-spec-lbl {
+  font-size: 0.72rem;
+  color: #7d705e;
+  text-transform: uppercase;
+}
+
+.warda-spec-val {
+  font-size: 0.85rem;
+  color: #f7ede2;
+  font-weight: 500;
+}
+
+/* Actions */
+.warda-details-actions {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.warda-qty-selector {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  background: #090604;
+}
+
+.warda-qty-btn {
+  background: none;
+  border: none;
+  color: #d4af37;
+  font-size: 1.25rem;
+  width: 42px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.warda-qty-btn:hover {
+  background: rgba(197, 160, 89, 0.15);
+}
+
+.warda-qty-val {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 1.1rem;
+  color: #f7ede2;
+  width: 40px;
+  text-align: center;
+}
+
+.warda-btn--add-details {
+  flex: 1;
+  padding: 0.95rem 2rem;
+  font-size: 0.9rem;
+}
+
+@media screen and (max-width: 900px) {
+  .warda-details-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

@@ -1,0 +1,60 @@
+.book-image__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  background: var(--body-color);
+  color: var(--text-color);
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  border-radius: inherit;
+}
+
+.book-image__placeholder-icon {
+  font-size: 2.5rem;
+  opacity: 0.45;
+}
+
+.book-image__placeholder-title {
+  font-size: var(--small-font-size);
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Compact placeholder for cart / small previews */
+.cart__image.book-image__placeholder {
+  aspect-ratio: 1;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.cart__image.book-image__placeholder .book-image__placeholder-icon {
+  font-size: 1.5rem;
+}
+
+.cart__image.book-image__placeholder .book-image__placeholder-title {
+  display: none;
+}
+
+/* Universal high-clarity and immediate image display across all bookstores */
+img.results__img,
+img.book__img,
+img.home__img,
+img.cart__image,
+img.deals__image,
+img.litera-book-card__cover,
+img.checkout__item-img,
+img.checkout__success-thumb,
+img.orders__item-thumb {
+  image-rendering: auto;
+  content-visibility: visible;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}

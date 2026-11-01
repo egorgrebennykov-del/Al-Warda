@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Supabase Database Explorer — Litera (qgxiisgzwcsevzyaoxvl)</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
+    <style>
+      :root {
+        --bg-main: #121212;
+        --bg-panel: #1c1c1c;
+        --bg-hover: #262626;
+        --bg-active: #232e29;
+        --border: #2e2e2e;
+        --text-main: #ededed;
+        --text-muted: #9b9b9b;
+        --brand: #3ecf8e;
+        --brand-dim: rgba(62, 207, 142, 0.14);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 20px;
+        background: var(--bg-panel);
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .brand-badge {
+        background: var(--brand-dim);
+        color: var(--brand);
+        border: 1px solid rgba(62, 207, 142, 0.35);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        background: #262626;
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn:hover {
+        background: #303030;
+      }
+      .btn-primary {
+        background: var(--brand);
+        color: #0b2218;
+        border-color: var(--brand);
+        font-weight: 600;
+      }
+      .btn-primary:hover {
+        background: #35b97d;
+      }
+      .layout {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+      }
+      aside {
+        width: 260px;
+        background: var(--bg-panel);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .sidebar-title {
+        padding: 14px 16px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+      }
+      .table-list {
+        list-style: none;
+        margin: 0;
+        padding: 0 8px 16px;
+      }
+      .table-btn {
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        color: var(--text-main);
+        border: 1px solid transparent;
+        border-radius: 6px;
+        padding: 8px 10px;
+        margin-bottom: 3px;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .table-btn:hover {
+        background: var(--bg-hover);
+      }
+      .table-btn.active {
+        background: var(--bg-active);
+        color: var(--brand);
+        border-color: rgba(62, 207, 142, 0.35);
+        font-weight: 600;
+      }
+      .table-count {
+        font-size: 11px;
+        color: var(--text-muted);
+        background: #262626;
+        padding: 1px 6px;
+        border-radius: 999px;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 18px;
+        background: #171717;
+        border-bottom: 1px solid var(--border);
+      }
+      .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .search-input {
+        background: #222;
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        width: 220px;
+      }
+      .content-area {
+        flex: 1;
+        overflow: auto;
+        padding: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        padding: 8px 12px;
+        text-align: left;
+        vertical-align: top;
+        max-width: 420px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        background: #1f1f1f;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        z-index: 2;
+      }
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .cell-json {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11.5px;
+        color: #9cdcfe;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 110px;
+        overflow-y: auto;
+      }
+      pre.raw-json {
+        margin: 0;
+        padding: 18px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        color: #a5d6ff;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .status-msg {
+        padding: 32px;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+      @media (max-width: 768px) {
+        .layout {
+          flex-direction: column;
+        }
+        aside {
+          width: 100%;
+          max-height: 170px;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        .table-list {
+          display: flex;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          gap: 6px;
+          padding: 8px 12px;
+        }
+        .table-btn {
+          width: auto;
+          white-space: nowrap;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span>⚡ Supabase Database Explorer</span>
+        <span class="brand-badge">project: qgxiisgzwcsevzyaoxvl</span>
+        <span class="brand-badge">public read access</span>
+      </div>
+      <div class="header-actions">
+        <a class="btn" id="rawRestLink" href="#" target="_blank" rel="noopener">
+          Open Direct REST JSON ↗
+        </a>
+        <a class="btn btn-primary" href="/">← Back to Litera Store</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside>
+        <div class="sidebar-title">Public Schema Tables (12)</div>
+        <ul class="table-list" id="tableList"></ul>
+      </aside>
+      <main>
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <strong id="currentTableName">user</strong>
+            <span class="brand-badge" id="rowCountBadge">Loading...</span>
+            <input
+              type="search"
+              id="filterInput"
+              class="search-input"
+              placeholder="Filter rows..."
+            />
+          </div>
+          <div class="header-actions">
+            <button class="btn" id="toggleViewBtn" type="button">
+              Switch to Raw JSON
+            </button>
+            <button class="btn" id="refreshBtn" type="button">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="content-area" id="contentArea">
+          <div class="status-msg">Loading table data from Supabase...</div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const SUPABASE_URL = "https://qgxiisgzwcsevzyaoxvl.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_b9UI3PiZhUvPTcroS9oMOg_NyHBwtxw";
+
+      const TABLES = [
+        { name: "user", select: "id,created_at,firstName,lastName,email,phone,status,role,adresses" },
+        { name: "feedbacks", select: "*" },
+        { name: "cart", select: "*" },
+        { name: "orders_in_progress", select: "*" },
+        { name: "coupons", select: "*" },
+        { name: "announcements", select: "*" },
+        { name: "inquiries", select: "*" },
+        { name: "books_on_home_page", select: "*" },
+        { name: "book_picks", select: "*" },
+        { name: "discounts", select: "*" },
+        { name: "new_books", select: "*" },
+        { name: "exchange_rate", select: "*" },
+      ];
+
+      let activeTable = TABLES[0];
+      let currentRows = [];
+      let viewMode = "table"; // "table" | "json"
+
+      const tableListEl = document.getElementById("tableList");
+      const currentTableNameEl = document.getElementById("currentTableName");
+      const rowCountBadgeEl = document.getElementById("rowCountBadge");
+      const contentAreaEl = document.getElementById("contentArea");
+      const rawRestLinkEl = document.getElementById("rawRestLink");
+      const filterInputEl = document.getElementById("filterInput");
+      const toggleViewBtnEl = document.getElementById("toggleViewBtn");
+      const refreshBtnEl = document.getElementById("refreshBtn");
+
+      function renderSidebar() {
+        tableListEl.innerHTML = "";
+        for (const t of TABLES) {
+          const li = document.createElement("li");
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "table-btn" + (t.name === activeTable.name ? " active" : "");
+          btn.innerHTML = `<span>${t.name}</span><span class="table-count" id="cnt-${t.name}">…</span>`;
+          btn.onclick = () => {
+            activeTable = t;
+            renderSidebar();
+            loadTable(t);
+          };
+          li.appendChild(btn);
+          tableListEl.appendChild(li);
+        }
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function renderContent() {
+        const q = filterInputEl.value.trim().toLowerCase();
+        const filtered = q
+          ? currentRows.filter((r) => JSON.stringify(r).toLowerCase().includes(q))
+          : currentRows;
+
+        rowCountBadgeEl.textContent = `${filtered.length} row${filtered.length === 1 ? "" : "s"}`;
+
+        if (viewMode === "json") {
+          contentAreaEl.innerHTML = `<pre class="raw-json">${escapeHtml(
+            JSON.stringify(filtered, null, 2)
+          )}</pre>`;
+          return;
+        }
+
+        if (!filtered.length) {
+          contentAreaEl.innerHTML = `<div class="status-msg">No rows found in <code>${activeTable.name}</code>.</div>`;
+          return;
+        }
+
+        const cols = Array.from(
+          filtered.reduce((set, row) => {
+            Object.keys(row || {}).forEach((k) => set.add(k));
+            return set;
+          }, new Set())
+        );
+
+        let html = "<table><thead><tr>";
+        for (const col of cols) {
+          html += `<th>${escapeHtml(col)}</th>`;
+        }
+        html += "</tr></thead><tbody>";
+
+        for (const row of filtered) {
+          html += "<tr>";
+          for (const col of cols) {
+            const val = row[col];
+            if (val === null || val === undefined) {
+              html += `<td style="color:#666">NULL</td>`;
+            } else if (typeof val === "object") {
+              html += `<td><div class="cell-json">${escapeHtml(
+                JSON.stringify(val, null, 2)
+              )}</div></td>`;
+            } else {
+              html += `<td>${escapeHtml(val)}</td>`;
+            }
+          }
+          html += "</tr>";
+        }
+        html += "</tbody></table>";
+        contentAreaEl.innerHTML = html;
+      }
+
+      async function loadTable(t) {
+        currentTableNameEl.textContent = `public.${t.name}`;
+        const directUrl = `${SUPABASE_URL}/rest/v1/${t.name}?select=${encodeURIComponent(
+          t.select
+        )}&apikey=${SUPABASE_KEY}`;
+        rawRestLinkEl.href = directUrl;
+        contentAreaEl.innerHTML = `<div class="status-msg">Loading <code>public.${t.name}</code> from Supabase...</div>`;
+
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/${t.name}?select=${encodeURIComponent(t.select)}`, {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          });
+          const data = await res.json();
+          currentRows = Array.isArray(data) ? data : [];
+          const cntEl = document.getElementById(`cnt-${t.name}`);
+          if (cntEl) cntEl.textContent = currentRows.length;
+          renderContent();
+        } catch (err) {
+          contentAreaEl.innerHTML = `<div class="status-msg">Error loading table: ${escapeHtml(
+            err.message
+          )}</div>`;
+        }
+      }
+
+      async function loadAllCounts() {
+        for (const t of TABLES) {
+          fetch(`${SUPABASE_URL}/rest/v1/${t.name}?select=${encodeURIComponent(t.select)}`, {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          })
+            .then((r) => r.json())
+            .then((d) => {
+              const cntEl = document.getElementById(`cnt-${t.name}`);
+              if (cntEl && Array.isArray(d)) cntEl.textContent = d.length;
+            })
+            .catch(() => {});
+        }
+      }
+
+      filterInputEl.addEventListener("input", renderContent);
+      toggleViewBtnEl.addEventListener("click", () => {
+        viewMode = viewMode === "table" ? "json" : "table";
+        toggleViewBtnEl.textContent =
+          viewMode === "table" ? "Switch to Raw JSON" : "Switch to Table View";
+        renderContent();
+      });
+      refreshBtnEl.addEventListener("click", () => loadTable(activeTable));
+
+      const urlTable = new URLSearchParams(window.location.search).get("table");
+      if (urlTable) {
+        const found = TABLES.find((t) => t.name === urlTable);
+        if (found) activeTable = found;
+      }
+
+      renderSidebar();
+      loadTable(activeTable);
+      loadAllCounts();
+    </script>
+  </body>
+</html>

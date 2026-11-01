@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+Al-Warda/node_modules/
+
+# Build outputs
+Al-Warda/dist/
+dist/
+.vite/
+.cache/
+
+# Environment variables and secrets
+.env
+.env.*
+Al-Warda/.env
+Al-Warda/.env.*
+!.env.example
+!Al-Warda/.env.example
+
+# Temporary test files in root
+/*.png
+/*.jpg
+/*.jpeg
+
+# Logs
+logs/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

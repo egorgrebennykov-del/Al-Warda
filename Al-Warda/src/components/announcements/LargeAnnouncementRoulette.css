@@ -1,0 +1,121 @@
+.litera-poster-roulette-container {
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto 2.5rem auto;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.16);
+  background: var(--container-color, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.litera-poster-slide-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 21 / 8;
+  max-height: 330px;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f172a;
+}
+
+.litera-poster-link {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.litera-poster-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+/* Prev / Next Buttons */
+.litera-poster-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 5;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.litera-poster-btn:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.litera-poster-btn--prev {
+  left: 12px;
+}
+
+.litera-poster-btn--next {
+  right: 12px;
+}
+
+/* Dots */
+.litera-poster-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.litera-poster-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    width 0.2s,
+    background-color 0.2s;
+}
+
+.litera-poster-dot--active {
+  width: 20px;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+@media screen and (max-width: 768px) {
+  .litera-poster-slide-wrapper {
+    aspect-ratio: 16 / 9;
+    max-height: 220px;
+  }
+
+  .litera-poster-btn {
+    display: none !important;
+  }
+}

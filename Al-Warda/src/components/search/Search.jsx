@@ -1,0 +1,298 @@
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
+import { useLanguage } from "../../context/languageContext";
+import { getPerfumes } from "../../../utils/perfumes";
+import { addToCart } from "../../../utils/cart";
+import "./Search.css";
+
+const QUICK_TAGS = [
+  { label: "Lattafa", query: "Lattafa" },
+  { label: "Armaf", query: "Armaf" },
+  { label: "Afnan", query: "Afnan" },
+  { label: "Al Haramain", query: "Al Haramain" },
+  { label: "Amouage", query: "Amouage" },
+  { label: "Arabian Oud", query: "Arabian Oud" },
+  { label: "Ajmal", query: "Ajmal" },
+  { label: "Ard Al Zaafaran", query: "Ard Al Zaafaran" },
+  { label: "Rasasi", query: "Rasasi" },
+  { label: "Swiss Arabian", query: "Swiss Arabian" },
+  { label: "Maison Alhambra", query: "Maison Alhambra" },
+  { label: "French Avenue", query: "French Avenue" },
+  { label: "Khadlaj", query: "Khadlaj" },
+  { label: "Уд / Oud", query: "oud" },
+  { label: "Амбра / Amber", query: "amber" },
+  { label: "Мускус / Musk", query: "musk" },
+  { label: "Дропшиппинг", query: "dropship" },
+];
+
+export default function Search({ show, onClose }) {
+  const { t, language } = useLanguage();
+  const [query, setQuery] = useState("");
+  const [allPerfumes, setAllPerfumes] = useState([]);
+  const [matchingPerfumes, setMatchingPerfumes] = useState([]);
+  const [addedIds, setAddedIds] = useState({});
+  const inputRef = useRef(null);
+  const navigate = useNavigate();
+  const isRu = language !== "en";
+
+  useEffect(() => {
+    let active = true;
+    getPerfumes()
+      .then((data) => {
+        if (active && Array.isArray(data)) {
+          setAllPerfumes(data);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not prefetch perfumes for search:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (show) {
+      setTimeout(() => inputRef.current?.focus(), 150);
+    } else {
+      setQuery("");
+    }
+  }, [show]);
+
+  useEffect(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      // When query is empty, show top bestsellers / popular perfumes in grid
+      const suggested = allPerfumes
+        .filter((p) => p.isBestSeller || p.isFeatured)
+        .slice(0, 8);
+      setMatchingPerfumes(suggested.length > 0 ? suggested : allPerfumes.slice(0, 8));
+      return;
+    }
+
+    const filtered = allPerfumes.filter((p) => {
+      if (q === "dropship") return p.isDropship;
+      const name = (p.name || "").toLowerCase();
+      const brand = (p.brand || "").toLowerCase();
+      const cat = (p.category || "").toLowerCase();
+      const notes = (p.notesSummary || "").toLowerCase();
+      const desc = (p.description || "").toLowerCase();
+
+      return (
+        name.includes(q) ||
+        brand.includes(q) ||
+        cat.includes(q) ||
+        notes.includes(q) ||
+        desc.includes(q) ||
+        (p.topNotes && p.topNotes.some((n) => n.toLowerCase().includes(q))) ||
+        (p.heartNotes && p.heartNotes.some((n) => n.toLowerCase().includes(q))) ||
+        (p.baseNotes && p.baseNotes.some((n) => n.toLowerCase().includes(q)))
+      );
+    });
+
+    setMatchingPerfumes(filtered);
+  }, [query, allPerfumes]);
+
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    const text = query.trim();
+    if (!text) return;
+
+    navigate(`/search?q=${encodeURIComponent(text)}`);
+    onClose();
+  };
+
+  const handleSelectPerfume = (perfumeId) => {
+    navigate(`/book/${perfumeId}`);
+    onClose();
+  };
+
+  const handleTagClick = (tag) => {
+    setQuery(tag);
+    inputRef.current?.focus();
+  };
+
+  const handleCardMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rotateX = -(y / (rect.height / 2)) * 6.5;
+    const rotateY = (x / (rect.width / 2)) * 6.5;
+    e.currentTarget.style.setProperty("--tilt-x", `${rotateX.toFixed(2)}deg`);
+    e.currentTarget.style.setProperty("--tilt-y", `${rotateY.toFixed(2)}deg`);
+  };
+
+  const handleCardMouseLeave = (e) => {
+    e.currentTarget.style.setProperty("--tilt-x", "0deg");
+    e.currentTarget.style.setProperty("--tilt-y", "0deg");
+  };
+
+  const handleAddToCart = async (perfume, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      await addToCart(perfume, undefined, 1);
+      setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
+      setTimeout(() => {
+        setAddedIds((prev) => ({ ...prev, [perfume.id]: false }));
+      }, 2000);
+    } catch (err) {
+      console.warn("Cart error:", err);
+    }
+  };
+
+  return (
+    <div className={`search ${show ? "show-search" : ""}`} id="search-content">
+      <div className="search__container">
+        {/* Search Header Form */}
+        <form className="search__form" onSubmit={handleSubmit}>
+          <i className="ri-search-line search__icon" />
+          <input
+            ref={inputRef}
+            type="search"
+            placeholder={isRu ? "Поиск арабских духов, брендов (Lattafa, Armaf...), нот..." : "Search Arabian perfumes, brands, notes..."}
+            className="search__input"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="search__clear-btn"
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </form>
+
+        {/* Quick Filter Tag Chips */}
+        <div className="search__quick-tags">
+          {QUICK_TAGS.map((tag) => (
+            <button
+              key={tag.query}
+              type="button"
+              className={`search__tag-chip ${query.toLowerCase() === tag.query.toLowerCase() ? "active" : ""}`}
+              onClick={() => handleTagClick(tag.query)}
+            >
+              {tag.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Live Search Results Header */}
+        <div className="search__results-header">
+          <span>
+            {query.trim()
+              ? `${isRu ? "Найдено арабских ароматов:" : "Arabian fragrances found:"} ${matchingPerfumes.length}`
+              : isRu
+                ? "Популярные арабские ароматы"
+                : "Popular Arabian Fragrances"}
+          </span>
+          {query.trim() && matchingPerfumes.length > 0 && (
+            <span
+              className="search__view-all-link"
+              onClick={handleSubmit}
+            >
+              {isRu ? "Открыть в каталоге ↵" : "Open in catalog ↵"}
+            </span>
+          )}
+        </div>
+
+        {/* Perfume Grid (Без фона) */}
+        {matchingPerfumes.length === 0 ? (
+          <div className="search__no-results">
+            <i className="ri-search-eye-line search__no-results-icon" />
+            <p>{isRu ? "По вашему запросу ничего не найдено" : "No fragrances found"}</p>
+            <div className="search__no-results-hint">
+              {isRu ? "Попробуйте выбрать один из популярных арабских брендов выше." : "Try choosing one of the popular Arabian brands above."}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="search__grid">
+              {matchingPerfumes.slice(0, 8).map((p) => {
+                const isAdded = Boolean(addedIds[p.id]);
+                return (
+                  <div
+                    key={p.id}
+                    className="search__card"
+                    onClick={() => handleSelectPerfume(p.id)}
+                    onMouseMove={handleCardMouseMove}
+                    onMouseLeave={handleCardMouseLeave}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p.id)}
+                  >
+                    {/* Dropship Badge */}
+                    {p.isDropship && (
+                      <span className="search__card-badge">
+                        {isRu ? "🚀 Дропшиппинг 4–7 дн." : "🚀 Dropship 4–7d"}
+                      </span>
+                    )}
+
+                    {/* Perfume Bottle Image (Без фона + эффект как у категорий) */}
+                    <div className="search__card-img-wrap">
+                      <div className="search__card-aura" />
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="search__card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = "/assets/perfumes/hero-perfume.png";
+                        }}
+                      />
+                      <div className="search__card-sheen" />
+                    </div>
+
+                    {/* Perfume Info */}
+                    <div className="search__card-body">
+                      <span className="search__card-brand">{p.brand || "Al-Warda"}</span>
+                      <h4 className="search__card-title">{p.name}</h4>
+                      <p className="search__card-notes">{p.notesSummary}</p>
+                      <div className="search__card-price">€{p.price}</div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      type="button"
+                      className={`search__card-btn ${isAdded ? "search__card-btn--added" : ""}`}
+                      onClick={(e) => handleAddToCart(p, e)}
+                    >
+                      {isAdded ? (isRu ? "✓ ДОБАВЛЕНО" : "✓ ADDED") : (isRu ? "В КОРЗИНУ" : "ADD TO CART")}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {matchingPerfumes.length > 8 && (
+              <div className="search__view-all-row">
+                <button
+                  type="button"
+                  className="search__view-all-btn"
+                  onClick={handleSubmit}
+                >
+                  <span>{isRu ? "Смотреть все результаты" : "View all results"} ({matchingPerfumes.length})</span>
+                  <i className="ri-arrow-right-line" />
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <i
+        className="ri-close-line search__close"
+        id="search-close"
+        onClick={onClose}
+        aria-label="Close search"
+      />
+    </div>
+  );
+}
