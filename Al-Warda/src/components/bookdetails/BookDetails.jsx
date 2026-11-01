@@ -109,7 +109,9 @@ export default function BookDetails() {
           {/* INFO COLUMN */}
           <div className="warda-details-info">
             <div className="warda-details-tag">
-              <span className="warda-tag-category">{perfume.category?.toUpperCase()}</span>
+              <span className="warda-tag-category">
+                {language === "ru" ? (perfume.categoryRu || perfume.categoryName || perfume.category?.toUpperCase()) : (perfume.categoryEn || perfume.category?.toUpperCase())}
+              </span>
               <span className="warda-tag-badge">{perfume.concentration}</span>
             </div>
 
@@ -133,7 +135,9 @@ export default function BookDetails() {
               </span>
             </div>
 
-            <p className="warda-details-desc">{perfume.description}</p>
+            <p className="warda-details-desc">
+              {language === "ru" ? (perfume.descriptionRu || perfume.description) : (perfume.descriptionEn || perfume.description)}
+            </p>
 
             {/* OLFACTORY PYRAMID */}
             <div className="warda-pyramid">
@@ -144,7 +148,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Верхние ноты:" : "Top Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {perfume.topNotes?.map((n) => (
+                    {(language === "ru" ? (perfume.topNotesRu || perfume.topNotes) : (perfume.topNotesEn || perfume.topNotes))?.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>
@@ -153,7 +157,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Ноты сердца:" : "Heart Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {perfume.heartNotes?.map((n) => (
+                    {(language === "ru" ? (perfume.heartNotesRu || perfume.heartNotes) : (perfume.heartNotesEn || perfume.heartNotes))?.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>
@@ -162,7 +166,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Базовые ноты:" : "Base Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {perfume.baseNotes?.map((n) => (
+                    {(language === "ru" ? (perfume.baseNotesRu || perfume.baseNotes) : (perfume.baseNotesEn || perfume.baseNotes))?.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>
@@ -178,11 +182,11 @@ export default function BookDetails() {
               </div>
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{language === "ru" ? "Пол:" : "Gender:"}</span>
-                <span className="warda-spec-val">{perfume.gender}</span>
+                <span className="warda-spec-val">{language === "ru" ? (perfume.genderRu || perfume.gender) : (perfume.genderEn || perfume.gender)}</span>
               </div>
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{language === "ru" ? "Стойкость:" : "Longevity:"}</span>
-                <span className="warda-spec-val">12+ {language === "ru" ? "часов" : "hours"}</span>
+                <span className="warda-spec-val">{language === "ru" ? (perfume.longevityRu || perfume.longevity) : (perfume.longevityEn || perfume.longevity)}</span>
               </div>
             </div>
 

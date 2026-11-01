@@ -12,6 +12,23 @@ const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 
 let memoryPerfumesCache = null;
 
+export function slugifyPerfumeName(name) {
+  if (!name) return "perfume";
+  return String(name)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function getPerfumeUrl(perfume) {
+  if (!perfume) return "/featured";
+  const slug = slugifyPerfumeName(perfume.name || perfume.title);
+  const id = perfume.id || "1";
+  return `/perfume/${slug}-${id}`;
+}
+
 export async function fetchPerfumesFromSupabase() {
   try {
     const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
@@ -36,41 +53,70 @@ export async function fetchPerfumesFromSupabase() {
           else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
           else if (catLower.includes("пряные") || catLower.includes("специи")) catSlug = "spicy";
 
-          const topNotes = info.notes?.top || (Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []));
-          const heartNotes = info.notes?.heart || (Array.isArray(r.heart_notes) ? r.heart_notes : (r.heart_notes ? r.heart_notes.split(",") : []));
-          const baseNotes = info.notes?.base || (Array.isArray(r.base_notes) ? r.base_notes : (r.base_notes ? r.base_notes.split(",") : []));
+          const notesObj = info.notes || {};
+          const topNotesRu = notesObj.ru?.top || notesObj.top || (Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []));
+          const heartNotesRu = notesObj.ru?.heart || notesObj.heart || (Array.isArray(r.heart_notes) ? r.heart_notes : (r.heart_notes ? r.heart_notes.split(",") : []));
+          const baseNotesRu = notesObj.ru?.base || notesObj.base || (Array.isArray(r.base_notes) ? r.base_notes : (r.base_notes ? r.base_notes.split(",") : []));
 
-          return {
+          const topNotesEn = notesObj.en?.top || topNotesRu;
+          const heartNotesEn = notesObj.en?.heart || heartNotesRu;
+          const baseNotesEn = notesObj.en?.base || baseNotesRu;
+
+          const descRu = info.descriptionRu || r.description || "Роскошный восточный аромат Al-Warda.";
+          const descEn = info.descriptionEn || "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
+
+          const perfumeObj = {
             id: String(r.id),
             slug: `stock-${r.id}`,
             name: r.name || r.title,
             title: r.name || r.title,
             brand: r.brand || "Al-Warda",
             category: catSlug,
+            categoryRu: info.category || "Восточные",
+            categoryEn: info.categoryEn || "Oriental",
             categoryName: info.category || "Восточные",
             notesSummary: info.notesSummary || r.notes_summary || r.brand || "Шлейфовый восточный аромат",
+            notesSummaryRu: info.notesSummary || r.notes_summary || r.brand || "Шлейфовый восточный аромат",
+            notesSummaryEn: info.notesSummaryEn || info.notesSummary || r.brand || "Distinctive Oriental Sillage",
             price: Number(r.price) || 29.99,
             currency: r.currency || "EUR",
             priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
             volume: info.volume || r.volume || "100ml / 3.4 FL.OZ.",
             concentration: info.concentration || r.concentration || "Eau De Parfum",
             gender: info.gender || r.gender || "Унисекс",
+            genderRu: info.gender || r.gender || "Унисекс",
+            genderEn: info.genderEn || (info.gender === "Женский" ? "Women" : (info.gender === "Мужской" ? "Men" : "Unisex")),
             longevity: info.longevity || "8–12 часов",
+            longevityRu: info.longevity || "8–12 часов",
+            longevityEn: info.longevityEn || "8–12 hours",
             sillage: info.sillage || "Выразительный, шлейфовый",
+            sillageRu: info.sillage || "Выразительный, шлейфовый",
+            sillageEn: info.sillageEn || "Noticeable, alluring sillage",
             rating: 4.9,
             reviewsCount: 35 + ((r.id * 7) % 50),
             isBestSeller: (r.id % 7 === 0),
             isFeatured: (r.id % 5 === 0),
             inStock: info.inStock !== false,
             deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
+            deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
             image: r.image || "/assets/img/perfumes/hero-perfume.png",
             fullCardImage: r.image || "/assets/img/perfumes/hero-perfume.png",
-            topNotes,
-            heartNotes,
-            baseNotes,
-            description: r.description || "Al-Warda luxury oriental fragrance crafted from the rarest Arabian essences.",
+            topNotes: topNotesRu,
+            heartNotes: heartNotesRu,
+            baseNotes: baseNotesRu,
+            topNotesRu,
+            heartNotesRu,
+            baseNotesRu,
+            topNotesEn,
+            heartNotesEn,
+            baseNotesEn,
+            description: descRu,
+            descriptionRu: descRu,
+            descriptionEn: descEn,
             info,
           };
+          perfumeObj.url = getPerfumeUrl(perfumeObj);
+          return perfumeObj;
         });
         memoryPerfumesCache = mapped;
         return mapped;
@@ -168,17 +214,41 @@ export function getCachedPerfumes() {
 }
 
 export async function getPerfumeById(id) {
+  if (!id) return null;
   const clean = String(id).toLowerCase().trim();
   const all = await getPerfumes();
+
+  // 1. Exact ID or slug match
   let found = all.find(
     (p) =>
       p.id?.toLowerCase() === clean ||
-      p.slug?.toLowerCase() === clean ||
-      p.name?.toLowerCase().replace(/[^a-z0-9]/g, "") === clean.replace(/[^a-z0-9]/g, "")
+      p.slug?.toLowerCase() === clean
   );
-
   if (found) return found;
 
+  // 2. Extract trailing ID from slug (e.g. "lattafa-yara-100ml-edp-3840" -> "3840" or "dropship-6291108730515")
+  const trailingDropship = clean.match(/(dropship-\d+)$/i);
+  if (trailingDropship) {
+    found = all.find((p) => p.id?.toLowerCase() === trailingDropship[1]);
+    if (found) return found;
+  }
+  const trailingNum = clean.match(/-(\d+)$/);
+  if (trailingNum) {
+    found = all.find((p) => p.id === trailingNum[1]);
+    if (found) return found;
+  }
+
+  // 3. Match by name or slug match
+  const cleanLetters = clean.replace(/[^a-z0-9]/g, "");
+  found = all.find((p) => {
+    const pSlug = slugifyPerfumeName(p.name || p.title);
+    if (clean === pSlug || clean.startsWith(pSlug)) return true;
+    const pLetters = (p.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    return pLetters === cleanLetters || cleanLetters.includes(pLetters) || pLetters.includes(cleanLetters);
+  });
+  if (found) return found;
+
+  // 4. Fallback search in dropship
   if (clean.startsWith("dropship-") || clean.includes("dropship")) {
     const dropshipItems = await fetchDropshipArabianPerfumes();
     found = dropshipItems.find(

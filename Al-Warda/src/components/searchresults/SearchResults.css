@@ -103,8 +103,8 @@
 
 .results__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.75rem;
   margin-top: 2rem;
 }
 
@@ -374,8 +374,8 @@
    ======================================================= */
 .warda-shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.75rem;
   width: 100%;
   margin-top: 1.5rem;
 }

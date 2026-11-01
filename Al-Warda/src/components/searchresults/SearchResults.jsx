@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { getPerfumes } from "../../../utils/perfumes";
+import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
@@ -264,12 +264,12 @@ export default function SearchResults() {
                 <OrnateCard
                   key={perfume.id}
                   className="warda-perfume-card"
-                  onClick={() => navigate(`/book/${perfume.id}`)}
+                  onClick={() => navigate(getPerfumeUrl(perfume))}
                   onMouseMove={handleCardMouseMove}
                   onMouseLeave={handleCardMouseLeave}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && navigate(`/book/${perfume.id}`)}
+                  onKeyDown={(e) => e.key === "Enter" && navigate(getPerfumeUrl(perfume))}
                 >
                   <div className="warda-perfume-card__media">
                     <div className="warda-perfume-card__aura" />

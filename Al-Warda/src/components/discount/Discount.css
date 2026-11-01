@@ -21,8 +21,22 @@
 
 .deals__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.75rem;
+}
+
+@media screen and (max-width: 992px) {
+  .deals__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 580px) {
+  .deals__grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+    margin: 0 auto;
+  }
 }
 
 .deals__card {

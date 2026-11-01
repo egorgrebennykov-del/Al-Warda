@@ -76,10 +76,13 @@ export const PERFUMES = [];
 export function getPerfumeById(id) {
   if (!id) return null;
   const cleanId = String(id).toLowerCase().trim();
+  const trailingNum = cleanId.match(/-(\d+)$/);
   return (
     PERFUMES.find(
       (p) =>
         p.id.toLowerCase() === cleanId ||
+        p.slug?.toLowerCase() === cleanId ||
+        (trailingNum && p.id === trailingNum[1]) ||
         p.name.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanId.replace(/[^a-z0-9]/g, ""),
     ) || null
   );

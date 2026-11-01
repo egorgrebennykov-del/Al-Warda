@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useLanguage } from "../../context/languageContext";
-import { getPerfumes } from "../../../utils/perfumes";
+import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import "./Search.css";
 
@@ -103,8 +103,8 @@ export default function Search({ show, onClose }) {
     onClose();
   };
 
-  const handleSelectPerfume = (perfumeId) => {
-    navigate(`/book/${perfumeId}`);
+  const handleSelectPerfume = (perfume) => {
+    navigate(getPerfumeUrl(perfume));
     onClose();
   };
 
@@ -221,12 +221,12 @@ export default function Search({ show, onClose }) {
                   <div
                     key={p.id}
                     className="search__card"
-                    onClick={() => handleSelectPerfume(p.id)}
+                    onClick={() => handleSelectPerfume(p)}
                     onMouseMove={handleCardMouseMove}
                     onMouseLeave={handleCardMouseLeave}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p.id)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p)}
                   >
                     {/* Dropship Badge */}
                     {p.isDropship && (

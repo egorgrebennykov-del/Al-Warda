@@ -1,4 +1,5 @@
 import { getCookieUser } from "./auth.js";
+import { getPerfumeUrl } from "./perfumes.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -72,7 +73,7 @@ export async function getCartItemCount(userId = getCookieUser()?.id) {
 export async function addToCart(perfume, userId = getCookieUser()?.id, quantityToAdd = 1) {
   const qty = Math.max(1, Number(quantityToAdd) || 1);
   const price = Number(perfume.price) || 45;
-  const link = perfume.link || `/perfume/${perfume.id || encodeURIComponent(perfume.name || perfume.title)}`;
+  const link = perfume.url || perfume.link || getPerfumeUrl(perfume);
   const title = perfume.name || perfume.title || "Al-Warda Perfume";
   const image = perfume.image || perfume.fullCardImage || "/assets/img/perfumes/hero-perfume.png";
   const perfumeId = String(perfume.id || perfume.slug || title);

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Al-Warda Parfumes - Automatic Stocks & Supabase AI Sync Script
+ * Al-Warda Parfumes - Automatic Stocks & Supabase Bilingual AI Sync Script
  * 
  * Synchronizes Arabian perfume catalog into Supabase 'stocks' table:
- * - Generates / enriches category, gender, longevity, sillage, fragrance pyramid notes, and Russian descriptions.
+ * - Generates bilingual metadata (Russian & English):
+ *   description, gender, category, longevity, sillage, olfactory notes.
  * - Stores structured metadata in 'info' JSON column.
- * - Intelligently updates existing records and inserts new ones.
- * - Verifies transparent cutout PNG images for all perfumes.
+ * - Always aligns 4 columns layout, multi-selection, and bilingual display.
  */
 
 import fs from "node:fs";
@@ -19,7 +19,6 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 const projectRoot = path.resolve(rootDir, "..");
 
-// Load .env if present
 function loadEnv() {
   const envPaths = [
     path.resolve(rootDir, ".env"),
@@ -50,32 +49,29 @@ const STOCKS_API_URL = `${SUPABASE_URL}/rest/v1/stocks`;
 const CATALOG_PATH = path.resolve(rootDir, "server", "data", "cachedArabianPerfumes.json");
 const ENRICHED_CACHE_PATH = path.resolve(rootDir, "server", "data", "enrichedStocks.json");
 
-// -------------------------------------------------------------
-// Perfume Fragrance Knowledge Base for Accurate Categorization
-// -------------------------------------------------------------
 const BRAND_ORIGINS = {
-  Lattafa: "ОАЭ (Дубай)",
-  Armaf: "ОАЭ (Дубай)",
-  "Al Haramain": "ОАЭ (Дубай)",
-  "Maison Alhambra": "ОАЭ (Дубай)",
-  Khadlaj: "ОАЭ (Дубай)",
-  Rasasi: "ОАЭ (Дубай)",
-  "Paris Corner": "ОАЭ (Дубай)",
-  Afnan: "ОАЭ (Дубай)",
-  "Swiss Arabian": "ОАЭ (Дубай)",
-  Riiffs: "ОАЭ (Дубай)",
-  Zimaya: "ОАЭ (Дубай)",
-  "Gulf Orchid": "ОАЭ (Дубай)",
-  Rayhaan: "ОАЭ (Дубай)",
-  Orientica: "ОАЭ (Дубай)",
-  "Al Rehab": "Саудовская Аравия",
-  Nabeel: "ОАЭ (Дубай)",
-  "Fragrance World": "ОАЭ (Дубай)",
-  Amouage: "Оман",
-  "Arabian Oud": "Саудовская Аравия",
-  Asdaaf: "ОАЭ (Дубай)",
-  "Ayat Perfumes": "ОАЭ (Дубай)",
-  "French Avenue": "ОАЭ (Дубай)",
+  Lattafa: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Armaf: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Al Haramain": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Maison Alhambra": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Khadlaj: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Rasasi: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Paris Corner": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Afnan: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Swiss Arabian": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Riiffs: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Zimaya: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Gulf Orchid": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Rayhaan: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Orientica: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Al Rehab": { ru: "Саудовская Аравия", en: "Saudi Arabia" },
+  Nabeel: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Fragrance World": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  Amouage: { ru: "Оман", en: "Oman" },
+  "Arabian Oud": { ru: "Саудовская Аравия", en: "Saudi Arabia" },
+  Asdaaf: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "Ayat Perfumes": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
+  "French Avenue": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
 };
 
 const FEMININE_KEYWORDS = [
@@ -84,28 +80,29 @@ const FEMININE_KEYWORDS = [
   "flora", "floral", "bella", "lady", "she", "sublime", "candy", "sweet"
 ];
 
-const MASCULINE_KEYWORDS = [
-  "homme", "man", "men", "pour homme", "king", "asad", "khamrah qahwa",
-  "fakhar black", "club de nuit intense man", "hunter", "voyage", "legend",
-  "sport", "blue", "bleu", "noir", "black", "leather", "vetiver", "stallion", "dareej"
-];
-
 function detectGender(name, brand) {
   const lower = `${name} ${brand}`.toLowerCase();
   for (const kw of FEMININE_KEYWORDS) {
-    if (lower.includes(kw)) return "Женский";
+    if (lower.includes(kw)) {
+      return { ru: "Женский", en: "Women" };
+    }
   }
-  for (const kw of MASCULINE_KEYWORDS) {
-    if (lower.includes(kw)) return "Мужской";
+
+  const isMaleOnly = (lower.includes("homme") && !lower.includes("femme")) ||
+    lower.includes("pour homme") ||
+    (lower.includes("men") && !lower.includes("women") && !lower.includes("woman")) ||
+    lower.includes("asad") || lower.includes("fakhar black") || lower.includes("hunter");
+
+  if (isMaleOnly) {
+    return { ru: "Мужской", en: "Men" };
   }
-  return "Унисекс";
+
+  return { ru: "Унисекс", en: "Unisex" };
 }
 
 function detectCategoryAndNotes(name, brand, gender) {
   const lower = `${name} ${brand}`.toLowerCase();
-  const isMaleOnly = (lower.includes("homme") && !lower.includes("femme")) ||
-    lower.includes("pour homme") ||
-    (lower.includes("men") && !lower.includes("women") && !lower.includes("woman"));
+  const isMaleOnly = (gender.ru === "Мужской");
 
   // 1. Fresh / Aquatic
   if (
@@ -119,16 +116,27 @@ function detectCategoryAndNotes(name, brand, gender) {
     lower.includes("crystal") || lower.includes("pure white") || lower.includes("silver")
   ) {
     return {
-      category: "Свежие акватические",
+      categoryRu: "Свежие акватические",
+      categoryEn: "Fresh Aquatic",
       categorySlug: "fresh",
-      longevity: "8–11 часов (стойкая свежесть)",
-      sillage: "Освежающий, диффузный шлейф",
+      longevityRu: "8–11 часов (стойкая свежесть)",
+      longevityEn: "8–11 hours (Long-lasting Freshness)",
+      sillageRu: "Освежающий, диффузный шлейф",
+      sillageEn: "Refreshing, diffusive sillage",
       notes: {
-        top: ["Морской бриз", "Калабрийский бергамот", "Кубики льда"],
-        heart: ["Мята", "Лаванда", "Морская соль"],
-        base: ["Амброксан", "Минеральный кедр", "Белый мускус"]
+        ru: {
+          top: ["Морской бриз", "Калабрийский бергамот", "Кубики льда"],
+          heart: ["Мята", "Лаванда", "Морская соль"],
+          base: ["Амброксан", "Минеральный кедр", "Белый мускус"]
+        },
+        en: {
+          top: ["Sea Breeze", "Calabrian Bergamot", "Ice Cubes"],
+          heart: ["Peppermint", "Lavender", "Sea Salt"],
+          base: ["Ambroxan", "Mineral Cedar", "White Musk"]
+        }
       },
-      notesSummary: "Морской бриз · Бергамот · Мята · Амброксан"
+      notesSummaryRu: "Морской бриз · Бергамот · Мята · Амброксан",
+      notesSummaryEn: "Sea Breeze · Bergamot · Mint · Ambroxan"
     };
   }
 
@@ -146,95 +154,161 @@ function detectCategoryAndNotes(name, brand, gender) {
     (isMaleOnly && (lower.includes("elixir") || lower.includes("classic") || lower.includes("barber")))
   ) {
     return {
-      category: "Фужерные ароматические",
+      categoryRu: "Фужерные ароматические",
+      categoryEn: "Aromatic Fougère",
       categorySlug: "fougere",
-      longevity: "10–14 часов (очень высокая)",
-      sillage: "Аристократичный, выразительный шлейф",
+      longevityRu: "10–14 часов (очень высокая)",
+      longevityEn: "10–14 hours (Very Long Lasting)",
+      sillageRu: "Аристократичный, выразительный шлейф",
+      sillageEn: "Noble, distinctive sillage",
       notes: {
-        top: ["Зеленое яблоко", "Французская лаванда", "Имбирь"],
-        heart: ["Мускатный шалфей", "Бурбонская герань", "Ягоды можжевельника"],
-        base: ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"]
+        ru: {
+          top: ["Зеленое яблоко", "Французская лаванда", "Имбирь"],
+          heart: ["Мускатный шалфей", "Бурбонская герань", "Ягоды можжевельника"],
+          base: ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"]
+        },
+        en: {
+          top: ["Green Apple", "French Lavender", "Fresh Ginger"],
+          heart: ["Clary Sage", "Bourbon Geranium", "Juniper Berries"],
+          base: ["Oakmoss", "Haitian Vetiver", "Tonka Bean"]
+        }
       },
-      notesSummary: "Лаванда · Мускатный шалфей · Ветивер · Дубовый мох"
+      notesSummaryRu: "Лаванда · Мускатный шалфей · Ветивер · Дубовый мох",
+      notesSummaryEn: "Lavender · Clary Sage · Vetiver · Oakmoss"
     };
   }
 
   // 3. Gourmand
   if (lower.includes("yara") || lower.includes("marshmallow") || lower.includes("vanilla") || lower.includes("caramel") || lower.includes("choco") || lower.includes("nebras") || lower.includes("khamrah") || lower.includes("eclaire") || lower.includes("tonka") || lower.includes("praline") || lower.includes("honey") || lower.includes("sugar") || lower.includes("sweet") || lower.includes("candy")) {
     return {
-      category: "Восточные гурманские",
+      categoryRu: "Восточные гурманские",
+      categoryEn: "Oriental Gourmand",
       categorySlug: "gourmand",
-      longevity: "10–14 часов (очень высокая)",
-      sillage: "Заметный, манящий шлейф (до 2 метров)",
+      longevityRu: "10–14 часов (очень высокая)",
+      longevityEn: "10–14 hours (Very Long Lasting)",
+      sillageRu: "Заметный, манящий шлейф (до 2 метров)",
+      sillageEn: "Noticeable, alluring sillage (up to 2m)",
       notes: {
-        top: ["Тропические фрукты", "Гелиотроп", "Орхидея"],
-        heart: ["Взбитые сливки", "Гурманский аккорд", "Карамель"],
-        base: ["Бурбонская ваниль", "Сандал", "Белый мускус"]
+        ru: {
+          top: ["Тропические фрукты", "Гелиотроп", "Орхидея"],
+          heart: ["Взбитые сливки", "Гурманский аккорд", "Карамель"],
+          base: ["Бурбонская ваниль", "Сандал", "Белый мускус"]
+        },
+        en: {
+          top: ["Tropical Fruits", "Heliotrope", "Orchid"],
+          heart: ["Whipped Cream", "Gourmand Praline", "Caramel"],
+          base: ["Bourbon Vanilla", "Sandalwood", "White Musk"]
+        }
       },
-      notesSummary: "Ваниль · Карамель · Взбитые сливки · Сандал"
+      notesSummaryRu: "Ваниль · Карамель · Взбитые сливки · Сандал",
+      notesSummaryEn: "Vanilla · Caramel · Whipped Cream · Sandalwood"
     };
   }
 
   // 4. Oud & Wood
   if (lower.includes("oud") || lower.includes("wood") || lower.includes("agar") || lower.includes("bade'e") || lower.includes("ameer") || lower.includes("interlude") || lower.includes("leather") || lower.includes("cuir") || lower.includes("cedar") || lower.includes("sandalwood") || lower.includes("smoke") || lower.includes("incense")) {
     return {
-      category: "Восточные древесные",
+      categoryRu: "Восточные древесные",
+      categoryEn: "Oriental Woody",
       categorySlug: "oud",
-      longevity: "12–16 часов (максимальная)",
-      sillage: "Мощный, благородный шлейф",
+      longevityRu: "12–16 часов (максимальная)",
+      longevityEn: "12–16 hours (Maximum Longevity)",
+      sillageRu: "Мощный, благородный шлейф",
+      sillageEn: "Powerful, majestic sillage",
       notes: {
-        top: ["Камбоджийский уд", "Шафран", "Мускатный орех"],
-        heart: ["Королевская роза", "Пачули", "Дымная смола"],
-        base: ["Агаровое дерево", "Амбра", "Атласский кедр"]
+        ru: {
+          top: ["Камбоджийский уд", "Шафран", "Мускатный орех"],
+          heart: ["Королевская роза", "Пачули", "Дымная смола"],
+          base: ["Агаровое дерево", "Амбра", "Атласский кедр"]
+        },
+        en: {
+          top: ["Cambodian Oud", "Royal Saffron", "Nutmeg"],
+          heart: ["Royal Taif Rose", "Patchouli", "Smoky Resins"],
+          base: ["Agarwood", "Amber Crystals", "Atlas Cedar"]
+        }
       },
-      notesSummary: "Уд · Шафран · Пачули · Смолистая амбра"
+      notesSummaryRu: "Уд · Шафран · Пачули · Смолистая амбра",
+      notesSummaryEn: "Oud · Saffron · Patchouli · Resinous Amber"
     };
   }
 
   // 5. Citrus
   if (lower.includes("citrus") || lower.includes("bergamot") || lower.includes("lemon") || lower.includes("orange") || lower.includes("mandarin") || lower.includes("grapefruit") || lower.includes("lime") || lower.includes("neroli") || lower.includes("limoni") || lower.includes("soleil") || lower.includes("cologne")) {
     return {
-      category: "Цитрусовые искрящиеся",
+      categoryRu: "Цитрусовые искрящиеся",
+      categoryEn: "Sparkling Citrus",
       categorySlug: "citrus-fresh",
-      longevity: "7–10 часов (стойкая свежесть)",
-      sillage: "Искрящийся, бодрящий шлейф",
+      longevityRu: "7–10 часов (стойкая свежесть)",
+      longevityEn: "7–10 hours (Lasting Freshness)",
+      sillageRu: "Искрящийся, бодрящий шлейф",
+      sillageEn: "Sparkling, uplifting sillage",
       notes: {
-        top: ["Сицилийский лимон", "Красный апельсин", "Бергамот"],
-        heart: ["Нероли", "Цветок апельсина", "Розовый перец"],
-        base: ["Белый кедр", "Амброксан", "Шелковистый мускус"]
+        ru: {
+          top: ["Сицилийский лимон", "Красный апельсин", "Бергамот"],
+          heart: ["Нероли", "Цветок апельсина", "Розовый перец"],
+          base: ["Белый кедр", "Амброксан", "Шелковистый мускус"]
+        },
+        en: {
+          top: ["Sicilian Lemon", "Blood Orange", "Bergamot"],
+          heart: ["Neroli", "Orange Blossom", "Pink Pepper"],
+          base: ["White Cedar", "Ambroxan", "Silky Musk"]
+        }
       },
-      notesSummary: "Красный апельсин · Сицилийский лимон · Нероли · Мускус"
+      notesSummaryRu: "Красный апельсин · Сицилийский лимон · Нероли · Мускус",
+      notesSummaryEn: "Blood Orange · Sicilian Lemon · Neroli · Musk"
     };
   }
 
   // 6. Floral
-  if (lower.includes("rose") || lower.includes("jasmine") || lower.includes("flower") || lower.includes("blossom") || lower.includes("taif") || lower.includes("femme") || lower.includes("flora") || lower.includes("tuberose") || lower.includes("peony") || lower.includes("orchid") || lower.includes("pink") || lower.includes("woman") || lower.includes("women") || lower.includes("pour femme") || lower.includes("lady") || gender === "Женский") {
+  if (lower.includes("rose") || lower.includes("jasmine") || lower.includes("flower") || lower.includes("blossom") || lower.includes("taif") || lower.includes("femme") || lower.includes("flora") || lower.includes("tuberose") || lower.includes("peony") || lower.includes("orchid") || lower.includes("pink") || lower.includes("woman") || lower.includes("women") || lower.includes("pour femme") || lower.includes("lady") || gender.ru === "Женский") {
     return {
-      category: "Цветочные восточные",
+      categoryRu: "Цветочные восточные",
+      categoryEn: "Oriental Floral",
       categorySlug: "floral",
-      longevity: "8–12 часов (высокая)",
-      sillage: "Нежный, пленительный шлейф",
+      longevityRu: "8–12 часов (высокая)",
+      longevityEn: "8–12 hours (High Longevity)",
+      sillageRu: "Нежный, пленительный шлейф",
+      sillageEn: "Delicate, captivating sillage",
       notes: {
-        top: ["Дамасская роза", "Красные ягоды", "Бергамот"],
-        heart: ["Таифская роза", "Жасмин самбак", "Пион"],
-        base: ["Кашемировое дерево", "Серая амбра", "Шелковистый мускус"]
+        ru: {
+          top: ["Дамасская роза", "Красные ягоды", "Бергамот"],
+          heart: ["Таифская роза", "Жасмин самбак", "Пион"],
+          base: ["Кашемировое дерево", "Серая амбра", "Шелковистый мускус"]
+        },
+        en: {
+          top: ["Damask Rose", "Red Berries", "Bergamot"],
+          heart: ["Taif Rose", "Jasmine Sambac", "Peony"],
+          base: ["Cashmere Wood", "Ambergris", "Silk Musk"]
+        }
       },
-      notesSummary: "Таифская роза · Жасмин · Кашемир · Мускус"
+      notesSummaryRu: "Таифская роза · Жасмин · Кашемир · Мускус",
+      notesSummaryEn: "Taif Rose · Jasmine · Cashmere · Musk"
     };
   }
 
   // 7. Spicy (default for rich oriental)
   return {
-    category: "Восточные пряные",
+    categoryRu: "Восточные пряные",
+    categoryEn: "Oriental Spicy",
     categorySlug: "spicy",
-    longevity: "10–14 часов (очень высокая)",
-    sillage: "Заметный, глубокий шлейф",
+    longevityRu: "10–14 часов (очень высокая)",
+    longevityEn: "10–14 hours (Very Long Lasting)",
+    sillageRu: "Заметный, глубокий шлейф",
+    sillageEn: "Deep, distinguished sillage",
     notes: {
-      top: ["Королевский шафран", "Черный перец", "Кардамон"],
-      heart: ["Корица", "Кофейное зерно", "Табак"],
-      base: ["Золотая амбра", "Бобы тонка", "Сандал"]
+      ru: {
+        top: ["Королевский шафран", "Черный перец", "Кардамон"],
+        heart: ["Корица", "Кофейное зерно", "Табак"],
+        base: ["Золотая амбра", "Бобы тонка", "Сандал"]
+      },
+      en: {
+        top: ["Royal Saffron", "Black Pepper", "Cardamom"],
+        heart: ["Cinnamon Bark", "Roasted Coffee Bean", "Tobacco"],
+        base: ["Golden Amber", "Tonka Bean", "Sandalwood"]
+      }
     },
-    notesSummary: "Шафран · Черный перец · Кофе · Золотая амбра"
+    notesSummaryRu: "Шафран · Черный перец · Кофе · Золотая амбра",
+    notesSummaryEn: "Saffron · Black Pepper · Coffee · Golden Amber"
   };
 }
 
@@ -260,9 +334,13 @@ function generateRussianDescription(name, brand, category, gender, notesSummary,
     `Поставляется напрямую со складов сертифицированных дистрибьюторов в ОАЭ и Европе в оригинальном флаконе.`;
 }
 
-// -------------------------------------------------------------
-// Fetch All Existing Stocks from Supabase
-// -------------------------------------------------------------
+function generateEnglishDescription(name, brand, categoryEn, genderEn, notesSummaryEn, longevityEn) {
+  return `${brand} ${name} is an authentic luxury Arabian fragrance (${categoryEn.toLowerCase()}) crafted for connoisseurs of refined oriental perfumery. ` +
+    `The olfactory composition opens with a distinguished bouquet of ${notesSummaryEn}. ` +
+    `Offers remarkable longevity (${longevityEn}) with an opulent, memorable sillage. Designed for ${genderEn.toLowerCase()}. ` +
+    `Delivered directly from certified distribution hubs in the UAE and Europe in pristine factory packaging.`;
+}
+
 async function fetchAllExistingStocks() {
   const map = new Map();
   let offset = 0;
@@ -293,12 +371,9 @@ async function fetchAllExistingStocks() {
   return map;
 }
 
-// -------------------------------------------------------------
-// Main Synchronization Logic
-// -------------------------------------------------------------
 async function main() {
   console.log("=================================================");
-  console.log("🌸 Al-Warda Parfumes - Supabase Stocks Sync");
+  console.log("🌸 Al-Warda Parfumes - Supabase Bilingual Stocks Sync");
   console.log(`⏰ Started at: ${new Date().toISOString()}`);
   console.log(`🔗 Target URL: ${STOCKS_API_URL}`);
   console.log("=================================================");
@@ -326,25 +401,34 @@ async function main() {
     const key = item.id || item.slug || item.name;
     let enriched = enrichedCache[key];
 
-    if (!enriched) {
+    if (!enriched || !enriched.info?.descriptionEn) {
       const gender = detectGender(item.name, item.brand);
       const catNotes = detectCategoryAndNotes(item.name, item.brand, gender);
       const volume = extractVolume(item.name);
       const concentration = extractConcentration(item.name);
-      const origin = BRAND_ORIGINS[item.brand] || "ОАЭ (Дубай)";
-      const season = catNotes.category.includes("свежие")
-        ? "Весна / Лето"
-        : (catNotes.category.includes("гурманские") || catNotes.category.includes("древесные")
-            ? "Осень / Зима / Вечер"
-            : "Всесезонный");
+      const origin = BRAND_ORIGINS[item.brand] || { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" };
+      const season = catNotes.categorySlug === "fresh" || catNotes.categorySlug === "citrus-fresh"
+        ? { ru: "Весна / Лето", en: "Spring / Summer" }
+        : (catNotes.categorySlug === "gourmand" || catNotes.categorySlug === "oud"
+            ? { ru: "Осень / Зима / Вечер", en: "Autumn / Winter / Evening" }
+            : { ru: "Всесезонный", en: "All Seasons" });
 
-      const description = generateRussianDescription(
+      const descriptionRu = generateRussianDescription(
         item.name,
         item.brand,
-        catNotes.category,
-        gender,
-        catNotes.notesSummary,
-        catNotes.longevity
+        catNotes.categoryRu,
+        gender.ru,
+        catNotes.notesSummaryRu,
+        catNotes.longevityRu
+      );
+
+      const descriptionEn = generateEnglishDescription(
+        item.name,
+        item.brand,
+        catNotes.categoryEn,
+        gender.en,
+        catNotes.notesSummaryEn,
+        catNotes.longevityEn
       );
 
       enriched = {
@@ -352,21 +436,32 @@ async function main() {
         brand: item.brand || "Al-Warda",
         price: Number(item.price) || 29.99,
         image: item.image || "/assets/img/perfumes/hero-perfume.png",
-        description,
+        description: descriptionRu,
         info: {
-          category: catNotes.category,
-          gender,
-          longevity: catNotes.longevity,
-          sillage: catNotes.sillage,
+          category: catNotes.categoryRu,
+          categoryEn: catNotes.categoryEn,
+          categorySlug: catNotes.categorySlug,
+          gender: gender.ru,
+          genderEn: gender.en,
+          longevity: catNotes.longevityRu,
+          longevityEn: catNotes.longevityEn,
+          sillage: catNotes.sillageRu,
+          sillageEn: catNotes.sillageEn,
           volume,
           concentration,
-          origin,
-          season,
+          origin: origin.ru,
+          originEn: origin.en,
+          season: season.ru,
+          seasonEn: season.en,
           notes: catNotes.notes,
-          notesSummary: catNotes.notesSummary,
+          notesSummary: catNotes.notesSummaryRu,
+          notesSummaryEn: catNotes.notesSummaryEn,
+          descriptionRu,
+          descriptionEn,
           gtin: item.gtin || "",
           inStock: true,
           deliveryTime: "4–7 дней (прямая поставка из ОАЭ/ЕС)",
+          deliveryTimeEn: "4–7 days (direct dispatch from UAE/EU)",
           updatedAt: new Date().toISOString(),
         },
       };
@@ -386,7 +481,7 @@ async function main() {
   }
 
   fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
-  console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled).`);
+  console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`);
 
   const isRefresh = process.argv.includes("--refresh");
 
@@ -397,7 +492,7 @@ async function main() {
 
   if (isRefresh || existingMap.size === 0) {
     if (existingMap.size > 0) {
-      console.log("🧹 Clearing old records for complete category refresh...");
+      console.log("🧹 Clearing old records for complete bilingual refresh...");
       await fetch(`${STOCKS_API_URL}?id=gt.0`, {
         method: "DELETE",
         headers: {
@@ -407,7 +502,7 @@ async function main() {
       });
     }
 
-    console.log(`\n🚀 Uploading ${enrichedList.length} items with updated categories...`);
+    console.log(`\n🚀 Uploading ${enrichedList.length} bilingual items...`);
     const BATCH_SIZE = 50;
     let inserted = 0;
     for (let i = 0; i < enrichedList.length; i += BATCH_SIZE) {
@@ -432,7 +527,6 @@ async function main() {
     }
     console.log("");
   } else {
-    // Normal incremental sync: only insert new items
     const toInsert = [];
     for (const item of enrichedList) {
       if (!existingMap.has(item.name.trim().toLowerCase())) {
@@ -465,7 +559,7 @@ async function main() {
   }
 
   console.log("\n=================================================");
-  console.log("🎉 Stocks Sync Completed Successfully!");
+  console.log("🎉 Bilingual Stocks Sync Completed Successfully!");
   console.log(`✅ Total active stock items: ${enrichedList.length}`);
   console.log(`⏰ Finished at: ${new Date().toISOString()}`);
   console.log("=================================================");

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { getBestSellerPerfumes, getCategories } from "../../../utils/perfumes";
+import { getBestSellerPerfumes, getCategories, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
@@ -97,8 +97,8 @@ export default function Home() {
     e.currentTarget.style.setProperty("--tilt-y", "0deg");
   };
 
-  const handleProductClick = (perfumeId) => {
-    navigate(`/book/${encodeURIComponent(perfumeId)}`);
+  const handleProductClick = (perfume) => {
+    navigate(getPerfumeUrl(perfume));
   };
 
   return (
@@ -219,10 +219,10 @@ export default function Home() {
               <OrnateCard
                 key={perfume.id}
                 className="warda-perfume-card"
-                onClick={() => handleProductClick(perfume.id)}
+                onClick={() => handleProductClick(perfume)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && handleProductClick(perfume.id)}
+                onKeyDown={(e) => e.key === "Enter" && handleProductClick(perfume)}
               >
                 <div className="warda-perfume-card__media">
                   <img
