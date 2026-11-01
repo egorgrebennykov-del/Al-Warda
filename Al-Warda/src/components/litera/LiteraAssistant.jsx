@@ -5,6 +5,7 @@ import BookImage from "../common/BookImage";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
+import { getPerfumeUrl } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./LiteraAssistant.css";
 
@@ -12,10 +13,10 @@ const STORAGE_KEY = "litera_assistant_history_v2";
 const DIALOG_LANG_KEY = "litera_assistant_dialog_lang_v1";
 
 const isSearchQuery = (text) =>
-  /(посоветуй|порекомендуй|найди|что почитать|подобрать книгу|выбери книгу|какие книги|книги про|книгу про|recommend|suggest|search catalogue|find book)/i.test(
+  /(посоветуй|порекомендуй|найди|подбери|выбери|какие духи|духи|аромат|парфюм|ноты|стойк|шлейф|уд|ваниль|мускус|recommend|suggest|perfume|fragrance|scent|notes|oud)/i.test(
     text,
   ) &&
-  !/(корзин|в корзине|заказ|мои заказы|профиль|аккаунт|где найти|куда нажать|выжил|умер|кто убийца|спойлер|финал|концовк)/i.test(
+  !/(корзин|в корзине|заказ|мои заказы|профиль|аккаунт|где найти|куда нажать)/i.test(
     text,
   );
 
@@ -576,10 +577,10 @@ export default function LiteraAssistant() {
       window.dispatchEvent(new Event("cart-updated"));
       setTimeout(() => setCartSuccessId(null), 2500);
     } catch (err) {
-      console.error("Failed to add book to cart:", err);
+      console.error("Failed to add perfume to cart:", err);
       await customAlert({
         title: language === "ru" ? "Ошибка добавления в корзину" : "Cart Error",
-        message: err.message || (language === "ru" ? "Не удалось добавить книгу в корзину" : "Failed to add book to cart"),
+        message: err.message || (language === "ru" ? "Не удалось добавить парфюм в корзину" : "Failed to add perfume to bag"),
         type: "danger",
       });
     } finally {
@@ -588,7 +589,8 @@ export default function LiteraAssistant() {
   };
 
   const handleViewBook = (book) => {
-    navigate(`/book?url=${encodeURIComponent(book.url)}`, {
+    const targetUrl = book ? getPerfumeUrl(book) : "/featured";
+    navigate(targetUrl, {
       state: { book },
     });
   };
@@ -1063,8 +1065,8 @@ export default function LiteraAssistant() {
                   placeholder={
                     isMobile
                       ? language === "ru"
-                        ? "Спросите о книгах или авторах..."
-                        : "Ask about books or authors..."
+                        ? "Спросите об ароматах, нотах или брендах..."
+                        : "Ask about perfumes, notes, or brands..."
                       : t("assistant.placeholder")
                   }
                   rows={1}

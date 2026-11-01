@@ -153,24 +153,41 @@ export default function Header({ theme, isLight, onSearch }) {
           <ul className="warda-nav__links">
             <li className="warda-nav__item">
               <NavLink to="/" end className={navClass}>
-                <span>HOME</span>
+                <span>{language === "ru" ? "ГЛАВНАЯ" : "HOME"}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/featured" className={navClass}>
-                <span>SHOP</span>
+                <span>{language === "ru" ? "КАТАЛОГ" : "SHOP"}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/testimonial" className={navClass}>
-                <span>ABOUT</span>
+                <span>{language === "ru" ? "О БРЕНДЕ" : "ABOUT"}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/contacts" className={navClass}>
-                <span>CONTACT</span>
+                <span>{language === "ru" ? "КОНТАКТЫ" : "CONTACT"}</span>
               </NavLink>
             </li>
+            {(isPrivilegedUser || isAdminOrDev) && (
+              <li className="warda-nav__item">
+                <NavLink
+                  to="/privileged"
+                  className={({ isActive }) =>
+                    `warda-nav__privileged-pill ${isActive ? "active" : ""}`
+                  }
+                  title={language === "ru" ? "Панель для привилегированных" : "Privileged Panel"}
+                >
+                  <i className="ri-vip-crown-fill" />
+                  <span>{language === "ru" ? "ПАНЕЛЬ" : "VIP PANEL"}</span>
+                  {adminUnreadCount > 0 && (
+                    <span className="warda-nav__badge">{adminUnreadCount}</span>
+                  )}
+                </NavLink>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -258,6 +275,26 @@ export default function Header({ theme, isLight, onSearch }) {
                     </div>
                   )}
                   <ul className="nav__profile-list" role="none">
+                    {(isPrivilegedUser || isAdminOrDev) && (
+                      <li className="nav__profile-item" role="none">
+                        <Link
+                          to="/privileged"
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                          style={{
+                            background: "linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 215, 0, 0.08))",
+                            border: "1px solid rgba(212, 175, 55, 0.4)",
+                            borderRadius: "6px",
+                            marginBottom: "6px"
+                          }}
+                        >
+                          <i className="ri-vip-crown-fill" style={{ color: "#ffd700" }} />
+                          <span style={{ color: "#ffd700", fontWeight: 700 }}>
+                            {language === "ru" ? "Панель управления" : "Privileged Panel"}
+                          </span>
+                        </Link>
+                      </li>
+                    )}
                     <li className="nav__profile-item" role="none">
                       <Link
                         to="/profile"

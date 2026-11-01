@@ -575,7 +575,9 @@ export default function Privileged() {
 
   const handleToggleUserStatus = async (targetUser) => {
     const isTargetPrivileged =
-      targetUser.status === "privileged" || targetUser.role === "privileged";
+      targetUser.status === "privileged" ||
+      targetUser.status === "priveleged" ||
+      targetUser.role === "privileged";
     const nextStatus = isTargetPrivileged ? "user" : "privileged";
     try {
       await updateUserStatus(targetUser.id, nextStatus);
@@ -1706,7 +1708,9 @@ export default function Privileged() {
                 <tbody>
                   {filteredUsers.map((u, rowIndex) => {
                     const isStatusPriv =
-                      u.status === "privileged" || u.role === "privileged";
+                      u.status === "privileged" ||
+                      u.status === "priveleged" ||
+                      u.role === "privileged";
                     const userRolesList = resolveUserRoles(u);
                     const phones = Array.isArray(u.phone)
                       ? u.phone

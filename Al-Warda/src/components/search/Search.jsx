@@ -22,7 +22,7 @@ const QUICK_TAGS = [
   { label: "Уд / Oud", query: "oud" },
   { label: "Амбра / Amber", query: "amber" },
   { label: "Мускус / Musk", query: "musk" },
-  { label: "Дропшиппинг", query: "dropship" },
+  { label: "Бестселлеры", query: "bestseller" },
 ];
 
 export default function Search({ show, onClose }) {
@@ -72,7 +72,7 @@ export default function Search({ show, onClose }) {
     }
 
     const filtered = allPerfumes.filter((p) => {
-      if (q === "dropship") return p.isDropship;
+      if (q === "bestseller") return p.isBestSeller;
       const name = (p.name || "").toLowerCase();
       const brand = (p.brand || "").toLowerCase();
       const cat = (p.category || "").toLowerCase();
@@ -228,12 +228,10 @@ export default function Search({ show, onClose }) {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p)}
                   >
-                    {/* Dropship Badge */}
-                    {p.isDropship && (
-                      <span className="search__card-badge">
-                        {isRu ? "🚀 Дропшиппинг 4–7 дн." : "🚀 Dropship 4–7d"}
-                      </span>
-                    )}
+                    {/* In Stock Badge */}
+                    <span className="search__card-badge">
+                      ✓ {isRu ? "В наличии" : "In Stock"}
+                    </span>
 
                     {/* Perfume Bottle Image (Без фона + эффект как у категорий) */}
                     <div className="search__card-img-wrap">

@@ -1,4 +1,5 @@
 import { PERFUMES } from "../src/data/perfumesData.js";
+import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import getExchangeRate, { DEFAULT_RATE } from "../utils/getExchangeRate.js";
 
 const DEFAULT_API_KEY = "";
@@ -354,46 +355,52 @@ export async function searchSuppliersByTitleOnly(title, exchangeRate = DEFAULT_R
   const cleanTitle = (title || "").trim();
   if (!cleanTitle) return [];
 
-  const cacheKey = `title_only::${cleanTitle.toLowerCase()}`;
+  const cacheKey = `perfume_search::${cleanTitle.toLowerCase()}`;
   const cached = storeSearchCache.get(cacheKey);
   if (cached && Date.now() < cached.expiresAt) {
     return cached.data;
   }
 
-  const timeoutPromise = (promise, ms = 3200) =>
-    Promise.race([
-      promise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), ms),
-      ),
-    ]);
-
   const queryLower = cleanTitle.toLowerCase();
-  const matchedPerfumes = PERFUMES.filter(
-    (p) =>
-      p.name.toLowerCase().includes(queryLower) ||
-      p.notesSummary.toLowerCase().includes(queryLower) ||
-      p.category.toLowerCase().includes(queryLower) ||
-      (p.description && p.description.toLowerCase().includes(queryLower))
-  ).map((p) => ({
-    title: p.name,
-    author: p.notesSummary,
-    price: p.price,
-    currency: p.currency,
-    image: p.image,
-    url: `/perfume/${p.id}`,
-    store: "Al-Warda Parfumes",
+  const catalog = (Array.isArray(cachedArabianPerfumes) && cachedArabianPerfumes.length > 0)
+    ? cachedArabianPerfumes
+    : PERFUMES;
+
+  const tokens = queryLower.split(/[\s,·+]+/).filter((t) => t.length > 1);
+
+  let matched = catalog.filter((p) => {
+    const name = (p.name || p.title || "").toLowerCase();
+    const brand = (p.brand || "").toLowerCase();
+    const cat = (p.category || p.categoryRu || "").toLowerCase();
+    const notes = (p.notesSummary || "").toLowerCase();
+    const desc = (p.description || p.descriptionRu || "").toLowerCase();
+    const top = Array.isArray(p.topNotes) ? p.topNotes.join(" ").toLowerCase() : "";
+    const heart = Array.isArray(p.heartNotes) ? p.heartNotes.join(" ").toLowerCase() : "";
+    const base = Array.isArray(p.baseNotes) ? p.baseNotes.join(" ").toLowerCase() : "";
+    const allText = `${name} ${brand} ${cat} ${notes} ${top} ${heart} ${base} ${desc}`;
+
+    if (allText.includes(queryLower)) return true;
+    return tokens.length > 0 && tokens.every((tok) => allText.includes(tok));
+  });
+
+  if (matched.length === 0 && tokens.length > 0) {
+    matched = catalog.filter((p) => {
+      const allText = `${p.name || ""} ${p.brand || ""} ${p.category || ""} ${p.notesSummary || ""}`.toLowerCase();
+      return tokens.some((tok) => allText.includes(tok));
+    });
+  }
+
+  const rawCombined = (matched.length > 0 ? matched : catalog.slice(0, 6)).map((p) => ({
+    id: p.id,
+    title: p.name || p.title,
+    author: `${p.brand || "Al-Warda"} • ${p.notesSummary || p.categoryRu || "Восточный аромат"}`,
+    price: Number(p.price) || 45.0,
+    currency: "EUR",
+    image: p.image || "/assets/img/perfumes/hero-perfume.png",
+    url: `/perfume/${p.slug || p.id}`,
+    store: p.brand || "Al-Warda Parfumes",
   }));
 
-  const rawCombined = matchedPerfumes.length > 0 ? matchedPerfumes : PERFUMES.slice(0, 3).map((p) => ({
-    title: p.name,
-    author: p.notesSummary,
-    price: p.price,
-    currency: p.currency,
-    image: p.image,
-    url: `/perfume/${p.id}`,
-    store: "Al-Warda Parfumes",
-  }));
   const seenUrls = new Set();
   const deduped = [];
   for (const b of rawCombined) {
@@ -1878,11 +1885,11 @@ CURRENT USER & SITE CONTEXT:
 `;
 
   if (!cartInfo?.isLoggedIn) {
-    siteContextText += `  Status: User is NOT signed in (Guest). In Litera bookstore, the cart is linked to user accounts. If the user asks what is in their cart or asks to check their cart, explain politely that they need to sign in (/login) or register (/sign-up) to access and save their personal shopping cart.\n`;
+    siteContextText += `  Status: User is NOT signed in (Guest). In Al-Warda boutique, the cart is linked to user accounts. If the user asks what is in their cart or asks to check their cart, explain politely that they need to sign in (/login) or register (/sign-up) to access and save their personal shopping cart.\n`;
   } else if (!cartInfo.items || cartInfo.items.length === 0) {
-    siteContextText += `  Status: The user's cart is currently EMPTY (0 items, 0.00 €). If they ask what is in their cart, tell them accurately that their cart is empty, and ask if they would like recommendations for books.\n`;
+    siteContextText += `  Status: The user's cart is currently EMPTY (0 items, 0.00 €). If they ask what is in their cart, tell them accurately that their cart is empty, and ask if they would like fragrance recommendations.\n`;
   } else {
-    siteContextText += `  Status: Cart has ${cartInfo.itemCount} books, Total: ${cartInfo.totalPrice} EUR.
+    siteContextText += `  Status: Cart has ${cartInfo.itemCount} perfumes, Total: ${cartInfo.totalPrice} EUR.
   Items in cart:
 ${cartInfo.items.map((it, idx) => `  ${idx + 1}. «${it.title}» — ${it.quantity} шт. по ${it.price} € (${it.store})`).join("\n")}
 `;
@@ -1895,9 +1902,9 @@ AVAILABLE SITE SECTIONS & ROUTES:
 - Оформление заказа (/checkout) — Complete the order and enter delivery details
 - Мои заказы (/orders) — View past and current orders
 - Профиль (/profile) — Customer account profile
-- Скидки (/discount) — Discounted books and offers
-- Новинки (/new) — Newly released books
-- Подборка книг (/featured) — Curated book selections
+- Скидки (/discount) — Special fragrance offers
+- Новинки (/new) — Newly arrived Arabian fragrances
+- Каталог духов (/featured) — Full collection of 1000+ Arabian fragrances
 - Отзывы (/testimonial) — Customer reviews
 - Вход (/login) / Регистрация (/sign-up) — Account authentication
 `;

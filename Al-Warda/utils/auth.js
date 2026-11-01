@@ -478,7 +478,12 @@ export async function getProfile() {
 export function isPrivileged(user) {
   const u = user ?? getCookieUser();
   if (!u) return false;
-  if (u.status === "privileged" || u.status === "привилегированный") return true;
+  if (
+    u.status === "privileged" ||
+    u.status === "priveleged" ||
+    u.status === "привилегированный"
+  )
+    return true;
   const roles = resolveUserRoles(u);
   return roles.some(
     (r) =>
@@ -504,8 +509,11 @@ export async function getAllUsers() {
     const list = await response.json();
     if (!Array.isArray(list)) return [];
     return list.map((u) => {
-      const userStatus =
-        u.status || (u.role === "privileged" ? "privileged" : "user");
+      let userStatus = u.status;
+      if (userStatus === "priveleged") userStatus = "privileged";
+      if (!userStatus) {
+        userStatus = u.role === "privileged" ? "privileged" : "user";
+      }
       const userRoles = resolveUserRoles({ status: userStatus, role: u.role });
       return {
         ...u,

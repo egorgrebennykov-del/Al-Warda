@@ -158,48 +158,37 @@
 
 /* Regal Al-Warda Concierge Trigger Button */
 .litera-trigger-btn {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: 2px solid #d4af37;
-  background: radial-gradient(circle at 35% 30%, #2a2015 0%, #0d0a08 75%, #050403 100%);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.95), 0 0 22px rgba(212, 175, 55, 0.45);
+  width: 76px;
+  height: 76px;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
   cursor: pointer;
-  padding: 3px;
+  padding: 0;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: visible;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 16px rgba(212, 175, 55, 0.45));
 }
 
 .litera-trigger-btn::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 1px dashed rgba(212, 175, 55, 0.45);
-  pointer-events: none;
-  animation: alwardaRotateAura 20s linear infinite;
-}
-
-@keyframes alwardaRotateAura {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  display: none !important;
 }
 
 .litera-trigger-btn:hover {
-  transform: scale(1.08) translateY(-3px);
-  border-color: #f3e5ab;
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 1), 0 0 32px rgba(212, 175, 55, 0.7);
+  transform: scale(1.1) translateY(-4px);
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 24px rgba(212, 175, 55, 0.75));
 }
 
 .litera-trigger-avatar {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
+  border-radius: 0 !important;
+  overflow: visible !important;
   pointer-events: none;
 }
 

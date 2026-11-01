@@ -139,13 +139,9 @@ export default function Cart({ onSearch }) {
                     <strong style={{ fontFamily: "var(--second-font)", color: "#f7ede2" }}>
                       {item.title}
                     </strong>
-                    {item.isDropship || String(item.perfume_id || "").startsWith("dropship-") ? (
-                      <small style={{ color: "#2ecc71", fontWeight: 600 }}>
-                        {language === "ru" ? "🚀 Дропшиппинг (4–7 дней)" : "🚀 Dropshipping (4–7d)"}
-                      </small>
-                    ) : (
-                      <small style={{ color: "#c5a059" }}>Al-Warda Parfumes</small>
-                    )}
+                    <small style={{ color: "#c5a059", fontWeight: 500 }}>
+                      {language === "ru" ? "✓ В наличии на складе" : "✓ In Stock"}
+                    </small>
                   </span>
                 </Link>
 

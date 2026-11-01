@@ -64,14 +64,41 @@ export default function Featured() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Multi-select state
+  // Multi-select state synced with URL searchParams
   const [selectedCategories, setSelectedCategories] = useState(() => {
-    const cat = searchParams.get("category");
-    return cat && cat !== "all" ? [cat.toLowerCase()] : [];
+    const raw = searchParams.get("category");
+    return raw && raw !== "all"
+      ? raw.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean)
+      : [];
   });
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedGenders, setSelectedGenders] = useState([]);
-  const [selectedNotes, setSelectedNotes] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState(() => {
+    const raw = searchParams.get("brand");
+    return raw
+      ? raw.split(",").map((b) => b.trim()).filter(Boolean)
+      : [];
+  });
+  const [selectedGenders, setSelectedGenders] = useState(() => {
+    const raw = searchParams.get("gender");
+    return raw
+      ? raw.split(",").map((g) => g.trim()).filter(Boolean)
+      : [];
+  });
+  const [selectedNotes, setSelectedNotes] = useState(() => {
+    const raw = searchParams.get("notes") || searchParams.get("note");
+    return raw
+      ? raw.split(",").map((n) => n.trim().toLowerCase()).filter(Boolean)
+      : [];
+  });
+
+  // Sync state back to URL query parameters
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","));
+    if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
+    if (selectedGenders.length > 0) params.set("gender", selectedGenders.join(","));
+    if (selectedNotes.length > 0) params.set("notes", selectedNotes.join(","));
+    setSearchParams(params, { replace: true });
+  }, [selectedCategories, selectedBrands, selectedGenders, selectedNotes, setSearchParams]);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -161,8 +188,25 @@ export default function Featured() {
     selectedGenders.length +
     selectedNotes.length;
 
+  // Deterministic shuffled collection for default assortment (вразброс)
+  const shuffledPerfumes = useMemo(() => {
+    if (!perfumes || perfumes.length === 0) return [];
+    const arr = [...perfumes];
+    let seed = 42;
+    for (let i = arr.length - 1; i > 0; i--) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const j = Math.floor((seed / 233280) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [perfumes]);
+
   // Filtered perfumes calculation
   const filteredPerfumes = useMemo(() => {
+    if (totalActiveFilters === 0) {
+      return shuffledPerfumes;
+    }
+
     return perfumes.filter((p) => {
       // 1. Categories filter (OR within categories)
       if (selectedCategories.length > 0) {
@@ -242,7 +286,7 @@ export default function Featured() {
 
       return true;
     });
-  }, [perfumes, selectedCategories, selectedBrands, selectedGenders, selectedNotes]);
+  }, [perfumes, shuffledPerfumes, totalActiveFilters, selectedCategories, selectedBrands, selectedGenders, selectedNotes]);
 
   const visiblePerfumes = filteredPerfumes.slice(0, visibleLimit);
   const remainingCount = Math.max(0, filteredPerfumes.length - visibleLimit);
@@ -488,21 +532,14 @@ export default function Featured() {
         </div>
       ) : (
         <>
-          {/* CATALOG PROGRESS BAR */}
+                    {/* CATALOG COUNT (LINE & PERCENT REMOVED) */}
           <div className="warda-catalog-progress-bar">
             <div className="warda-progress-meta">
-              <span>
+              <span className="warda-catalog-count-text">
                 {language === "ru"
                   ? `Показано ${visiblePerfumes.length} из ${filteredPerfumes.length} ароматов`
                   : `Displaying ${visiblePerfumes.length} of ${filteredPerfumes.length} fragrances`}
               </span>
-              <span>{progressPercent}%</span>
-            </div>
-            <div className="warda-progress-track">
-              <div
-                className="warda-progress-fill"
-                style={{ width: `${progressPercent}%` }}
-              />
             </div>
           </div>
 

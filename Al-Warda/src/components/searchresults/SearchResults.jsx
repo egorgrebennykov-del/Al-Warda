@@ -195,13 +195,6 @@ export default function SearchResults() {
             </button>
             <button
               type="button"
-              className={`warda-filter-pill ${filterType === "dropship" ? "active" : ""}`}
-              onClick={() => setFilterType("dropship")}
-            >
-              {isRu ? "🚀 Дропшиппинг (4–7 дней)" : "🚀 Dropshipping (4–7d)"}
-            </button>
-            <button
-              type="button"
               className={`warda-filter-pill ${filterType === "stock" ? "active" : ""}`}
               onClick={() => setFilterType("stock")}
             >
@@ -273,11 +266,9 @@ export default function SearchResults() {
                 >
                   <div className="warda-perfume-card__media">
                     <div className="warda-perfume-card__aura" />
-                    {perfume.isDropship && (
-                      <span className="warda-dropship-card-badge">
-                        {isRu ? "🚀 Дропшиппинг 4–7 дн." : "🚀 Dropship 4–7d"}
-                      </span>
-                    )}
+                    <span className="warda-dropship-card-badge">
+                      ✓ {isRu ? "В наличии" : "In Stock"}
+                    </span>
                     <img
                       src={perfume.image}
                       alt={perfume.name}

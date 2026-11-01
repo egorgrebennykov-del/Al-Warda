@@ -1,25 +1,14 @@
 {
-  "name": "Litera",
-  "short_name": "Litera",
-  "description": "Книжный интернет-магазин Litera с доставкой по Европе",
+  "name": "Al-Warda Parfumes",
+  "short_name": "Al-Warda",
+  "description": "Эксклюзивная арабская парфюмерия и селективные ароматы Al-Warda",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ebeef5",
-  "theme_color": "#4d62f0",
+  "orientation": "portrait",
+  "background_color": "#0e0b08",
+  "theme_color": "#0e0b08",
   "icons": [
-    {
-      "src": "/assets/img/favicon.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/img/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
     {
       "src": "/assets/img/icon-192.png",
       "sizes": "192x192",
@@ -31,6 +20,18 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/img/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

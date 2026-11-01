@@ -62,16 +62,91 @@
 }
 
 .warda-footer .footer__link:hover {
-  color: #e8d08d;
-  transform: translateX(3px);
+  color: #d4af37;
+  transform: translateX(4px);
+}
+
+.warda-footer__badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.warda-footer__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #e5c07b;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .warda-footer__info {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.8rem;
   font-size: 0.85rem;
   color: #a89882;
+  margin-bottom: 1.5rem;
+}
+
+.warda-footer__info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.warda-footer__info-item i {
+  color: #d4af37;
+  font-size: 1.1rem;
+}
+
+.warda-footer__info-item a {
+  color: #cfc2a9;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.warda-footer__info-item a:hover {
+  color: #d4af37;
+}
+
+.warda-footer__payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.warda-footer__payment-title {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: #8c7e6b;
+  font-weight: 600;
+}
+
+.warda-footer__payment-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.warda-payment-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #e5c07b;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
 }
 
 .warda-footer .footer__bottom {
@@ -80,14 +155,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #7d705e;
 }
 
 .warda-footer .footer__tagline {
   font-family: var(--second-font, 'Cinzel', serif);
-  letter-spacing: 0.15em;
-  color: #c5a059;
+  letter-spacing: 0.18em;
+  color: #d4af37;
+  font-weight: 600;
 }
 
 @media screen and (max-width: 900px) {
@@ -98,12 +174,21 @@
 }
 
 @media screen and (max-width: 600px) {
+  .warda-footer {
+    padding: 2.5rem 0 1.5rem;
+  }
   .warda-footer .footer__container {
     grid-template-columns: 1fr;
     text-align: center;
+    gap: 1.75rem;
   }
   .warda-footer__col--brand {
     align-items: center;
+  }
+  .warda-footer__badges,
+  .warda-footer__info-item,
+  .warda-footer__payment-icons {
+    justify-content: center;
   }
   .warda-footer .footer__bottom {
     flex-direction: column;

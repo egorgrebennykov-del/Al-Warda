@@ -109,12 +109,30 @@ export default function BookDetails() {
   return (
     <div className="warda-details-page">
       <div className="container">
-        <div className="warda-details-breadcrumb">
-          <Link to="/">{language === "ru" ? "Главная" : "Home"}</Link>
-          <span className="warda-breadcrumb-sep">/</span>
-          <Link to="/featured">{language === "ru" ? "Коллекция" : "Collection"}</Link>
-          <span className="warda-breadcrumb-sep">/</span>
-          <span className="warda-breadcrumb-current">{perfume.name}</span>
+        <div className="warda-details-top-nav">
+          <button
+            type="button"
+            className="warda-back-button"
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/featured");
+              }
+            }}
+            aria-label="Back"
+          >
+            <span className="warda-back-arrow">←</span>
+            <span>{language === "ru" ? "Назад в каталог" : "Back to catalog"}</span>
+          </button>
+
+          <div className="warda-details-breadcrumb">
+            <Link to="/">{language === "ru" ? "Главная" : "Home"}</Link>
+            <span className="warda-breadcrumb-sep">/</span>
+            <Link to="/featured">{language === "ru" ? "Коллекция" : "Collection"}</Link>
+            <span className="warda-breadcrumb-sep">/</span>
+            <span className="warda-breadcrumb-current">{perfume.name}</span>
+          </div>
         </div>
 
         <div className="warda-details-grid">
@@ -127,6 +145,11 @@ export default function BookDetails() {
                   src={perfume.image}
                   alt={perfume.name}
                   className="warda-details-img"
+                  onError={(e) => {
+                    if (perfume.rawImage && e.target.src !== perfume.rawImage) {
+                      e.target.src = perfume.rawImage;
+                    }
+                  }}
                 />
               </div>
             </OrnateCard>
@@ -153,11 +176,9 @@ export default function BookDetails() {
             <div className="warda-details-price-row">
               <span className="warda-details-price">€{Number(perfume.price).toFixed(2)}</span>
               <span className="warda-stock-status">
-                {perfume.isDropship
-                  ? (language === "ru" ? "🚀 Дропшиппинг (доставка 4–7 дней)" : "🚀 Dropshipping (4–7 days delivery)")
-                  : perfume.inStock
-                    ? (language === "ru" ? "✓ В наличии" : "✓ In Stock")
-                    : (language === "ru" ? "Под заказ" : "Pre-order")}
+                {perfume.inStock !== false
+                  ? (language === "ru" ? "✓ В наличии на складе (доставка 3–5 дней)" : "✓ In Stock • Express Delivery (3–5 days)")
+                  : (language === "ru" ? "Под заказ" : "Pre-order")}
               </span>
             </div>
 
