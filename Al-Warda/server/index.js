@@ -224,7 +224,7 @@ const server = createServer(async (req, res) => {
   }
 
   // Arabian Perfumes for Dropshipping (strictly Arabian brands & perfumes)
-  if (req.method === "GET" && (pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
+  if (req.method === "GET" && (pathname === "/api/stocks" || pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
     try {
       const q = urlObj.searchParams.get("q") || "";
       const brand = urlObj.searchParams.get("brand") || "";

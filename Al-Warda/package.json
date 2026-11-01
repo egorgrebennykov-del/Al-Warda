@@ -7,7 +7,8 @@
     "dev": "concurrently -k \"node --use-system-ca --watch server/index.js\" \"vite\"",
     "build": "node scripts/generate-worker-env.js && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync-stocks": "node scripts/sync-stocks-supabase.js"
   },
   "dependencies": {
     "@emailjs/browser": "^5.0.3",

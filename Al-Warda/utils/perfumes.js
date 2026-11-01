@@ -8,13 +8,13 @@ const SUPABASE_KEY =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
-const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/perfumes`;
+const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 
 let memoryPerfumesCache = null;
 
 export async function fetchPerfumesFromSupabase() {
   try {
-    const res = await fetch(`${TABLE_PERFUMES}?select=*&order=is_best_seller.desc,id.asc`, {
+    const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -24,37 +24,58 @@ export async function fetchPerfumesFromSupabase() {
       const rows = await res.json();
       if (Array.isArray(rows) && rows.length > 0) {
         // Map database fields to standard schema
-        const mapped = rows.map((r) => ({
-          id: r.slug || String(r.id),
-          name: r.name || r.title,
-          title: r.name || r.title,
-          brand: r.brand || "Al-Warda",
-          category: (r.category || "oud").toLowerCase(),
-          notesSummary: r.notes_summary || r.notesSummary || "Warm · Seductive · Oriental",
-          price: Number(r.price) || 50,
-          currency: r.currency || "EUR",
-          priceMdl: Number(r.price_mdl) || Math.round((Number(r.price) || 50) * 19.5),
-          volume: r.volume || "100ml / 3.4 FL.OZ.",
-          concentration: r.concentration || "Eau De Parfum",
-          gender: r.gender || "Unisex",
-          rating: Number(r.rating) || 4.9,
-          reviewsCount: Number(r.reviews_count) || 45,
-          isBestSeller: Boolean(r.is_best_seller),
-          isFeatured: Boolean(r.is_featured),
-          inStock: r.in_stock !== false,
-          image: r.image || "/assets/img/perfumes/hero-perfume.png",
-          fullCardImage: r.full_card_image || r.image,
-          topNotes: Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []),
-          heartNotes: Array.isArray(r.heart_notes) ? r.heart_notes : (r.heart_notes ? r.heart_notes.split(",") : []),
-          baseNotes: Array.isArray(r.base_notes) ? r.base_notes : (r.base_notes ? r.base_notes.split(",") : []),
-          description: r.description || "Al-Warda luxury oriental fragrance crafted from the rarest Arabian essences.",
-        }));
+        const mapped = rows.map((r) => {
+          const info = r.info || {};
+          let catSlug = "oud";
+          const catLower = (info.category || "").toLowerCase();
+          if (catLower.includes("гурманские")) catSlug = "gourmand";
+          else if (catLower.includes("древесные") || catLower.includes("благородные")) catSlug = "oud";
+          else if (catLower.includes("цветочные")) catSlug = "floral";
+          else if (catLower.includes("свежие") || catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
+          else if (catLower.includes("пряные") || catLower.includes("специи")) catSlug = "spicy";
+
+          const topNotes = info.notes?.top || (Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []));
+          const heartNotes = info.notes?.heart || (Array.isArray(r.heart_notes) ? r.heart_notes : (r.heart_notes ? r.heart_notes.split(",") : []));
+          const baseNotes = info.notes?.base || (Array.isArray(r.base_notes) ? r.base_notes : (r.base_notes ? r.base_notes.split(",") : []));
+
+          return {
+            id: String(r.id),
+            slug: `stock-${r.id}`,
+            name: r.name || r.title,
+            title: r.name || r.title,
+            brand: r.brand || "Al-Warda",
+            category: catSlug,
+            categoryName: info.category || "Восточные",
+            notesSummary: info.notesSummary || r.notes_summary || r.brand || "Шлейфовый восточный аромат",
+            price: Number(r.price) || 29.99,
+            currency: r.currency || "EUR",
+            priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+            volume: info.volume || r.volume || "100ml / 3.4 FL.OZ.",
+            concentration: info.concentration || r.concentration || "Eau De Parfum",
+            gender: info.gender || r.gender || "Унисекс",
+            longevity: info.longevity || "8–12 часов",
+            sillage: info.sillage || "Выразительный, шлейфовый",
+            rating: 4.9,
+            reviewsCount: 35 + ((r.id * 7) % 50),
+            isBestSeller: (r.id % 7 === 0),
+            isFeatured: (r.id % 5 === 0),
+            inStock: info.inStock !== false,
+            deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
+            image: r.image || "/assets/img/perfumes/hero-perfume.png",
+            fullCardImage: r.image || "/assets/img/perfumes/hero-perfume.png",
+            topNotes,
+            heartNotes,
+            baseNotes,
+            description: r.description || "Al-Warda luxury oriental fragrance crafted from the rarest Arabian essences.",
+            info,
+          };
+        });
         memoryPerfumesCache = mapped;
         return mapped;
       }
     }
-  } catch {
-    // If Supabase table is not yet created or connection error, return empty array
+  } catch (err) {
+    console.warn("fetchPerfumesFromSupabase error:", err);
   }
   memoryPerfumesCache = [];
   return [];

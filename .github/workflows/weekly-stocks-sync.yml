@@ -1,0 +1,57 @@
+name: Weekly Stocks & Perfumes AI Sync
+
+on:
+  schedule:
+    # Every Monday at 03:00 UTC (3 AM)
+    - cron: "0 3 * * 1"
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+permissions:
+  contents: write
+
+jobs:
+  sync-stocks:
+    name: Sync Supabase Stocks & AI Enrichment
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Al-Warda/package.json
+
+      - name: Install dependencies
+        run: |
+          npm --prefix Al-Warda install
+
+      - name: Run AI Stocks & Supabase Sync
+        run: |
+          node Al-Warda/scripts/sync-stocks-supabase.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Rebuild Web Application Assets
+        run: |
+          npm --prefix Al-Warda run build
+
+      - name: Commit and push changes if updated
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action [Al-Warda Sync]"
+          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/
+          if git diff --staged --quiet; then
+            echo "No catalog changes to commit."
+          else
+            git commit -m "chore(sync): automated weekly stocks database & photos update [skip ci]"
+            git push origin main
+          fi

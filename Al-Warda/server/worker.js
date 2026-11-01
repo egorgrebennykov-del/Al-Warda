@@ -58,8 +58,8 @@ export default {
       return jsonResponse({ ready: true });
     }
 
-    // Arabian Perfumes dropship catalog API
-    if (method === "GET" && (pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
+    // Stocks API (Supabase proxy / fallback)
+    if (method === "GET" && (pathname === "/api/stocks" || pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
       const q = urlObj.searchParams.get("q")?.toLowerCase();
       let list = cachedArabianPerfumes;
       if (q) {

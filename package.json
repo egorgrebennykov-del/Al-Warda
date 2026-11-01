@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix Al-Warda install && npm --prefix Al-Warda run build",
+    "sync-stocks": "node Al-Warda/scripts/sync-stocks-supabase.js",
     "predeploy": "npm run build",
     "deploy": "npm run build && wrangler deploy"
   },
