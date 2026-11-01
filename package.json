@@ -1,0 +1,7 @@
+{
+  "name": "al-warda-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix Al-Warda run build"
+  }
+}

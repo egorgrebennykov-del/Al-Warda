@@ -1,0 +1,20 @@
+{
+  "name": "al-warda",
+  "main": "Al-Warda/server/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
+    "VITE_SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB"
+  },
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
+  "assets": {
+    "directory": "./Al-Warda/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/health"]
+  }
+}
