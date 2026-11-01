@@ -64,11 +64,14 @@ let memoryDropshipCache = null;
 
 export async function fetchDropshipArabianPerfumes(query = "") {
   try {
-    const url = `/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`;
-    const res = await fetch(url);
+    let res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    if (!res.ok) {
+      res = await fetch("/data/cachedArabianPerfumes.json");
+    }
     if (res.ok) {
       const data = await res.json();
-      const items = (data.results || []).filter(
+      const rawList = Array.isArray(data) ? data : (data.results || []);
+      const items = rawList.filter(
         (p) =>
           p.image &&
           !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
@@ -80,6 +83,18 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       return items;
     }
   } catch (err) {
+    try {
+      const fallbackRes = await fetch("/data/cachedArabianPerfumes.json");
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
+        const items = rawList.filter(
+          (p) => p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063")
+        );
+        if (!query) memoryDropshipCache = items;
+        return items;
+      }
+    } catch {}
     console.warn("Could not fetch dropship perfumes:", err);
   }
   return memoryDropshipCache || [];
