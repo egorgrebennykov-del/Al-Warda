@@ -1,4 +1,5 @@
 import workerEnv from "./workerEnv.js";
+import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json";
 import {
   decodeLibrariusImage,
   searchLibrarius,
@@ -301,6 +302,31 @@ export default {
 
     if (method === "POST" && pathname === "/api/warmup") {
       return jsonResponse({ ready: true });
+    }
+
+    if (method === "GET" && (pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
+      const q = urlObj.searchParams.get("q")?.toLowerCase();
+      let list = cachedArabianPerfumes;
+      if (q) {
+        list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
+      }
+      return jsonResponse({ count: list.length, results: list });
+    }
+
+    if (method === "GET" && pathname === "/api/perfumes") {
+      const q = urlObj.searchParams.get("q")?.toLowerCase();
+      let list = cachedArabianPerfumes;
+      if (q) {
+        list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
+      }
+      return jsonResponse({ perfumes: list });
+    }
+
+    if (method === "GET" && pathname.startsWith("/api/perfumes/")) {
+      const id = pathname.replace("/api/perfumes/", "").toLowerCase();
+      const p = cachedArabianPerfumes.find(x => x.id?.toLowerCase() === id || x.slug?.toLowerCase() === id);
+      if (p) return jsonResponse(p);
+      return jsonResponse({ error: "Not found" }, 404);
     }
 
     if (method === "GET" && pathname === "/api/enhance-image") {
