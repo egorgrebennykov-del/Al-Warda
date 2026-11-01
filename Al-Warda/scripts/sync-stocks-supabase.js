@@ -103,10 +103,67 @@ function detectGender(name, brand) {
 
 function detectCategoryAndNotes(name, brand, gender) {
   const lower = `${name} ${brand}`.toLowerCase();
+  const isMaleOnly = (lower.includes("homme") && !lower.includes("femme")) ||
+    lower.includes("pour homme") ||
+    (lower.includes("men") && !lower.includes("women") && !lower.includes("woman"));
 
-  if (lower.includes("yara") || lower.includes("marshmallow") || lower.includes("vanilla") || lower.includes("caramel") || lower.includes("choco") || lower.includes("nebras") || lower.includes("khamrah") || lower.includes("eclaire")) {
+  // 1. Fresh / Aquatic
+  if (
+    lower.includes("aqua") || lower.includes("marine") || lower.includes("ocean") ||
+    lower.includes("sea") || lower.includes("cool") || lower.includes("ice") ||
+    lower.includes("water") || lower.includes("megamare") || lower.includes("sedley") ||
+    lower.includes("legacy") || lower.includes("fresh") || lower.includes("blue") ||
+    lower.includes("bleu") || lower.includes("glacier") || lower.includes("breeze") ||
+    lower.includes("rain") || lower.includes("river") || lower.includes("hawas") ||
+    lower.includes("sailor") || lower.includes("voyage") || lower.includes("sky") ||
+    lower.includes("crystal") || lower.includes("pure white") || lower.includes("silver")
+  ) {
+    return {
+      category: "Свежие акватические",
+      categorySlug: "fresh",
+      longevity: "8–11 часов (стойкая свежесть)",
+      sillage: "Освежающий, диффузный шлейф",
+      notes: {
+        top: ["Морской бриз", "Калабрийский бергамот", "Кубики льда"],
+        heart: ["Мята", "Лаванда", "Морская соль"],
+        base: ["Амброксан", "Минеральный кедр", "Белый мускус"]
+      },
+      notesSummary: "Морской бриз · Бергамот · Мята · Амброксан"
+    };
+  }
+
+  // 2. Fougère / Aromatic
+  if (
+    lower.includes("fougere") || lower.includes("fougère") || lower.includes("lavender") ||
+    lower.includes("sage") || lower.includes("geranium") || lower.includes("moss") ||
+    lower.includes("oakmoss") || lower.includes("sauvage") || lower.includes("salvo") ||
+    lower.includes("yeah") || lower.includes("fakhar black") || lower.includes("tres nuit") ||
+    lower.includes("green irish") || lower.includes("aventus") || lower.includes("club de nuit") ||
+    lower.includes("sillage") || lower.includes("milestone") || lower.includes("hunter") ||
+    lower.includes("hayaati") || lower.includes("sheikh al shuyukh") || lower.includes("l'aventure") ||
+    lower.includes("vert") || lower.includes("vetiver") || lower.includes("herb") ||
+    lower.includes("cypress") || lower.includes("rosemary") || lower.includes("sport") ||
+    (isMaleOnly && (lower.includes("elixir") || lower.includes("classic") || lower.includes("barber")))
+  ) {
+    return {
+      category: "Фужерные ароматические",
+      categorySlug: "fougere",
+      longevity: "10–14 часов (очень высокая)",
+      sillage: "Аристократичный, выразительный шлейф",
+      notes: {
+        top: ["Зеленое яблоко", "Французская лаванда", "Имбирь"],
+        heart: ["Мускатный шалфей", "Бурбонская герань", "Ягоды можжевельника"],
+        base: ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"]
+      },
+      notesSummary: "Лаванда · Мускатный шалфей · Ветивер · Дубовый мох"
+    };
+  }
+
+  // 3. Gourmand
+  if (lower.includes("yara") || lower.includes("marshmallow") || lower.includes("vanilla") || lower.includes("caramel") || lower.includes("choco") || lower.includes("nebras") || lower.includes("khamrah") || lower.includes("eclaire") || lower.includes("tonka") || lower.includes("praline") || lower.includes("honey") || lower.includes("sugar") || lower.includes("sweet") || lower.includes("candy")) {
     return {
       category: "Восточные гурманские",
+      categorySlug: "gourmand",
       longevity: "10–14 часов (очень высокая)",
       sillage: "Заметный, манящий шлейф (до 2 метров)",
       notes: {
@@ -118,9 +175,11 @@ function detectCategoryAndNotes(name, brand, gender) {
     };
   }
 
-  if (lower.includes("oud") || lower.includes("wood") || lower.includes("agar") || lower.includes("bade'e") || lower.includes("ameer") || lower.includes("interlude")) {
+  // 4. Oud & Wood
+  if (lower.includes("oud") || lower.includes("wood") || lower.includes("agar") || lower.includes("bade'e") || lower.includes("ameer") || lower.includes("interlude") || lower.includes("leather") || lower.includes("cuir") || lower.includes("cedar") || lower.includes("sandalwood") || lower.includes("smoke") || lower.includes("incense")) {
     return {
       category: "Восточные древесные",
+      categorySlug: "oud",
       longevity: "12–16 часов (максимальная)",
       sillage: "Мощный, благородный шлейф",
       notes: {
@@ -132,23 +191,27 @@ function detectCategoryAndNotes(name, brand, gender) {
     };
   }
 
-  if (lower.includes("leather") || lower.includes("cuir") || lower.includes("amber & leather") || lower.includes("toscano") || lower.includes("ombre")) {
+  // 5. Citrus
+  if (lower.includes("citrus") || lower.includes("bergamot") || lower.includes("lemon") || lower.includes("orange") || lower.includes("mandarin") || lower.includes("grapefruit") || lower.includes("lime") || lower.includes("neroli") || lower.includes("limoni") || lower.includes("soleil") || lower.includes("cologne")) {
     return {
-      category: "Кожаные благородные",
-      longevity: "12–14 часов (очень высокая)",
-      sillage: "Выразительный, статусный шлейф",
+      category: "Цитрусовые искрящиеся",
+      categorySlug: "citrus-fresh",
+      longevity: "7–10 часов (стойкая свежесть)",
+      sillage: "Искрящийся, бодрящий шлейф",
       notes: {
-        top: ["Черный кардамон", "Шафран", "Тимьян"],
-        heart: ["Черная кожа", "Итальянский жасмин", "Олибанум"],
-        base: ["Пачули", "Амбра", "Белый мох"]
+        top: ["Сицилийский лимон", "Красный апельсин", "Бергамот"],
+        heart: ["Нероли", "Цветок апельсина", "Розовый перец"],
+        base: ["Белый кедр", "Амброксан", "Шелковистый мускус"]
       },
-      notesSummary: "Дорогая кожа · Кардамон · Жасмин · Амбра"
+      notesSummary: "Красный апельсин · Сицилийский лимон · Нероли · Мускус"
     };
   }
 
-  if (lower.includes("rose") || lower.includes("jasmine") || lower.includes("flower") || lower.includes("blossom") || lower.includes("taif") || lower.includes("femme") || gender === "Женский") {
+  // 6. Floral
+  if (lower.includes("rose") || lower.includes("jasmine") || lower.includes("flower") || lower.includes("blossom") || lower.includes("taif") || lower.includes("femme") || lower.includes("flora") || lower.includes("tuberose") || lower.includes("peony") || lower.includes("orchid") || lower.includes("pink") || lower.includes("woman") || lower.includes("women") || lower.includes("pour femme") || lower.includes("lady") || gender === "Женский") {
     return {
       category: "Цветочные восточные",
+      categorySlug: "floral",
       longevity: "8–12 часов (высокая)",
       sillage: "Нежный, пленительный шлейф",
       notes: {
@@ -160,44 +223,18 @@ function detectCategoryAndNotes(name, brand, gender) {
     };
   }
 
-  if (lower.includes("fresh") || lower.includes("aqua") || lower.includes("blue") || lower.includes("bleu") || lower.includes("citrus") || lower.includes("bergamot") || lower.includes("sport") || lower.includes("marine")) {
-    return {
-      category: "Цитрусовые свежие",
-      longevity: "7–10 часов (стойкая свежесть)",
-      sillage: "Освежающий, комплиментарный шлейф",
-      notes: {
-        top: ["Калабрийский бергамот", "Морской бриз", "Грейпфрут"],
-        heart: ["Розмарин", "Сычуаньский перец", "Лаванда"],
-        base: ["Амброксан", "Минеральный кедр", "Чистый мускус"]
-      },
-      notesSummary: "Бергамот · Морской аккорд · Амброксан · Кедр"
-    };
-  }
-
-  if (lower.includes("spice") || lower.includes("saffron") || lower.includes("cinnamon") || lower.includes("amber") || lower.includes("asad") || lower.includes("club de nuit")) {
-    return {
-      category: "Восточные пряные",
-      longevity: "10–14 часов (очень высокая)",
-      sillage: "Заметный, глубокий шлейф",
-      notes: {
-        top: ["Королевский шафран", "Черный перец", "Кардамон"],
-        heart: ["Корица", "Кофейное зерно", "Табак"],
-        base: ["Золотая амбра", "Бобы тонка", "Сандал"]
-      },
-      notesSummary: "Шафран · Черный перец · Кофе · Золотая амбра"
-    };
-  }
-
+  // 7. Spicy (default for rich oriental)
   return {
-    category: "Восточные благородные",
-    longevity: "9–12 часов (высокая)",
-    sillage: "Бархатистый, обволакивающий шлейф",
+    category: "Восточные пряные",
+    categorySlug: "spicy",
+    longevity: "10–14 часов (очень высокая)",
+    sillage: "Заметный, глубокий шлейф",
     notes: {
-      top: ["Цитрусовый аккорд", "Шафран", "Розовый перец"],
-      heart: ["Древесные ноты", "Восточные цветы", "Смолы"],
-      base: ["Амбра", "Мускус", "Кедр"]
+      top: ["Королевский шафран", "Черный перец", "Кардамон"],
+      heart: ["Корица", "Кофейное зерно", "Табак"],
+      base: ["Золотая амбра", "Бобы тонка", "Сандал"]
     },
-    notesSummary: "Шафран · Благородная древесина · Амбра · Мускус"
+    notesSummary: "Шафран · Черный перец · Кофе · Золотая амбра"
   };
 }
 
@@ -351,33 +388,30 @@ async function main() {
   fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
   console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled).`);
 
+  const isRefresh = process.argv.includes("--refresh");
+
   // Check existing records in Supabase
   console.log("\n🔍 Checking existing records in Supabase 'stocks'...");
   const existingMap = await fetchAllExistingStocks();
   console.log(`📊 Found ${existingMap.size} existing items in Supabase.`);
 
-  const toInsert = [];
-  const toUpdate = [];
-
-  for (const item of enrichedList) {
-    const existing = existingMap.get(item.name.trim().toLowerCase());
-    if (existing) {
-      toUpdate.push({ id: existing.id, ...item });
-    } else {
-      toInsert.push(item);
+  if (isRefresh || existingMap.size === 0) {
+    if (existingMap.size > 0) {
+      console.log("🧹 Clearing old records for complete category refresh...");
+      await fetch(`${STOCKS_API_URL}?id=gt.0`, {
+        method: "DELETE",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+      });
     }
-  }
 
-  console.log(`📝 Items to insert: ${toInsert.length}`);
-  console.log(`🔄 Items already existing: ${toUpdate.length}`);
-
-  // Insert new items in batches of 50
-  if (toInsert.length > 0) {
-    console.log(`\n🚀 Inserting ${toInsert.length} new items...`);
+    console.log(`\n🚀 Uploading ${enrichedList.length} items with updated categories...`);
     const BATCH_SIZE = 50;
     let inserted = 0;
-    for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
-      const batch = toInsert.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < enrichedList.length; i += BATCH_SIZE) {
+      const batch = enrichedList.slice(i, i + BATCH_SIZE);
       const res = await fetch(STOCKS_API_URL, {
         method: "POST",
         headers: {
@@ -390,18 +424,49 @@ async function main() {
       });
       if (res.ok || res.status === 201) {
         inserted += batch.length;
-        process.stdout.write(`\r✅ Inserted: ${inserted} / ${toInsert.length}`);
+        process.stdout.write(`\r✅ Uploaded: ${inserted} / ${enrichedList.length}`);
       } else {
         const err = await res.text();
-        console.error(`\n❌ Insert error: ${err}`);
+        console.error(`\n❌ Upload error: ${err}`);
       }
     }
     console.log("");
+  } else {
+    // Normal incremental sync: only insert new items
+    const toInsert = [];
+    for (const item of enrichedList) {
+      if (!existingMap.has(item.name.trim().toLowerCase())) {
+        toInsert.push(item);
+      }
+    }
+    console.log(`📝 New items to insert: ${toInsert.length}`);
+    if (toInsert.length > 0) {
+      const BATCH_SIZE = 50;
+      let inserted = 0;
+      for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+        const batch = toInsert.slice(i, i + BATCH_SIZE);
+        const res = await fetch(STOCKS_API_URL, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify(batch),
+        });
+        if (res.ok || res.status === 201) {
+          inserted += batch.length;
+          process.stdout.write(`\r✅ Inserted: ${inserted} / ${toInsert.length}`);
+        }
+      }
+      console.log("");
+    }
   }
 
   console.log("\n=================================================");
   console.log("🎉 Stocks Sync Completed Successfully!");
-  console.log(`✅ Total active stock items: ${existingMap.size + toInsert.length}`);
+  console.log(`✅ Total active stock items: ${enrichedList.length}`);
   console.log(`⏰ Finished at: ${new Date().toISOString()}`);
   console.log("=================================================");
 }

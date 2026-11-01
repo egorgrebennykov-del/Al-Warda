@@ -40,7 +40,7 @@ export const PERFUME_CATEGORIES = [
     description: "Imperial Taif roses, night-blooming jasmine, and velvet petals bathed in golden sun.",
   },
   {
-    id: "aquatic",
+    id: "fresh",
     name: "FRESH",
     nameRu: "СВЕЖИЕ",
     nameEn: "FRESH",
@@ -60,7 +60,7 @@ export const PERFUME_CATEGORIES = [
     description: "Royal saffron, black pepper, cardamom pods, and warm cinnamon bark.",
   },
   {
-    id: "woody-fougere",
+    id: "fougere",
     name: "FOUGÈRE",
     nameRu: "ФУЖЕРНЫЕ",
     nameEn: "FOUGÈRE",

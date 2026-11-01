@@ -26,12 +26,14 @@ export async function fetchPerfumesFromSupabase() {
         // Map database fields to standard schema
         const mapped = rows.map((r) => {
           const info = r.info || {};
-          let catSlug = "oud";
+          let catSlug = info.categorySlug || "spicy";
           const catLower = (info.category || "").toLowerCase();
           if (catLower.includes("гурманские")) catSlug = "gourmand";
-          else if (catLower.includes("древесные") || catLower.includes("благородные")) catSlug = "oud";
+          else if (catLower.includes("акватические") || catLower.includes("морск") || catLower.includes("свеж") || catLower.includes("fresh")) catSlug = "fresh";
+          else if (catLower.includes("фужерные") || catLower.includes("fougere") || catLower.includes("fougère")) catSlug = "fougere";
+          else if (catLower.includes("древесные") || catLower.includes("уд") || catLower.includes("благородные")) catSlug = "oud";
           else if (catLower.includes("цветочные")) catSlug = "floral";
-          else if (catLower.includes("свежие") || catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
+          else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
           else if (catLower.includes("пряные") || catLower.includes("специи")) catSlug = "spicy";
 
           const topNotes = info.notes?.top || (Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []));

@@ -89,9 +89,44 @@ export default function Featured() {
   const filteredPerfumes = perfumes.filter((p) => {
     if (activeCategory !== "all") {
       const catLower = activeCategory.toLowerCase();
+      const pCat = (p.category || "").toLowerCase();
+      const pInfoCat = (p.info?.category || p.categoryName || "").toLowerCase();
+
+      const isFresh =
+        (catLower === "fresh" || catLower === "aquatic") &&
+        (pCat === "fresh" || pCat === "aquatic" || pInfoCat.includes("свеж") || pInfoCat.includes("акват"));
+
+      const isFougere =
+        (catLower === "fougere" || catLower === "fougère" || catLower === "woody-fougere") &&
+        (pCat === "fougere" || pCat === "woody-fougere" || pInfoCat.includes("фужер"));
+
+      const isCitrus =
+        (catLower === "citrus" || catLower === "citrus-fresh") &&
+        (pCat === "citrus" || pCat === "citrus-fresh" || pInfoCat.includes("цитрус"));
+
+      const isSpicy =
+        (catLower === "spicy" || catLower === "spices") &&
+        (pCat === "spicy" || pCat === "spices" || pInfoCat.includes("прян") || pInfoCat.includes("специ"));
+
+      const isGourmand =
+        catLower === "gourmand" &&
+        (pCat === "gourmand" || pInfoCat.includes("гурман"));
+
+      const isFloral =
+        catLower === "floral" &&
+        (pCat === "floral" || pInfoCat.includes("цвет"));
+
+      const isOud =
+        (catLower === "oud" || catLower === "wood") &&
+        (pCat === "oud" || pCat === "wood" || pInfoCat.includes("уд") || pInfoCat.includes("древ"));
+
+      const directMatch =
+        pCat === catLower ||
+        pCat.replace(/[^a-z0-9]/g, "") === catLower.replace(/[^a-z0-9]/g, "");
+
       const matchesCat =
-        p.category?.toLowerCase() === catLower ||
-        p.category?.toLowerCase().replace(/[^a-z0-9]/g, "") === catLower.replace(/[^a-z0-9]/g, "");
+        directMatch || isFresh || isFougere || isCitrus || isSpicy || isGourmand || isFloral || isOud;
+
       if (!matchesCat) return false;
     }
 
@@ -174,8 +209,8 @@ export default function Featured() {
               <button
                 key={cat.id}
                 type="button"
-                className={`warda-tab-btn ${activeCategory === cat.id ? "warda-tab-btn--active" : ""}`}
-                onClick={() => handleCategoryChange(cat.id)}
+                className={`warda-tab-btn ${activeCategory === cat.id || activeCategory === cat.slug ? "warda-tab-btn--active" : ""}`}
+                onClick={() => handleCategoryChange(cat.slug || cat.id)}
               >
                 {catName}
               </button>
