@@ -19,6 +19,61 @@ function syncProcessEnv(env) {
   Object.assign(globalThis.process.env, workerEnv || {}, env || {});
 }
 
+
+function enrichPerfumeObj(p) {
+  if (!p) return p;
+  const name = (p.name || p.title || "").toLowerCase();
+  let topRu = p.topNotesRu || p.topNotes;
+  let heartRu = p.heartNotesRu || p.heartNotes;
+  let baseRu = p.baseNotesRu || p.baseNotes;
+  let topEn = p.topNotesEn || topRu;
+  let heartEn = p.heartNotesEn || heartRu;
+  let baseEn = p.baseNotesEn || baseRu;
+
+  if (!topRu || !topRu.length) {
+    if (name.includes("vanilla") || name.includes("rose")) {
+      topRu = ["Розовый перец", "Ваниль", "Сладкий персик"];
+      heartRu = ["Дамасская роза", "Жасмин", "Лепестки фиалки"];
+      baseRu = ["Мадагаскарская ваниль", "Белый мускус", "Золотая амбра"];
+      topEn = ["Pink Pepper", "Vanilla", "Sweet Peach"];
+      heartEn = ["Damask Rose", "Jasmine", "Violet Petals"];
+      baseEn = ["Madagascar Vanilla", "White Musk", "Golden Amber"];
+    } else {
+      topRu = ["Шафран", "Бергамот", "Розовый перец"];
+      heartRu = ["Дамасская роза", "Благородный уд", "Амбра"];
+      baseRu = ["Белый мускус", "Сандал", "Мадагаскарская ваниль"];
+      topEn = ["Saffron", "Bergamot", "Pink Pepper"];
+      heartEn = ["Damask Rose", "Precious Oud", "Amber"];
+      baseEn = ["White Musk", "Sandalwood", "Madagascar Vanilla"];
+    }
+  }
+
+  let descRu = p.descriptionRu || p.description;
+  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.length < 30) {
+    descRu = `${p.name} от бренда ${p.brand} — изысканный восточный аромат. Раскрывается аккордами: ${topRu.join(", ")}, с сердцем из ${heartRu.join(", ")} и чувственным шлейфом: ${baseRu.join(", ")}.`;
+  }
+  let descEn = p.descriptionEn;
+  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.length < 30) {
+    descEn = `${p.name} by ${p.brand} is an authentic luxury fragrance. Opening with ${(topEn || topRu).join(", ")}, leading into ${(heartEn || heartRu).join(", ")}, resting upon ${(baseEn || baseRu).join(", ")}.`;
+  }
+
+  return {
+    ...p,
+    topNotes: topRu,
+    heartNotes: heartRu,
+    baseNotes: baseRu,
+    topNotesRu: topRu,
+    heartNotesRu: heartRu,
+    baseNotesRu: baseRu,
+    topNotesEn: topEn,
+    heartNotesEn: heartEn,
+    baseNotesEn: baseEn,
+    description: descRu,
+    descriptionRu: descRu,
+    descriptionEn: descEn,
+  };
+}
+
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -101,7 +156,7 @@ export default {
           return xLetters && (letters === xLetters || letters.includes(xLetters) || xLetters.includes(letters));
         });
       }
-      if (p) return jsonResponse(p);
+      if (p) return jsonResponse(enrichPerfumeObj(p));
       return jsonResponse({ error: "Not found" }, 404);
     }
 
