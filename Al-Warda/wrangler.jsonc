@@ -4,6 +4,9 @@
   "main": "server/worker.js",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
+  "build": {
+    "command": "npm install && npm run build"
+  },
   "vars": {
     "SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
     "VITE_SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",

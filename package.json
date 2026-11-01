@@ -2,6 +2,11 @@
   "name": "al-warda-root",
   "private": true,
   "scripts": {
-    "build": "npm --prefix Al-Warda run build"
+    "build": "npm --prefix Al-Warda install && npm --prefix Al-Warda run build",
+    "predeploy": "npm run build",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.156.0"
   }
 }
