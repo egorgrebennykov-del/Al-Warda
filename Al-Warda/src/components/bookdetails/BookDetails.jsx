@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
-import { getPerfumeById, getPerfumes } from "../../../utils/perfumes";
+import { getPerfumeById, getPerfumes, ensurePerfumeEnrichment, getHarmoniousNotes } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
@@ -80,6 +80,32 @@ export default function BookDetails() {
     );
   }
 
+  const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
+  const isRu = language === "ru";
+  const notesFallback = enrichedPerfume ? getHarmoniousNotes(enrichedPerfume) : null;
+
+  const topNotes = (isRu
+    ? (enrichedPerfume?.topNotesRu?.length ? enrichedPerfume.topNotesRu : enrichedPerfume?.topNotes)
+    : (enrichedPerfume?.topNotesEn?.length ? enrichedPerfume.topNotesEn : enrichedPerfume?.topNotes)) || (isRu ? notesFallback?.ru?.top : notesFallback?.en?.top) || [];
+
+  const heartNotes = (isRu
+    ? (enrichedPerfume?.heartNotesRu?.length ? enrichedPerfume.heartNotesRu : enrichedPerfume?.heartNotes)
+    : (enrichedPerfume?.heartNotesEn?.length ? enrichedPerfume.heartNotesEn : enrichedPerfume?.heartNotes)) || (isRu ? notesFallback?.ru?.heart : notesFallback?.en?.heart) || [];
+
+  const baseNotes = (isRu
+    ? (enrichedPerfume?.baseNotesRu?.length ? enrichedPerfume.baseNotesRu : enrichedPerfume?.baseNotes)
+    : (enrichedPerfume?.baseNotesEn?.length ? enrichedPerfume.baseNotesEn : enrichedPerfume?.baseNotes)) || (isRu ? notesFallback?.ru?.base : notesFallback?.en?.base) || [];
+
+  let displayDesc = isRu
+    ? (enrichedPerfume?.descriptionRu || enrichedPerfume?.description)
+    : (enrichedPerfume?.descriptionEn || enrichedPerfume?.description);
+
+  if (!displayDesc || displayDesc.includes("Сертифицированная оригинальная") || displayDesc.length < 25) {
+    displayDesc = isRu
+      ? (enrichedPerfume?.name + " от легендарного дома " + enrichedPerfume?.brand + " — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами " + topNotes.join(", ") + ", переходя в сердце из " + heartNotes.join(", ") + ", и оставляет благородный стойкий шлейф: " + baseNotes.join(", ") + ".")
+      : (enrichedPerfume?.name + " by " + enrichedPerfume?.brand + " is an authentic luxury Arabian fragrance. Opening with notes of " + topNotes.join(", ") + ", unfolding into an alluring heart of " + heartNotes.join(", ") + ", enveloped in an opulent base of " + baseNotes.join(", ") + ".");
+  }
+
   return (
     <div className="warda-details-page">
       <div className="container">
@@ -136,7 +162,7 @@ export default function BookDetails() {
             </div>
 
             <p className="warda-details-desc">
-              {language === "ru" ? (perfume.descriptionRu || perfume.description) : (perfume.descriptionEn || perfume.description)}
+              {displayDesc}
             </p>
 
             {/* OLFACTORY PYRAMID */}
@@ -148,7 +174,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Верхние ноты:" : "Top Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {(language === "ru" ? (perfume.topNotesRu || perfume.topNotes) : (perfume.topNotesEn || perfume.topNotes))?.map((n) => (
+                    {topNotes.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>
@@ -157,7 +183,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Ноты сердца:" : "Heart Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {(language === "ru" ? (perfume.heartNotesRu || perfume.heartNotes) : (perfume.heartNotesEn || perfume.heartNotes))?.map((n) => (
+                    {heartNotes.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>
@@ -166,7 +192,7 @@ export default function BookDetails() {
                 <div className="warda-pyramid-step">
                   <span className="warda-step-name">{language === "ru" ? "Базовые ноты:" : "Base Notes:"}</span>
                   <div className="warda-notes-tags">
-                    {(language === "ru" ? (perfume.baseNotesRu || perfume.baseNotes) : (perfume.baseNotesEn || perfume.baseNotes))?.map((n) => (
+                    {baseNotes.map((n) => (
                       <span key={n} className="warda-note-tag">{n}</span>
                     ))}
                   </div>

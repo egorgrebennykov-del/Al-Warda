@@ -29,6 +29,181 @@ export function getPerfumeUrl(perfume) {
   return `/perfume/${slug}-${id}`;
 }
 
+
+export function getHarmoniousNotes(perfume) {
+  const name = ((perfume && (perfume.name || perfume.title)) || "").toLowerCase();
+  const cat = ((perfume && perfume.category) || "").toLowerCase();
+
+  // Keyword-specific tailored notes
+  if (name.includes("vanilla") || name.includes("rose")) {
+    return {
+      ru: {
+        top: ["Розовый перец", "Ваниль", "Сладкий персик"],
+        heart: ["Дамасская роза", "Жасмин", "Лепестки фиалки"],
+        base: ["Мадагаскарская ваниль", "Белый мускус", "Золотая амбра"],
+      },
+      en: {
+        top: ["Pink Pepper", "Vanilla", "Sweet Peach"],
+        heart: ["Damask Rose", "Jasmine", "Violet Petals"],
+        base: ["Madagascar Vanilla", "White Musk", "Golden Amber"],
+      },
+    };
+  }
+
+  if (name.includes("oud") || cat === "oud" || cat.includes("древес")) {
+    return {
+      ru: {
+        top: ["Шафран", "Мускатный орех", "Лаванда"],
+        heart: ["Благородный уд", "Кожаный аккорд", "Пачули"],
+        base: ["Серая амбра", "Дымный ладан", "Белый мускус"],
+      },
+      en: {
+        top: ["Saffron", "Nutmeg", "Lavender"],
+        heart: ["Precious Oud", "Leather Accord", "Patchouli"],
+        base: ["Grey Amber", "Smoky Frankincense", "White Musk"],
+      },
+    };
+  }
+
+  if (cat === "gourmand" || cat.includes("гурман")) {
+    return {
+      ru: {
+        top: ["Мадагаскарская ваниль", "Сладкий миндаль", "Бергамот"],
+        heart: ["Карамель", "Дамасская роза", "Взбитые сливки"],
+        base: ["Бурбонская ваниль", "Белый мускус", "Золотая амбра"],
+      },
+      en: {
+        top: ["Madagascar Vanilla", "Sweet Almond", "Bergamot"],
+        heart: ["Caramel", "Damask Rose", "Whipped Cream"],
+        base: ["Bourbon Vanilla", "White Musk", "Golden Amber"],
+      },
+    };
+  }
+
+  if (cat === "floral" || cat.includes("цвет")) {
+    return {
+      ru: {
+        top: ["Нероли", "Розовый перец", "Мандарин"],
+        heart: ["Дамасская роза", "Жасмин самбак", "Иланг-иланг"],
+        base: ["Белый мускус", "Сандал", "Светлая амбра"],
+      },
+      en: {
+        top: ["Neroli", "Pink Pepper", "Mandarin"],
+        heart: ["Damask Rose", "Jasmine Sambac", "Ylang-Ylang"],
+        base: ["White Musk", "Sandalwood", "Light Amber"],
+      },
+    };
+  }
+
+  if (cat === "fresh" || cat === "aquatic" || cat.includes("морск") || cat.includes("акват")) {
+    return {
+      ru: {
+        top: ["Морской бриз", "Бергамот", "Зеленое яблоко"],
+        heart: ["Свежая мята", "Лаванда", "Шалфей"],
+        base: ["Кедр", "Серая амбра", "Белый мускус"],
+      },
+      en: {
+        top: ["Sea Breeze", "Bergamot", "Green Apple"],
+        heart: ["Fresh Mint", "Lavender", "Clary Sage"],
+        base: ["Cedarwood", "Grey Amber", "White Musk"],
+      },
+    };
+  }
+
+  if (cat === "fougere" || cat.includes("фужер")) {
+    return {
+      ru: {
+        top: ["Французская лаванда", "Бергамот", "Мускатный шалфей"],
+        heart: ["Герань", "Черный перец", "Дубовый мох"],
+        base: ["Ветивер", "Кумарин", "Благородный кедр"],
+      },
+      en: {
+        top: ["French Lavender", "Bergamot", "Clary Sage"],
+        heart: ["Geranium", "Black Pepper", "Oakmoss"],
+        base: ["Vetiver", "Coumarin", "Noble Cedar"],
+      },
+    };
+  }
+
+  if (cat === "citrus-fresh" || cat.includes("цитрус")) {
+    return {
+      ru: {
+        top: ["Сицилийский бергамот", "Грейпфрут", "Лайм"],
+        heart: ["Флердоранж", "Имбирь", "Кардамон"],
+        base: ["Ветивер", "Белый кедр", "Амброксан"],
+      },
+      en: {
+        top: ["Sicilian Bergamot", "Grapefruit", "Lime"],
+        heart: ["Orange Blossom", "Ginger", "Cardamom"],
+        base: ["Vetiver", "White Cedar", "Ambroxan"],
+      },
+    };
+  }
+
+  // Universal oriental spicy fallback
+  return {
+    ru: {
+      top: ["Кардамон", "Розовый перец", "Корица"],
+      heart: ["Гвоздика", "Цветок шафрана", "Табак"],
+      base: ["Восточная амбра", "Бобы тонка", "Сандаловое дерево"],
+    },
+    en: {
+      top: ["Cardamom", "Pink Pepper", "Cinnamon"],
+      heart: ["Clove", "Saffron Blossom", "Tobacco"],
+      base: ["Oriental Amber", "Tonka Bean", "Sandalwood"],
+    },
+  };
+}
+
+export function ensurePerfumeEnrichment(p) {
+  if (!p) return p;
+  const name = p.name || p.title || "";
+  const brand = p.brand || "Al-Warda";
+  const notesFallback = getHarmoniousNotes(p);
+
+  const topRu = (Array.isArray(p.topNotesRu) && p.topNotesRu.length > 0)
+    ? p.topNotesRu
+    : (Array.isArray(p.topNotes) && p.topNotes.length > 0 ? p.topNotes : notesFallback.ru.top);
+
+  const heartRu = (Array.isArray(p.heartNotesRu) && p.heartNotesRu.length > 0)
+    ? p.heartNotesRu
+    : (Array.isArray(p.heartNotes) && p.heartNotes.length > 0 ? p.heartNotes : notesFallback.ru.heart);
+
+  const baseRu = (Array.isArray(p.baseNotesRu) && p.baseNotesRu.length > 0)
+    ? p.baseNotesRu
+    : (Array.isArray(p.baseNotes) && p.baseNotes.length > 0 ? p.baseNotes : notesFallback.ru.base);
+
+  const topEn = (Array.isArray(p.topNotesEn) && p.topNotesEn.length > 0) ? p.topNotesEn : notesFallback.en.top;
+  const heartEn = (Array.isArray(p.heartNotesEn) && p.heartNotesEn.length > 0) ? p.heartNotesEn : notesFallback.en.heart;
+  const baseEn = (Array.isArray(p.baseNotesEn) && p.baseNotesEn.length > 0) ? p.baseNotesEn : notesFallback.en.base;
+
+  let descRu = p.descriptionRu || p.description;
+  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.length < 30) {
+    descRu = `${name} от дома ${brand} — роскошный восточный аромат (${p.categoryRu || "восточные"}). Композиция открывается аккордами: ${topRu.join(", ")}, переходит в сердце из ${heartRu.join(", ")} и завершается чувственным шлейфом: ${baseRu.join(", ")}.`;
+  }
+
+  let descEn = p.descriptionEn;
+  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.length < 30) {
+    descEn = `${name} by ${brand} is an authentic luxury Arabian creation (${p.categoryEn || "oriental"}). Opens with vibrant notes of ${topEn.join(", ")}, unfolds into a rich heart of ${heartEn.join(", ")}, resting upon an opulent sillage of ${baseEn.join(", ")}.`;
+  }
+
+  return {
+    ...p,
+    topNotes: topRu,
+    heartNotes: heartRu,
+    baseNotes: baseRu,
+    topNotesRu: topRu,
+    heartNotesRu: heartRu,
+    baseNotesRu: baseRu,
+    topNotesEn: topEn,
+    heartNotesEn: heartEn,
+    baseNotesEn: baseEn,
+    description: descRu,
+    descriptionRu: descRu,
+    descriptionEn: descEn,
+  };
+}
+
 export async function fetchPerfumesFromSupabase() {
   try {
     const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
@@ -114,6 +289,8 @@ export async function fetchPerfumesFromSupabase() {
             descriptionRu: descRu,
             descriptionEn: descEn,
             info,
+            gtin: info.gtin || r.gtin,
+            dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
           };
           perfumeObj.url = getPerfumeUrl(perfumeObj);
           return perfumeObj;
@@ -140,12 +317,15 @@ export async function fetchDropshipArabianPerfumes(query = "") {
     if (res.ok) {
       const data = await res.json();
       const rawList = Array.isArray(data) ? data : (data.results || []);
-      const items = rawList.filter(
-        (p) =>
-          p.image &&
-          !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
-          (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
-      );
+      const items = rawList
+        .filter(
+          (p) =>
+            p.image &&
+            !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
+            (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+        )
+        .map(ensurePerfumeEnrichment);
+
       if (!query) {
         memoryDropshipCache = items;
       }
@@ -157,9 +337,9 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       if (fallbackRes.ok) {
         const fallbackData = await fallbackRes.json();
         const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
-        const items = rawList.filter(
-          (p) => p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063")
-        );
+        const items = rawList
+          .filter((p) => p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+          .map(ensurePerfumeEnrichment);
         if (!query) memoryDropshipCache = items;
         return items;
       }
@@ -174,22 +354,16 @@ export async function getPerfumes(options = {}) {
 
   // 1. In-memory hot cache
   if (memoryPerfumesCache && memoryDropshipCache) {
-    return includeDropship ? [...memoryPerfumesCache, ...memoryDropshipCache] : memoryPerfumesCache;
+    if (!includeDropship) return memoryPerfumesCache;
+    const existingGtins = new Set(memoryPerfumesCache.map((b) => b.gtin || b.info?.gtin).filter(Boolean));
+    const existingNames = new Set(memoryPerfumesCache.map((b) => (b.name || "").toLowerCase().trim()).filter(Boolean));
+    const uniqueDropship = memoryDropshipCache.filter(
+      (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
+    );
+    return [...memoryPerfumesCache, ...uniqueDropship];
   }
 
-  // 2. SessionStorage instant restore for 0ms transitions
-  if (typeof window !== "undefined" && !memoryDropshipCache) {
-    try {
-      const stored = sessionStorage.getItem("alwarda_perfumes_cache");
-      if (stored) {
-        memoryDropshipCache = JSON.parse(stored);
-      }
-    } catch {
-      // non-fatal
-    }
-  }
-
-  // 3. Parallel fetch of Supabase & Dropship catalogs
+  // 2. Parallel fetch of Supabase & Dropship catalogs
   const [supabaseResult, dropshipResult] = await Promise.allSettled([
     memoryPerfumesCache ? Promise.resolve(memoryPerfumesCache) : fetchPerfumesFromSupabase(),
     memoryDropshipCache ? Promise.resolve(memoryDropshipCache) : fetchDropshipArabianPerfumes(),
@@ -198,12 +372,13 @@ export async function getPerfumes(options = {}) {
   const base = supabaseResult.status === "fulfilled" ? supabaseResult.value : (memoryPerfumesCache || []);
   const dropship = dropshipResult.status === "fulfilled" ? dropshipResult.value : (memoryDropshipCache || []);
 
-  if (typeof window !== "undefined" && dropship.length > 0 && !sessionStorage.getItem("alwarda_perfumes_cache")) {
-    try {
-      sessionStorage.setItem("alwarda_perfumes_cache", JSON.stringify(dropship));
-    } catch {
-      // non-fatal storage quota
-    }
+  if (base.length > 0) {
+    const existingGtins = new Set(base.map((b) => b.gtin || b.info?.gtin).filter(Boolean));
+    const existingNames = new Set(base.map((b) => (b.name || "").toLowerCase().trim()).filter(Boolean));
+    const uniqueDropship = dropship.filter(
+      (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
+    );
+    return includeDropship ? [...base, ...uniqueDropship] : base;
   }
 
   return includeDropship ? [...base, ...dropship] : base;
@@ -218,43 +393,63 @@ export async function getPerfumeById(id) {
   const clean = String(id).toLowerCase().trim();
   const all = await getPerfumes();
 
-  // 1. Exact ID or slug match
+  // 1. Direct ID, slug, dropshipId, or GTIN match
   let found = all.find(
     (p) =>
       p.id?.toLowerCase() === clean ||
-      p.slug?.toLowerCase() === clean
+      p.slug?.toLowerCase() === clean ||
+      p.dropshipId?.toLowerCase() === clean ||
+      (p.gtin && `dropship-${p.gtin}`.toLowerCase() === clean) ||
+      (p.gtin && String(p.gtin).toLowerCase() === clean)
   );
-  if (found) return found;
+  if (found) return ensurePerfumeEnrichment(found);
 
-  // 2. Extract trailing ID from slug (e.g. "lattafa-yara-100ml-edp-3840" -> "3840" or "dropship-6291108730515")
-  const trailingDropship = clean.match(/(dropship-\d+)$/i);
+  // 2. Extract trailing dropship GTIN (e.g. "dropship-6285952002379" -> "6285952002379")
+  const trailingDropship = clean.match(/dropship-(\d+)$/i);
   if (trailingDropship) {
-    found = all.find((p) => p.id?.toLowerCase() === trailingDropship[1]);
-    if (found) return found;
+    found = all.find(
+      (p) =>
+        p.id?.toLowerCase() === `dropship-${trailingDropship[1]}` ||
+        p.dropshipId?.toLowerCase() === `dropship-${trailingDropship[1]}` ||
+        String(p.gtin) === trailingDropship[1] ||
+        String(p.id) === trailingDropship[1]
+    );
+    if (found) return ensurePerfumeEnrichment(found);
   }
+
+  // 3. Extract trailing stock ID (e.g. "lattafa-yara-4217" -> "4217")
   const trailingNum = clean.match(/-(\d+)$/);
   if (trailingNum) {
-    found = all.find((p) => p.id === trailingNum[1]);
-    if (found) return found;
+    found = all.find(
+      (p) =>
+        p.id === trailingNum[1] ||
+        String(p.gtin) === trailingNum[1] ||
+        p.dropshipId?.toLowerCase() === `dropship-${trailingNum[1]}`
+    );
+    if (found) return ensurePerfumeEnrichment(found);
   }
 
-  // 3. Match by name or slug match
+  // 4. Match by name or slug match
   const cleanLetters = clean.replace(/[^a-z0-9]/g, "");
   found = all.find((p) => {
     const pSlug = slugifyPerfumeName(p.name || p.title);
-    if (clean === pSlug || clean.startsWith(pSlug)) return true;
+    if (clean === pSlug || clean.startsWith(pSlug) || pSlug.startsWith(clean)) return true;
     const pLetters = (p.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    return pLetters === cleanLetters || cleanLetters.includes(pLetters) || pLetters.includes(cleanLetters);
+    return pLetters && (cleanLetters === pLetters || cleanLetters.includes(pLetters) || pLetters.includes(cleanLetters));
   });
-  if (found) return found;
+  if (found) return ensurePerfumeEnrichment(found);
 
-  // 4. Fallback search in dropship
+  // 5. Direct fallback search in dropship catalog
   if (clean.startsWith("dropship-") || clean.includes("dropship")) {
     const dropshipItems = await fetchDropshipArabianPerfumes();
     found = dropshipItems.find(
-      (p) => p.id?.toLowerCase() === clean || p.slug?.toLowerCase() === clean
+      (p) =>
+        p.id?.toLowerCase() === clean ||
+        p.slug?.toLowerCase() === clean ||
+        (p.gtin && `dropship-${p.gtin}`.toLowerCase() === clean) ||
+        (p.gtin && clean.includes(String(p.gtin)))
     );
-    if (found) return found;
+    if (found) return ensurePerfumeEnrichment(found);
   }
 
   return null;

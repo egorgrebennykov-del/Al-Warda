@@ -255,7 +255,20 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     rawImage: rawImageUrl,
     qogitaQid: qogitaItem.qid,
     gtin: gtin,
-    description: `${brand} - ${name}. Сертифицированная оригинальная арабская парфюмерия со складов поставщиков в ОАЭ и ЕС. Быстрая доставка дропшиппингом (4–7 рабочих дней). Покупка поштучно или от нескольких единиц.`,
+    categoryRu: "Восточные",
+    categoryEn: "Oriental",
+    topNotes: ["Шафран", "Бергамот", "Розовый перец"],
+    heartNotes: ["Дамасская роза", "Благородный уд", "Амбра"],
+    baseNotes: ["Белый мускус", "Сандал", "Мадагаскарская ваниль"],
+    topNotesRu: ["Шафран", "Бергамот", "Розовый перец"],
+    heartNotesRu: ["Дамасская роза", "Благородный уд", "Амбра"],
+    baseNotesRu: ["Белый мускус", "Сандал", "Мадагаскарская ваниль"],
+    topNotesEn: ["Saffron", "Bergamot", "Pink Pepper"],
+    heartNotesEn: ["Damask Rose", "Precious Oud", "Amber"],
+    baseNotesEn: ["White Musk", "Sandalwood", "Madagascar Vanilla"],
+    description: `${brand} ${name} — премиальный оригинальный арабский парфюм с богатой ольфакторной пирамидой.`,
+    descriptionRu: `${brand} ${name} — премиальный оригинальный арабский парфюм со стойким шлейфом.`,
+    descriptionEn: `${brand} ${name} is an authentic luxury Arabian fragrance with an opulent sillage.`,
   };
 }
 
