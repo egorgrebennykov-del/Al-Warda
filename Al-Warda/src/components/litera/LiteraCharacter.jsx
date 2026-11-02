@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const VALID_EMOTIONS = new Set([
   "neutral",
@@ -33,6 +33,10 @@ export default function LiteraCharacter({
   alt = "Yasmin - Al-Warda Fragrance Concierge",
 }) {
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [emotion]);
 
   const cleanEmotion = VALID_EMOTIONS.has(emotion) ? emotion : "neutral";
   const imageSrc = imgError
