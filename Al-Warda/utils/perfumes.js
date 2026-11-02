@@ -209,17 +209,36 @@ export function ensurePerfumeEnrichment(p) {
 
 export async function fetchPerfumesFromSupabase() {
   try {
-    const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    });
-    if (res.ok) {
+    let allRows = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          Range: `${from}-${to}`,
+        },
+      });
+
+      if (!res.ok) break;
       const rows = await res.json();
-      if (Array.isArray(rows) && rows.length > 0) {
-        // Map database fields to standard schema
-        const mapped = rows.map((r) => {
+      if (!Array.isArray(rows) || rows.length === 0) break;
+      allRows.push(...rows);
+      if (rows.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+
+    if (allRows.length > 0) {
+      // Map database fields to standard schema
+      const mapped = allRows.map((r) => {
           const info = r.info || {};
           let catSlug = info.categorySlug || "spicy";
           const catLower = (info.category || "").toLowerCase();
@@ -302,7 +321,6 @@ export async function fetchPerfumesFromSupabase() {
         memoryPerfumesCache = mapped;
         return mapped;
       }
-    }
   } catch (err) {
     console.warn("fetchPerfumesFromSupabase error:", err);
   }
