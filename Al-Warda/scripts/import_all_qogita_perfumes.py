@@ -1,0 +1,181 @@
+import os
+import sys
+import json
+import hashlib
+import time
+import requests
+import urllib3
+
+urllib3.disable_warnings()
+
+APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENRICHED_STOCKS_PATH = os.path.join(APP_DIR, "server", "data", "enrichedStocks.json")
+DROPSHIP_DIR = os.path.join(APP_DIR, "public", "assets", "img", "dropship")
+
+sys.path.insert(0, APP_DIR)
+from scripts.qogita_weekly_sync_upscayl import (
+    QogitaSyncClient, ARABIAN_BRANDS, sync_to_supabase, save_enriched_stocks
+)
+
+print("=" * 65)
+print("AL-WARDA - FULL CATALOG IMPORT FROM QOGITA FOR ALL BRANDS")
+print("=" * 65)
+
+client = QogitaSyncClient()
+client.login()
+print(f"✓ Authenticated with Qogita ({client.email})")
+
+# Load existing catalog
+if os.path.exists(ENRICHED_STOCKS_PATH):
+    with open(ENRICHED_STOCKS_PATH, "r", encoding="utf-8") as f:
+        enriched = json.load(f)
+else:
+    enriched = {}
+
+print(f"Current catalog size: {len(enriched)} perfumes")
+
+all_synced_perfumes = []
+new_count = 0
+updated_count = 0
+
+for brand in ARABIAN_BRANDS:
+    page = 1
+    brand_items = []
+    
+    while page <= 5: # Up to 500 items per brand
+        url = f"{client.api_url}/public/buyers/products/?brand_name={requests.utils.quote(brand)}&page={page}&page_size=100"
+        try:
+            res = client.session.get(url, timeout=20)
+            if res.status_code != 200:
+                break
+            results = res.json().get("results", [])
+            if not results:
+                break
+            brand_items.extend(results)
+            if len(results) < 100:
+                break
+            page += 1
+        except Exception as e:
+            print(f"Error fetching page {page} for {brand}: {e}")
+            break
+
+    # If brand_name returned nothing, try search fallback
+    if not brand_items:
+        url2 = f"{client.api_url}/public/buyers/products/?search={requests.utils.quote(brand)}&page_size=100"
+        try:
+            res2 = client.session.get(url2, timeout=20)
+            if res2.status_code == 200:
+                for it in res2.json().get("results", []):
+                    nm = (it.get("name") or "").lower()
+                    if brand.lower() in nm and not any(bad in nm for bad in ["serum", "mask", "cream", "pad", "sunscreen", "cleanser", "shampoo"]):
+                        brand_items.append(it)
+        except Exception as e:
+            pass
+
+    print(f"[{brand}] Retrieved {len(brand_items)} in-stock items")
+
+    for item in brand_items:
+        name = item.get("name")
+        raw_img = item.get("imageUrl")
+        if not name:
+            continue
+
+        price = item.get("price") or 25.0
+        if isinstance(price, dict):
+            amount = float(price.get("amount") or 25.0)
+            currency = price.get("currency") or "EUR"
+        else:
+            amount = float(price or 25.0)
+            currency = "EUR"
+
+        gtin = item.get("gtin")
+        h = hashlib.md5((raw_img or name).encode("utf-8")).hexdigest()
+        local_png_path = os.path.join(DROPSHIP_DIR, f"{h}.png")
+        
+        # Check if we already have an upscaled local image
+        if os.path.exists(local_png_path) and os.path.getsize(local_png_path) > 10000:
+            img_url = f"/assets/img/dropship/{h}.png"
+        elif raw_img:
+            img_url = raw_img
+        else:
+            img_url = "/assets/img/perfumes/hero-perfume.png"
+
+        key = f"dropship-{gtin or h[:12]}"
+
+        # Category and notes detection
+        nm_lower = name.lower()
+        if any(w in nm_lower for w in ["fresh", "aqua", "marine", "ice", "cool", "blue", "bleu"]):
+            cat = "Свежие"
+        elif any(w in nm_lower for w in ["floral", "rose", "jasmine", "blossom", "flower"]):
+            cat = "Цветочные"
+        elif any(w in nm_lower for w in ["vanilla", "sweet", "caramel", "candy", "sugar", "tonka"]):
+            cat = "Гурманские"
+        elif any(w in nm_lower for w in ["oud", "wood", "cedar", "sandal", "leather"]):
+            cat = "Древесные"
+        elif any(w in nm_lower for w in ["spice", "pepper", "saffron", "amber", "ambery"]):
+            cat = "Пряные"
+        else:
+            cat = "Восточные"
+
+        gender = "Женский" if any(w in nm_lower for w in ["femme", "woman", "women", "her", "mademoiselle"]) else (
+            "Мужской" if any(w in nm_lower for w in ["homme", "man", "men", "him"]) else "Унисекс"
+        )
+
+        perfume_entry = {
+            "name": name,
+            "brand": brand,
+            "price": round(amount, 2),
+            "currency": currency,
+            "image": img_url,
+            "rawImage": raw_img,
+            "gtin": gtin,
+            "category": cat,
+            "gender": gender,
+            "notesSummary": f"{brand} · Элитный восточный парфюм",
+        }
+        all_synced_perfumes.append(perfume_entry)
+
+        if key not in enriched:
+            new_count += 1
+            enriched[key] = {
+                "name": name,
+                "brand": brand,
+                "price": round(amount, 2),
+                "image": img_url,
+                "info": {
+                    "category": cat,
+                    "gender": gender,
+                    "notesSummary": f"{brand} · Премиальный арабский парфюм",
+                    "longevity": "10–14 часов",
+                    "sillage": "Заметный, шлейфовый",
+                    "volume": "100 мл EDP",
+                    "descriptionRu": f"{name} — оригинальный премиальный парфюм бренда {brand}.",
+                    "rawImage": raw_img,
+                    "gtin": gtin
+                }
+            }
+        else:
+            # Update price or image if newly available
+            enriched[key]["price"] = round(amount, 2)
+            if img_url.startswith("/assets/img/dropship/"):
+                enriched[key]["image"] = img_url
+            updated_count += 1
+
+print(f"\nTotal products fetched from Qogita: {len(all_synced_perfumes)}")
+print(f"New catalog additions: {new_count}")
+print(f"Updated existing items: {updated_count}")
+
+# Save full catalog to enrichedStocks.json
+save_enriched_stocks(enriched)
+print(f"✓ Saved {len(enriched)} items to {ENRICHED_STOCKS_PATH}")
+
+# Sync all to Supabase in batches
+print(f"\nSynchronizing all {len(all_synced_perfumes)} perfumes to Supabase...")
+batch_size = 100
+synced_total = 0
+for i in range(0, len(all_synced_perfumes), batch_size):
+    batch = all_synced_perfumes[i:i + batch_size]
+    synced_total += sync_to_supabase(batch)
+
+print(f"✓ Synced {synced_total} items to Supabase 'stocks' table!")
+print("\n🎉 Full catalog import completed successfully!")
