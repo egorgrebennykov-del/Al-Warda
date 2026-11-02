@@ -11,27 +11,57 @@ const POPULAR_ARABIAN_BRANDS = [
   "Lattafa",
   "Armaf",
   "Afnan",
-  "Al Haramain",
-  "Amouage",
-  "Arabian Oud",
   "Ajmal",
-  "Ard Al Zaafaran",
-  "Rasasi",
-  "Swiss Arabian",
-  "Maison Alhambra",
-  "French Avenue",
-  "Khadlaj",
+  "Al Fares",
+  "Al Haramain",
+  "Al Majed for Oud",
+  "Al Rehab",
   "Al Wataniah",
-  "Zimaya",
-  "Rayhaan",
+  "Amouage",
+  "Anfas",
+  "Arabian Oud",
+  "Ard Al Zaafaran",
   "Asdaaf",
+  "Atyab Al Marshoud",
   "Ayat Perfumes",
+  "Azha",
+  "Azhaara",
+  "Clive Dorris",
+  "Emper",
+  "Flavia",
+  "Fragrance World",
+  "French Avenue",
+  "Grandeur",
   "Gulf Orchid",
-  "Maison Asrar",
+  "Hamidi",
+  "Hayaati",
+  "Hekayat Attar",
+  "Jenny Glow",
+  "Just Jack",
+  "Khadlaj",
+  "Khalis",
+  "La Fede",
+  "Le Falcone",
+  "Maison Alhambra",
+  "Mamlakt Al Oud",
+  "Ministry of Oud",
+  "Myperfumes",
+  "Nabeel",
+  "Ojar",
+  "Orientica",
+  "Paris Corner",
+  "Prime Collection",
+  "Privezarah",
+  "Rasasi",
+  "Rayhaan",
   "Riiffs",
-  "Reef",
-  "Nishane",
-  "Al-Warda",
+  "Risala",
+  "Shaikh Mohd Saeed",
+  "Sterling Parfums",
+  "Swiss Arabian",
+  "Tayyib",
+  "Vurv",
+  "Zimaya",
 ];
 
 const PAGE_SIZE = 21;
@@ -125,8 +155,12 @@ export default function SearchResults() {
 
     // Filter by Brand
     if (selectedBrand !== "All") {
-      const b = selectedBrand.toLowerCase();
-      filtered = filtered.filter((p) => p.brand.toLowerCase().includes(b));
+      const b = selectedBrand.toLowerCase().replace(/[^a-z0-9]/g, "");
+      filtered = filtered.filter((p) => {
+        const brandClean = (p.brand || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const nameClean = (p.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        return brandClean.includes(b) || nameClean.includes(b);
+      });
     }
 
     setResults(filtered);

@@ -77,11 +77,18 @@ SUPABASE_KEY = (
 )
 
 ARABIAN_BRANDS = [
-    "Lattafa", "Armaf", "Afnan", "Al Haramain", "Maison Alhambra",
-    "Rasasi", "Swiss Arabian", "Arabian Oud", "Ard Al Zaafaran",
-    "Khadlaj", "Riiffs", "Zimaya", "Gulf Orchid", "Rayhaan",
-    "Orientica", "Al Rehab", "Nabeel", "Fragrance World", "Ayat Perfumes",
-    "Ajmal", "Asdaaf", "Paris Corner"
+    # All 44 requested Arabian perfume brands
+    "Afnan", "Ajmal", "Al Fares", "Al Haramain", "Al Majed for Oud",
+    "Al Wataniah", "Anfas", "Ard Al Zaafaran", "Armaf", "Asdaaf",
+    "Atyab Al Marshoud", "Azha", "Azhaara", "Clive Dorris", "Emper",
+    "Flavia", "Fragrance World", "Grandeur", "Hamidi", "Hayaati",
+    "Hekayat Attar", "Jenny Glow", "Just Jack", "Khadlaj", "Khalis",
+    "La Fede", "Lattafa", "Le Falcone", "Mamlakt Al Oud", "Ministry of Oud",
+    "Myperfumes", "Ojar", "Orientica", "Paris Corner", "Prime Collection",
+    "Privezarah", "Rasasi", "RiiFs", "Risala", "Shaikh Mohd Saeed",
+    "Sterling Parfums", "Tayyib", "Vurv", "Zimaya",
+    # Signature houses
+    "Maison Alhambra", "Swiss Arabian", "Arabian Oud", "Al Rehab", "French Avenue", "Rayhaan"
 ]
 
 # Locate Upscayl Executable
@@ -133,21 +140,32 @@ class QogitaSyncClient:
         raise RuntimeError(f"Qogita login failed: {res.status_code} - {res.text}")
 
     def fetch_brand_perfumes(self, brand_name, limit=25):
-        url = f"{self.api_url}/public/buyers/products/?search={brand_name}&page_size={limit}"
+        # 1. Try brand_name parameter first
+        url = f"{self.api_url}/public/buyers/products/?brand_name={requests.utils.quote(brand_name)}&page_size={limit}"
         try:
             res = self.session.get(url, timeout=20)
             if res.status_code == 200:
-                data = res.json()
-                results = data.get("results", [])
+                results = res.json().get("results", [])
+                if results:
+                    return results[:limit]
+        except Exception:
+            pass
+
+        # 2. Fallback to search parameter
+        url2 = f"{self.api_url}/public/buyers/products/?search={requests.utils.quote(brand_name)}&page_size=50"
+        try:
+            res2 = self.session.get(url2, timeout=20)
+            if res2.status_code == 200:
+                results = res2.json().get("results", [])
                 filtered = []
                 for it in results:
                     name = (it.get("name") or "").lower()
                     # Filter out non-perfume items
-                    if any(bad in name for bad in ["serum", "retinal", "mask", "cream", "booster", "sunscreen", "cleanser", "shampoo"]):
+                    if any(bad in name for bad in ["serum", "retinal", "mask", "cream", "booster", "sunscreen", "cleanser", "shampoo", "pad"]):
                         continue
-                    if any(frag in name for frag in ["edp", "edt", "parfum", "eau de", "perfume", "fragrance", "cologne", "100ml", "50ml", "75ml", "90ml"]) or brand_name.lower() in name:
+                    if brand_name.lower() in name or any(frag in name for frag in ["edp", "edt", "parfum", "eau de", "perfume", "fragrance", "cologne"]):
                         filtered.append(it)
-                return filtered
+                return filtered[:limit]
         except Exception as e:
             print(f"Warning: Failed to fetch products for {brand_name}: {e}")
         return []

@@ -480,6 +480,22 @@ async function main() {
     });
   }
 
+  // Also include any new brands/items present in enrichedCache
+  const processedNames = new Set(enrichedList.map((e) => (e.name || "").toLowerCase()));
+  for (const [k, enriched] of Object.entries(enrichedCache)) {
+    if (enriched && enriched.name && !processedNames.has(enriched.name.toLowerCase())) {
+      enrichedList.push({
+        name: enriched.name,
+        brand: enriched.brand || "Al-Warda",
+        price: enriched.price || 29.99,
+        image: enriched.image || "/assets/img/perfumes/hero-perfume.png",
+        description: enriched.description || enriched.info?.descriptionRu || "",
+        info: enriched.info || {},
+      });
+      processedNames.add(enriched.name.toLowerCase());
+    }
+  }
+
   fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
   console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`);
 
