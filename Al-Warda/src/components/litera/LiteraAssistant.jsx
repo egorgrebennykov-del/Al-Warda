@@ -25,11 +25,9 @@ const generateId = (prefix) => `${prefix}-${Date.now()}-${++idCounter}`;
 const getNowIso = () => new Date().toISOString();
 
 const STORE_NAMES = {
-  "librarius.md": "Librarius",
-  "carturesti.md": "Cărturești",
-  "ulysses.md": "Ulysses",
-  "carteamea.md": "CarteaMea",
-  "biblion.md": "Biblion",
+  "alwarda.ae": "Al-Warda Boutique",
+  "dubai": "Dubai Hub",
+  "uae": "UAE Hub",
 };
 
 export default function LiteraAssistant() {
@@ -867,7 +865,7 @@ export default function LiteraAssistant() {
                       {Array.isArray(msg.books) && msg.books.length > 0 && (
                         <div className="litera-books-container">
                           <div className="litera-books-container__label">
-                            <i className="ri-book-read-line" />
+                            <i className="ri-sparkling-2-line" />
                             <span>{t("assistant.recommendationsTitle")}</span>
                           </div>
                           <div className="litera-books-grid">

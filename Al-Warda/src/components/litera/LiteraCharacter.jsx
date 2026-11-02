@@ -4,6 +4,7 @@ const VALID_EMOTIONS = new Set([
   "neutral",
   "happy",
   "laughing",
+  "laughting",
   "thinking",
   "curious",
   "surprised",
@@ -17,6 +18,11 @@ const VALID_EMOTIONS = new Set([
   "error",
   "messageRead",
   "blushing",
+  "shy",
+  "friendly",
+  "reassuring",
+  "welcoming",
+  "confident",
 ]);
 
 export default function LiteraCharacter({
@@ -45,6 +51,7 @@ export default function LiteraCharacter({
       tabIndex={onClick ? 0 : undefined}
       aria-label={alt}
     >
+      <div className="litera-character__aura" aria-hidden="true" />
       <img
         src={imageSrc}
         alt={alt}

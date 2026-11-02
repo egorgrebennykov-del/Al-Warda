@@ -161,9 +161,9 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  border: 2px solid #d4af37;
-  background: radial-gradient(circle at 35% 30%, #2a2015 0%, #0d0a08 75%, #050403 100%);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.95), 0 0 22px rgba(212, 175, 55, 0.45);
+  border: 2px solid #e5c07b;
+  background: radial-gradient(circle at 45% 35%, #3d2c18 0%, #1e150c 55%, #0d0a08 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95), 0 0 24px rgba(212, 175, 55, 0.55), inset 0 0 14px rgba(212, 175, 55, 0.2);
   cursor: pointer;
   padding: 3px;
   position: relative;
@@ -216,8 +216,9 @@
   animation: literaPulse 2s infinite;
 }
 
-/* Character Component Base */
+/* Character Component Base with Golden Aura Backdrop */
 .litera-character {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -225,11 +226,30 @@
   transition: transform 0.3s ease;
 }
 
+.litera-character__aura {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.42) 0%,
+    rgba(212, 175, 55, 0.18) 45%,
+    rgba(180, 130, 30, 0.05) 65%,
+    transparent 80%
+  );
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(10px);
+}
+
 .litera-character__image {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.55))
+          drop-shadow(0 4px 20px rgba(0, 0, 0, 0.95));
 }
 
 /* Chat Window Wrapper */
@@ -370,10 +390,10 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #120e09;
+  background: radial-gradient(circle at center, #2e2316 0%, #15100a 70%, #0d0a08 100%);
   padding: 2px;
-  border: 1.5px solid #d4af37;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  border: 1.5px solid #e5c07b;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
   overflow: visible;
 }
 
@@ -521,6 +541,10 @@
   border-radius: 50%;
   flex-shrink: 0;
   margin-bottom: 2px;
+  background: radial-gradient(circle at center, #2e2316 0%, #120e0a 80%);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+  overflow: hidden;
 }
 
 .litera-msg-bubble-wrap {
