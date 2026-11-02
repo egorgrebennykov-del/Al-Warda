@@ -25,6 +25,11 @@ Al-Warda/.env.*
 logs/
 *.log
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
 # System files
 .DS_Store
 Thumbs.db

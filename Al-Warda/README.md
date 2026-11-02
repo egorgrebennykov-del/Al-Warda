@@ -1,15 +1,15 @@
-# Litera — Online Bookstore & Book Discovery Platform (React SPA)
+# Al-Warda — Luxury Arabian Perfume Boutique (React SPA & Cloudflare Worker)
 
-**Litera** is a full-featured Single Page Application (SPA) built with **React 19**, **React Router**, **Supabase (PostgreSQL REST & Realtime BaaS)**, and a **Cloudflare Worker / Node.js API** backend. It aggregates Russian-language books across major bookstores with automatic EUR currency conversion, AI-powered book discovery (**Litera AI Assistant**), customer reviews with automated AI moderation and translation, shopping cart, multi-step checkout with promo coupons, order tracking, live support messenger, and a role-based Admin Control Panel.
+**Al-Warda** is an exclusive Arabian perfumery boutique Single Page Application (SPA) built with **React 19**, **React Router**, **Supabase (PostgreSQL REST & Realtime BaaS)**, and a **Cloudflare Worker / Node.js API** backend. It offers over 1,000+ authentic Oriental fragrances (Lattafa, Armaf, Amouage, Arabian Oud, Afnan, Rasasi, etc.) with automated stock synchronization, AI perfume sommelier discovery (**Yasmin Fragrance Concierge**), olfactory pyramid notes filtering, shopping cart, checkout, order tracking, and a role-based Admin Control Panel (`/privileged`).
 
 ---
 
 ## 🌐 Live Deployment & Repository Links
 
-- **Live Deployed Application:** [https://litera.egor-grebennykov.workers.dev](https://litera.egor-grebennykov.workers.dev)
-- **Cloudflare Worker Service View (View Worker status & config without login):** [https://litera.egor-grebennykov.workers.dev/cloudflare.html](https://litera.egor-grebennykov.workers.dev/cloudflare.html)
-- **Supabase Database Explorer (View all tables without login):** [https://litera.egor-grebennykov.workers.dev/supabase.html](https://litera.egor-grebennykov.workers.dev/supabase.html)
-- **GitHub Repository:** [https://github.com/egorgrebennykov-del/Litera](https://github.com/egorgrebennykov-del/Litera)
+- **Live Deployed Application:** [https://al-warda.egor-grebennykov.workers.dev](https://al-warda.egor-grebennykov.workers.dev)
+- **Cloudflare Worker Service View:** [https://al-warda.egor-grebennykov.workers.dev/cloudflare.html](https://al-warda.egor-grebennykov.workers.dev/cloudflare.html)
+- **Supabase Database Explorer:** [https://al-warda.egor-grebennykov.workers.dev/supabase.html](https://al-warda.egor-grebennykov.workers.dev/supabase.html)
+- **GitHub Repository:** [https://github.com/egorgrebennykov-del/Al-Warda](https://github.com/egorgrebennykov-del/Al-Warda)
 
 ---
 
@@ -36,16 +36,16 @@ There are **3 pre-configured test accounts** in the database — 2 privileged ac
 
 ### 1. Clone the Repository & Install Dependencies
 ```bash
-git clone https://github.com/egorgrebennykov-del/Litera.git
-cd Litera/Litera
+git clone https://github.com/egorgrebennykov-del/Al-Warda.git
+cd Al-Warda/Al-Warda
 npm install
 ```
 
 ### 2. Configure Environment Variables
-The public Supabase URL and publishable key are already pre-configured as defaults in the application, or you can specify them in a `.env` file in the `Litera/` project root:
+The public Supabase URL and publishable key are already pre-configured as defaults in the application, or you can specify them in a `.env` file in the `Al-Warda/` project root:
 ```env
-VITE_SUPABASE_URL=https://qgxiisgzwcsevzyaoxvl.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_b9UI3PiZhUvPTcroS9oMOg_NyHBwtxw
+VITE_SUPABASE_URL=https://mfvenfrmlkxqgvdtedet.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB
 VITE_GEMINI_API_KEY=<your_gemini_api_key>
 VITE_EMAILJS_PUBLIC_KEY=<your_emailjs_public_key>
 VITE_EMAILJS_SERVICE_ID=service_zzl5x89

@@ -50,8 +50,8 @@ export default function LiteraCharacter({
         alt={alt}
         className="litera-character__image"
         onError={(e) => {
-          if (!e.target.src.includes("/images/litera/")) {
-            e.target.src = `/images/litera/${cleanEmotion}.png`;
+          if (!e.target.src.includes("neutral.png")) {
+            e.target.src = "/assets/img/litera_assistant/neutral.png";
           } else {
             setImgError(true);
           }

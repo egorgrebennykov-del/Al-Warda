@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Supabase Database Explorer — Litera (qgxiisgzwcsevzyaoxvl)</title>
+    <title>Supabase Database Explorer — Al-Warda (mfvenfrmlkxqgvdtedet)</title>
     <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
     <style>
       :root {
@@ -261,15 +261,15 @@
   <body>
     <header>
       <div class="brand">
-        <span>⚡ Supabase Database Explorer</span>
-        <span class="brand-badge">project: qgxiisgzwcsevzyaoxvl</span>
+        <span>⚡ Supabase Database Explorer — Al-Warda</span>
+        <span class="brand-badge">project: mfvenfrmlkxqgvdtedet</span>
         <span class="brand-badge">public read access</span>
       </div>
       <div class="header-actions">
         <a class="btn" id="rawRestLink" href="#" target="_blank" rel="noopener">
           Open Direct REST JSON ↗
         </a>
-        <a class="btn btn-primary" href="/">← Back to Litera Store</a>
+        <a class="btn btn-primary" href="/">← Back to Al-Warda Boutique</a>
       </div>
     </header>
 
@@ -304,22 +304,18 @@
     </div>
 
     <script>
-      const SUPABASE_URL = "https://qgxiisgzwcsevzyaoxvl.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_b9UI3PiZhUvPTcroS9oMOg_NyHBwtxw";
+      const SUPABASE_URL = "https://mfvenfrmlkxqgvdtedet.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
       const TABLES = [
-        { name: "user", select: "id,created_at,firstName,lastName,email,phone,status,role,adresses" },
+        { name: "stocks", select: "*" },
+        { name: "user", select: "id,created_at,firstname,lastname,email,phone,status,role" },
         { name: "feedbacks", select: "*" },
         { name: "cart", select: "*" },
         { name: "orders_in_progress", select: "*" },
         { name: "coupons", select: "*" },
         { name: "announcements", select: "*" },
         { name: "inquiries", select: "*" },
-        { name: "books_on_home_page", select: "*" },
-        { name: "book_picks", select: "*" },
-        { name: "discounts", select: "*" },
-        { name: "new_books", select: "*" },
-        { name: "exchange_rate", select: "*" },
       ];
 
       let activeTable = TABLES[0];
