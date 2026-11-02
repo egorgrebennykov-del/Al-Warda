@@ -139,6 +139,34 @@ class QogitaSyncClient:
             return True
         raise RuntimeError(f"Qogita login failed: {res.status_code} - {res.text}")
 
+    def get_with_retry(self, url, max_retries=3):
+        for attempt in range(max_retries):
+            try:
+                res = self.session.get(url, timeout=25)
+                if res.status_code == 200:
+                    return res
+                elif res.status_code == 401:
+                    print("Token expired (401), re-authenticating with Qogita...")
+                    self.login()
+                    time.sleep(1.0)
+                    continue
+                elif res.status_code == 429:
+                    wait_time = (attempt + 1) * 3.0
+                    print(f"Rate limited (429) by Qogita. Pausing {wait_time}s before retry (attempt {attempt+1}/{max_retries})...")
+                    time.sleep(wait_time)
+                    continue
+                elif res.status_code >= 500:
+                    time.sleep(2.0)
+                    continue
+                else:
+                    return res
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    print(f"HTTP request error: {e}")
+                    return None
+                time.sleep(1.5)
+        return None
+
     def fetch_brand_perfumes(self, brand_name, limit=None):
         items = []
         page = 1
@@ -149,8 +177,8 @@ class QogitaSyncClient:
         while page <= max_pages:
             url = f"{self.api_url}/public/buyers/products/?brand_name={requests.utils.quote(brand_name)}&page={page}&page_size={page_size}"
             try:
-                res = self.session.get(url, timeout=25)
-                if res.status_code != 200:
+                res = self.get_with_retry(url)
+                if res is None or res.status_code != 200:
                     break
                 batch = res.json().get("results", [])
                 if not batch:
@@ -162,6 +190,7 @@ class QogitaSyncClient:
                 if len(batch) < page_size:
                     break
                 page += 1
+                time.sleep(0.3)  # Gentle spacing to avoid 429 rate limit
             except Exception as e:
                 print(f"Warning: page fetch failed for {brand_name} (page {page}): {e}")
                 break
@@ -172,8 +201,8 @@ class QogitaSyncClient:
             while page <= 5:
                 url2 = f"{self.api_url}/public/buyers/products/?search={requests.utils.quote(brand_name)}&page={page}&page_size=100"
                 try:
-                    res2 = self.session.get(url2, timeout=25)
-                    if res2.status_code != 200:
+                    res2 = self.get_with_retry(url2)
+                    if res2 is None or res2.status_code != 200:
                         break
                     batch2 = res2.json().get("results", [])
                     if not batch2:
@@ -193,10 +222,12 @@ class QogitaSyncClient:
                     if len(batch2) < 100:
                         break
                     page += 1
+                    time.sleep(0.3)
                 except Exception as e:
                     print(f"Warning: search fallback error for {brand_name}: {e}")
                     break
 
+        time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
 # Background Cutout Engine

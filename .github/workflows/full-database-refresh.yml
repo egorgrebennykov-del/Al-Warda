@@ -84,7 +84,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action [Full Database Refresh]"
-          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/ Al-Warda/dist/
+          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
