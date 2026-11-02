@@ -441,9 +441,9 @@ export const translations = {
     "privileged.orders.empty": "В этой категории пока нет заказов",
 
     // Privileged Git Actions Tab
-    "privileged.gitActions.title": "GitHub Actions & Автоматизации",
+    "privileged.gitActions.title": "GitHub Actions & Автоматизации Каталога",
     "privileged.gitActions.subtitle":
-      "Автоматические воркфлоу скрапинга и обновления каталога книг",
+      "Облачные пайплайны синхронизации парфюмерии Qogita, вырезки фона (rembg) и апскейла UltraSharp 4x",
     "privileged.gitActions.openGithub": "Открыть GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Запустить / Проверить ↗",
     "privileged.gitActions.run": "Запустить",
@@ -463,16 +463,21 @@ export const translations = {
     "privileged.gitActions.closeLogs": "Закрыть",
     "privileged.gitActions.noLogs": "Логи отсутствуют",
     "privileged.gitActions.repoLabel": "Репозиторий проекта на GitHub: ",
-    "privileged.gitActions.wfBookPicksDesc":
-      "Сбор и обновление кураторской подборки книг из магазинов Молдовы (раз в неделю по понедельникам в 03:00).",
-    "privileged.gitActions.wfHomeBooksDesc":
-      "Актуализация книг для витрины главной страницы сайта (раз в месяц 1-го числа в 03:00).",
-    "privileged.gitActions.wfNewBooksDesc":
-      "Сканирование книжных новинок и обновление каталога новинок (раз в неделю по понедельникам в 03:00).",
+    "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Инкрементальная синхронизация)",
+    "privileged.gitActions.wfSmartSyncDesc":
+      "Сверяет ассортимент 44+ брендов с базой Qogita, находит новинки и изменения цен. Автоматически вырезает фон (rembg) и увеличивает фото до UltraSharp 4x (каждый понедельник в 04:00 UTC или вручную).",
+    "privileged.gitActions.wfBrandSyncTitle": "Синхронизация выбранных брендов",
+    "privileged.gitActions.wfBrandSyncDesc":
+      "Точечное обновление каталога или внесение новинок по списку указанных брендов (Lattafa, Armaf, Azha, Emper и др.) с апскейлом UltraSharp 4x.",
+    "privileged.gitActions.wfFullRefreshTitle": "Полное обновление базы (Full Refresh)",
+    "privileged.gitActions.wfFullRefreshDesc":
+      "Генеральное обновление всех 44+ брендов, полная синхронизация таблиц Supabase 'stocks', проверка цен, статусов и пересборка продакшн-каталога.",
+    "privileged.gitActions.wfLocalUpscaylTitle": "Локальный запуск Upscayl (на видеокарте ПК)",
+    "privileged.gitActions.wfLocalUpscaylDesc":
+      "Прямой запуск AI-пайплайна на видеокарте компьютера через установленный C:\\Program Files\\Upscayl.",
+    "privileged.gitActions.wfExchangeRateTitle": "Синхронизация курсов валют (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
-      "Синхронизация официальных курсов валют MDL/EUR (раз в день в 03:00).",
-    "privileged.gitActions.wfDiscountsDesc":
-      "Сбор и актуализация акционных книг со скидками в Supabase (раз в день в 03:00).",
+      "Обновление официальных курсов конвертации цен парфюмерии.",
 
     // Al-Warda AI Fragrance Concierge
     "assistant.name": "Ясмин",
@@ -974,9 +979,9 @@ export const translations = {
     "privileged.orders.empty": "No orders in this category yet",
 
     // Privileged Git Actions Tab
-    "privileged.gitActions.title": "GitHub Actions & Automations",
+    "privileged.gitActions.title": "GitHub Actions & Catalog Automations",
     "privileged.gitActions.subtitle":
-      "Automated workflows for scraping and updating book catalog",
+      "Cloud pipelines for Qogita fragrance sync, AI background cutout (rembg), and UltraSharp 4x upscaling",
     "privileged.gitActions.openGithub": "Open GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Run / Check ↗",
     "privileged.gitActions.run": "Run",
@@ -996,16 +1001,21 @@ export const translations = {
     "privileged.gitActions.closeLogs": "Close",
     "privileged.gitActions.noLogs": "No logs available",
     "privileged.gitActions.repoLabel": "Project repository on GitHub: ",
-    "privileged.gitActions.wfBookPicksDesc":
-      "Collecting and updating curated book picks from Moldovan bookstores (weekly on Mondays at 03:00).",
-    "privileged.gitActions.wfHomeBooksDesc":
-      "Updating books for the homepage showcase with Supabase synchronization (monthly on the 1st at 03:00).",
-    "privileged.gitActions.wfNewBooksDesc":
-      "Scanning new book arrivals and updating the new books catalog (weekly on Mondays at 03:00).",
+    "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Incremental Delta)",
+    "privileged.gitActions.wfSmartSyncDesc":
+      "Scans Qogita products across all 44 brands. Automatically detects, adds new perfumes, and updates price changes with UltraSharp 4x AI enhancement (weekly on Mondays at 04:00 UTC or on-demand).",
+    "privileged.gitActions.wfBrandSyncTitle": "Brand Catalog Sync (Targeted)",
+    "privileged.gitActions.wfBrandSyncDesc":
+      "Targeted sync or introduction of new arrivals for specific brands (e.g. Lattafa, Armaf, Azha, Emper) with rembg cutout and UltraSharp 4x upscaling.",
+    "privileged.gitActions.wfFullRefreshTitle": "Full Database Refresh",
+    "privileged.gitActions.wfFullRefreshDesc":
+      "Comprehensive scan of all 44+ brands, full Supabase stocks database synchronization, price checks, and production catalog rebuild.",
+    "privileged.gitActions.wfLocalUpscaylTitle": "Local GPU Upscayl Sync",
+    "privileged.gitActions.wfLocalUpscaylDesc":
+      "Run the AI sync pipeline directly on local PC GPU hardware using installed Upscayl (C:\\Program Files\\Upscayl).",
+    "privileged.gitActions.wfExchangeRateTitle": "Currency Rates Sync (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
-      "Synchronizing official currency exchange rates MDL/EUR (daily at 03:00).",
-    "privileged.gitActions.wfDiscountsDesc":
-      "Collecting and updating discounted books for the discounts showcase in Supabase (daily at 03:00).",
+      "Update daily exchange rates for real-time perfume price conversion.",
 
     // Al-Warda AI Fragrance Concierge
     "assistant.name": "Yasmin",

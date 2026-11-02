@@ -7,7 +7,13 @@ import {
 } from "./literaAssistantService.js";
 import { sendGuestInquiryEmail } from "./emailService.js";
 
-const actionStatuses = {};
+const actionStatuses = {
+  "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "brand-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "full-database-refresh": { status: "idle", lastRun: null, error: null, output: "" },
+  "local-upscayl-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "update-exchange-rate": { status: "idle", lastRun: null, error: null, output: "" },
+};
 
 function syncProcessEnv(env) {
   if (!globalThis.process) {

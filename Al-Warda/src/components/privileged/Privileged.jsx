@@ -5146,7 +5146,7 @@ export default function Privileged() {
               </div>
 
               <a
-                href="https://github.com/egorgrebennykov-del/KazBook/actions"
+                href="https://github.com/egorgrebennykov-del/Al-Warda/actions"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button privileged__github-btn"
@@ -5159,39 +5159,44 @@ export default function Privileged() {
             <div className="privileged__workflows-grid">
               {[
                 {
-                  id: "update-book-picks",
-                  title: "Update Book Picks",
-                  file: ".github/workflows/update-book-picks.yml",
-                  descKey: "privileged.gitActions.wfBookPicksDesc",
-                  icon: "ri-book-3-line",
+                  id: "qogita-smart-sync",
+                  title: t("privileged.gitActions.wfSmartSyncTitle"),
+                  file: ".github/workflows/qogita-smart-sync.yml",
+                  descKey: "privileged.gitActions.wfSmartSyncDesc",
+                  icon: "ri-refresh-line",
+                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/qogita-smart-sync.yml",
                 },
                 {
-                  id: "update-home-books",
-                  title: "Update Homepage Books",
-                  file: ".github/workflows/update-home-books.yml",
-                  descKey: "privileged.gitActions.wfHomeBooksDesc",
-                  icon: "ri-home-4-line",
+                  id: "brand-sync",
+                  title: t("privileged.gitActions.wfBrandSyncTitle"),
+                  file: ".github/workflows/brand-sync.yml",
+                  descKey: "privileged.gitActions.wfBrandSyncDesc",
+                  icon: "ri-filter-3-line",
+                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/brand-sync.yml",
                 },
                 {
-                  id: "update-new-books",
-                  title: "Update New Books",
-                  file: ".github/workflows/update-new-books.yml",
-                  descKey: "privileged.gitActions.wfNewBooksDesc",
-                  icon: "ri-bookmark-line",
+                  id: "full-database-refresh",
+                  title: t("privileged.gitActions.wfFullRefreshTitle"),
+                  file: ".github/workflows/full-database-refresh.yml",
+                  descKey: "privileged.gitActions.wfFullRefreshDesc",
+                  icon: "ri-database-2-line",
+                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/full-database-refresh.yml",
+                },
+                {
+                  id: "local-upscayl-sync",
+                  title: t("privileged.gitActions.wfLocalUpscaylTitle"),
+                  file: "scripts/qogita_weekly_sync_upscayl.py",
+                  descKey: "privileged.gitActions.wfLocalUpscaylDesc",
+                  icon: "ri-cpu-line",
+                  actionUrl: null,
                 },
                 {
                   id: "update-exchange-rate",
-                  title: "Update Exchange Rate",
-                  file: ".github/workflows/update-exchange-rate.yml",
+                  title: t("privileged.gitActions.wfExchangeRateTitle"),
+                  file: "utils/getExchangeRate.js",
                   descKey: "privileged.gitActions.wfExchangeRateDesc",
                   icon: "ri-exchange-dollar-line",
-                },
-                {
-                  id: "update-discounts",
-                  title: "Update Discount Books",
-                  file: ".github/workflows/update-discounts.yml",
-                  descKey: "privileged.gitActions.wfDiscountsDesc",
-                  icon: "ri-percent-line",
+                  actionUrl: null,
                 },
               ].map((wf) => {
                 const info = actionStatuses[wf.id] || {};
@@ -5270,6 +5275,19 @@ export default function Privileged() {
                         )}
                       </button>
 
+                      {wf.actionUrl && (
+                        <a
+                          href={wf.actionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="button button--ghost privileged__btn-sm"
+                          title="Открыть воркфлоу на GitHub"
+                        >
+                          <i className="ri-github-line" />
+                          <span>GitHub ↗</span>
+                        </a>
+                      )}
+
                       {info.output && (
                         <button
                           type="button"
@@ -5292,12 +5310,12 @@ export default function Privileged() {
               <div>
                 <strong>{t("privileged.gitActions.repoLabel")}</strong>
                 <a
-                  href="https://github.com/egorgrebennykov-del/Litera"
+                  href="https://github.com/egorgrebennykov-del/Al-Warda"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="privileged__link"
                 >
-                  https://github.com/egorgrebennykov-del/Litera ↗
+                  https://github.com/egorgrebennykov-del/Al-Warda ↗
                 </a>
               </div>
             </div>

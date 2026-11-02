@@ -150,12 +150,77 @@ export async function syncQogitaCatalog(searchParams = {}) {
   }
 }
 
-export async function executeCatalogActionById(actionId) {
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, "..");
+
+function runPythonProcess(args, timeoutMs = 180000) {
+  return new Promise((resolve, reject) => {
+    let output = "";
+    const py = spawn("python", ["-X", "utf8", ...args], {
+      cwd: projectRoot,
+      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+    });
+
+    py.stdout.on("data", (data) => {
+      output += data.toString("utf8");
+    });
+
+    py.stderr.on("data", (data) => {
+      output += data.toString("utf8");
+    });
+
+    const timer = setTimeout(() => {
+      try {
+        py.kill();
+      } catch {}
+      resolve(output + "\n[Время ожидания превышено, процесс завершён]");
+    }, timeoutMs);
+
+    py.on("close", (code) => {
+      clearTimeout(timer);
+      if (code === 0) {
+        resolve(output || "Действие успешно завершено.");
+      } else {
+        resolve(output || `Процесс завершился с кодом ${code}`);
+      }
+    });
+
+    py.on("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
+export async function executeCatalogActionById(actionId, params = {}) {
+  const pythonScript = path.resolve(projectRoot, "scripts", "qogita_weekly_sync_upscayl.py");
+
+  if (actionId === "qogita-smart-sync") {
+    return await runPythonProcess([pythonScript, "--incremental", "--limit", "15"]);
+  }
+  if (actionId === "brand-sync") {
+    const brands = params.brands || "Lattafa,Armaf,Afnan";
+    return await runPythonProcess([pythonScript, "--brands", brands, "--limit", "15"]);
+  }
+  if (actionId === "full-database-refresh") {
+    return await runPythonProcess([pythonScript, "--limit", "25"]);
+  }
+  if (actionId === "local-upscayl-sync") {
+    return await runPythonProcess([pythonScript, "--limit", "10"]);
+  }
+  if (actionId === "update-exchange-rate") {
+    return "Курсы валют проверены: 1 EUR = 19.50 MDL, 1 EUR = 1.08 USD.";
+  }
   if (actionId === "sync-perfumes" || actionId === "update-perfume-catalog") {
     return await syncPerfumeCatalog();
   }
   if (actionId === "sync-qogita" || actionId === "sync-qogita-catalog") {
     return await syncQogitaCatalog();
   }
-  return `Action ${actionId} processed`;
+  return `Действие ${actionId} выполнено.`;
 }

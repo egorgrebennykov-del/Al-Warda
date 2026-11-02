@@ -53,9 +53,11 @@ const ACTIONS = {
 };
 
 const actionStatuses = {
-  "sync-perfumes": { status: "idle", lastRun: null, error: null, output: "" },
+  "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "brand-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "full-database-refresh": { status: "idle", lastRun: null, error: null, output: "" },
+  "local-upscayl-sync": { status: "idle", lastRun: null, error: null, output: "" },
   "update-exchange-rate": { status: "idle", lastRun: null, error: null, output: "" },
-  "sync-qogita": { status: "idle", lastRun: null, error: null, output: "" },
 };
 
 const PORT = Number(process.env.BOOK_COMPARE_PORT) || 3001;
@@ -531,23 +533,38 @@ const server = createServer(async (req, res) => {
   if (req.method === "POST" && pathname === "/api/run-action") {
     try {
       const body = await readJson(req);
-      const actionId = body.actionId || "sync-perfumes";
+      const actionId = body.actionId || "qogita-smart-sync";
       actionStatuses[actionId] = {
         status: "running",
         startedAt: new Date().toISOString(),
         lastRun: new Date().toISOString(),
         method: "local",
-        output: `Starting ${actionId}...\n`,
+        output: `[${new Date().toLocaleTimeString()}] Запуск действия: ${actionId}...\n`,
       };
-      const summary = await executeCatalogActionById(actionId);
-      actionStatuses[actionId] = {
-        status: "success",
-        finishedAt: new Date().toISOString(),
-        lastRun: new Date().toISOString(),
-        method: "local",
-        output: summary,
-      };
-      respond(res, 200, { success: true, message: summary });
+
+      // Run asynchronously in the background so response is immediate and client polls status
+      executeCatalogActionById(actionId, body)
+        .then((summary) => {
+          actionStatuses[actionId] = {
+            status: "success",
+            finishedAt: new Date().toISOString(),
+            lastRun: new Date().toISOString(),
+            method: "local",
+            output: summary,
+          };
+        })
+        .catch((err) => {
+          actionStatuses[actionId] = {
+            status: "error",
+            finishedAt: new Date().toISOString(),
+            lastRun: new Date().toISOString(),
+            method: "local",
+            output: `Ошибка выполнения: ${err.message}`,
+            error: err.message,
+          };
+        });
+
+      respond(res, 200, { success: true, message: `Действие ${actionId} запущено.` });
     } catch (err) {
       respond(res, 500, { error: err.message });
     }
