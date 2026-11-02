@@ -1,0 +1,102 @@
+name: "Qogita Smart Sync: Incremental Delta & Catalog Updates"
+
+on:
+  schedule:
+    # Автоматический запуск по понедельникам в 04:00 UTC (независимо от состояния вашего ПК)
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      limit_per_brand:
+        description: "Количество проверяемых товаров на бренд"
+        required: false
+        type: number
+        default: 20
+
+permissions:
+  contents: write
+
+jobs:
+  smart-sync:
+    name: Smart Incremental Catalog Sync
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python AI Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests urllib3 pillow rembg numpy scipy onnxruntime
+
+      - name: Setup Upscayl / Real-ESRGAN CLI with UltraSharp Models
+        run: |
+          mkdir -p Al-Warda/bin/models
+          cd Al-Warda/bin
+          curl -sL "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip" -o realesrgan.zip || true
+          if [ -f realesrgan.zip ]; then
+            unzip -q -o realesrgan.zip || true
+            chmod +x realesrgan-ncnn-vulkan || true
+          fi
+          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.param" -o models/ultrasharp-4x.param || true
+          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.bin" -o models/ultrasharp-4x.bin || true
+          cd ../..
+
+      - name: Run Incremental Smart Sync (New & Updated Products Only)
+        run: |
+          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
+            --cloud \
+            --incremental \
+            --limit ${{ inputs.limit_per_brand || 20 }}
+        env:
+          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL || 'litera.eu@gmail.com' }}
+          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD || 'Egorka2330$' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          UPSCAYL_BIN: "Al-Warda/bin/realesrgan-ncnn-vulkan"
+          UPSCAYL_MODELS: "Al-Warda/bin/models"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Al-Warda/package.json
+
+      - name: Install Node Dependencies
+        run: |
+          npm --prefix Al-Warda install
+
+      - name: Sync Supabase Stocks & Olfactory Notes
+        run: |
+          node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Rebuild Web Application
+        run: |
+          npm --prefix Al-Warda run build
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action [Qogita Smart Sync]"
+          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/ Al-Warda/dist/
+          if git diff --staged --quiet; then
+            echo "No changes to commit. Catalog is already up to date."
+          else
+            git commit -m "chore(sync): Qogita Smart Sync - updated new arrivals & price changes [skip ci]"
+            git push origin main
+          fi

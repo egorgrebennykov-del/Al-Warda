@@ -1,17 +1,30 @@
-name: Weekly Qogita Sync, Background Cutout & Upscayl Pipeline
+name: "Brand Catalog Sync: Update Specific Brands & Add New"
 
 on:
-  schedule:
-    # Runs every Monday at 04:00 UTC (runs automatically in the cloud regardless of PC state)
-    - cron: "0 4 * * 1"
-  workflow_dispatch: # Allows manual trigger from GitHub Actions web UI anytime
+  workflow_dispatch:
+    inputs:
+      brands:
+        description: "Список брендов через запятую (например: Lattafa, Armaf, Azha, Emper)"
+        required: true
+        type: string
+        default: "Lattafa, Armaf, Afnan"
+      limit:
+        description: "Лимит товаров на каждый бренд"
+        required: false
+        type: number
+        default: 20
+      force_upscale:
+        description: "Принудительно переобработать фотографии через UltraSharp 4x"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
-  sync-catalog:
-    name: Sync Qogita Catalog, AI Cutout & Upscayl
+  brand-sync:
+    name: Sync Targeted Brands
     runs-on: ubuntu-24.04
 
     steps:
@@ -31,24 +44,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests urllib3 pillow rembg numpy scipy onnxruntime
 
-      - name: Setup Upscayl / Real-ESRGAN CLI Engine with UltraSharp Models
+      - name: Setup Upscayl / Real-ESRGAN CLI with UltraSharp Models
         run: |
-          mkdir -p Al-Warda/bin
+          mkdir -p Al-Warda/bin/models
           cd Al-Warda/bin
           curl -sL "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip" -o realesrgan.zip || true
           if [ -f realesrgan.zip ]; then
             unzip -q -o realesrgan.zip || true
             chmod +x realesrgan-ncnn-vulkan || true
           fi
-          # Download UltraSharp 4x weights for maximum quality super-resolution
-          mkdir -p models
           curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.param" -o models/ultrasharp-4x.param || true
           curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.bin" -o models/ultrasharp-4x.bin || true
           cd ../..
 
-      - name: Run Qogita Sync, AI Background Removal & Upscayl Pipeline
+      - name: Run Brand Catalog Sync Pipeline
         run: |
-          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py --cloud --limit 25
+          FORCE_FLAG=""
+          if [ "${{ inputs.force_upscale }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
+            --cloud \
+            --brands "${{ inputs.brands }}" \
+            --limit ${{ inputs.limit }} \
+            $FORCE_FLAG
         env:
           QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL || 'litera.eu@gmail.com' }}
           QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD || 'Egorka2330$' }}
@@ -71,25 +90,25 @@ jobs:
 
       - name: Sync Supabase Stocks & Olfactory Notes
         run: |
-          node Al-Warda/scripts/sync-stocks-supabase.js
+          node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Rebuild Web Application Assets
+      - name: Rebuild Web Application
         run: |
           npm --prefix Al-Warda run build
 
-      - name: Commit and push newly upscaled photos & catalog
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action [Al-Warda Catalog Sync]"
+          git config --local user.name "GitHub Action [Brand Catalog Sync]"
           git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/ Al-Warda/dist/
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore(sync): automated weekly Qogita sync, cutout & Upscayl image update [skip ci]"
+            git commit -m "feat(catalog): updated brands '${{ inputs.brands }}' with UltraSharp 4x photos [skip ci]"
             git push origin main
           fi

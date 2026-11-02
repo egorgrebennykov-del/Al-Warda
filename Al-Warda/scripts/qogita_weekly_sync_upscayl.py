@@ -336,13 +336,48 @@ def sync_to_supabase(perfumes_list):
 
     return synced
 
+def save_enriched_stocks(enriched_data):
+    try:
+        tmp_file = ENRICHED_STOCKS_PATH + ".tmp"
+        with open(tmp_file, "w", encoding="utf-8") as f:
+            json.dump(enriched_data, f, ensure_ascii=False, indent=2)
+        if os.path.exists(ENRICHED_STOCKS_PATH):
+            try:
+                os.remove(ENRICHED_STOCKS_PATH)
+            except:
+                pass
+        os.rename(tmp_file, ENRICHED_STOCKS_PATH)
+        return True
+    except Exception as e:
+        print(f"Warning writing enrichedStocks.json: {e}")
+        try:
+            with open(ENRICHED_STOCKS_PATH, "w", encoding="utf-8") as f:
+                json.dump(enriched_data, f, ensure_ascii=False, indent=2)
+            return True
+        except:
+            return False
+
 # Main Runner
-def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False):
-    print("=" * 60)
-    print("AL-WARDA WEEKLY QOGITA CATALOG SYNC & UPSCAYL PIPELINE")
+def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False, brands_arg="", incremental=False):
+    print("=" * 65)
+    print("AL-WARDA - QOGITA CATALOG SYNC & UPSCAYL PIPELINE")
     print(f"Execution mode: {'Cloud (GitHub Actions)' if cloud_mode else 'Local PC'}")
-    print(f"Enhancement mode: Maximum Quality (UltraSharp 4x, tile=256, loss-free)")
-    print("=" * 60)
+    print(f"Enhancement mode: Maximum Quality (UltraSharp 4x, tile=256, lossless)")
+    if incremental:
+        print("Sync mode: Smart Incremental (Delta changes & new additions only)")
+    elif brands_arg:
+        print(f"Sync mode: Targeted Brands ({brands_arg})")
+    else:
+        print("Sync mode: Full Database Refresh")
+    print("=" * 65)
+
+    # Determine target brands
+    if brands_arg and brands_arg.strip():
+        target_brands = [b.strip() for b in brands_arg.split(",") if b.strip()]
+    else:
+        target_brands = ARABIAN_BRANDS
+
+    print(f"Target brands to scan: {len(target_brands)}")
 
     # 1. Check Upscayl
     upscayl_bin, models_dir = find_upscayl()
@@ -367,23 +402,41 @@ def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False):
         print(f"❌ Qogita authentication failed: {e}")
         return
 
+    # Load existing catalog for delta comparison
+    existing_enriched = {}
+    if os.path.exists(ENRICHED_STOCKS_PATH):
+        try:
+            with open(ENRICHED_STOCKS_PATH, "r", encoding="utf-8") as f:
+                existing_enriched = json.load(f)
+        except:
+            existing_enriched = {}
+
+    existing_by_name = {
+        (v.get("name") or "").strip().lower(): v
+        for v in existing_enriched.values()
+    }
+    existing_by_gtin = {
+        v.get("info", {}).get("gtin"): v
+        for v in existing_enriched.values()
+        if v.get("info", {}).get("gtin")
+    }
+
     # 4. Fetch and Process Perfumes
     all_perfumes = []
     processed_images = 0
+    new_additions_count = 0
+    updated_items_count = 0
+    skipped_count = 0
 
-    for brand in ARABIAN_BRANDS:
+    for brand in target_brands:
         items = client.fetch_brand_perfumes(brand, limit=limit_per_brand)
-        print(f"Fetched {len(items)} in-stock items for brand '{brand}'")
+        print(f"[{brand}] Fetched {len(items)} in-stock items from Qogita")
+
         for item in items:
             name = item.get("name")
             raw_img = item.get("imageUrl")
             if not name or not raw_img:
                 continue
-
-            # Process image (Cutout + Upscayl 4x UltraSharp)
-            local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=force)
-            if local_img:
-                processed_images += 1
 
             price = item.get("price") or 25.0
             if isinstance(price, dict):
@@ -393,6 +446,57 @@ def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False):
                 amount = float(price or 25.0)
                 currency = "EUR"
 
+            gtin = item.get("gtin")
+            name_clean = name.strip().lower()
+
+            # Delta / incremental check
+            existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
+
+            if incremental and existing_item and not force:
+                old_price = float(existing_item.get("price") or 0.0)
+                old_img = existing_item.get("image") or ""
+                img_exists = old_img.startswith("/assets/img/dropship/") and os.path.exists(
+                    os.path.join(DROPSHIP_DIR, os.path.basename(old_img))
+                )
+
+                # Check if price changed
+                price_changed = abs(old_price - amount) > 0.05
+                if not price_changed and img_exists:
+                    skipped_count += 1
+                    continue
+
+                if price_changed:
+                    print(f"  → Price update: {name} ({old_price} -> {amount} EUR)")
+                    existing_item["price"] = round(amount, 2)
+                    updated_items_count += 1
+
+                if not img_exists:
+                    print(f"  → Generating missing UltraSharp 4x visual: {name}")
+                    local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=True)
+                    if local_img:
+                        existing_item["image"] = local_img
+                        processed_images += 1
+                        updated_items_count += 1
+
+                all_perfumes.append({
+                    "name": existing_item["name"],
+                    "brand": existing_item.get("brand") or brand,
+                    "price": existing_item["price"],
+                    "currency": currency,
+                    "image": existing_item.get("image") or "/assets/img/perfumes/hero-perfume.png",
+                    "rawImage": raw_img,
+                    "gtin": gtin,
+                    "category": existing_item.get("info", {}).get("category") or "Восточные",
+                    "gender": existing_item.get("info", {}).get("gender") or "Унисекс",
+                    "notesSummary": existing_item.get("info", {}).get("notesSummary") or f"{brand} · Элитная арабская парфюмерия",
+                })
+                continue
+
+            # Process image (Cutout + Upscayl 4x UltraSharp)
+            local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=force)
+            if local_img:
+                processed_images += 1
+
             perfume_entry = {
                 "name": name,
                 "brand": brand,
@@ -400,61 +504,67 @@ def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False):
                 "currency": currency,
                 "image": local_img or "/assets/img/perfumes/hero-perfume.png",
                 "rawImage": raw_img,
-                "gtin": item.get("gtin"),
+                "gtin": gtin,
                 "category": "Восточные",
                 "gender": "Унисекс",
                 "notesSummary": f"{brand} · Премиальный арабский парфюм",
             }
             all_perfumes.append(perfume_entry)
 
-    print(f"\n✓ Processed {processed_images} perfume photos through Cutout + Upscayl pipeline.")
-
-    # 5. Sync to Supabase & local JSON cache
-    print(f"Synchronizing {len(all_perfumes)} perfumes to Supabase database...")
-    synced_count = sync_to_supabase(all_perfumes)
-    print(f"✓ Synced {synced_count} records to Supabase 'stocks' table.")
-
-    # Update enrichedStocks.json
-    if os.path.exists(ENRICHED_STOCKS_PATH):
-        try:
-            with open(ENRICHED_STOCKS_PATH, "r", encoding="utf-8") as f:
-                enriched = json.load(f)
-        except:
-            enriched = {}
-
-        for p in all_perfumes:
-            key = f"dropship-{p.get('gtin') or hashlib.md5(p['name'].encode('utf-8')).hexdigest()[:12]}"
-            if key not in enriched:
-                enriched[key] = {
-                    "name": p["name"],
-                    "brand": p["brand"],
-                    "price": p["price"],
-                    "image": p["image"],
+            key = f"dropship-{gtin or hashlib.md5(name.encode('utf-8')).hexdigest()[:12]}"
+            if key not in existing_enriched:
+                new_additions_count += 1
+                existing_enriched[key] = {
+                    "name": perfume_entry["name"],
+                    "brand": perfume_entry["brand"],
+                    "price": perfume_entry["price"],
+                    "image": perfume_entry["image"],
                     "info": {
-                        "category": p["category"],
-                        "gender": p["gender"],
-                        "notesSummary": p["notesSummary"],
+                        "category": perfume_entry["category"],
+                        "gender": perfume_entry["gender"],
+                        "notesSummary": perfume_entry["notesSummary"],
                         "longevity": "10–14 часов",
                         "sillage": "Заметный, притягательный",
                         "volume": "100 мл EDP",
-                        "descriptionRu": f"{p['name']} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
+                        "descriptionRu": f"{name} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
                     }
                 }
             else:
-                enriched[key]["image"] = p["image"]
-                enriched[key]["price"] = p["price"]
+                existing_enriched[key]["image"] = perfume_entry["image"]
+                existing_enriched[key]["price"] = perfume_entry["price"]
+                updated_items_count += 1
 
-        with open(ENRICHED_STOCKS_PATH, "w", encoding="utf-8") as f:
-            json.dump(enriched, f, ensure_ascii=False, indent=2)
-        print(f"✓ Updated {ENRICHED_STOCKS_PATH} ({len(enriched)} total perfumes).")
+    print(f"\n--- Sync Summary ---")
+    print(f"✓ New additions: {new_additions_count}")
+    print(f"✓ Updated items: {updated_items_count}")
+    print(f"✓ Skipped (unchanged): {skipped_count}")
+    print(f"✓ Processed images (UltraSharp 4x): {processed_images}")
 
-    print("\n🎉 Weekly Qogita Sync, Background Cutout & Upscayl Enhancement Complete!")
+    # 5. Save local catalog
+    save_enriched_stocks(existing_enriched)
+    print(f"✓ Updated {ENRICHED_STOCKS_PATH} ({len(existing_enriched)} total perfumes).")
+
+    # 6. Sync to Supabase
+    if all_perfumes:
+        print(f"Synchronizing {len(all_perfumes)} perfumes to Supabase database...")
+        synced_count = sync_to_supabase(all_perfumes)
+        print(f"✓ Synced {synced_count} records to Supabase 'stocks' table.")
+
+    print("\n🎉 Qogita Sync & AI Upscaling Complete!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Al-Warda Weekly Qogita Sync & Upscayl Pipeline")
-    parser.add_argument("--limit", type=int, default=10, help="Max items per brand to fetch")
+    parser = argparse.ArgumentParser(description="Al-Warda Qogita Sync & Upscayl Pipeline")
+    parser.add_argument("--limit", type=int, default=15, help="Max items per brand to fetch")
     parser.add_argument("--cloud", action="store_true", help="Run in cloud CI mode")
     parser.add_argument("--force", action="store_true", help="Force re-upscaling with UltraSharp 4x even if image exists")
+    parser.add_argument("--brands", type=str, default="", help="Specific comma-separated brands to sync (e.g. 'Lattafa,Armaf,Emper')")
+    parser.add_argument("--incremental", action="store_true", help="Smart incremental sync (only fetch new or changed items)")
     args = parser.parse_args()
 
-    run_weekly_sync(limit_per_brand=args.limit, cloud_mode=args.cloud, force=args.force)
+    run_weekly_sync(
+        limit_per_brand=args.limit,
+        cloud_mode=args.cloud,
+        force=args.force,
+        brands_arg=args.brands,
+        incremental=args.incremental
+    )
