@@ -164,8 +164,8 @@ def remove_background(input_path, output_path, rembg_session=None):
         cutout = rembg.remove(raw_im, session=rembg_session, alpha_matting=False)
         cutout.save(output_path, "PNG")
 
-# Upscayl Image Enhancer
-def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale=2, model_name="upscayl-standard-4x"):
+# Upscayl Image Enhancer (Maximum Quality Configuration)
+def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale=4, model_name="ultrasharp-4x"):
     if not upscayl_bin or not os.path.exists(upscayl_bin):
         # Fallback to high-quality Lanczos antialiased scaling if binary not present
         with Image.open(input_path) as im:
@@ -174,24 +174,41 @@ def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale
             upscaled.save(output_path, "PNG", optimize=True)
             return True
 
+    # Identify best available model
+    preferred_models = ["ultrasharp-4x", "remacri-4x", "upscayl-standard-4x", "realesrgan-x4plus", "upscayl-lite-4x"]
+    selected_model = model_name
+    if models_dir and os.path.exists(models_dir):
+        available_files = os.listdir(models_dir)
+        for cand in preferred_models:
+            if f"{cand}.bin" in available_files or f"{cand}.param" in available_files:
+                selected_model = cand
+                break
+
     cmd = [
         upscayl_bin,
         "-i", input_path,
         "-o", output_path,
         "-m", models_dir,
-        "-n", model_name,
+        "-n", selected_model,
         "-s", str(scale),
+        "-t", "256",
+        "-c", "0",
         "-f", "png"
     ]
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-        if res.returncode == 0 and os.path.exists(output_path):
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        if res.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
             return True
         else:
-            # Fallback if specific model was missing or GPU error
+            # Fallback with standard model
+            cmd[7] = "upscayl-standard-4x"
+            res2 = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if res2.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+                return True
+            # Fallback with lite model
             cmd[7] = "upscayl-lite-4x"
-            res2 = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-            return res2.returncode == 0 and os.path.exists(output_path)
+            res3 = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            return res3.returncode == 0 and os.path.exists(output_path)
     except Exception as e:
         print(f"Upscayl CLI error: {e}, falling back to Lanczos...")
         with Image.open(input_path) as im:
@@ -200,12 +217,12 @@ def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale
         return True
 
 # Process single perfume image
-def process_perfume_image(raw_image_url, upscayl_bin, models_dir, rembg_session):
+def process_perfume_image(raw_image_url, upscayl_bin, models_dir, rembg_session, force=False):
     h = hashlib.md5(raw_image_url.encode("utf-8")).hexdigest()
     final_path = os.path.join(DROPSHIP_DIR, f"{h}.png")
     dist_path = os.path.join(DIST_DROPSHIP_DIR, f"{h}.png")
 
-    if os.path.exists(final_path) and os.path.getsize(final_path) > 10000:
+    if not force and os.path.exists(final_path) and os.path.getsize(final_path) > 10000:
         return f"/assets/img/dropship/{h}.png"
 
     tmp_raw = os.path.join(DROPSHIP_DIR, f"temp_raw_{h}.jpg")
@@ -219,11 +236,11 @@ def process_perfume_image(raw_image_url, upscayl_bin, models_dir, rembg_session)
         with open(tmp_raw, "wb") as f:
             f.write(r.content)
 
-        # 1. Background cutout
+        # 1. Background cutout (transparent RGBA)
         remove_background(tmp_raw, tmp_cutout, rembg_session)
 
-        # 2. Upscayl enhancement
-        upscale_with_upscayl(tmp_cutout, final_path, upscayl_bin, models_dir, scale=2)
+        # 2. Maximum Quality Upscayl enhancement (4x scale, UltraSharp model)
+        upscale_with_upscayl(tmp_cutout, final_path, upscayl_bin, models_dir, scale=4, model_name="ultrasharp-4x")
 
         # Mirror to dist if dist exists
         if os.path.exists(DIST_DROPSHIP_DIR):
@@ -302,10 +319,11 @@ def sync_to_supabase(perfumes_list):
     return synced
 
 # Main Runner
-def run_weekly_sync(limit_per_brand=15, cloud_mode=False):
+def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False):
     print("=" * 60)
     print("AL-WARDA WEEKLY QOGITA CATALOG SYNC & UPSCAYL PIPELINE")
     print(f"Execution mode: {'Cloud (GitHub Actions)' if cloud_mode else 'Local PC'}")
+    print(f"Enhancement mode: Maximum Quality (UltraSharp 4x, tile=256, loss-free)")
     print("=" * 60)
 
     # 1. Check Upscayl
@@ -344,8 +362,8 @@ def run_weekly_sync(limit_per_brand=15, cloud_mode=False):
             if not name or not raw_img:
                 continue
 
-            # Process image (Cutout + Upscayl)
-            local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session)
+            # Process image (Cutout + Upscayl 4x UltraSharp)
+            local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=force)
             if local_img:
                 processed_images += 1
 
@@ -418,6 +436,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Al-Warda Weekly Qogita Sync & Upscayl Pipeline")
     parser.add_argument("--limit", type=int, default=10, help="Max items per brand to fetch")
     parser.add_argument("--cloud", action="store_true", help="Run in cloud CI mode")
+    parser.add_argument("--force", action="store_true", help="Force re-upscaling with UltraSharp 4x even if image exists")
     args = parser.parse_args()
 
-    run_weekly_sync(limit_per_brand=args.limit, cloud_mode=args.cloud)
+    run_weekly_sync(limit_per_brand=args.limit, cloud_mode=args.cloud, force=args.force)

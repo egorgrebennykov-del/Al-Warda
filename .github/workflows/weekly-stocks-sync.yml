@@ -31,7 +31,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests urllib3 pillow rembg numpy scipy onnxruntime
 
-      - name: Setup Upscayl / Real-ESRGAN CLI Engine for Linux Runner
+      - name: Setup Upscayl / Real-ESRGAN CLI Engine with UltraSharp Models
         run: |
           mkdir -p Al-Warda/bin
           cd Al-Warda/bin
@@ -40,6 +40,10 @@ jobs:
             unzip -q -o realesrgan.zip || true
             chmod +x realesrgan-ncnn-vulkan || true
           fi
+          # Download UltraSharp 4x weights for maximum quality super-resolution
+          mkdir -p models
+          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.param" -o models/ultrasharp-4x.param || true
+          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.bin" -o models/ultrasharp-4x.bin || true
           cd ../..
 
       - name: Run Qogita Sync, AI Background Removal & Upscayl Pipeline
