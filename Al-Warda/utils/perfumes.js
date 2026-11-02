@@ -12,6 +12,14 @@ const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 
 let memoryPerfumesCache = null;
 
+function resolveCardImage(img) {
+  if (!img) return "/assets/img/perfumes/hero-perfume.png";
+  if (img.startsWith("http")) {
+    return `/api/transparent-image?url=${encodeURIComponent(img)}`;
+  }
+  return img;
+}
+
 export function slugifyPerfumeName(name) {
   if (!name) return "perfume";
   return String(name)
@@ -237,8 +245,22 @@ export async function fetchPerfumesFromSupabase() {
     }
 
     if (allRows.length > 0) {
+      // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders)
+      const validRows = allRows.filter((r) => {
+        const img = ((r.image || "") + (r.raw_image || "") + (r.info?.rawImage || "")).toLowerCase();
+        if (
+          img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
+          img.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
+          img.includes("no-image") ||
+          img.includes("no_image")
+        ) {
+          return false;
+        }
+        return true;
+      });
+
       // Map database fields to standard schema
-      const mapped = allRows.map((r) => {
+      const mapped = validRows.map((r) => {
           const info = r.info || {};
           let catSlug = info.categorySlug || "spicy";
           const catLower = (info.category || "").toLowerCase();
@@ -296,8 +318,8 @@ export async function fetchPerfumesFromSupabase() {
             inStock: info.inStock !== false,
             deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
             deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-            image: r.image || "/assets/img/perfumes/hero-perfume.png",
-            fullCardImage: r.image || "/assets/img/perfumes/hero-perfume.png",
+            image: resolveCardImage(r.image),
+            fullCardImage: resolveCardImage(r.image),
             rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
             topNotes: topNotesRu,
             heartNotes: heartNotesRu,

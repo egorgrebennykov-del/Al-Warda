@@ -408,8 +408,6 @@
   border: none !important;
   overflow: visible;
   padding: 0.5rem 0.75rem 10px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
 }
 
 /* Glowing luxury podium disc beneath floating bottle */

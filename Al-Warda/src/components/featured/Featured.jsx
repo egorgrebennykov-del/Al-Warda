@@ -596,6 +596,10 @@ export default function Featured() {
                       className="warda-perfume-card__img"
                       loading="lazy"
                       decoding="async"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/assets/img/perfumes/hero-perfume.png";
+                      }}
                     />
                   </div>
 

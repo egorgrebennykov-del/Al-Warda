@@ -5,7 +5,10 @@ import { fileURLToPath } from "node:url";
 import { exec, execFileSync } from "node:child_process";
 import sharp from "sharp";
 import axios from "axios";
+import https from "node:https";
 import qogitaClient from "./qogitaClient.js";
+
+const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.resolve(currentDir, "..");
@@ -290,11 +293,12 @@ export async function getTransparentImageBuffer(rawUrl) {
   // Fast Sharp cutout with trim to baseline (responds in ~30ms without blocking event loop)
   const res = await axios.get(rawUrl, {
     responseType: "arraybuffer",
+    httpsAgent: insecureHttpsAgent,
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     },
-    timeout: 8000,
+    timeout: 10000,
   });
 
   const img = sharp(Buffer.from(res.data)).ensureAlpha();
