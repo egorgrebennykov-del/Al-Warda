@@ -201,14 +201,14 @@ export async function executeCatalogActionById(actionId, params = {}) {
   const pythonScript = path.resolve(projectRoot, "scripts", "qogita_weekly_sync_upscayl.py");
 
   if (actionId === "qogita-smart-sync") {
-    return await runPythonProcess([pythonScript, "--incremental", "--limit", "15"]);
+    return await runPythonProcess([pythonScript, "--incremental", "--all"]);
   }
   if (actionId === "brand-sync") {
     const brands = params.brands || "Lattafa,Armaf,Afnan";
-    return await runPythonProcess([pythonScript, "--brands", brands, "--limit", "15"]);
+    return await runPythonProcess([pythonScript, "--brands", brands, "--all"]);
   }
   if (actionId === "full-database-refresh") {
-    return await runPythonProcess([pythonScript, "--limit", "25"]);
+    return await runPythonProcess([pythonScript, "--all"]);
   }
   if (actionId === "local-upscayl-sync") {
     return await runPythonProcess([pythonScript, "--limit", "10"]);

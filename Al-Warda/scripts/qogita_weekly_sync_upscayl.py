@@ -139,36 +139,65 @@ class QogitaSyncClient:
             return True
         raise RuntimeError(f"Qogita login failed: {res.status_code} - {res.text}")
 
-    def fetch_brand_perfumes(self, brand_name, limit=25):
-        # 1. Try brand_name parameter first
-        url = f"{self.api_url}/public/buyers/products/?brand_name={requests.utils.quote(brand_name)}&page_size={limit}"
-        try:
-            res = self.session.get(url, timeout=20)
-            if res.status_code == 200:
-                results = res.json().get("results", [])
-                if results:
-                    return results[:limit]
-        except Exception:
-            pass
+    def fetch_brand_perfumes(self, brand_name, limit=None):
+        items = []
+        page = 1
+        page_size = 100 if (limit is None or limit > 50 or limit <= 0) else limit
+        max_pages = 25 if (limit is None or limit <= 0) else ((limit // 100) + 1)
 
-        # 2. Fallback to search parameter
-        url2 = f"{self.api_url}/public/buyers/products/?search={requests.utils.quote(brand_name)}&page_size=50"
-        try:
-            res2 = self.session.get(url2, timeout=20)
-            if res2.status_code == 200:
-                results = res2.json().get("results", [])
-                filtered = []
-                for it in results:
-                    name = (it.get("name") or "").lower()
-                    # Filter out non-perfume items
-                    if any(bad in name for bad in ["serum", "retinal", "mask", "cream", "booster", "sunscreen", "cleanser", "shampoo", "pad"]):
-                        continue
-                    if brand_name.lower() in name or any(frag in name for frag in ["edp", "edt", "parfum", "eau de", "perfume", "fragrance", "cologne"]):
-                        filtered.append(it)
-                return filtered[:limit]
-        except Exception as e:
-            print(f"Warning: Failed to fetch products for {brand_name}: {e}")
-        return []
+        # 1. Fetch exact brand products with pagination
+        while page <= max_pages:
+            url = f"{self.api_url}/public/buyers/products/?brand_name={requests.utils.quote(brand_name)}&page={page}&page_size={page_size}"
+            try:
+                res = self.session.get(url, timeout=25)
+                if res.status_code != 200:
+                    break
+                batch = res.json().get("results", [])
+                if not batch:
+                    break
+                items.extend(batch)
+                if limit and limit > 0 and len(items) >= limit:
+                    items = items[:limit]
+                    break
+                if len(batch) < page_size:
+                    break
+                page += 1
+            except Exception as e:
+                print(f"Warning: page fetch failed for {brand_name} (page {page}): {e}")
+                break
+
+        # 2. Fallback to search parameter if brand_name returned nothing
+        if not items:
+            page = 1
+            while page <= 5:
+                url2 = f"{self.api_url}/public/buyers/products/?search={requests.utils.quote(brand_name)}&page={page}&page_size=100"
+                try:
+                    res2 = self.session.get(url2, timeout=25)
+                    if res2.status_code != 200:
+                        break
+                    batch2 = res2.json().get("results", [])
+                    if not batch2:
+                        break
+                    for it in batch2:
+                        name = (it.get("name") or "").lower()
+                        # Filter out non-perfume items
+                        if any(bad in name for bad in ["serum", "retinal", "mask", "cream", "booster", "sunscreen", "cleanser", "shampoo", "pad", "toner", "lotion", "peeling"]):
+                            continue
+                        if brand_name.lower() in name or any(frag in name for frag in ["edp", "edt", "parfum", "eau de", "perfume", "fragrance", "cologne"]):
+                            items.append(it)
+                            if limit and limit > 0 and len(items) >= limit:
+                                break
+                    if limit and limit > 0 and len(items) >= limit:
+                        items = items[:limit]
+                        break
+                    if len(batch2) < 100:
+                        break
+                    page += 1
+                except Exception as e:
+                    print(f"Warning: search fallback error for {brand_name}: {e}")
+                    break
+
+        return items if (not limit or limit <= 0) else items[:limit]
 
 # Background Cutout Engine
 def remove_background(input_path, output_path, rembg_session=None):
@@ -226,13 +255,22 @@ def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale
             # Fallback with lite model
             cmd[7] = "upscayl-lite-4x"
             res3 = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            return res3.returncode == 0 and os.path.exists(output_path)
+            if res3.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+                return True
     except Exception as e:
-        print(f"Upscayl CLI error: {e}, falling back to Lanczos...")
+        print(f"Upscayl CLI execution note: {e}")
+
+    # Fallback: high-fidelity 4x antialiased Lanczos scaling (if GPU Vulkan CLI is unavailable)
+    try:
         with Image.open(input_path) as im:
+            if im.mode != "RGBA":
+                im = im.convert("RGBA")
             w, h = im.size
-            im.resize((w * scale, h * scale), Image.Resampling.LANCZOS).save(output_path, "PNG")
+            im.resize((w * scale, h * scale), Image.Resampling.LANCZOS).save(output_path, "PNG", optimize=True)
         return True
+    except Exception as e:
+        print(f"Lanczos 4x scaling error: {e}")
+        return False
 
 # Process single perfume image
 def process_perfume_image(raw_image_url, upscayl_bin, models_dir, rembg_session, force=False):
@@ -358,17 +396,21 @@ def save_enriched_stocks(enriched_data):
             return False
 
 # Main Runner
-def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False, brands_arg="", incremental=False):
+def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_arg="", incremental=False, all_products=False):
+    if all_products or limit_per_brand == 0:
+        limit_per_brand = None
+
     print("=" * 65)
     print("AL-WARDA - QOGITA CATALOG SYNC & UPSCAYL PIPELINE")
     print(f"Execution mode: {'Cloud (GitHub Actions)' if cloud_mode else 'Local PC'}")
     print(f"Enhancement mode: Maximum Quality (UltraSharp 4x, tile=256, lossless)")
+    print(f"Items per brand: {'Maximum available (ALL)' if limit_per_brand is None else limit_per_brand}")
     if incremental:
         print("Sync mode: Smart Incremental (Delta changes & new additions only)")
     elif brands_arg:
         print(f"Sync mode: Targeted Brands ({brands_arg})")
     else:
-        print("Sync mode: Full Database Refresh")
+        print("Sync mode: Full Database Refresh (All Brands & Maximum Catalog)")
     print("=" * 65)
 
     # Determine target brands
@@ -554,17 +596,22 @@ def run_weekly_sync(limit_per_brand=15, cloud_mode=False, force=False, brands_ar
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Al-Warda Qogita Sync & Upscayl Pipeline")
-    parser.add_argument("--limit", type=int, default=15, help="Max items per brand to fetch")
+    parser.add_argument("--limit", type=int, default=None, help="Max items per brand to fetch (omit for all)")
+    parser.add_argument("--all", dest="all_products", action="store_true", help="Fetch maximum possible items across all brands")
     parser.add_argument("--cloud", action="store_true", help="Run in cloud CI mode")
     parser.add_argument("--force", action="store_true", help="Force re-upscaling with UltraSharp 4x even if image exists")
     parser.add_argument("--brands", type=str, default="", help="Specific comma-separated brands to sync (e.g. 'Lattafa,Armaf,Emper')")
     parser.add_argument("--incremental", action="store_true", help="Smart incremental sync (only fetch new or changed items)")
     args = parser.parse_args()
 
+    # In full refresh mode without explicit limit or with --all, default to maximum items
+    limit_val = None if (args.all_products or args.limit is None) else args.limit
+
     run_weekly_sync(
-        limit_per_brand=args.limit,
+        limit_per_brand=limit_val,
         cloud_mode=args.cloud,
         force=args.force,
         brands_arg=args.brands,
-        incremental=args.incremental
+        incremental=args.incremental,
+        all_products=args.all_products
     )

@@ -2,17 +2,6 @@ name: "Full Database Refresh: Complete Catalog & Image Rebuild"
 
 on:
   workflow_dispatch:
-    inputs:
-      limit_per_brand:
-        description: "Количество товаров для проверки по каждому бренду (все 44 бренда)"
-        required: false
-        type: number
-        default: 30
-      force_reprocess_all_images:
-        description: "Принудительно переапскейлить абсолютно все фото через UltraSharp 4x"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -52,16 +41,11 @@ jobs:
           curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.bin" -o models/ultrasharp-4x.bin || true
           cd ../..
 
-      - name: Run Full Database Refresh Pipeline
+      - name: Run Full Database Refresh Pipeline (Max Products & UltraSharp 4x Quality)
         run: |
-          FORCE_FLAG=""
-          if [ "${{ inputs.force_reprocess_all_images }}" = "true" ]; then
-            FORCE_FLAG="--force"
-          fi
           python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
             --cloud \
-            --limit ${{ inputs.limit_per_brand || 30 }} \
-            $FORCE_FLAG
+            --all
         env:
           QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL || 'litera.eu@gmail.com' }}
           QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD || 'Egorka2330$' }}
