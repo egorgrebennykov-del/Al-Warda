@@ -371,8 +371,6 @@
     height: 130px !important;
     max-height: 130px !important;
     transform: translateY(-6px) !important;
-    image-rendering: auto;
-    image-rendering: -webkit-smooth;
   }
   .warda-perfume-card__title {
     font-size: 0.78rem !important;

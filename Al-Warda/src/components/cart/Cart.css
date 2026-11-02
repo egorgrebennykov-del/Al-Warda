@@ -133,8 +133,6 @@
   object-fit: cover;
   border-radius: 0.25rem;
   background-color: var(--body-color);
-  image-rendering: auto;
-  filter: contrast(1.03) saturate(1.04);
 }
 
 .cart__book-info {
