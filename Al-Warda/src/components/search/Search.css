@@ -339,13 +339,7 @@
 
 .search__card:hover .search__card-img {
   animation: cinematicImageBreathe 8.5s ease-in-out infinite;
-  filter:
-    drop-shadow(0 20px 32px rgba(0, 0, 0, 0.95))
-    drop-shadow(0 0 24px rgba(212, 175, 55, 0.38))
-    drop-shadow(0 0 8px rgba(254, 240, 138, 0.45))
-    contrast(1.06)
-    saturate(1.1)
-    brightness(1.05);
+  filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.95));
 }
 
 @keyframes cinematicImageBreathe {

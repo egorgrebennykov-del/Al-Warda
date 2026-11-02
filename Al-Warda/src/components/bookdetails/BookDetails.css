@@ -147,23 +147,28 @@
   z-index: 1;
 }
 
-/* Floating, levitating perfume flacon with elegant breathing room */
+/* Floating, levitating perfume flacon with crisp, studio-grade clarity */
 .warda-details-img {
-  max-width: 86%;
-  height: 370px !important;
-  max-height: 370px;
+  max-width: 88%;
+  height: 380px !important;
+  max-height: 380px;
   width: auto;
   object-fit: contain !important;
   position: relative;
   z-index: 2;
   margin-bottom: 24px;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-  filter:
-    drop-shadow(0 0 2px rgba(255, 235, 170, 0.65))
-    drop-shadow(0 0 24px rgba(251, 191, 36, 0.35))
-    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.75))
-    contrast(1.04) brightness(1.02);
+  image-rendering: auto;
+  image-rendering: -webkit-smooth;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.warda-details-img:hover {
+  transform: translateY(-6px) scale(1.02) translateZ(0);
+  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.75));
 }
 
 .warda-details-info {
