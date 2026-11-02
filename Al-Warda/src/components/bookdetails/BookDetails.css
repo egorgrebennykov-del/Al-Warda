@@ -192,13 +192,13 @@
   width: 320px;
   height: 380px;
   border-radius: 50%;
-  filter: blur(32px);
+  filter: blur(40px);
   pointer-events: none;
   background: radial-gradient(
     circle at center,
-    rgba(255, 245, 230, 0.22) 0%,
-    rgba(212, 175, 55, 0.12) 42%,
-    rgba(180, 130, 40, 0.04) 68%,
+    rgba(255, 245, 230, 0.08) 0%,
+    rgba(212, 175, 55, 0.05) 45%,
+    rgba(180, 130, 40, 0.02) 68%,
     transparent 80%
   );
   z-index: 1;
@@ -208,12 +208,12 @@
 .warda-details-img-wrap::before {
   content: "";
   position: absolute;
-  bottom: 28px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  width: 62%;
-  height: 18px;
-  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.75) 0%, rgba(212, 175, 55, 0.35) 45%, rgba(180, 130, 40, 0.08) 68%, transparent 78%);
+  width: 58%;
+  height: 16px;
+  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.45) 0%, rgba(212, 175, 55, 0.2) 45%, rgba(180, 130, 40, 0.04) 68%, transparent 78%);
   border-radius: 50%;
   filter: blur(5px);
   pointer-events: none;
@@ -222,21 +222,30 @@
 
 /* Floating, levitating perfume flacon with crisp, studio-grade clarity */
 .warda-details-img {
-  max-width: 88%;
-  height: 380px !important;
-  max-height: 380px;
+  max-width: 92%;
+  height: 440px !important;
+  max-height: 440px;
   width: auto;
   object-fit: contain !important;
   position: relative;
   z-index: 2;
-  margin-bottom: 24px;
-  image-rendering: auto;
-  image-rendering: -webkit-smooth;
+  margin-bottom: 16px;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
-  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6));
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.75));
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
+
+.warda-details-img--studio {
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.warda-details-img-wrap--zooming {
+  cursor: crosshair;
 }
 
 .warda-details-img:hover {

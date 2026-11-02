@@ -191,7 +191,7 @@ export default function BookDetails() {
                   className={`warda-details-img ${viewMode === "studio" ? "warda-details-img--studio" : ""}`}
                   style={{
                     transformOrigin: isHoverZooming ? `${mousePos.x}% ${mousePos.y}%` : "center center",
-                    transform: isHoverZooming ? "scale(1.36) translateZ(0)" : "scale(1) translateZ(0)",
+                    transform: isHoverZooming ? "scale(2.25) translateZ(0)" : "scale(1) translateZ(0)",
                   }}
                   onError={(e) => {
                     if (perfume.rawImage && e.target.src !== perfume.rawImage) {
@@ -384,7 +384,7 @@ export default function BookDetails() {
                 )}
 
                 <div className="warda-lightbox-zoom-pills">
-                  {[1, 1.4, 1.8, 2.2].map((scale) => (
+                  {[1, 1.5, 2, 2.6, 3.2].map((scale) => (
                     <button
                       key={scale}
                       type="button"

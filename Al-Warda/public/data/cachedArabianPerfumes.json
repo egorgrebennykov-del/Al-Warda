@@ -53930,9 +53930,9 @@
     "inStock": true,
     "isDropship": true,
     "deliveryTime": "4–7 дней (прямая поставка)",
-    "image": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960.png?v=8",
-    "fullCardImage": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960.png?v=8",
-    "rawImage": "https://static.prod.qogita.com/files/images/variants/nknP5NPiqdCEmS58myArEu.jpg",
+    "image": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960.png?v=11",
+    "fullCardImage": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960.png?v=11",
+    "rawImage": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960_packshot.png",
     "gtin": "6285952002379",
     "description": "Arabian Oud Vanilla Rose — изысканный восточно-гурманский аромат, сочетающий бархатные лепестки дамасской розы и соблазнительную мадагаскарскую ваниль с пудровым шлейфом белого мускуса и теплой золотой амбры.",
     "info": {
@@ -53995,7 +53995,8 @@
       "inStock": true,
       "deliveryTime": "4–7 дней (прямая поставка из ОАЭ/ЕС)",
       "deliveryTimeEn": "4–7 days (direct dispatch from UAE/EU)",
-      "updatedAt": "2026-11-01T21:27:38.021Z"
+      "updatedAt": "2026-11-01T21:27:38.021Z",
+      "rawImage": "/assets/img/dropship/d6aefc43c6bd5b54d9355f423fdf3960_packshot.png"
     },
     "categoryRu": "Восточные гурманские",
     "categoryEn": "Oriental Gourmand",

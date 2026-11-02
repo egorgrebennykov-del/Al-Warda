@@ -187,8 +187,11 @@ export function ensurePerfumeEnrichment(p) {
     descEn = `${name} by ${brand} is an authentic luxury Arabian creation (${p.categoryEn || "oriental"}). Opens with vibrant notes of ${topEn.join(", ")}, unfolds into a rich heart of ${heartEn.join(", ")}, resting upon an opulent sillage of ${baseEn.join(", ")}.`;
   }
 
+  const rawImage = p.rawImage || p.info?.rawImage || null;
+
   return {
     ...p,
+    rawImage: rawImage || p.rawImage || null,
     topNotes: topRu,
     heartNotes: heartRu,
     baseNotes: baseRu,
@@ -276,6 +279,7 @@ export async function fetchPerfumesFromSupabase() {
             deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
             image: r.image || "/assets/img/perfumes/hero-perfume.png",
             fullCardImage: r.image || "/assets/img/perfumes/hero-perfume.png",
+            rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
             topNotes: topNotesRu,
             heartNotes: heartNotesRu,
             baseNotes: baseNotesRu,
