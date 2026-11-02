@@ -14,9 +14,6 @@ let memoryPerfumesCache = null;
 
 function resolveCardImage(img) {
   if (!img) return "/assets/img/perfumes/hero-perfume.png";
-  if (img.startsWith("http")) {
-    return `/api/transparent-image?url=${encodeURIComponent(img)}`;
-  }
   return img;
 }
 

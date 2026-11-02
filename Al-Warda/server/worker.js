@@ -119,6 +119,22 @@ export default {
       return jsonResponse({ ready: true });
     }
 
+    if (method === "GET" && pathname === "/api/transparent-image") {
+      const targetUrl = urlObj.searchParams.get("url");
+      if (!targetUrl) return new Response("Missing url", { status: 400 });
+      try {
+        const upstream = await fetch(targetUrl, {
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+        });
+        const headers = new Headers(upstream.headers);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Cache-Control", "public, max-age=604800, immutable");
+        return new Response(upstream.body, { status: upstream.status, headers });
+      } catch (e) {
+        return new Response(e.message, { status: 502 });
+      }
+    }
+
     // Stocks API (Supabase proxy / fallback)
     if (method === "GET" && (pathname === "/api/stocks" || pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
       const q = urlObj.searchParams.get("q")?.toLowerCase();
