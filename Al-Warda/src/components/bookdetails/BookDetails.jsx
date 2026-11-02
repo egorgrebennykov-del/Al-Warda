@@ -19,6 +19,29 @@ export default function BookDetails() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [viewMode, setViewMode] = useState("flacon"); // 'flacon' | 'studio'
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxScale, setLightboxScale] = useState(1.5);
+  const [isHoverZooming, setIsHoverZooming] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    setMousePos({ x, y });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +129,12 @@ export default function BookDetails() {
       : (enrichedPerfume?.name + " by " + enrichedPerfume?.brand + " is an authentic luxury Arabian fragrance. Opening with notes of " + topNotes.join(", ") + ", unfolding into an alluring heart of " + heartNotes.join(", ") + ", enveloped in an opulent base of " + baseNotes.join(", ") + ".");
   }
 
+  const currentImage =
+    viewMode === "studio" && perfume?.rawImage ? perfume.rawImage : perfume?.image;
+  const hasStudioPhoto = Boolean(
+    perfume?.rawImage && perfume?.rawImage !== perfume?.image
+  );
+
   return (
     <div className="warda-details-page">
       <div className="container">
@@ -139,12 +168,31 @@ export default function BookDetails() {
           {/* MEDIA COLUMN */}
           <div className="warda-details-media">
             <OrnateCard className="warda-details-card">
-              <div className="warda-details-img-wrap">
+              <div
+                className={`warda-details-img-wrap ${isHoverZooming ? "warda-details-img-wrap--zooming" : ""}`}
+                onMouseEnter={() => setIsHoverZooming(true)}
+                onMouseLeave={() => setIsHoverZooming(false)}
+                onMouseMove={handleMouseMove}
+                onClick={() => setIsLightboxOpen(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setIsLightboxOpen(true)}
+                aria-label="Inspect perfume flacon details"
+                title={language === "ru" ? "Нажмите для детального осмотра флакона (Zoom)" : "Click to inspect bottle details (Zoom)"}
+              >
                 <div className="warda-details-aura" />
+                <span className="warda-details-zoom-pill">
+                  <i className="ri-zoom-in-line" />
+                  <span>{language === "ru" ? "Детальный зум" : "Inspect Zoom"}</span>
+                </span>
                 <img
-                  src={perfume.image}
+                  src={currentImage}
                   alt={perfume.name}
-                  className="warda-details-img"
+                  className={`warda-details-img ${viewMode === "studio" ? "warda-details-img--studio" : ""}`}
+                  style={{
+                    transformOrigin: isHoverZooming ? `${mousePos.x}% ${mousePos.y}%` : "center center",
+                    transform: isHoverZooming ? "scale(1.36) translateZ(0)" : "scale(1) translateZ(0)",
+                  }}
                   onError={(e) => {
                     if (perfume.rawImage && e.target.src !== perfume.rawImage) {
                       e.target.src = perfume.rawImage;
@@ -152,6 +200,31 @@ export default function BookDetails() {
                   }}
                 />
               </div>
+
+              {hasStudioPhoto && (
+                <div className="warda-details-view-switch">
+                  <button
+                    type="button"
+                    className={`warda-switch-btn ${viewMode === "flacon" ? "active" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewMode("flacon");
+                    }}
+                  >
+                    ✨ {language === "ru" ? "3D Флакон" : "3D Flacon"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`warda-switch-btn ${viewMode === "studio" ? "active" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewMode("studio");
+                    }}
+                  >
+                    📸 {language === "ru" ? "Студийный пакшот" : "Studio Packshot"}
+                  </button>
+                </div>
+              )}
             </OrnateCard>
           </div>
 
@@ -270,6 +343,101 @@ export default function BookDetails() {
           </div>
         </div>
       </div>
+
+      {/* FULLSCREEN LIGHTBOX / HIGH-RES INSPECTION MODAL */}
+      {isLightboxOpen && (
+        <div
+          className="warda-lightbox-backdrop"
+          onClick={() => setIsLightboxOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="warda-lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header / Controls */}
+            <div className="warda-lightbox-header">
+              <div className="warda-lightbox-title-box">
+                <span className="warda-lightbox-brand">{perfume.brand}</span>
+                <h2 className="warda-lightbox-title">{perfume.name}</h2>
+              </div>
+
+              <div className="warda-lightbox-controls">
+                {hasStudioPhoto && (
+                  <div className="warda-lightbox-view-switch">
+                    <button
+                      type="button"
+                      className={`warda-lightbox-switch-btn ${viewMode === "flacon" ? "active" : ""}`}
+                      onClick={() => setViewMode("flacon")}
+                    >
+                      ✨ {language === "ru" ? "3D Флакон" : "3D Flacon"}
+                    </button>
+                    <button
+                      type="button"
+                      className={`warda-lightbox-switch-btn ${viewMode === "studio" ? "active" : ""}`}
+                      onClick={() => setViewMode("studio")}
+                    >
+                      📸 {language === "ru" ? "Пакшот" : "Packshot"}
+                    </button>
+                  </div>
+                )}
+
+                <div className="warda-lightbox-zoom-pills">
+                  {[1, 1.4, 1.8, 2.2].map((scale) => (
+                    <button
+                      key={scale}
+                      type="button"
+                      className={`warda-lightbox-scale-btn ${lightboxScale === scale ? "active" : ""}`}
+                      onClick={() => setLightboxScale(scale)}
+                    >
+                      {scale}×
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="warda-lightbox-close"
+                  onClick={() => setIsLightboxOpen(false)}
+                  aria-label="Close inspection modal"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Viewport with Zoomable Image */}
+            <div className="warda-lightbox-viewport">
+              <div className="warda-lightbox-stage">
+                <img
+                  src={currentImage}
+                  alt={perfume.name}
+                  className={`warda-lightbox-img ${viewMode === "studio" ? "warda-lightbox-img--studio" : ""}`}
+                  style={{
+                    transform: `scale(${lightboxScale})`,
+                  }}
+                  onError={(e) => {
+                    if (perfume.rawImage && e.target.src !== perfume.rawImage) {
+                      e.target.src = perfume.rawImage;
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Footer Hint */}
+            <div className="warda-lightbox-footer">
+              <span className="warda-lightbox-hint">
+                <i className="ri-information-line" />
+                {language === "ru"
+                  ? "Детальный осмотр надписей, концентрации и флакона • Выберите масштаб или прокрутите • Esc для закрытия"
+                  : "Detail inspection of bottle, inscriptions and concentration • Select zoom • Esc to close"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

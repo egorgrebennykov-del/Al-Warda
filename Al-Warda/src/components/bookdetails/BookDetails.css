@@ -107,7 +107,80 @@
     radial-gradient(ellipse 85% 32% at 50% 86%, rgba(212, 175, 55, 0.20) 0%, rgba(26, 20, 14, 0.3) 45%, transparent 80%);
   border-radius: 6px;
   border: none !important;
-  overflow: visible;
+  overflow: hidden;
+  cursor: zoom-in;
+  user-select: none;
+}
+
+/* Floating Zoom Indicator Pill */
+.warda-details-zoom-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  background: rgba(13, 10, 7, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 999px;
+  color: #f7ede2;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 5;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.warda-details-img-wrap:hover .warda-details-zoom-pill {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+  color: #d4af37;
+}
+
+.warda-details-img-wrap--zooming {
+  overflow: hidden;
+}
+
+/* Studio Packshot vs 3D Flacon View Switcher */
+.warda-details-view-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.warda-switch-btn {
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #c2b59b;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-family: var(--second-font, 'Cinzel', serif);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.warda-switch-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+  color: #f7ede2;
+  border-color: rgba(212, 175, 55, 0.5);
+}
+
+.warda-switch-btn.active {
+  background: #d4af37;
+  color: #080605;
+  border-color: #d4af37;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
 }
 
 /* Volumetric Golden Ambient Aura behind the flacon */
@@ -399,5 +472,241 @@
   .warda-details-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
+  }
+}
+
+/* ==========================================================================
+   FULLSCREEN HIGH-RES LIGHTBOX MODAL
+   ========================================================================== */
+
+.warda-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 4, 0.93);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: wardaFadeIn 0.25s ease-out;
+}
+
+@keyframes wardaFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.warda-lightbox-content {
+  background: #0d0a07;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1060px;
+  height: 90vh;
+  max-height: 820px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.95),
+    0 0 50px rgba(212, 175, 55, 0.12);
+}
+
+.warda-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(18, 14, 10, 0.85);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+  flex-wrap: wrap;
+}
+
+.warda-lightbox-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 200px;
+}
+
+.warda-lightbox-brand {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  color: #d4af37;
+  text-transform: uppercase;
+}
+
+.warda-lightbox-title {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 1.05rem;
+  color: #f7ede2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+}
+
+.warda-lightbox-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.warda-lightbox-view-switch {
+  display: flex;
+  gap: 0.35rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.warda-lightbox-switch-btn {
+  background: transparent;
+  border: none;
+  color: #a89882;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.warda-lightbox-switch-btn.active {
+  background: #d4af37;
+  color: #080605;
+}
+
+.warda-lightbox-zoom-pills {
+  display: flex;
+  gap: 0.35rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.warda-lightbox-scale-btn {
+  background: transparent;
+  border: none;
+  color: #c2b59b;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.warda-lightbox-scale-btn:hover {
+  color: #f7ede2;
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.warda-lightbox-scale-btn.active {
+  background: #d4af37;
+  color: #080605;
+}
+
+.warda-lightbox-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.08);
+  color: #f7ede2;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.warda-lightbox-close:hover {
+  background: #d4af37;
+  color: #080605;
+  transform: rotate(90deg);
+}
+
+.warda-lightbox-viewport {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  background:
+    radial-gradient(circle 500px at center, rgba(212, 175, 55, 0.08) 0%, rgba(13, 10, 7, 0.95) 70%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0, rgba(255, 255, 255, 0.01) 1px, transparent 0, transparent 24px);
+}
+
+.warda-lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.warda-lightbox-img {
+  max-width: 78%;
+  max-height: 540px;
+  object-fit: contain;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.85));
+}
+
+.warda-lightbox-img--studio {
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
+.warda-lightbox-footer {
+  padding: 0.75rem 1.5rem;
+  background: rgba(18, 14, 10, 0.85);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  text-align: center;
+}
+
+.warda-lightbox-hint {
+  font-size: 0.75rem;
+  color: #a89882;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media screen and (max-width: 600px) {
+  .warda-lightbox-content {
+    height: 94vh;
+  }
+  .warda-lightbox-header {
+    padding: 0.75rem 1rem;
+  }
+  .warda-lightbox-title {
+    max-width: 180px;
+    font-size: 0.9rem;
+  }
+  .warda-lightbox-img {
+    max-width: 95%;
+    max-height: 420px;
   }
 }
