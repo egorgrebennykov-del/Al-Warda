@@ -13,11 +13,8 @@ const STORAGE_KEY = "litera_assistant_history_v2";
 const DIALOG_LANG_KEY = "litera_assistant_dialog_lang_v1";
 
 const isSearchQuery = (text) =>
-  /(посоветуй|порекомендуй|найди|подбери|выбери|какие духи|духи|аромат|парфюм|ноты|стойк|шлейф|уд|ваниль|мускус|recommend|suggest|perfume|fragrance|scent|notes|oud)/i.test(
-    text,
-  ) &&
-  !/(корзин|в корзине|заказ|мои заказы|профиль|аккаунт|где найти|куда нажать)/i.test(
-    text,
+  !/(корзин|в корзине|заказ|мои заказы|профиль|аккаунт|где найти|куда нажать|войти|пароль)/i.test(
+    text || "",
   );
 
 let idCounter = 0;

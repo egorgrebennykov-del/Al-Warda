@@ -141,14 +141,30 @@ const NOTE_SYNONYMS = {
 };
 
 const BRAND_NAMES = [
-  "lattafa", "afnan", "armaf", "arabian oud", "rasasi",
-  "al haramain", "swiss arabian", "maison alhambra", "paris corner",
-  "orientica", "fragrance world", "ajmal", "roshas", "asad", "khamrah", "yara"
+  "afnan", "ajmal", "al fares", "al haramain", "al majed for oud",
+  "al wataniah", "anfas", "ard al zaafaran", "armaf", "asdaaf",
+  "atyab al marshoud", "azha", "azhaara", "clive dorris", "emper",
+  "flavia", "fragrance world", "grandeur", "hamidi", "hayaati",
+  "hekayat attar", "jenny glow", "just jack", "khadlaj", "khalis",
+  "la fede", "lattafa", "le falcone", "mamlakt al oud", "ministry of oud",
+  "myperfumes", "ojar", "orientica", "paris corner", "prime collection",
+  "privezarah", "rasasi", "riifs", "risala", "shaikh mohd saeed",
+  "sterling parfums", "tayyib", "vurv", "zimaya", "maison alhambra",
+  "swiss arabian", "arabian oud", "al rehab", "french avenue", "rayhaan",
+  "asad", "khamrah", "yara", "badee al oud", "club de nuit", "meydan"
 ];
 
 // ============================================================================
 // 3. INTELLIGENT PERFUME DATABASE SEARCH
 // ============================================================================
+const STOP_WORDS = new Set([
+  "найди", "посоветуй", "порекомендуй", "подбери", "выбери", "покажи", "какие", "какой",
+  "есть", "ли", "у", "вас", "хочу", "купить", "духи", "духов", "парфюм", "парфюма",
+  "аромат", "ароматы", "ароматов", "ноты", "нотами", "нотах", "запах", "флакон",
+  "пожалуйста", "мне", "что", "чем", "для", "про", "find", "show", "search",
+  "recommend", "suggest", "perfume", "fragrance", "scent", "notes", "parfum"
+]);
+
 export function searchPerfumesInDatabase(query, options = {}) {
   initCatalog();
   const {
@@ -161,7 +177,9 @@ export function searchPerfumesInDatabase(query, options = {}) {
   } = options;
 
   const q = (query || "").trim().toLowerCase();
-  const tokens = q.split(/[\s,·+]+/).filter((t) => t.length > 1);
+  const rawTokens = q.split(/[\s,·+]+/).filter((t) => t.length > 1);
+  const meaningfulTokens = rawTokens.filter((t) => !STOP_WORDS.has(t));
+  const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : rawTokens;
 
   // Extract matched note categories from query
   const matchedNoteCategories = [];
@@ -205,15 +223,29 @@ export function searchPerfumesInDatabase(query, options = {}) {
     const baseStr = p.baseNotes.join(" ").toLowerCase();
     const allText = `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descLower}`;
 
-    // Exact name match
-    if (nameLower.includes(q) && q.length > 2) score += 60;
-    if (q.includes(nameLower) && nameLower.length > 3) score += 60;
+    // Exact or phrase match
+    if (nameLower.includes(q) && q.length > 2) score += 90;
+    if (q.includes(nameLower) && nameLower.length > 3) score += 90;
+
+    // Direct token matches against perfume name & brand
+    for (const tok of tokens) {
+      if (tok.length < 2) continue;
+      if (nameLower === tok) {
+        score += 80;
+      } else if (nameLower.startsWith(tok + " ") || nameLower.includes(" " + tok + " ") || nameLower.endsWith(" " + tok)) {
+        score += 55;
+      } else if (nameLower.includes(tok)) {
+        score += 40;
+      }
+      if (brandLower.includes(tok)) {
+        score += 35;
+      }
+    }
 
     // Brand matching
     for (const mb of matchedBrands) {
-      if (brandLower.includes(mb) || nameLower.includes(mb)) {
-        score += 35;
-      }
+      if (brandLower.includes(mb)) score += 45;
+      else if (nameLower.includes(mb)) score += 35;
     }
 
     // Notes matching
@@ -226,12 +258,9 @@ export function searchPerfumesInDatabase(query, options = {}) {
       }
     }
 
-    // General token match
     for (const tok of tokens) {
-      if (nameLower.includes(tok)) score += 15;
-      else if (brandLower.includes(tok)) score += 12;
-      else if (notesSummary.includes(tok)) score += 10;
-      else if (allText.includes(tok)) score += 4;
+      if (notesSummary.includes(tok)) score += 12;
+      else if (allText.includes(tok)) score += 5;
     }
 
     // Preferred gender bonus
@@ -239,8 +268,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
       score += 15;
     }
 
-    // Bestseller bonus for well-known favorites
-    if (/yara|khamrah|asad|badee|fakhar|ejaazi|amethyst|club de nuit/i.test(nameLower)) {
+    // Bestseller bonus for well-known favorites (only if already relevant to query)
+    if (score > 0 && /yara|khamrah|asad|badee|fakhar|ejaazi|amethyst|club de nuit/i.test(nameLower)) {
       score += 8;
     }
 
@@ -259,22 +288,37 @@ export function searchPerfumesInDatabase(query, options = {}) {
     scored.sort((a, b) => b.score - a.score);
   }
 
-  // Filter out zero-score items if we have good matches
-  const topMatches = scored.filter((x) => x.score > 0).map((x) => x.perfume);
+  // Filter items that scored positively
+  const positiveMatches = scored.filter((x) => x.score > 0).map((x) => x.perfume);
+  const combined = [...positiveMatches];
 
-  if (topMatches.length >= Math.min(limit, 3)) {
-    return topMatches.slice(0, limit);
+  // 1. If we matched a specific brand or item, pad with the same brand first
+  if (combined.length > 0 && combined.length < limit) {
+    const primaryBrand = combined[0].brand?.toLowerCase();
+    if (primaryBrand) {
+      for (const p of ALL_PERFUMES) {
+        if (
+          p.brand?.toLowerCase() === primaryBrand &&
+          !excludeIds.has(p.id) &&
+          !combined.some((item) => item.id === p.id)
+        ) {
+          combined.push(p);
+          if (combined.length >= limit) break;
+        }
+      }
+    }
   }
 
-  // If not enough matches, pad with diverse top Arabian bestsellers not in excludeIds
-  const fallbackList = ALL_PERFUMES.filter(
-    (p) => !excludeIds.has(p.id) && !excludeIds.has(p.slug) && !excludeIds.has(p.key)
-  );
-  const combined = [...topMatches];
-  for (const fb of fallbackList) {
-    if (!combined.some((item) => item.id === fb.id)) {
-      combined.push(fb);
-      if (combined.length >= limit) break;
+  // 2. If still need padding, pad with diverse top Arabian favorites
+  if (combined.length < limit) {
+    const fallbackList = ALL_PERFUMES.filter(
+      (p) => !excludeIds.has(p.id) && !excludeIds.has(p.slug) && !excludeIds.has(p.key)
+    );
+    for (const fb of fallbackList) {
+      if (!combined.some((item) => item.id === fb.id)) {
+        combined.push(fb);
+        if (combined.length >= limit) break;
+      }
     }
   }
 
@@ -471,10 +515,26 @@ export async function processLiteraChat({ messages = [], language = "ru", contex
   const memory = extractDialogueMemory(history.slice(0, -1), latestMessage);
   const cleanQ = latestMessage.trim().toLowerCase();
 
+  // 1. Check if user is asking purely for navigation/cart/admin
+  const isPureNavigationOrAdmin =
+    /^(привет|здравствуй|добрый (день|вечер|утро)|hello|hi|hey|как дела|кто ты|что ты умеешь)$/i.test(cleanQ) ||
+    /^(корзина|в корзину|открой корзину|перейти в корзину|моя корзина|оформить заказ|мой заказ|мои заказы|как оплатить|доставка|возврат|профиль|аккаунт|войти|связаться с администратором|позови менеджера)$/i.test(cleanQ);
+
+  // 2. Test search candidates in database
+  const searchCandidates = searchPerfumesInDatabase(latestMessage, {
+    excludeIds: new Set(memory.isRejection ? memory.previouslyRecommendedIds : []),
+    preferredGender: memory.preferredGender,
+    priceOrder: memory.priceOrder,
+    limit: 6,
+  });
+
   const isPerfumeSearch =
-    /(посоветуй|порекомендуй|найди|подбери|выбери|какие духи|духи|аромат|парфюм|ноты|стойк|шлейф|уд|ваниль|мускус|роза|свеж|кожа|recommend|suggest|perfume|fragrance|scent|notes|oud|vanilla)/i.test(
-      cleanQ
-    ) || memory.isRejection || memory.isSpecificInquiry;
+    !isPureNavigationOrAdmin &&
+    (searchCandidates.length > 0 ||
+      /(посоветуй|порекомендуй|найди|подбери|выбери|покажи|какие|духи|аромат|парфюм|ноты|стойк|шлейф|запах|флакон|купить|цена|сколько стоит|recommend|suggest|perfume|fragrance|scent|notes|oud|parfum|edp|edt|cologne)/i.test(cleanQ) ||
+      BRAND_NAMES.some((b) => cleanQ.includes(b)) ||
+      memory.isRejection ||
+      memory.isSpecificInquiry);
 
   if (typeof onStatus === "function") {
     try {
@@ -494,7 +554,7 @@ export async function processLiteraChat({ messages = [], language = "ru", contex
     } else {
       // Search database with memory context
       const excludeSet = new Set(memory.isRejection ? memory.previouslyRecommendedIds : []);
-      foundPerfumes = searchPerfumesInDatabase(latestMessage, {
+      foundPerfumes = searchCandidates.length > 0 ? searchCandidates : searchPerfumesInDatabase(latestMessage, {
         excludeIds: excludeSet,
         preferredGender: memory.preferredGender,
         priceOrder: memory.priceOrder,
@@ -612,12 +672,15 @@ If they asked to view cart, navigate to cart, etc., include "action": { "type": 
   }
 
   // 7. Resolve final perfume objects for frontend
-  const finalPerfumes = (Array.isArray(aiResult.bookIds) && aiResult.bookIds.length > 0
+  let resolvedAI = Array.isArray(aiResult.bookIds) && aiResult.bookIds.length > 0
     ? aiResult.bookIds
         .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
         .filter(Boolean)
-    : foundPerfumes
-  ).slice(0, 6);
+    : [];
+  if (resolvedAI.length === 0 && foundPerfumes.length > 0) {
+    resolvedAI = foundPerfumes;
+  }
+  const finalPerfumes = resolvedAI.slice(0, 6);
 
   return {
     message: aiResult.message,
@@ -706,10 +769,28 @@ function generateHeuristicResponse({ latestMessage, foundPerfumes, memory, langu
 
   // General recommendations
   if (foundPerfumes.length > 0) {
+    const topItem = foundPerfumes[0];
+    const topNameLower = (topItem.name || "").toLowerCase();
+    const isBrandSearch = BRAND_NAMES.some((b) => q.includes(b));
+    const isDirectItemMatch = topNameLower.split(/\s+/).some((w) => w.length > 3 && q.includes(w));
+
+    let customMsg = "";
+    if (isDirectItemMatch) {
+      customMsg = isRu
+        ? `Я нашла для вас «${topItem.name}» от дома ${topItem.brand}! Это великолепный образец восточного мастерства. ✨`
+        : `I found «${topItem.name}» by ${topItem.brand} for you! An exquisite piece of Arabian perfumery. ✨`;
+    } else if (isBrandSearch) {
+      customMsg = isRu
+        ? `С радостью представляю вам коллекцию ароматов от известного дома ${topItem.brand} в бутике Al-Warda: ✨`
+        : `With pleasure, here are selected fragrances from ${topItem.brand} in Al-Warda's collection: ✨`;
+    } else {
+      customMsg = isRu
+        ? "С радостью представляю вам изысканные арабские парфюмы из коллекции Al-Warda, идеально подходящие под ваш запрос: ✨"
+        : "With great pleasure, I present exquisite Arabian fragrances from Al-Warda's royal collection curated for you: ✨";
+    }
+
     return {
-      message: isRu
-        ? "С радостью представляю вам изысканные арабские парфюмы из коллекции Al-Warda, идеально подходящие под ваши пожелания:"
-        : "With great pleasure, I present exquisite Arabian fragrances from Al-Warda's royal collection curated for you:",
+      message: customMsg,
       emotion: "happy",
       bookIds: foundPerfumes.map((p) => p.id),
     };

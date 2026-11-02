@@ -195,20 +195,14 @@ export default {
 
           const streamPromise = (async () => {
             try {
-              let streamed = false;
-              await processLiteraChat(body, {
-                onChunk: async (chunk) => {
-                  streamed = true;
-                  await writer.write(encoder.encode(`data: ${JSON.stringify({ chunk })}\n\n`));
-                },
-              });
-              if (!streamed) {
-                const res = await processLiteraChat(body);
-                await writer.write(encoder.encode(`data: ${JSON.stringify({ chunk: res.reply })}\n\n`));
-              }
+              const onStatus = async (status) => {
+                await writer.write(encoder.encode(`data: ${JSON.stringify({ type: "status", status })}\n\n`));
+              };
+              const result = await processLiteraChat({ ...body, onStatus });
+              await writer.write(encoder.encode(`data: ${JSON.stringify({ type: "result", ...result })}\n\n`));
               await writer.write(encoder.encode("data: [DONE]\n\n"));
             } catch (err) {
-              await writer.write(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`));
+              await writer.write(encoder.encode(`data: ${JSON.stringify({ type: "error", error: err.message })}\n\n`));
             } finally {
               await writer.close();
             }
@@ -218,7 +212,7 @@ export default {
 
           return new Response(readable, {
             headers: {
-              "Content-Type": "text/event-stream",
+              "Content-Type": "text/event-stream; charset=utf-8",
               "Cache-Control": "no-cache",
               "Connection": "keep-alive",
               "Access-Control-Allow-Origin": "*",
