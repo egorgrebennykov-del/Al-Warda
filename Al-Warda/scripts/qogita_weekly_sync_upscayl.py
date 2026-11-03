@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-Al-Warda Parfumes - Weekly Qogita Catalog Sync, Background Cutout & Upscayl AI Pipeline
+Al-Warda weekly Qogita catalog sync and branded perfume image renderer.
 
 Pipeline Steps:
 1. Authenticates with Qogita API and downloads latest in-stock Arabian perfume products.
 2. Identifies new/updated perfumes and their product images.
-3. Crops and removes backgrounds using AI (rembg / u2net) to isolate the perfume flacon.
-4. Enhances image resolution & clarity using Upscayl AI (upscayl-bin / Real-ESRGAN).
-5. Saves clean 32-bit transparent RGBA PNGs to public/assets/img/dropship/<hash>.png.
-6. Synchronizes Supabase database ('stocks' table) and server/data/enrichedStocks.json.
-7. Can execute locally on Windows (using local Upscayl installation) or in the cloud
-   via GitHub Actions (running weekly cron independently of user PC state).
+3. Removes the photo background, isolates the bottle, and composites it into the studio scene.
+4. Saves the rendered image to public/assets/img/products/<gtin>.jpg.
+5. Synchronizes Supabase database ('stocks' table) and server/data/enrichedStocks.json.
+6. Runs locally on Windows or weekly in GitHub Actions.
 """
 
 import os
@@ -19,7 +17,6 @@ import json
 import hashlib
 import time
 import argparse
-import subprocess
 import requests
 import urllib3
 from PIL import Image
@@ -39,11 +36,24 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.dirname(SCRIPT_DIR)
 DROPSHIP_DIR = os.path.join(APP_DIR, "public", "assets", "img", "dropship")
 DIST_DROPSHIP_DIR = os.path.join(APP_DIR, "dist", "assets", "img", "dropship")
+PRODUCTS_DIR = os.path.join(APP_DIR, "public", "assets", "img", "products")
+DIST_PRODUCTS_DIR = os.path.join(APP_DIR, "dist", "assets", "img", "products")
 ENRICHED_STOCKS_PATH = os.path.join(APP_DIR, "server", "data", "enrichedStocks.json")
 CACHED_PERFUMES_PATH = os.path.join(APP_DIR, "server", "data", "cachedArabianPerfumes.json")
 
 os.makedirs(DROPSHIP_DIR, exist_ok=True)
 os.makedirs(DIST_DROPSHIP_DIR, exist_ok=True)
+os.makedirs(PRODUCTS_DIR, exist_ok=True)
+os.makedirs(DIST_PRODUCTS_DIR, exist_ok=True)
+
+ROOT_SCRIPTS_DIR = os.path.join(os.path.dirname(APP_DIR), "scripts")
+if ROOT_SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, ROOT_SCRIPTS_DIR)
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+
+from process_qogita_luxury import process_product_image_from_url_or_file
+from process_qogita_luxury import STUDIO_IMAGE_COMMENT
 
 # Load environment variables
 def load_env():
@@ -90,34 +100,6 @@ ARABIAN_BRANDS = [
     # Signature houses
     "Maison Alhambra", "Swiss Arabian", "Arabian Oud", "Al Rehab", "French Avenue", "Rayhaan"
 ]
-
-# Locate Upscayl Executable
-def find_upscayl():
-    # 1. Custom env var
-    if os.environ.get("UPSCAYL_BIN"):
-        bin_path = os.environ["UPSCAYL_BIN"]
-        models_dir = os.environ.get("UPSCAYL_MODELS") or os.path.join(os.path.dirname(bin_path), "..", "models")
-        if os.path.exists(bin_path):
-            return bin_path, models_dir
-
-    # 2. Windows Default Installation Path
-    win_upscayl = r"C:\Program Files\Upscayl\resources\bin\upscayl-bin.exe"
-    win_models = r"C:\Program Files\Upscayl\resources\models"
-    if os.path.exists(win_upscayl):
-        return win_upscayl, win_models
-
-    # 3. Linux / GitHub Actions runner paths
-    linux_candidates = [
-        ("/usr/local/bin/upscayl-bin", "/usr/local/share/upscayl/models"),
-        (os.path.join(APP_DIR, "bin", "realesrgan-ncnn-vulkan"), os.path.join(APP_DIR, "bin", "models")),
-        (os.path.join(APP_DIR, "bin", "upscayl-bin"), os.path.join(APP_DIR, "bin", "models")),
-        ("realesrgan-ncnn-vulkan", "models"),
-    ]
-    for bin_c, mod_c in linux_candidates:
-        if os.path.exists(bin_c):
-            return bin_c, mod_c
-
-    return None, None
 
 # Qogita Client
 class QogitaSyncClient:
@@ -230,121 +212,48 @@ class QogitaSyncClient:
         time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
-# Background Cutout Engine
-def remove_background(input_path, output_path, rembg_session=None):
-    import rembg
-    if rembg_session is None:
-        rembg_session = rembg.new_session("u2net")
-
-    with Image.open(input_path) as raw_im:
-        if raw_im.mode != "RGB":
-            raw_im = raw_im.convert("RGB")
-        cutout = rembg.remove(raw_im, session=rembg_session, alpha_matting=False)
-        cutout.save(output_path, "PNG")
-
-# Upscayl Image Enhancer (Maximum Quality Configuration)
-def upscale_with_upscayl(input_path, output_path, upscayl_bin, models_dir, scale=4, model_name="ultrasharp-4x"):
-    if not upscayl_bin or not os.path.exists(upscayl_bin):
-        # Fallback to high-quality Lanczos antialiased scaling if binary not present
-        with Image.open(input_path) as im:
-            w, h = im.size
-            upscaled = im.resize((w * scale, h * scale), Image.Resampling.LANCZOS)
-            upscaled.save(output_path, "PNG", optimize=True)
-            return True
-
-    # Identify best available model
-    preferred_models = ["ultrasharp-4x", "remacri-4x", "upscayl-standard-4x", "realesrgan-x4plus", "upscayl-lite-4x"]
-    selected_model = model_name
-    if models_dir and os.path.exists(models_dir):
-        available_files = os.listdir(models_dir)
-        for cand in preferred_models:
-            if f"{cand}.bin" in available_files or f"{cand}.param" in available_files:
-                selected_model = cand
-                break
-
-    cmd = [
-        upscayl_bin,
-        "-i", input_path,
-        "-o", output_path,
-        "-m", models_dir,
-        "-n", selected_model,
-        "-s", str(scale),
-        "-t", "256",
-        "-c", "0",
-        "-f", "png"
-    ]
+def is_current_studio_image(image_path):
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        if res.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-            return True
-        else:
-            # Fallback with standard model
-            cmd[7] = "upscayl-standard-4x"
-            res2 = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            if res2.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                return True
-            # Fallback with lite model
-            cmd[7] = "upscayl-lite-4x"
-            res3 = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            if res3.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                return True
-    except Exception as e:
-        print(f"Upscayl CLI execution note: {e}")
-
-    # Fallback: high-fidelity 4x antialiased Lanczos scaling (if GPU Vulkan CLI is unavailable)
-    try:
-        with Image.open(input_path) as im:
-            if im.mode != "RGBA":
-                im = im.convert("RGBA")
-            w, h = im.size
-            im.resize((w * scale, h * scale), Image.Resampling.LANCZOS).save(output_path, "PNG", optimize=True)
-        return True
-    except Exception as e:
-        print(f"Lanczos 4x scaling error: {e}")
+        with Image.open(image_path) as image:
+            return image.format == "JPEG" and image.info.get("comment") == STUDIO_IMAGE_COMMENT
+    except (OSError, ValueError):
         return False
 
-# Process single perfume image
-def process_perfume_image(raw_image_url, upscayl_bin, models_dir, rembg_session, force=False):
-    h = hashlib.md5(raw_image_url.encode("utf-8")).hexdigest()
-    final_path = os.path.join(DROPSHIP_DIR, f"{h}.png")
-    dist_path = os.path.join(DIST_DROPSHIP_DIR, f"{h}.png")
 
-    if not force and os.path.exists(final_path) and os.path.getsize(final_path) > 10000:
-        return f"/assets/img/dropship/{h}.png"
+def process_perfume_image(raw_image_url, force=False, gtin=None):
+    import shutil
+    if gtin:
+        safe_gtin = "".join(ch for ch in str(gtin) if ch.isalnum() or ch in ("-", "_"))
+        filename = f"{safe_gtin}.jpg"
+        output_dir = PRODUCTS_DIR
+        dist_dir = DIST_PRODUCTS_DIR
+        image_path = f"/assets/img/products/{filename}"
+    else:
+        image_hash = hashlib.md5(raw_image_url.encode("utf-8")).hexdigest()
+        filename = f"{image_hash}.jpg"
+        output_dir = DROPSHIP_DIR
+        dist_dir = DIST_DROPSHIP_DIR
+        image_path = f"/assets/img/dropship/{filename}"
 
-    tmp_raw = os.path.join(DROPSHIP_DIR, f"temp_raw_{h}.jpg")
-    tmp_cutout = os.path.join(DROPSHIP_DIR, f"temp_cutout_{h}.png")
+    final_path = os.path.join(output_dir, filename)
+    if (
+        not force
+        and os.path.exists(final_path)
+        and os.path.getsize(final_path) > 10000
+        and is_current_studio_image(final_path)
+    ):
+        return image_path
 
     try:
-        # Download raw
-        r = requests.get(raw_image_url, timeout=15, verify=False)
-        if r.status_code != 200 or len(r.content) < 1000:
-            return None
-        with open(tmp_raw, "wb") as f:
-            f.write(r.content)
+        process_product_image_from_url_or_file(raw_image_url, final_path)
 
-        # 1. Background cutout (transparent RGBA)
-        remove_background(tmp_raw, tmp_cutout, rembg_session)
+        if os.path.exists(dist_dir):
+            shutil.copyfile(final_path, os.path.join(dist_dir, filename))
 
-        # 2. Maximum Quality Upscayl enhancement (4x scale, UltraSharp model)
-        upscale_with_upscayl(tmp_cutout, final_path, upscayl_bin, models_dir, scale=4, model_name="ultrasharp-4x")
-
-        # Mirror to dist if dist exists
-        if os.path.exists(DIST_DROPSHIP_DIR):
-            import shutil
-            shutil.copyfile(final_path, dist_path)
-
-        return f"/assets/img/dropship/{h}.png"
+        return image_path
     except Exception as e:
-        print(f"Image processing error for {raw_image_url}: {e}")
+        print(f"Qogita studio image processing error for {gtin or raw_image_url}: {e}")
         return None
-    finally:
-        for f in (tmp_raw, tmp_cutout):
-            if os.path.exists(f):
-                try:
-                    os.remove(f)
-                except:
-                    pass
 
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
@@ -432,9 +341,9 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         limit_per_brand = None
 
     print("=" * 65)
-    print("AL-WARDA - QOGITA CATALOG SYNC & UPSCAYL PIPELINE")
+    print("AL-WARDA - QOGITA CATALOG SYNC & STUDIO IMAGE PIPELINE")
     print(f"Execution mode: {'Cloud (GitHub Actions)' if cloud_mode else 'Local PC'}")
-    print(f"Enhancement mode: Maximum Quality (UltraSharp 4x, tile=256, lossless)")
+    print("Image mode: isolated Qogita bottle with golden studio lighting and reflection")
     print(f"Items per brand: {'Maximum available (ALL)' if limit_per_brand is None else limit_per_brand}")
     if incremental:
         print("Sync mode: Smart Incremental (Delta changes & new additions only)")
@@ -452,21 +361,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
     print(f"Target brands to scan: {len(target_brands)}")
 
-    # 1. Check Upscayl
-    upscayl_bin, models_dir = find_upscayl()
-    if upscayl_bin:
-        print(f"✓ Upscayl executable detected: {upscayl_bin}")
-        print(f"✓ Upscayl models directory: {models_dir}")
-    else:
-        print("ℹ Upscayl binary not detected directly; using high-fidelity antialiased AI fallback.")
-
-    # 2. Init Rembg Session
-    print("Initializing AI background cutout session (u2net)...")
-    import rembg
-    rembg_session = rembg.new_session("u2net")
-    print("✓ Rembg session ready.")
-
-    # 3. Authenticate with Qogita
+    # Authenticate with Qogita
     client = QogitaSyncClient()
     try:
         client.login()
@@ -528,8 +423,16 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             if incremental and existing_item and not force:
                 old_price = float(existing_item.get("price") or 0.0)
                 old_img = existing_item.get("image") or ""
-                img_exists = old_img.startswith("/assets/img/dropship/") and os.path.exists(
-                    os.path.join(DROPSHIP_DIR, os.path.basename(old_img))
+                img_dir = None
+                if old_img.startswith("/assets/img/products/"):
+                    img_dir = PRODUCTS_DIR
+                elif old_img.startswith("/assets/img/dropship/"):
+                    img_dir = DROPSHIP_DIR
+                img_exists = (
+                    img_dir is not None
+                    and old_img.lower().endswith(".jpg")
+                    and os.path.isfile(os.path.join(img_dir, os.path.basename(old_img)))
+                    and is_current_studio_image(os.path.join(img_dir, os.path.basename(old_img)))
                 )
 
                 # Check if price changed
@@ -544,8 +447,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                     updated_items_count += 1
 
                 if not img_exists:
-                    print(f"  → Generating missing UltraSharp 4x visual: {name}")
-                    local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=True)
+                    print(f"  → Rendering Qogita bottle in studio scene: {name}")
+                    local_img = process_perfume_image(raw_img, force=True, gtin=gtin)
                     if local_img:
                         existing_item["image"] = local_img
                         processed_images += 1
@@ -565,8 +468,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 })
                 continue
 
-            # Process image (Cutout + Upscayl 4x UltraSharp)
-            local_img = process_perfume_image(raw_img, upscayl_bin, models_dir, rembg_session, force=force)
+            # Isolate the Qogita bottle and compose the branded studio scene.
+            local_img = process_perfume_image(raw_img, force=force, gtin=gtin)
             if local_img:
                 processed_images += 1
 
@@ -611,7 +514,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
     print(f"✓ New additions: {new_additions_count}")
     print(f"✓ Updated items: {updated_items_count}")
     print(f"✓ Skipped (unchanged): {skipped_count}")
-    print(f"✓ Processed images (UltraSharp 4x): {processed_images}")
+    print(f"✓ Rendered Qogita studio images: {processed_images}")
 
     # 5. Save local catalog
     save_enriched_stocks(existing_enriched)
@@ -623,14 +526,14 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         synced_count = sync_to_supabase(all_perfumes)
         print(f"✓ Synced {synced_count} records to Supabase 'stocks' table.")
 
-    print("\n🎉 Qogita Sync & AI Upscaling Complete!")
+    print("\n🎉 Qogita Sync & Studio Image Rendering Complete!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Al-Warda Qogita Sync & Upscayl Pipeline")
+    parser = argparse.ArgumentParser(description="Al-Warda Qogita Sync & Studio Image Pipeline")
     parser.add_argument("--limit", type=int, default=None, help="Max items per brand to fetch (omit for all)")
     parser.add_argument("--all", dest="all_products", action="store_true", help="Fetch maximum possible items across all brands")
     parser.add_argument("--cloud", action="store_true", help="Run in cloud CI mode")
-    parser.add_argument("--force", action="store_true", help="Force re-upscaling with UltraSharp 4x even if image exists")
+    parser.add_argument("--force", action="store_true", help="Force rerendering Qogita product images")
     parser.add_argument("--brands", type=str, default="", help="Specific comma-separated brands to sync (e.g. 'Lattafa,Armaf,Emper')")
     parser.add_argument("--incremental", action="store_true", help="Smart incremental sync (only fetch new or changed items)")
     args = parser.parse_args()

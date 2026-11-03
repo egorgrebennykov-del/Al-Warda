@@ -198,10 +198,16 @@ export async function getOrGenerateFlaconByGtin(gtin) {
   const rawImage = matched?.info?.rawImage || matched?.rawImage;
   if (rawImage && (rawImage.startsWith("http://") || rawImage.startsWith("https://"))) {
     try {
-      const scriptPath = path.resolve(__dirname, "../../scripts/process_qogita_luxury.py");
+      const localScript = path.resolve(__dirname, "../scripts/process_qogita_luxury.py");
+      const rootScript = path.resolve(__dirname, "../../scripts/process_qogita_luxury.py");
+      const scriptPath = fs.existsSync(localScript) ? localScript : rootScript;
       if (fs.existsSync(scriptPath)) {
         execSync(`python "${scriptPath}" --source "${rawImage}" --output "${cachedFile}"`, { timeout: 30000 });
         if (fs.existsSync(cachedFile)) {
+          const distProductsDir = path.resolve(__dirname, "../dist/assets/img/products");
+          if (fs.existsSync(distProductsDir)) {
+            fs.copyFileSync(cachedFile, path.join(distProductsDir, `${gtin}.jpg`));
+          }
           return `/assets/img/products/${gtin}.jpg`;
         }
       }
