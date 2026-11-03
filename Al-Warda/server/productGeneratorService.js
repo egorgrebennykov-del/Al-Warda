@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import enrichedStocks from "./data/enrichedStocks.json" with { type: "json" };
 
@@ -190,6 +191,22 @@ export async function getOrGenerateFlaconByGtin(gtin) {
         matched = item;
         break;
       }
+    }
+  }
+
+  // If raw Qogita image is available, process it into authentic luxury studio product render
+  const rawImage = matched?.info?.rawImage || matched?.rawImage;
+  if (rawImage && (rawImage.startsWith("http://") || rawImage.startsWith("https://"))) {
+    try {
+      const scriptPath = path.resolve(__dirname, "../../scripts/process_qogita_luxury.py");
+      if (fs.existsSync(scriptPath)) {
+        execSync(`python "${scriptPath}" --source "${rawImage}" --output "${cachedFile}"`, { timeout: 30000 });
+        if (fs.existsSync(cachedFile)) {
+          return `/assets/img/products/${gtin}.jpg`;
+        }
+      }
+    } catch (e) {
+      console.warn(`[getOrGenerateFlaconByGtin] luxury processing error for ${gtin}:`, e.message);
     }
   }
 
