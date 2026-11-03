@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ========================================================
-echo   Al-Warda - Manual Qogita Sync & Upscayl Pipeline
+echo   Al-Warda - Manual Qogita Studio Image Sync
 echo ========================================================
 cd /d "%~dp0\.."
 python scripts\qogita_weekly_sync_upscayl.py --limit 30

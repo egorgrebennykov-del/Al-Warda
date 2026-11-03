@@ -14,7 +14,11 @@ DROPSHIP_DIR = os.path.join(APP_DIR, "public", "assets", "img", "dropship")
 
 sys.path.insert(0, APP_DIR)
 from scripts.qogita_weekly_sync_upscayl import (
-    QogitaSyncClient, ARABIAN_BRANDS, sync_to_supabase, save_enriched_stocks
+    QogitaSyncClient,
+    ARABIAN_BRANDS,
+    process_perfume_image,
+    sync_to_supabase,
+    save_enriched_stocks,
 )
 
 print("=" * 65)
@@ -90,15 +94,8 @@ for brand in ARABIAN_BRANDS:
 
         gtin = item.get("gtin")
         h = hashlib.md5((raw_img or name).encode("utf-8")).hexdigest()
-        local_png_path = os.path.join(DROPSHIP_DIR, f"{h}.png")
-        
-        # Check if we already have an upscaled local image
-        if os.path.exists(local_png_path) and os.path.getsize(local_png_path) > 10000:
-            img_url = f"/assets/img/dropship/{h}.png"
-        elif raw_img:
-            img_url = raw_img
-        else:
-            img_url = "/assets/img/perfumes/hero-perfume.png"
+        img_url = process_perfume_image(raw_img, gtin=gtin) if raw_img else None
+        img_url = img_url or "/assets/img/perfumes/hero-perfume.png"
 
         key = f"dropship-{gtin or h[:12]}"
 
@@ -157,7 +154,7 @@ for brand in ARABIAN_BRANDS:
         else:
             # Update price or image if newly available
             enriched[key]["price"] = round(amount, 2)
-            if img_url.startswith("/assets/img/dropship/"):
+            if img_url.startswith("/assets/img/products/") or img_url.startswith("/assets/img/dropship/"):
                 enriched[key]["image"] = img_url
             updated_count += 1
 

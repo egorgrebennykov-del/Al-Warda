@@ -5183,10 +5183,10 @@ export default function Privileged() {
                   actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/full-database-refresh.yml",
                 },
                 {
-                  id: "local-upscayl-sync",
-                  title: t("privileged.gitActions.wfLocalUpscaylTitle"),
+                  id: "local-studio-image-sync",
+                  title: t("privileged.gitActions.wfLocalStudioSyncTitle"),
                   file: "scripts/qogita_weekly_sync_upscayl.py",
-                  descKey: "privileged.gitActions.wfLocalUpscaylDesc",
+                  descKey: "privileged.gitActions.wfLocalStudioSyncDesc",
                   icon: "ri-cpu-line",
                   actionUrl: null,
                 },

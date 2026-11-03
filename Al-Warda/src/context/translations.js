@@ -443,7 +443,7 @@ export const translations = {
     // Privileged Git Actions Tab
     "privileged.gitActions.title": "GitHub Actions & Автоматизации Каталога",
     "privileged.gitActions.subtitle":
-      "Облачные пайплайны синхронизации парфюмерии Qogita, вырезки фона (rembg) и апскейла UltraSharp 4x",
+      "Синхронизация Qogita, изоляция флаконов и студийные изображения с золотым сиянием и отражением",
     "privileged.gitActions.openGithub": "Открыть GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Запустить / Проверить ↗",
     "privileged.gitActions.run": "Запустить",
@@ -465,16 +465,16 @@ export const translations = {
     "privileged.gitActions.repoLabel": "Репозиторий проекта на GitHub: ",
     "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Инкрементальная синхронизация)",
     "privileged.gitActions.wfSmartSyncDesc":
-      "Сверяет ассортимент 44+ брендов с базой Qogita, находит новинки и изменения цен. Автоматически вырезает фон (rembg) и увеличивает фото до UltraSharp 4x (каждый понедельник в 04:00 UTC или вручную).",
+      "Сверяет ассортимент 44+ брендов с базой Qogita, находит новинки и изменения цен. Вырезает флакон из фото и помещает его в чёрную студийную сцену с золотым сиянием и отражением (каждый понедельник в 04:00 UTC или вручную).",
     "privileged.gitActions.wfBrandSyncTitle": "Синхронизация выбранных брендов",
     "privileged.gitActions.wfBrandSyncDesc":
-      "Точечное обновление каталога или внесение новинок по списку указанных брендов (Lattafa, Armaf, Azha, Emper и др.) с апскейлом UltraSharp 4x.",
+      "Точечное обновление каталога или добавление новинок выбранных брендов с обработкой флаконов в студийном шаблоне.",
     "privileged.gitActions.wfFullRefreshTitle": "Полное обновление базы (Full Refresh)",
     "privileged.gitActions.wfFullRefreshDesc":
       "Генеральное обновление всех 44+ брендов, полная синхронизация таблиц Supabase 'stocks', проверка цен, статусов и пересборка продакшн-каталога.",
-    "privileged.gitActions.wfLocalUpscaylTitle": "Локальный запуск Upscayl (на видеокарте ПК)",
-    "privileged.gitActions.wfLocalUpscaylDesc":
-      "Прямой запуск AI-пайплайна на видеокарте компьютера через установленный C:\\Program Files\\Upscayl.",
+    "privileged.gitActions.wfLocalStudioSyncTitle": "Локальная обработка фото Qogita",
+    "privileged.gitActions.wfLocalStudioSyncDesc":
+      "Запускает синхронизацию Qogita и помещает оригинальный флакон в чёрную студийную сцену с золотым светом и отражением. Отдельная видеокарта не требуется.",
     "privileged.gitActions.wfExchangeRateTitle": "Синхронизация курсов валют (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
       "Обновление официальных курсов конвертации цен парфюмерии.",
@@ -981,7 +981,7 @@ export const translations = {
     // Privileged Git Actions Tab
     "privileged.gitActions.title": "GitHub Actions & Catalog Automations",
     "privileged.gitActions.subtitle":
-      "Cloud pipelines for Qogita fragrance sync, AI background cutout (rembg), and UltraSharp 4x upscaling",
+      "Qogita sync, bottle isolation, and studio product images with a golden glow and reflections",
     "privileged.gitActions.openGithub": "Open GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Run / Check ↗",
     "privileged.gitActions.run": "Run",
@@ -1003,16 +1003,16 @@ export const translations = {
     "privileged.gitActions.repoLabel": "Project repository on GitHub: ",
     "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Incremental Delta)",
     "privileged.gitActions.wfSmartSyncDesc":
-      "Scans Qogita products across all 44 brands. Automatically detects, adds new perfumes, and updates price changes with UltraSharp 4x AI enhancement (weekly on Mondays at 04:00 UTC or on-demand).",
+      "Scans all 44+ Qogita brands for new products and price changes. Isolates each bottle and places it in a black studio scene with a golden glow and reflection (weekly on Mondays at 04:00 UTC or on-demand).",
     "privileged.gitActions.wfBrandSyncTitle": "Brand Catalog Sync (Targeted)",
     "privileged.gitActions.wfBrandSyncDesc":
-      "Targeted sync or introduction of new arrivals for specific brands (e.g. Lattafa, Armaf, Azha, Emper) with rembg cutout and UltraSharp 4x upscaling.",
+      "Sync or add new arrivals for selected brands, rendering bottle images in the branded studio scene.",
     "privileged.gitActions.wfFullRefreshTitle": "Full Database Refresh",
     "privileged.gitActions.wfFullRefreshDesc":
       "Comprehensive scan of all 44+ brands, full Supabase stocks database synchronization, price checks, and production catalog rebuild.",
-    "privileged.gitActions.wfLocalUpscaylTitle": "Local GPU Upscayl Sync",
-    "privileged.gitActions.wfLocalUpscaylDesc":
-      "Run the AI sync pipeline directly on local PC GPU hardware using installed Upscayl (C:\\Program Files\\Upscayl).",
+    "privileged.gitActions.wfLocalStudioSyncTitle": "Local Qogita Studio Image Sync",
+    "privileged.gitActions.wfLocalStudioSyncDesc":
+      "Run the Qogita sync and render each original bottle in a black studio scene with golden light and reflections. No dedicated GPU is required.",
     "privileged.gitActions.wfExchangeRateTitle": "Currency Rates Sync (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
       "Update daily exchange rates for real-time perfume price conversion.",

@@ -14,7 +14,7 @@ on:
         type: number
         default: 20
       force_upscale:
-        description: "Принудительно переобработать фотографии через UltraSharp 4x"
+        description: "Принудительно пересоздать студийные изображения флаконов"
         required: false
         type: boolean
         default: false
@@ -45,19 +45,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Setup Upscayl / Real-ESRGAN CLI with UltraSharp Models
-        run: |
-          mkdir -p Al-Warda/bin/models
-          cd Al-Warda/bin
-          curl -sL "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip" -o realesrgan.zip || true
-          if [ -f realesrgan.zip ]; then
-            unzip -q -o realesrgan.zip || true
-            chmod +x realesrgan-ncnn-vulkan || true
-          fi
-          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.param" -o models/ultrasharp-4x.param || true
-          curl -sL "https://raw.githubusercontent.com/upscayl/upscayl/main/resources/models/ultrasharp-4x.bin" -o models/ultrasharp-4x.bin || true
-          cd ../..
-
       - name: Run Brand Catalog Sync Pipeline
         run: |
           FORCE_FLAG=""
@@ -75,9 +62,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          UPSCAYL_BIN: "Al-Warda/bin/realesrgan-ncnn-vulkan"
-          UPSCAYL_MODELS: "Al-Warda/bin/models"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -106,10 +90,10 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action [Brand Catalog Sync]"
-          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/
+          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/ Al-Warda/public/assets/img/products/
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "feat(catalog): updated brands '${{ inputs.brands }}' with UltraSharp 4x photos [skip ci]"
+            git commit -m "feat(catalog): render studio images for '${{ inputs.brands }}' [skip ci]"
             git push origin main
           fi
