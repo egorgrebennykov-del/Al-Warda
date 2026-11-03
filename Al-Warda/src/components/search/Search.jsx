@@ -242,7 +242,7 @@ export default function Search({ show, onClose }) {
                         className="search__card-img"
                         loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.src = "/assets/perfumes/hero-perfume.png";
+                          e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
                         }}
                       />
                       <div className="search__card-sheen" />

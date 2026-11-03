@@ -21,8 +21,6 @@ export default function BookDetails() {
   const [isAdded, setIsAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxScale, setLightboxScale] = useState(1.5);
-  const [isSharpnessActive, setIsSharpnessActive] = useState(true);
-  const [isEnhanceLoaded, setIsEnhanceLoaded] = useState(false);
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -165,34 +163,19 @@ export default function BookDetails() {
                 title={language === "ru" ? "Нажмите для полноэкранного осмотра флакона" : "Click to view full size bottle"}
               >
                 <div className="warda-details-aura" />
-                <div className="warda-details-media-pills">
-                  <button
-                    type="button"
-                    className={`warda-details-sharp-badge ${isSharpnessActive ? "active" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsSharpnessActive(!isSharpnessActive);
-                    }}
-                    title={language === "ru" ? "Переключить дополнительное улучшение резкости" : "Toggle HD sharpness enhancement"}
-                  >
-                    <i className="ri-sparkling-fill" />
-                    <span>{isSharpnessActive ? (language === "ru" ? "✦ Резкость HD" : "✦ HD Sharpness") : (language === "ru" ? "Оригинал" : "Original")}</span>
-                  </button>
-                  <span className="warda-details-zoom-pill">
-                    <i className="ri-fullscreen-line" />
-                    <span>{language === "ru" ? "Увеличить" : "Full View"}</span>
-                  </span>
-                </div>
+                <span className="warda-details-zoom-pill">
+                  <i className="ri-fullscreen-line" />
+                  <span>{language === "ru" ? "Увеличить" : "Full View"}</span>
+                </span>
                 <img
                   src={perfume?.image}
                   alt={perfume.name}
-                  className={`warda-details-img ${isSharpnessActive ? "warda-details-img--sharp" : ""} ${isEnhanceLoaded ? "enhanced" : ""}`}
+                  className="warda-details-img"
                   loading="eager"
                   decoding="async"
-                  onLoad={() => setIsEnhanceLoaded(true)}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = "/assets/img/perfumes/hero-perfume.png";
+                    e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
                   }}
                 />
               </div>
@@ -336,14 +319,6 @@ export default function BookDetails() {
 
               <div className="warda-lightbox-controls">
                 <div className="warda-lightbox-zoom-pills">
-                  <button
-                    type="button"
-                    className={`warda-lightbox-scale-btn ${isSharpnessActive ? "active" : ""}`}
-                    onClick={() => setIsSharpnessActive(!isSharpnessActive)}
-                    title={language === "ru" ? "Резкость контуров и надписей" : "Toggle crisp edge sharpness"}
-                  >
-                    ✦ {isSharpnessActive ? (language === "ru" ? "Резкость" : "Sharp") : (language === "ru" ? "Оригинал" : "Original")}
-                  </button>
                   {[1, 1.3, 1.6, 2].map((scale) => (
                     <button
                       key={scale}
@@ -373,7 +348,7 @@ export default function BookDetails() {
                 <img
                   src={perfume?.image}
                   alt={perfume.name}
-                  className={`warda-lightbox-img ${isSharpnessActive ? "warda-lightbox-img--sharp" : ""}`}
+                  className="warda-lightbox-img"
                   style={{
                     transform: `scale(${lightboxScale})`,
                   }}
@@ -393,27 +368,6 @@ export default function BookDetails() {
           </div>
         </div>
       )}
-      {/* SVG Precision Studio Optical Sharpness Filters */}
-      <svg className="warda-svg-defs" aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}>
-        <defs>
-          {/* Studio Unsharp Mask Convolution: Preserves exact luminance while elevating edge sharpness by +140% */}
-          <filter id="warda-studio-sharp" colorInterpolationFilters="sRGB">
-            <feConvolveMatrix
-              order="3,3"
-              kernelMatrix="0 -0.45 0   -0.45 2.8 -0.45   0 -0.45 0"
-              preserveAlpha="true"
-            />
-          </filter>
-          {/* Macro HD Edge Clarifier for Zoom / Lightbox */}
-          <filter id="warda-hd-clarity" colorInterpolationFilters="sRGB">
-            <feConvolveMatrix
-              order="3,3"
-              kernelMatrix="-0.1 -0.4 -0.1   -0.4 3.0 -0.4   -0.1 -0.4 -0.1"
-              preserveAlpha="true"
-            />
-          </filter>
-        </defs>
-      </svg>
     </div>
   );
 }

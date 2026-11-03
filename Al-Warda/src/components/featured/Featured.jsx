@@ -598,7 +598,7 @@ export default function Featured() {
                       decoding="async"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/assets/img/perfumes/hero-perfume.png";
+                        e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
                       }}
                     />
                   </div>

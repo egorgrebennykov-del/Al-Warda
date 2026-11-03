@@ -132,7 +132,7 @@ export default function Cart({ onSearch }) {
                 >
                   <img
                     className="cart__image"
-                    src={item.image || "/assets/img/perfumes/hero-perfume.png"}
+                    src={item.image || "/assets/img/template/flacon_template.jpg"}
                     alt={item.title || ""}
                   />
                   <span className="cart__book-info">

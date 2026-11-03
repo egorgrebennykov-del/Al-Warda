@@ -12,9 +12,9 @@ const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 
 let memoryPerfumesCache = null;
 
-function resolveCardImage(img) {
-  if (!img) return "/assets/img/perfumes/hero-perfume.png";
-  return img;
+function resolveCardImage(img, gtin) {
+  if (gtin) return `/assets/img/products/${gtin}.jpg`;
+  return img || "/assets/img/template/flacon_template.jpg";
 }
 
 export function slugifyPerfumeName(name) {
@@ -193,9 +193,13 @@ export function ensurePerfumeEnrichment(p) {
   }
 
   const rawImage = p.rawImage || p.info?.rawImage || null;
+  const gtin = p.gtin || p.info?.gtin;
+  const resolvedImg = resolveCardImage(p.image, gtin);
 
   return {
     ...p,
+    image: resolvedImg,
+    fullCardImage: resolvedImg,
     rawImage: rawImage || p.rawImage || null,
     topNotes: topRu,
     heartNotes: heartRu,
@@ -315,8 +319,8 @@ export async function fetchPerfumesFromSupabase() {
             inStock: info.inStock !== false,
             deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
             deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-            image: resolveCardImage(r.image),
-            fullCardImage: resolveCardImage(r.image),
+            image: resolveCardImage(r.image, info.gtin || r.gtin),
+            fullCardImage: resolveCardImage(r.image, info.gtin || r.gtin),
             rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
             topNotes: topNotesRu,
             heartNotes: heartNotesRu,

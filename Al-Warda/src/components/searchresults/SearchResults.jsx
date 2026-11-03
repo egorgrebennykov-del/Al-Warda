@@ -311,7 +311,7 @@ export default function SearchResults() {
                       decoding="async"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/assets/img/perfumes/hero-perfume.png";
+                        e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
                       }}
                     />
                     <div className="warda-perfume-card__sheen" />

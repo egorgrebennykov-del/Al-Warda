@@ -22,6 +22,7 @@ import { syncPerfumeCatalog, executeCatalogActionById } from "./catalogActionsSe
 import { setHttpAdapter } from "./httpClient.js";
 import qogitaClient from "./qogitaClient.js";
 import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getArabianDropshipPerfumes, getTransparentImageBuffer } from "./qogitaService.js";
+import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -31,7 +32,8 @@ setHttpAdapter({
     axios.post(url, payload, { httpsAgent: defaultHttpsAgent, ...config }),
 });
 
-const appDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const appDir = path.resolve(__dirname, "..");
 dotenv.config({ path: path.resolve(appDir, ".env") });
 
 const ACTIONS = {
@@ -232,6 +234,42 @@ const server = createServer(async (req, res) => {
       const brand = urlObj.searchParams.get("brand") || "";
       const perfumes = await getArabianDropshipPerfumes({ query: q, brand });
       respond(res, 200, perfumes);
+    } catch (err) {
+      respond(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // Luxury GTIN Product Flacon Generator / Cache
+  if ((req.method === "GET" || req.method === "HEAD") && (pathname === "/api/product-image" || pathname === "/api/perfumes/product-image")) {
+    try {
+      const gtin = urlObj.searchParams.get("gtin") || urlObj.searchParams.get("id");
+      if (!gtin) {
+        respond(res, 400, { error: "Missing gtin parameter" });
+        return;
+      }
+      const imgPath = await getOrGenerateFlaconByGtin(gtin);
+      const absPath = path.resolve(__dirname, `../public${imgPath}`);
+      if (fs.existsSync(absPath)) {
+        res.writeHead(200, {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Access-Control-Allow-Origin": "*",
+        });
+        fs.createReadStream(absPath).pipe(res);
+        return;
+      }
+      const templateAbs = path.resolve(__dirname, "../public/assets/img/template/flacon_template.jpg");
+      if (fs.existsSync(templateAbs)) {
+        res.writeHead(200, {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "public, max-age=86400",
+          "Access-Control-Allow-Origin": "*",
+        });
+        fs.createReadStream(templateAbs).pipe(res);
+        return;
+      }
+      respond(res, 404, { error: "Product image not found" });
     } catch (err) {
       respond(res, 500, { error: err.message });
     }

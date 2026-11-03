@@ -119,6 +119,12 @@ export default {
       return jsonResponse({ ready: true });
     }
 
+    if (method === "GET" && pathname === "/api/product-image") {
+      const gtin = urlObj.searchParams.get("gtin") || urlObj.searchParams.get("id");
+      if (!gtin) return new Response("Missing gtin", { status: 400 });
+      return env.ASSETS.fetch(new Request(new URL(`/assets/img/products/${gtin}.jpg`, request.url)));
+    }
+
     if (method === "GET" && pathname === "/api/transparent-image") {
       const targetUrl = urlObj.searchParams.get("url");
       if (!targetUrl) return new Response("Missing url", { status: 400 });
