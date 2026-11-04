@@ -306,6 +306,7 @@ export async function fetchPerfumesFromSupabase() {
 
           const descRu = info.descriptionRu || r.description || "Роскошный восточный аромат Al-Warda.";
           const descEn = info.descriptionEn || "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
+          const generatedImage = info.imageGeneration.imageUrl || r.image;
 
           const perfumeObj = {
             id: String(r.id),
@@ -341,8 +342,8 @@ export async function fetchPerfumesFromSupabase() {
             inStock: info.inStock !== false,
             deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
             deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-            image: resolveCardImage(r.image, info.gtin || r.gtin, info.rawImage || r.raw_image),
-            fullCardImage: resolveCardImage(r.image, info.gtin || r.gtin, info.rawImage || r.raw_image),
+            image: generatedImage,
+            fullCardImage: generatedImage,
             rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
             topNotes: topNotesRu,
             heartNotes: heartNotesRu,
