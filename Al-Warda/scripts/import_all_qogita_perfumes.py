@@ -10,13 +10,10 @@ urllib3.disable_warnings()
 
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENRICHED_STOCKS_PATH = os.path.join(APP_DIR, "server", "data", "enrichedStocks.json")
-DROPSHIP_DIR = os.path.join(APP_DIR, "public", "assets", "img", "dropship")
-
 sys.path.insert(0, APP_DIR)
 from scripts.qogita_weekly_sync_upscayl import (
     QogitaSyncClient,
     ARABIAN_BRANDS,
-    process_perfume_image,
     sync_to_supabase,
     save_enriched_stocks,
 )
@@ -94,8 +91,7 @@ for brand in ARABIAN_BRANDS:
 
         gtin = item.get("gtin")
         h = hashlib.md5((raw_img or name).encode("utf-8")).hexdigest()
-        img_url = process_perfume_image(raw_img, gtin=gtin) if raw_img else None
-        img_url = img_url or "/assets/img/perfumes/hero-perfume.png"
+        img_url = raw_img or "/assets/img/perfumes/hero-perfume.png"
 
         key = f"dropship-{gtin or h[:12]}"
 
@@ -148,14 +144,22 @@ for brand in ARABIAN_BRANDS:
                     "volume": "100 мл EDP",
                     "descriptionRu": f"{name} — оригинальный премиальный парфюм бренда {brand}.",
                     "rawImage": raw_img,
-                    "gtin": gtin
+                    "gtin": gtin,
+                    "imageGeneration": {"status": "pending"},
                 }
             }
         else:
-            # Update price or image if newly available
+            info = enriched[key].setdefault("info", {})
+            if info.get("rawImage") != raw_img or not info.get("imageGeneration"):
+                info["imageGeneration"] = {"status": "pending"}
+            info["rawImage"] = raw_img
+            info["gtin"] = gtin or info.get("gtin")
+            enriched[key]["image"] = (
+                info["imageGeneration"].get("imageUrl")
+                if info["imageGeneration"].get("status") == "completed"
+                else img_url
+            )
             enriched[key]["price"] = round(amount, 2)
-            if img_url.startswith("/assets/img/products/") or img_url.startswith("/assets/img/dropship/"):
-                enriched[key]["image"] = img_url
             updated_count += 1
 
 print(f"\nTotal products fetched from Qogita: {len(all_synced_perfumes)}")
@@ -168,11 +172,7 @@ print(f"✓ Saved {len(enriched)} items to {ENRICHED_STOCKS_PATH}")
 
 # Sync all to Supabase in batches
 print(f"\nSynchronizing all {len(all_synced_perfumes)} perfumes to Supabase...")
-batch_size = 100
-synced_total = 0
-for i in range(0, len(all_synced_perfumes), batch_size):
-    batch = all_synced_perfumes[i:i + batch_size]
-    synced_total += sync_to_supabase(batch)
+synced_total = sync_to_supabase(all_synced_perfumes)
 
 print(f"✓ Synced {synced_total} items to Supabase 'stocks' table!")
 print("\n🎉 Full catalog import completed successfully!")

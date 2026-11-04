@@ -9,13 +9,32 @@ const SUPABASE_KEY =
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
+const PRODUCT_IMAGE_STORAGE_PREFIX =
+  `${SUPABASE_URL}/storage/v1/object/public/product-images/`;
 
 let memoryPerfumesCache = null;
-const PRODUCT_IMAGE_VERSION = "qogita-gold-studio-v2";
+const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v3";
 
-function resolveCardImage(img, gtin) {
+function resolveCardImage(img, gtin, rawImage) {
+  if (img && /^https:\/\//i.test(img)) return img;
   if (gtin) return `/assets/img/products/${gtin}.jpg?v=${PRODUCT_IMAGE_VERSION}`;
+  if (img && img.startsWith("/assets/img/")) {
+    return `${img.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`;
+  }
+  if (rawImage && /^https?:\/\//i.test(rawImage)) {
+    return `/api/transparent-image?url=${encodeURIComponent(rawImage)}&v=${PRODUCT_IMAGE_VERSION}`;
+  }
   return img || "/assets/img/template/flacon_template.jpg";
+}
+
+function hasCompletedGeneratedImage(product) {
+  const generation = product?.info?.imageGeneration;
+  const image = generation?.imageUrl || product?.image;
+  return (
+    generation?.status === "completed" &&
+    typeof image === "string" &&
+    image.startsWith(PRODUCT_IMAGE_STORAGE_PREFIX)
+  );
 }
 
 export function slugifyPerfumeName(name) {
@@ -195,7 +214,9 @@ export function ensurePerfumeEnrichment(p) {
 
   const rawImage = p.rawImage || p.info?.rawImage || null;
   const gtin = p.gtin || p.info?.gtin;
-  const resolvedImg = resolveCardImage(p.image, gtin);
+  const resolvedImg = hasCompletedGeneratedImage(p)
+    ? p.info.imageGeneration.imageUrl || p.image
+    : resolveCardImage(p.image, gtin, rawImage);
 
   return {
     ...p,
@@ -258,7 +279,7 @@ export async function fetchPerfumesFromSupabase() {
         ) {
           return false;
         }
-        return true;
+        return hasCompletedGeneratedImage(r);
       });
 
       // Map database fields to standard schema
@@ -320,8 +341,8 @@ export async function fetchPerfumesFromSupabase() {
             inStock: info.inStock !== false,
             deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
             deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-            image: resolveCardImage(r.image, info.gtin || r.gtin),
-            fullCardImage: resolveCardImage(r.image, info.gtin || r.gtin),
+            image: resolveCardImage(r.image, info.gtin || r.gtin, info.rawImage || r.raw_image),
+            fullCardImage: resolveCardImage(r.image, info.gtin || r.gtin, info.rawImage || r.raw_image),
             rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
             topNotes: topNotesRu,
             heartNotes: heartNotesRu,
@@ -366,6 +387,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       const items = rawList
         .filter(
           (p) =>
+            hasCompletedGeneratedImage(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
             (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
@@ -384,7 +406,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
         const fallbackData = await fallbackRes.json();
         const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
         const items = rawList
-          .filter((p) => p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+          .filter((p) => hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
           .map(ensurePerfumeEnrichment);
         if (!query) memoryDropshipCache = items;
         return items;

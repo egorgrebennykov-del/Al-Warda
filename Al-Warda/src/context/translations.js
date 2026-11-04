@@ -443,7 +443,7 @@ export const translations = {
     // Privileged Git Actions Tab
     "privileged.gitActions.title": "GitHub Actions & Автоматизации Каталога",
     "privileged.gitActions.subtitle":
-      "Синхронизация Qogita, изоляция флаконов и студийные изображения с золотым сиянием и отражением",
+      "Синхронизация Qogita и аккуратное улучшение оригинальных фото через ИИ без обрезки флакона и фона",
     "privileged.gitActions.openGithub": "Открыть GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Запустить / Проверить ↗",
     "privileged.gitActions.run": "Запустить",
@@ -465,7 +465,7 @@ export const translations = {
     "privileged.gitActions.repoLabel": "Репозиторий проекта на GitHub: ",
     "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Инкрементальная синхронизация)",
     "privileged.gitActions.wfSmartSyncDesc":
-      "Сверяет ассортимент 44+ брендов с базой Qogita, находит новинки и изменения цен. Вырезает флакон из фото и помещает его в чёрную студийную сцену с золотым сиянием и отражением (каждый понедельник в 04:00 UTC или вручную).",
+      "Сверяет ассортимент 44+ брендов с базой Qogita, находит новинки и изменения цен. Передаёт ИИ полное оригинальное фото без обрезки и просит аккуратно улучшить его, сохранив флакон, упаковку и фон (каждый понедельник в 04:00 UTC или вручную).",
     "privileged.gitActions.wfBrandSyncTitle": "Синхронизация выбранных брендов",
     "privileged.gitActions.wfBrandSyncDesc":
       "Точечное обновление каталога или добавление новинок выбранных брендов с обработкой флаконов в студийном шаблоне.",
@@ -474,7 +474,7 @@ export const translations = {
       "Генеральное обновление всех 44+ брендов, полная синхронизация таблиц Supabase 'stocks', проверка цен, статусов и пересборка продакшн-каталога.",
     "privileged.gitActions.wfLocalStudioSyncTitle": "Локальная обработка фото Qogita",
     "privileged.gitActions.wfLocalStudioSyncDesc":
-      "Запускает синхронизацию Qogita и помещает оригинальный флакон в чёрную студийную сцену с золотым светом и отражением. Отдельная видеокарта не требуется.",
+      "Запускает синхронизацию Qogita и передаёт ИИ полное оригинальное фото для аккуратного улучшения без вырезания флакона или замены фона.",
     "privileged.gitActions.wfExchangeRateTitle": "Синхронизация курсов валют (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
       "Обновление официальных курсов конвертации цен парфюмерии.",
@@ -981,7 +981,7 @@ export const translations = {
     // Privileged Git Actions Tab
     "privileged.gitActions.title": "GitHub Actions & Catalog Automations",
     "privileged.gitActions.subtitle":
-      "Qogita sync, bottle isolation, and studio product images with a golden glow and reflections",
+      "Qogita sync and careful AI enhancement of complete original product photos without cropping the bottle or background",
     "privileged.gitActions.openGithub": "Open GitHub Actions ↗",
     "privileged.gitActions.runCheck": "Run / Check ↗",
     "privileged.gitActions.run": "Run",
@@ -1003,16 +1003,16 @@ export const translations = {
     "privileged.gitActions.repoLabel": "Project repository on GitHub: ",
     "privileged.gitActions.wfSmartSyncTitle": "Qogita Smart Sync (Incremental Delta)",
     "privileged.gitActions.wfSmartSyncDesc":
-      "Scans all 44+ Qogita brands for new products and price changes. Isolates each bottle and places it in a black studio scene with a golden glow and reflection (weekly on Mondays at 04:00 UTC or on-demand).",
+      "Scans all 44+ Qogita brands for new products and price changes. Sends complete original photos to AI without cropping and requests careful enhancement that preserves the bottle, packaging, and background (weekly on Mondays at 04:00 UTC or on-demand).",
     "privileged.gitActions.wfBrandSyncTitle": "Brand Catalog Sync (Targeted)",
     "privileged.gitActions.wfBrandSyncDesc":
-      "Sync or add new arrivals for selected brands, rendering bottle images in the branded studio scene.",
+      "Sync selected brands and carefully enhance complete original Qogita photos with AI, without cropping their backgrounds.",
     "privileged.gitActions.wfFullRefreshTitle": "Full Database Refresh",
     "privileged.gitActions.wfFullRefreshDesc":
       "Comprehensive scan of all 44+ brands, full Supabase stocks database synchronization, price checks, and production catalog rebuild.",
     "privileged.gitActions.wfLocalStudioSyncTitle": "Local Qogita Studio Image Sync",
     "privileged.gitActions.wfLocalStudioSyncDesc":
-      "Run the Qogita sync and render each original bottle in a black studio scene with golden light and reflections. No dedicated GPU is required.",
+      "Run Qogita sync and carefully enhance each complete original photo with AI without removing the bottle or replacing its background.",
     "privileged.gitActions.wfExchangeRateTitle": "Currency Rates Sync (EUR / MDL / USD)",
     "privileged.gitActions.wfExchangeRateDesc":
       "Update daily exchange rates for real-time perfume price conversion.",

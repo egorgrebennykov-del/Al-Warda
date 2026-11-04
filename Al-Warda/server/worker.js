@@ -6,6 +6,9 @@ import {
   translateLiteraDialog,
 } from "./literaAssistantService.js";
 import { sendGuestInquiryEmail } from "./emailService.js";
+import {
+  getProductImageQueueStatus,
+} from "./productImageQueueAdmin.js";
 
 const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
@@ -80,6 +83,22 @@ function enrichPerfumeObj(p) {
   };
 }
 
+function completedProductPhoto(perfume) {
+  const generation = perfume?.info?.imageGeneration;
+  const image = generation?.imageUrl || perfume?.image;
+  if (
+    generation?.status !== "completed" ||
+    !/^https:\/\/[^/]+\/storage\/v1\/object\/public\/product-images\//i.test(image || "")
+  ) {
+    return null;
+  }
+  return { ...perfume, image, fullCardImage: image };
+}
+
+function isReadyProduct(perfume) {
+  return Boolean(completedProductPhoto(perfume));
+}
+
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -115,6 +134,10 @@ export default {
       return jsonResponse({ ok: true, store: "Al-Warda Parfumes" });
     }
 
+    if (method === "GET" && pathname === "/api/admin/product-images/status") {
+      return getProductImageQueueStatus(request, env);
+    }
+
     if (method === "POST" && pathname === "/api/warmup") {
       return jsonResponse({ ready: true });
     }
@@ -144,47 +167,47 @@ export default {
     // Stocks API (Supabase proxy / fallback)
     if (method === "GET" && (pathname === "/api/stocks" || pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
       const q = urlObj.searchParams.get("q")?.toLowerCase();
-      let list = cachedArabianPerfumes;
+      let list = cachedArabianPerfumes.filter(isReadyProduct);
       if (q) {
         list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
       }
-      return jsonResponse({ count: list.length, results: list });
+      return jsonResponse({ count: list.length, results: list.map(completedProductPhoto) });
     }
 
     // Perfume list API
     if (method === "GET" && pathname === "/api/perfumes") {
       const q = urlObj.searchParams.get("q")?.toLowerCase();
-      let list = cachedArabianPerfumes;
+      let list = cachedArabianPerfumes.filter(isReadyProduct);
       if (q) {
         list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
       }
-      return jsonResponse({ perfumes: list });
+      return jsonResponse({ perfumes: list.map(completedProductPhoto) });
     }
 
     // Single perfume details API (supports direct ID, slug, or SEO URL with name)
     if (method === "GET" && pathname.startsWith("/api/perfumes/")) {
       const rawParam = decodeURIComponent(pathname.replace("/api/perfumes/", "")).toLowerCase().trim();
-      let p = cachedArabianPerfumes.find(x => x.id?.toLowerCase() === rawParam || x.slug?.toLowerCase() === rawParam);
+      let p = cachedArabianPerfumes.filter(isReadyProduct).find(x => x.id?.toLowerCase() === rawParam || x.slug?.toLowerCase() === rawParam);
       if (!p) {
         const trailingDropship = rawParam.match(/(dropship-\d+)$/i);
         if (trailingDropship) {
-          p = cachedArabianPerfumes.find(x => x.id?.toLowerCase() === trailingDropship[1]);
+          p = cachedArabianPerfumes.filter(isReadyProduct).find(x => x.id?.toLowerCase() === trailingDropship[1]);
         }
       }
       if (!p) {
         const trailingNum = rawParam.match(/-(\d+)$/);
         if (trailingNum) {
-          p = cachedArabianPerfumes.find(x => x.id === trailingNum[1]);
+          p = cachedArabianPerfumes.filter(isReadyProduct).find(x => x.id === trailingNum[1]);
         }
       }
       if (!p) {
         const letters = rawParam.replace(/[^a-z0-9]/g, "");
-        p = cachedArabianPerfumes.find(x => {
+        p = cachedArabianPerfumes.filter(isReadyProduct).find(x => {
           const xLetters = (x.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
           return xLetters && (letters === xLetters || letters.includes(xLetters) || xLetters.includes(letters));
         });
       }
-      if (p) return jsonResponse(enrichPerfumeObj(p));
+      if (p) return jsonResponse(completedProductPhoto(enrichPerfumeObj(p)));
       return jsonResponse({ error: "Not found" }, 404);
     }
 

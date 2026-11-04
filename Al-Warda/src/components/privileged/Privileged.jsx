@@ -39,6 +39,7 @@ import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import QogitaManager from "./QogitaManager";
+import ProductImageQueue from "./ProductImageQueue";
 import "./Privileged.css";
 
 function formatPrice(price, currency = "EUR", language = "ru") {
@@ -1626,6 +1627,17 @@ export default function Privileged() {
         >
           <i className="ri-shopping-bag-3-line" />
           <span>Qogita B2B</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "product-images"}
+          className={`privileged__nav-btn ${activeSection === "product-images" ? "privileged__nav-btn--active" : ""}`}
+          onClick={() => setActiveSection("product-images")}
+        >
+          <i className="ri-image-edit-line" />
+          <span>{language === "ru" ? "Фото товаров" : "Product images"}</span>
         </button>
       </div>
 
@@ -5326,6 +5338,11 @@ export default function Privileged() {
         {activeSection === "qogita" && (
           <div className="privileged__panel">
             <QogitaManager language={language} />
+          </div>
+        )}
+        {activeSection === "product-images" && (
+          <div className="privileged__panel">
+            <ProductImageQueue language={language} />
           </div>
         )}
       </div>

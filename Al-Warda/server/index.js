@@ -23,6 +23,9 @@ import { setHttpAdapter } from "./httpClient.js";
 import qogitaClient from "./qogitaClient.js";
 import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getArabianDropshipPerfumes, getTransparentImageBuffer } from "./qogitaService.js";
 import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
+import {
+  getProductImageQueueStatus,
+} from "./productImageQueueAdmin.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -162,6 +165,12 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "GET" && pathname === "/api/admin/product-images/status") {
+    const response = await getProductImageQueueStatus(req, process.env);
+    respond(res, response.status, await response.json(), req);
+    return;
+  }
+
   // Perfume catalog API
   if (req.method === "GET" && pathname === "/api/perfumes") {
     const category = urlObj.searchParams.get("category");
@@ -276,7 +285,7 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // Transparent PNG image generator / proxy (removes solid white background)
+  // Original photo proxy. The complete source image and its background are preserved.
   if (req.method === "GET" && (pathname === "/api/transparent-image" || pathname === "/api/perfumes/transparent-image")) {
     try {
       const rawUrl = urlObj.searchParams.get("url");

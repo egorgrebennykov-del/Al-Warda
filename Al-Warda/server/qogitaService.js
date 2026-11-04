@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { exec, execFileSync } from "node:child_process";
 import sharp from "sharp";
 import axios from "axios";
 import https from "node:https";
@@ -32,10 +31,13 @@ if (fs.existsSync(cacheFilePath)) {
   try {
     cachedArabianPerfumes = JSON.parse(fs.readFileSync(cacheFilePath, "utf8"));
     for (const item of cachedArabianPerfumes) {
-      if (item.image && item.image.startsWith("/assets/img/dropship/")) {
-        item.image = item.image.split("?")[0] + "?v=8";
+      if (item.rawImage) {
+        item.image = getProcessedQogitaPhotoPath(item.gtin, item.rawImage);
+      } else if (item.image && item.image.startsWith("/assets/img/dropship/")) {
+        item.image = item.image.split("?")[0] + "?v=qogita-gemini-image-v3";
         item.fullCardImage = item.image;
       }
+      item.fullCardImage = item.image;
     }
     lastCacheTime = Date.now();
   } catch {
@@ -132,6 +134,14 @@ const WESTERN_EXCLUSIONS = [
   "burberry", "givenchy", "paco rabanne", "hugo boss", "creed", "bielenda"
 ];
 
+function getProcessedQogitaPhotoPath(gtin, rawImageUrl) {
+  const filename = gtin
+    ? `${gtin}.jpg`
+    : `${createHash("md5").update(rawImageUrl).digest("hex")}.jpg`;
+  const directory = gtin ? "products" : "dropship";
+  return `/assets/img/${directory}/${filename}?v=qogita-gemini-image-v3`;
+}
+
 /**
  * Filter items strictly to Arabian perfumes
  */
@@ -220,16 +230,7 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     return null;
   }
 
-  let imageUrl = rawImageUrl;
-  if (rawImageUrl && rawImageUrl.startsWith("http")) {
-    const hash = createHash("md5").update(rawImageUrl).digest("hex");
-    const localPng = path.join(dropshipDir, `${hash}.png`);
-    if (fs.existsSync(localPng)) {
-      imageUrl = `/assets/img/dropship/${hash}.png?v=6`;
-    } else {
-      imageUrl = `/api/transparent-image?url=${encodeURIComponent(rawImageUrl)}`;
-    }
-  }
+  const imageUrl = getProcessedQogitaPhotoPath(gtin, rawImageUrl);
 
   const isTopBestSeller = /khamrah|club de nuit|asad|yara|odyssey|amber oud|honor & glory|liquid brun/i.test(name);
 
@@ -276,21 +277,17 @@ export function mapQogitaProductToPerfume(qogitaItem) {
 }
 
 /**
- * Fetch and return transparent PNG buffer for an external perfume image
- * Ultra-fast non-blocking pipeline: Instant Sharp processing (20-40ms) + async background AI enhancement
+ * Fetch and cache the complete original product photo as PNG without removing its background.
  */
 export async function getTransparentImageBuffer(rawUrl) {
   if (!rawUrl) throw new Error("Missing image URL");
-  const hash = createHash("md5").update(rawUrl).digest("hex");
+  const hash = createHash("md5").update(`original-photo-v2:${rawUrl}`).digest("hex");
   const cachePath = path.join(dropshipDir, `${hash}.png`);
 
   if (fs.existsSync(cachePath)) {
     return fs.readFileSync(cachePath);
   }
 
-  // Non-blocking fast Sharp processing pipeline (20-30ms) without event-loop stalling
-
-  // Fast Sharp cutout with trim to baseline (responds in ~30ms without blocking event loop)
   const res = await axios.get(rawUrl, {
     responseType: "arraybuffer",
     httpsAgent: insecureHttpsAgent,
@@ -301,80 +298,11 @@ export async function getTransparentImageBuffer(rawUrl) {
     timeout: 10000,
   });
 
-  const img = sharp(Buffer.from(res.data)).ensureAlpha();
-  const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
-  const { width, height, channels } = info;
-  const outData = Buffer.alloc(width * height * 4);
-
-  // Sample real background color dynamically from the image corners & top edge
-  const getPixel = (x, y) => {
-    const idx = (y * width + x) * channels;
-    return [data[idx], data[idx + 1], data[idx + 2]];
-  };
-  const samples = [
-    getPixel(0, 0),
-    getPixel(Math.floor(width / 2), 0),
-    getPixel(width - 1, 0),
-    getPixel(0, Math.floor(height / 2)),
-    getPixel(width - 1, Math.floor(height / 2)),
-    getPixel(0, height - 1),
-    getPixel(width - 1, height - 1),
-  ];
-  const bgR = samples.reduce((s, p) => s + p[0], 0) / samples.length;
-  const bgG = samples.reduce((s, p) => s + p[1], 0) / samples.length;
-  const bgB = samples.reduce((s, p) => s + p[2], 0) / samples.length;
-
-  for (let i = 0; i < width * height; i++) {
-    const r = data[i * channels];
-    const g = data[i * channels + 1];
-    const b = data[i * channels + 2];
-
-    const dr = Math.abs(r - bgR) / 255;
-    const dg = Math.abs(g - bgG) / 255;
-    const db = Math.abs(b - bgB) / 255;
-    const maxDiff = Math.max(dr, dg, db);
-    const bgNoiseThreshold = 0.045;
-
-    let alpha = 0;
-    if (maxDiff > bgNoiseThreshold) {
-      const t = (maxDiff - bgNoiseThreshold) / (1 - bgNoiseThreshold);
-      alpha = Math.min(1, Math.pow(t, 0.75) * 1.25);
-    }
-
-    // Filter out residual near-background noise
-    if (
-      alpha <= 0.05 ||
-      (Math.abs(r - bgR) < 15 && Math.abs(g - bgG) < 15 && Math.abs(b - bgB) < 15)
-    ) {
-      outData[i * 4] = 0;
-      outData[i * 4 + 1] = 0;
-      outData[i * 4 + 2] = 0;
-      outData[i * 4 + 3] = 0;
-    } else {
-      outData[i * 4] = r;
-      outData[i * 4 + 1] = g;
-      outData[i * 4 + 2] = b;
-      outData[i * 4 + 3] = Math.round(alpha * 255);
-    }
-  }
-
-  const png = await sharp(outData, { raw: { width, height, channels: 4 } }).trim().png().toBuffer();
-  try {
-    fs.writeFileSync(cachePath, png);
-    const distPath = path.resolve(appDir, `dist/assets/img/dropship/${hash}.png`);
-    if (fs.existsSync(path.dirname(distPath))) {
-      fs.writeFileSync(distPath, png);
-    }
-  } catch {
-    // Ignore cache write error
-  }
-
-  // Trigger non-blocking async background enhancement via AI u2net if python is available
-  try {
-    const scriptPath = path.resolve(appDir, "scripts/cutout_rembg.py");
-    exec(`python "${scriptPath}" --single "${rawUrl}"`, () => {});
-  } catch {
-    // Non-fatal
+  const png = await sharp(Buffer.from(res.data)).rotate().png().toBuffer();
+  fs.writeFileSync(cachePath, png);
+  const distPath = path.resolve(appDir, `dist/assets/img/dropship/${hash}.png`);
+  if (fs.existsSync(path.dirname(distPath))) {
+    fs.writeFileSync(distPath, png);
   }
 
   return png;
@@ -436,7 +364,14 @@ export async function getArabianDropshipPerfumes(params = {}) {
     }
   }
 
-  let results = [...(cachedArabianPerfumes || [])];
+  let results = [...(cachedArabianPerfumes || [])].filter((product) => {
+    const generation = product?.info?.imageGeneration;
+    const image = generation?.imageUrl || product?.image;
+    return (
+      generation?.status === "completed" &&
+      /^https:\/\/[^/]+\/storage\/v1\/object\/public\/product-images\//i.test(image || "")
+    );
+  });
 
   if (brand) {
     const b = brand.toLowerCase();

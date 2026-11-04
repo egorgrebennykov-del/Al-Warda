@@ -1,0 +1,42 @@
+name: Product Image Generation
+
+on:
+  schedule:
+    - cron: "20 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-catalog-and-image-queue
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      SUPABASE_URL: https://mfvenfrmlkxqgvdtedet.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED: ${{ secrets.CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED }}
+    steps:
+      - name: Check required server secrets
+        shell: bash
+        run: |
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo "::error::SUPABASE_SERVICE_ROLE_KEY is missing"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::CLOUDFLARE_ACCOUNT_ID is missing"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::CLOUDFLARE_API_TOKEN is missing"; exit 1; }
+          test "$CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED" = "true" || { echo "::error::Confirm Cloudflare Workers AI Free plan before running"; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install image processing dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Process up to 160 queued products
+        run: python Al-Warda/scripts/generate_product_images.py --max-images 160

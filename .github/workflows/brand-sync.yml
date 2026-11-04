@@ -1,4 +1,4 @@
-name: "Brand Catalog Sync: Update Specific Brands & Add New"
+name: "Brand Catalog Sync: Update Brands & Queue Images"
 
 on:
   workflow_dispatch:
@@ -13,14 +13,12 @@ on:
         required: false
         type: number
         default: 20
-      force_upscale:
-        description: "Принудительно пересоздать студийные изображения флаконов"
-        required: false
-        type: boolean
-        default: true
-
 permissions:
   contents: write
+
+concurrency:
+  group: product-catalog-and-image-queue
+  cancel-in-progress: false
 
 jobs:
   brand-sync:
@@ -40,28 +38,22 @@ jobs:
           cache: "pip"
           cache-dependency-path: "requirements.txt"
 
-      - name: Install Python AI Dependencies
+      - name: Install catalog sync dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Brand Catalog Sync Pipeline
+      - name: Sync selected brands and enqueue original photos
         run: |
-          FORCE_FLAG=""
-          if [ "${{ inputs.force_upscale }}" = "true" ]; then
-            FORCE_FLAG="--force"
-          fi
           python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
             --cloud \
             --brands "${{ inputs.brands }}" \
-            --limit ${{ inputs.limit }} \
-            $FORCE_FLAG
+            --limit ${{ inputs.limit }}
         env:
           QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
           QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -78,9 +70,7 @@ jobs:
           node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
 
       - name: Rebuild Web Application
         run: |
@@ -94,6 +84,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "feat(catalog): render studio images for '${{ inputs.brands }}' [skip ci]"
+            git commit -m "feat(catalog): update '${{ inputs.brands }}' and queue images [skip ci]"
             git push origin main
           fi

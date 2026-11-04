@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Al-Warda weekly Qogita catalog sync and branded perfume image renderer.
+Al-Warda weekly Qogita catalog sync and durable background-generation queue.
 
 Pipeline Steps:
 1. Authenticates with Qogita API and downloads latest in-stock Arabian perfume products.
 2. Identifies new/updated perfumes and their product images.
-3. Removes the photo background, isolates the bottle, and composites it into the studio scene.
-4. Saves the rendered image to public/assets/img/products/<gtin>.jpg.
+3. Enqueues original source photos for Cloudflare background generation.
+4. Leaves each original product photo unchanged until its generated image is ready.
 5. Synchronizes Supabase database ('stocks' table) and server/data/enrichedStocks.json.
 6. Runs locally on Windows or weekly in GitHub Actions.
 """
@@ -19,7 +19,6 @@ import time
 import argparse
 import requests
 import urllib3
-from PIL import Image
 
 try:
     if hasattr(sys.stdout, "reconfigure"):
@@ -34,26 +33,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Paths
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.dirname(SCRIPT_DIR)
-DROPSHIP_DIR = os.path.join(APP_DIR, "public", "assets", "img", "dropship")
-DIST_DROPSHIP_DIR = os.path.join(APP_DIR, "dist", "assets", "img", "dropship")
-PRODUCTS_DIR = os.path.join(APP_DIR, "public", "assets", "img", "products")
-DIST_PRODUCTS_DIR = os.path.join(APP_DIR, "dist", "assets", "img", "products")
 ENRICHED_STOCKS_PATH = os.path.join(APP_DIR, "server", "data", "enrichedStocks.json")
 CACHED_PERFUMES_PATH = os.path.join(APP_DIR, "server", "data", "cachedArabianPerfumes.json")
-
-os.makedirs(DROPSHIP_DIR, exist_ok=True)
-os.makedirs(DIST_DROPSHIP_DIR, exist_ok=True)
-os.makedirs(PRODUCTS_DIR, exist_ok=True)
-os.makedirs(DIST_PRODUCTS_DIR, exist_ok=True)
 
 ROOT_SCRIPTS_DIR = os.path.join(os.path.dirname(APP_DIR), "scripts")
 if ROOT_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, ROOT_SCRIPTS_DIR)
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
-
-from process_qogita_luxury import process_product_image_from_url_or_file
-from process_qogita_luxury import STUDIO_IMAGE_COMMENT
 
 # Load environment variables
 def load_env():
@@ -82,8 +69,6 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://mfvenfrmlkxqgvdtedet.supa
 SUPABASE_KEY = (
     os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     or os.environ.get("SUPABASE_SECRET_KEY")
-    or os.environ.get("VITE_SUPABASE_ANON_KEY")
-    or "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB"
 )
 
 ARABIAN_BRANDS = [
@@ -214,54 +199,10 @@ class QogitaSyncClient:
         time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
-def is_current_studio_image(image_path):
-    try:
-        with Image.open(image_path) as image:
-            return image.format == "JPEG" and image.info.get("comment") == STUDIO_IMAGE_COMMENT
-    except (OSError, ValueError):
-        return False
-
-
-def process_perfume_image(raw_image_url, force=False, gtin=None):
-    import shutil
-    if gtin:
-        safe_gtin = "".join(ch for ch in str(gtin) if ch.isalnum() or ch in ("-", "_"))
-        filename = f"{safe_gtin}.jpg"
-        output_dir = PRODUCTS_DIR
-        dist_dir = DIST_PRODUCTS_DIR
-        image_path = f"/assets/img/products/{filename}"
-    else:
-        image_hash = hashlib.md5(raw_image_url.encode("utf-8")).hexdigest()
-        filename = f"{image_hash}.jpg"
-        output_dir = DROPSHIP_DIR
-        dist_dir = DIST_DROPSHIP_DIR
-        image_path = f"/assets/img/dropship/{filename}"
-
-    final_path = os.path.join(output_dir, filename)
-    if (
-        not force
-        and os.path.exists(final_path)
-        and os.path.getsize(final_path) > 10000
-        and is_current_studio_image(final_path)
-    ):
-        return image_path
-
-    try:
-        process_product_image_from_url_or_file(raw_image_url, final_path)
-
-        if os.path.exists(dist_dir):
-            shutil.copyfile(final_path, os.path.join(dist_dir, filename))
-
-        return image_path
-    except Exception as e:
-        print(f"Qogita studio image processing error for {gtin or raw_image_url}: {e}")
-        raise RuntimeError(f"Could not render Qogita image for {gtin or raw_image_url}") from e
-
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
     if not SUPABASE_URL or not SUPABASE_KEY:
-        print("Skipping Supabase sync (no credentials)")
-        return 0
+        raise RuntimeError("Supabase credentials are required to persist the product image queue.")
 
     headers = {
         "apikey": SUPABASE_KEY,
@@ -271,10 +212,64 @@ def sync_to_supabase(perfumes_list):
     }
     url = f"{SUPABASE_URL}/rest/v1/stocks"
 
+    existing_by_gtin = {}
+    existing_by_name = {}
+    offset = 0
+    page_size = 1000
+    while True:
+        response = requests.get(
+            url,
+            params={"select": "id,name,image,info", "order": "id.asc", "offset": offset, "limit": page_size},
+            headers=headers,
+            timeout=30,
+            verify=False,
+        )
+        if not response.ok:
+            raise RuntimeError(
+                f"Could not preserve existing product image status "
+                f"({response.status_code}): {response.text[:400]}"
+            )
+        rows = response.json()
+        if not isinstance(rows, list):
+            raise RuntimeError("Supabase stocks response was not a list")
+        for row in rows:
+            info = row.get("info") or {}
+            gtin = info.get("gtin")
+            name = (row.get("name") or "").strip().lower()
+            if gtin:
+                existing_by_gtin[str(gtin)] = row
+            if name:
+                existing_by_name[name] = row
+        if len(rows) < page_size:
+            break
+        offset += page_size
+
     synced = 0
     batch = []
     for p in perfumes_list:
         slug = f"dropship-{p.get('gtin') or hashlib.md5(p['name'].encode('utf-8')).hexdigest()[:12]}"
+        raw_image = p.get("rawImage") or ""
+        previous = existing_by_gtin.get(str(p.get("gtin") or "")) or existing_by_name.get(
+            p["name"].strip().lower()
+        )
+        previous_info = (previous or {}).get("info") or {}
+        previous_generation = previous_info.get("imageGeneration") or {}
+        same_source = previous_info.get("rawImage") == raw_image and bool(raw_image)
+        generation = (
+            previous_generation
+            if same_source and previous_generation.get("status")
+            else {"status": "pending"}
+        )
+        image = raw_image or p.get("image") or "/assets/img/perfumes/hero-perfume.png"
+        if (
+            same_source
+            and generation.get("status") == "completed"
+            and isinstance((previous or {}).get("image"), str)
+            and (previous or {}).get("image", "").startswith(
+                f"{SUPABASE_URL}/storage/v1/object/public/product-images/"
+            )
+        ):
+            image = previous["image"]
         record = {
             "slug": slug,
             "name": p["name"],
@@ -283,7 +278,7 @@ def sync_to_supabase(perfumes_list):
             "category": p.get("category") or "Восточные",
             "price": float(p.get("price") or 25.0),
             "currency": p.get("currency") or "EUR",
-            "image": p.get("image") or "/assets/img/perfumes/hero-perfume.png",
+            "image": image,
             "in_stock": True,
             "info": {
                 "category": p.get("category") or "Восточные",
@@ -294,27 +289,28 @@ def sync_to_supabase(perfumes_list):
                 "volume": "100 мл EDP",
                 "concentration": "Eau de Parfum",
                 "gtin": p.get("gtin") or "",
-                "rawImage": p.get("rawImage") or "",
+                "rawImage": raw_image,
+                "imageGeneration": generation,
                 "descriptionRu": f"{p['name']} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
             }
         }
         batch.append(record)
         if len(batch) >= 20:
-            try:
-                res = requests.post(url, json=batch, headers=headers, timeout=20, verify=False)
-                if res.status_code in (200, 201, 204):
-                    synced += len(batch)
-            except Exception as e:
-                print(f"Supabase batch error: {e}")
+            res = requests.post(url, json=batch, headers=headers, timeout=20, verify=False)
+            if not res.ok:
+                raise RuntimeError(
+                    f"Supabase stock upsert failed ({res.status_code}): {res.text[:400]}"
+                )
+            synced += len(batch)
             batch = []
 
     if batch:
-        try:
-            res = requests.post(url, json=batch, headers=headers, timeout=20, verify=False)
-            if res.status_code in (200, 201, 204):
-                synced += len(batch)
-        except Exception as e:
-            print(f"Supabase final batch error: {e}")
+        res = requests.post(url, json=batch, headers=headers, timeout=20, verify=False)
+        if not res.ok:
+            raise RuntimeError(
+                f"Supabase stock upsert failed ({res.status_code}): {res.text[:400]}"
+            )
+        synced += len(batch)
 
     return synced
 
@@ -345,9 +341,9 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         limit_per_brand = None
 
     print("=" * 65)
-    print("AL-WARDA - QOGITA CATALOG SYNC & STUDIO IMAGE PIPELINE")
+    print("AL-WARDA - QOGITA CATALOG SYNC & ORIGINAL PHOTO ENHANCEMENT")
     print(f"Execution mode: {'Cloud (GitHub Actions)' if cloud_mode else 'Local PC'}")
-    print("Image mode: isolated Qogita bottle with golden studio lighting and reflection")
+    print("Image mode: originals stay untouched; Cloudflare queue generates backgrounds later")
     print(f"Items per brand: {'Maximum available (ALL)' if limit_per_brand is None else limit_per_brand}")
     if incremental:
         print("Sync mode: Smart Incremental (Delta changes & new additions only)")
@@ -395,7 +391,6 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
     # 4. Fetch and Process Perfumes
     all_perfumes = []
-    processed_images = 0
     new_additions_count = 0
     updated_items_count = 0
     skipped_count = 0
@@ -425,45 +420,47 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
 
             if existing_item:
+                existing_info = existing_item.setdefault("info", {})
+                old_raw_img = existing_info.get("rawImage") or existing_item.get("rawImage")
+                generation = existing_info.get("imageGeneration") or {}
+                if old_raw_img != raw_img or not generation.get("status"):
+                    generation = {"status": "pending"}
+                existing_info["imageGeneration"] = generation
                 existing_item["gtin"] = gtin or existing_item.get("gtin")
                 existing_item["rawImage"] = raw_img
-                existing_info = existing_item.setdefault("info", {})
                 existing_info["gtin"] = gtin or existing_info.get("gtin", "")
                 existing_info["rawImage"] = raw_img
+                existing_item["image"] = (
+                    generation.get("imageUrl")
+                    if generation.get("status") == "completed"
+                    and generation.get("imageUrl")
+                    else raw_img
+                )
 
             if incremental and existing_item and not force:
                 old_price = float(existing_item.get("price") or 0.0)
-                old_img = existing_item.get("image") or ""
-                img_dir = None
-                if old_img.startswith("/assets/img/products/"):
-                    img_dir = PRODUCTS_DIR
-                elif old_img.startswith("/assets/img/dropship/"):
-                    img_dir = DROPSHIP_DIR
-                img_exists = (
-                    img_dir is not None
-                    and old_img.lower().endswith(".jpg")
-                    and os.path.isfile(os.path.join(img_dir, os.path.basename(old_img)))
-                    and is_current_studio_image(os.path.join(img_dir, os.path.basename(old_img)))
-                )
-
-                # Check if price changed
                 price_changed = abs(old_price - amount) > 0.05
-                if not price_changed and img_exists:
+                if not price_changed:
                     skipped_count += 1
+                    if existing_item.get("image"):
+                        all_perfumes.append({
+                            "name": existing_item["name"],
+                            "brand": existing_item.get("brand") or brand,
+                            "price": existing_item["price"],
+                            "currency": currency,
+                            "image": existing_item["image"],
+                            "rawImage": raw_img,
+                            "gtin": gtin,
+                            "category": existing_info.get("category") or "Восточные",
+                            "gender": existing_info.get("gender") or "Унисекс",
+                            "notesSummary": existing_info.get("notesSummary") or f"{brand} · Элитная арабская парфюмерия",
+                        })
                     continue
 
                 if price_changed:
                     print(f"  → Price update: {name} ({old_price} -> {amount} EUR)")
                     existing_item["price"] = round(amount, 2)
                     updated_items_count += 1
-
-                if not img_exists:
-                    print(f"  → Rendering Qogita bottle in studio scene: {name}")
-                    local_img = process_perfume_image(raw_img, force=True, gtin=gtin)
-                    if local_img:
-                        existing_item["image"] = local_img
-                        processed_images += 1
-                        updated_items_count += 1
 
                 all_perfumes.append({
                     "name": existing_item["name"],
@@ -479,18 +476,14 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 })
                 continue
 
-            # Isolate the Qogita bottle and compose the branded studio scene.
-            local_img = process_perfume_image(raw_img, force=force, gtin=gtin)
-            if local_img:
-                processed_images += 1
-
             perfume_entry = {
                 "name": name,
                 "brand": brand,
                 "price": round(amount, 2),
                 "currency": currency,
-                "image": local_img or "/assets/img/perfumes/hero-perfume.png",
+                "image": raw_img,
                 "rawImage": raw_img,
+                "imageGeneration": {"status": "pending"},
                 "gtin": gtin,
                 "category": "Восточные",
                 "gender": "Унисекс",
@@ -517,6 +510,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         "volume": "100 мл EDP",
                         "gtin": gtin or "",
                         "rawImage": raw_img,
+                        "imageGeneration": {"status": "pending"},
                         "descriptionRu": f"{name} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
                     }
                 }
@@ -526,15 +520,23 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 existing_enriched[key]["gtin"] = gtin or existing_enriched[key].get("gtin")
                 existing_enriched[key]["rawImage"] = raw_img
                 existing_info = existing_enriched[key].setdefault("info", {})
+                if existing_info.get("rawImage") != raw_img or not existing_info.get("imageGeneration"):
+                    existing_info["imageGeneration"] = {"status": "pending"}
                 existing_info["gtin"] = gtin or existing_info.get("gtin", "")
                 existing_info["rawImage"] = raw_img
+                existing_enriched[key]["image"] = (
+                    existing_info["imageGeneration"].get("imageUrl")
+                    if existing_info["imageGeneration"].get("status") == "completed"
+                    and existing_info["imageGeneration"].get("imageUrl")
+                    else raw_img
+                )
                 updated_items_count += 1
 
     print(f"\n--- Sync Summary ---")
     print(f"✓ New additions: {new_additions_count}")
     print(f"✓ Updated items: {updated_items_count}")
     print(f"✓ Skipped (unchanged): {skipped_count}")
-    print(f"✓ Rendered Qogita studio images: {processed_images}")
+    print("✓ Original product photos were not changed; generation is queued in Supabase.")
 
     # 5. Save local catalog
     if not save_enriched_stocks(existing_enriched):
@@ -547,14 +549,14 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         synced_count = sync_to_supabase(all_perfumes)
         print(f"✓ Synced {synced_count} records to Supabase 'stocks' table.")
 
-    print("\n🎉 Qogita Sync & Studio Image Rendering Complete!")
+    print("\n🎉 Qogita Sync & Product Image Queue Update Complete!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Al-Warda Qogita Sync & Studio Image Pipeline")
+    parser = argparse.ArgumentParser(description="Al-Warda Qogita catalog sync and background-generation queue")
     parser.add_argument("--limit", type=int, default=None, help="Max items per brand to fetch (omit for all)")
     parser.add_argument("--all", dest="all_products", action="store_true", help="Fetch maximum possible items across all brands")
     parser.add_argument("--cloud", action="store_true", help="Run in cloud CI mode")
-    parser.add_argument("--force", action="store_true", help="Force rerendering Qogita product images")
+    parser.add_argument("--force", action="store_true", help="Force a catalog update; product images are queued separately")
     parser.add_argument("--brands", type=str, default="", help="Specific comma-separated brands to sync (e.g. 'Lattafa,Armaf,Emper')")
     parser.add_argument("--incremental", action="store_true", help="Smart incremental sync (only fetch new or changed items)")
     args = parser.parse_args()

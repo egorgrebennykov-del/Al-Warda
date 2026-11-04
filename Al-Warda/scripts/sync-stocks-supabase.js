@@ -42,8 +42,7 @@ function loadEnv() {
 loadEnv();
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
 
 const STOCKS_API_URL = `${SUPABASE_URL}/rest/v1/stocks`;
 const CATALOG_PATH = path.resolve(rootDir, "server", "data", "cachedArabianPerfumes.json");
@@ -347,13 +346,15 @@ async function fetchAllExistingStocks() {
   const limit = 1000;
   while (true) {
     try {
-      const res = await fetch(`${STOCKS_API_URL}?select=id,name,brand&offset=${offset}&limit=${limit}`, {
+      const res = await fetch(`${STOCKS_API_URL}?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${limit}`, {
         headers: {
           apikey: SUPABASE_KEY,
           Authorization: `Bearer ${SUPABASE_KEY}`,
         },
       });
-      if (!res.ok) break;
+      if (!res.ok) {
+        throw new Error(`Supabase stocks lookup failed (${res.status}): ${(await res.text()).slice(0, 400)}`);
+      }
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) break;
       for (const row of rows) {
@@ -364,14 +365,19 @@ async function fetchAllExistingStocks() {
       if (rows.length < limit) break;
       offset += limit;
     } catch (err) {
-      console.warn("Could not fetch page of existing stocks:", err.message);
-      break;
+      throw new Error(
+        `Could not preserve existing product image status: ${err.message}`,
+        { cause: err },
+      );
     }
   }
   return map;
 }
 
 async function main() {
+  if (!SUPABASE_KEY) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY (or server-side SUPABASE_SECRET_KEY) is required");
+  }
   console.log("=================================================");
   console.log("🌸 Al-Warda Parfumes - Supabase Bilingual Stocks Sync");
   console.log(`⏰ Started at: ${new Date().toISOString()}`);
@@ -497,15 +503,52 @@ async function main() {
     }
   }
 
-  fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
-  console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`);
-
   const isRefresh = process.argv.includes("--refresh");
 
   // Check existing records in Supabase
   console.log("\n🔍 Checking existing records in Supabase 'stocks'...");
   const existingMap = await fetchAllExistingStocks();
   console.log(`📊 Found ${existingMap.size} existing items in Supabase.`);
+
+  const cachedByName = new Map(
+    Object.values(enrichedCache)
+      .filter((entry) => entry?.name)
+      .map((entry) => [entry.name.trim().toLowerCase(), entry]),
+  );
+  for (const item of enrichedList) {
+    const info = item.info && typeof item.info === "object" ? item.info : {};
+    const source = info.rawImage;
+    if (typeof source !== "string" || !/^https:\/\//i.test(source)) continue;
+    const existing = existingMap.get((item.name || "").trim().toLowerCase());
+    const existingInfo = existing?.info && typeof existing.info === "object" ? existing.info : {};
+    const sameSource = existingInfo.rawImage === source;
+    const existingGeneration = existingInfo.imageGeneration;
+    if (sameSource && existingGeneration?.status) {
+      info.imageGeneration = existingGeneration;
+      if (
+        existingGeneration.status === "completed" &&
+        typeof existing.image === "string" &&
+        existing.image.startsWith(`${SUPABASE_URL}/storage/v1/object/public/product-images/`)
+      ) {
+        item.image = existing.image;
+      } else {
+        item.image = source;
+      }
+    } else {
+      info.imageGeneration = { status: "pending" };
+      item.image = source;
+    }
+    item.info = info;
+
+    const cached = cachedByName.get((item.name || "").trim().toLowerCase());
+    if (cached) {
+      cached.info = { ...(cached.info || {}), ...info };
+      cached.image = item.image;
+    }
+  }
+
+  fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
+  console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`);
 
   if (isRefresh || existingMap.size === 0) {
     if (existingMap.size > 0) {

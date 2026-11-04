@@ -1,19 +1,17 @@
-name: "Qogita Smart Sync: Incremental Delta & Catalog Updates"
+name: "Qogita Smart Sync: Catalog Updates & Image Queue"
 
 on:
   schedule:
     # Автоматический запуск по понедельникам в 04:00 UTC (независимо от состояния вашего ПК)
     - cron: "0 4 * * 1"
   workflow_dispatch:
-    inputs:
-      force_images:
-        description: "Пересоздать все изображения товаров из оригинальных фото Qogita"
-        required: false
-        type: boolean
-        default: true
 
 permissions:
   contents: write
+
+concurrency:
+  group: product-catalog-and-image-queue
+  cancel-in-progress: false
 
 jobs:
   smart-sync:
@@ -38,26 +36,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Qogita Sync and Render Studio Images
+      - name: Sync Qogita catalog and enqueue new source photos
         run: |
-          if [ "${{ inputs.force_images }}" = "true" ]; then
-            python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
-              --cloud \
-              --incremental \
-              --all \
-              --force
-          else
-            python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
-              --cloud \
-              --incremental \
-              --all
-          fi
+          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
+            --cloud \
+            --incremental \
+            --all
         env:
           QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
           QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -74,9 +63,7 @@ jobs:
           node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
 
       - name: Rebuild Web Application
         run: |
@@ -90,6 +77,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit. Catalog is already up to date."
           else
-            git commit -m "chore(sync): Qogita Smart Sync - updated new arrivals & price changes [skip ci]"
+            git commit -m "chore(sync): update Qogita catalog and image queue [skip ci]"
             git push origin main
           fi
