@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 import enrichedStocks from "./data/enrichedStocks.json" with { type: "json" };
 
@@ -10,6 +10,15 @@ const __dirname = path.dirname(__filename);
 
 const TEMPLATE_PATH = path.resolve(__dirname, "../public/assets/img/template/flacon_template.jpg");
 const PRODUCTS_DIR = path.resolve(__dirname, "../public/assets/img/products");
+const QOGITA_STUDIO_MARKER = Buffer.from("Al-Warda Qogita studio gold v1");
+
+function isCurrentStudioImage(filePath) {
+  try {
+    return fs.readFileSync(filePath).includes(QOGITA_STUDIO_MARKER);
+  } catch {
+    return false;
+  }
+}
 
 const ARABIC_DICTIONARY = {
   meydan: "مـيـدان",
@@ -179,7 +188,7 @@ export async function getOrGenerateFlaconByGtin(gtin) {
   if (!gtin) return "/assets/img/template/flacon_template.jpg";
 
   const cachedFile = path.join(PRODUCTS_DIR, `${gtin}.jpg`);
-  if (fs.existsSync(cachedFile)) {
+  if (fs.existsSync(cachedFile) && isCurrentStudioImage(cachedFile)) {
     return `/assets/img/products/${gtin}.jpg`;
   }
 
@@ -202,7 +211,7 @@ export async function getOrGenerateFlaconByGtin(gtin) {
       const rootScript = path.resolve(__dirname, "../../scripts/process_qogita_luxury.py");
       const scriptPath = fs.existsSync(localScript) ? localScript : rootScript;
       if (fs.existsSync(scriptPath)) {
-        execSync(`python "${scriptPath}" --source "${rawImage}" --output "${cachedFile}"`, { timeout: 30000 });
+        execFileSync("python", [scriptPath, "--source", rawImage, "--output", cachedFile], { timeout: 120000 });
         if (fs.existsSync(cachedFile)) {
           const distProductsDir = path.resolve(__dirname, "../dist/assets/img/products");
           if (fs.existsSync(distProductsDir)) {
@@ -214,6 +223,10 @@ export async function getOrGenerateFlaconByGtin(gtin) {
     } catch (e) {
       console.warn(`[getOrGenerateFlaconByGtin] luxury processing error for ${gtin}:`, e.message);
     }
+  }
+
+  if (fs.existsSync(cachedFile)) {
+    return `/assets/img/products/${gtin}.jpg`;
   }
 
   const name = matched?.name || `Arabian Perfume ${gtin}`;

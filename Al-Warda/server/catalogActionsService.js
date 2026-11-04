@@ -178,7 +178,7 @@ function runPythonProcess(args, timeoutMs = 180000) {
       try {
         py.kill();
       } catch {}
-      resolve(output + "\n[Время ожидания превышено, процесс завершён]");
+      reject(new Error(output + "\n[Время ожидания превышено, процесс завершён]"));
     }, timeoutMs);
 
     py.on("close", (code) => {
@@ -186,7 +186,7 @@ function runPythonProcess(args, timeoutMs = 180000) {
       if (code === 0) {
         resolve(output || "Действие успешно завершено.");
       } else {
-        resolve(output || `Процесс завершился с кодом ${code}`);
+        reject(new Error(output || `Процесс завершился с кодом ${code}`));
       }
     });
 
@@ -201,14 +201,14 @@ export async function executeCatalogActionById(actionId, params = {}) {
   const pythonScript = path.resolve(projectRoot, "scripts", "qogita_weekly_sync_upscayl.py");
 
   if (actionId === "qogita-smart-sync") {
-    return await runPythonProcess([pythonScript, "--incremental", "--all"]);
+    return await runPythonProcess([pythonScript, "--incremental", "--all", "--force"]);
   }
   if (actionId === "brand-sync") {
     const brands = params.brands || "Lattafa,Armaf,Afnan";
-    return await runPythonProcess([pythonScript, "--brands", brands, "--all"]);
+    return await runPythonProcess([pythonScript, "--brands", brands, "--all", "--force"]);
   }
   if (actionId === "full-database-refresh") {
-    return await runPythonProcess([pythonScript, "--all"]);
+    return await runPythonProcess([pythonScript, "--all", "--force"]);
   }
   if (actionId === "local-upscayl-sync") {
     return await runPythonProcess([pythonScript, "--limit", "10"]);

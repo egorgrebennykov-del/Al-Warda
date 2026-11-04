@@ -5,6 +5,12 @@ on:
     # Автоматический запуск по понедельникам в 04:00 UTC (независимо от состояния вашего ПК)
     - cron: "0 4 * * 1"
   workflow_dispatch:
+    inputs:
+      force_images:
+        description: "Пересоздать все изображения товаров из оригинальных фото Qogita"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -34,13 +40,21 @@ jobs:
 
       - name: Run Qogita Sync and Render Studio Images
         run: |
-          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
-            --cloud \
-            --incremental \
-            --all
+          if [ "${{ inputs.force_images }}" = "true" ]; then
+            python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
+              --cloud \
+              --incremental \
+              --all \
+              --force
+          else
+            python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
+              --cloud \
+              --incremental \
+              --all
+          fi
         env:
-          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL || 'litera.eu@gmail.com' }}
-          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD || 'Egorka2330$' }}
+          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
+          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}

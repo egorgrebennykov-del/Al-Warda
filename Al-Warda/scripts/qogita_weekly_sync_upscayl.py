@@ -76,8 +76,8 @@ load_env()
 
 # Config
 QOGITA_API_URL = os.environ.get("QOGITA_API_URL", "https://api.qogita.com").rstrip("/")
-QOGITA_EMAIL = os.environ.get("QOGITA_EMAIL", "litera.eu@gmail.com")
-QOGITA_PASSWORD = os.environ.get("QOGITA_PASSWORD", "Egorka2330$")
+QOGITA_EMAIL = os.environ.get("QOGITA_EMAIL", "")
+QOGITA_PASSWORD = os.environ.get("QOGITA_PASSWORD", "")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://mfvenfrmlkxqgvdtedet.supabase.co").rstrip("/")
 SUPABASE_KEY = (
     os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -112,6 +112,8 @@ class QogitaSyncClient:
         self.session.verify = False
 
     def login(self):
+        if not self.email or not self.password:
+            raise RuntimeError("Set QOGITA_EMAIL and QOGITA_PASSWORD before starting the Qogita sync.")
         login_url = f"{self.api_url}/auth/login/"
         res = self.session.post(login_url, json={"email": self.email, "password": self.password}, timeout=15)
         if res.status_code == 200:
@@ -253,7 +255,7 @@ def process_perfume_image(raw_image_url, force=False, gtin=None):
         return image_path
     except Exception as e:
         print(f"Qogita studio image processing error for {gtin or raw_image_url}: {e}")
-        return None
+        raise RuntimeError(f"Could not render Qogita image for {gtin or raw_image_url}") from e
 
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
@@ -291,6 +293,8 @@ def sync_to_supabase(perfumes_list):
                 "sillage": "Заметный, притягательный",
                 "volume": "100 мл EDP",
                 "concentration": "Eau de Parfum",
+                "gtin": p.get("gtin") or "",
+                "rawImage": p.get("rawImage") or "",
                 "descriptionRu": f"{p['name']} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
             }
         }
@@ -368,7 +372,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         print(f"✓ Successfully authenticated with Qogita API ({client.email})")
     except Exception as e:
         print(f"❌ Qogita authentication failed: {e}")
-        return
+        raise RuntimeError("Qogita authentication failed; check the QOGITA_EMAIL and QOGITA_PASSWORD GitHub secrets.") from e
 
     # Load existing catalog for delta comparison
     existing_enriched = {}
@@ -419,6 +423,13 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
             # Delta / incremental check
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
+
+            if existing_item:
+                existing_item["gtin"] = gtin or existing_item.get("gtin")
+                existing_item["rawImage"] = raw_img
+                existing_info = existing_item.setdefault("info", {})
+                existing_info["gtin"] = gtin or existing_info.get("gtin", "")
+                existing_info["rawImage"] = raw_img
 
             if incremental and existing_item and not force:
                 old_price = float(existing_item.get("price") or 0.0)
@@ -495,6 +506,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                     "brand": perfume_entry["brand"],
                     "price": perfume_entry["price"],
                     "image": perfume_entry["image"],
+                    "gtin": gtin,
+                    "rawImage": raw_img,
                     "info": {
                         "category": perfume_entry["category"],
                         "gender": perfume_entry["gender"],
@@ -502,12 +515,19 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         "longevity": "10–14 часов",
                         "sillage": "Заметный, притягательный",
                         "volume": "100 мл EDP",
+                        "gtin": gtin or "",
+                        "rawImage": raw_img,
                         "descriptionRu": f"{name} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
                     }
                 }
             else:
                 existing_enriched[key]["image"] = perfume_entry["image"]
                 existing_enriched[key]["price"] = perfume_entry["price"]
+                existing_enriched[key]["gtin"] = gtin or existing_enriched[key].get("gtin")
+                existing_enriched[key]["rawImage"] = raw_img
+                existing_info = existing_enriched[key].setdefault("info", {})
+                existing_info["gtin"] = gtin or existing_info.get("gtin", "")
+                existing_info["rawImage"] = raw_img
                 updated_items_count += 1
 
     print(f"\n--- Sync Summary ---")
@@ -517,7 +537,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
     print(f"✓ Rendered Qogita studio images: {processed_images}")
 
     # 5. Save local catalog
-    save_enriched_stocks(existing_enriched)
+    if not save_enriched_stocks(existing_enriched):
+        raise RuntimeError(f"Could not save Qogita catalog data to {ENRICHED_STOCKS_PATH}")
     print(f"✓ Updated {ENRICHED_STOCKS_PATH} ({len(existing_enriched)} total perfumes).")
 
     # 6. Sync to Supabase

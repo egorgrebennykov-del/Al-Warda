@@ -33,10 +33,11 @@ jobs:
         run: |
           python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
             --cloud \
-            --all
+            --all \
+            --force
         env:
-          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL || 'litera.eu@gmail.com' }}
-          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD || 'Egorka2330$' }}
+          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
+          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB' }}

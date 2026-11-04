@@ -11,9 +11,10 @@ const SUPABASE_KEY =
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 
 let memoryPerfumesCache = null;
+const PRODUCT_IMAGE_VERSION = "qogita-gold-studio-v2";
 
 function resolveCardImage(img, gtin) {
-  if (gtin) return `/assets/img/products/${gtin}.jpg`;
+  if (gtin) return `/assets/img/products/${gtin}.jpg?v=${PRODUCT_IMAGE_VERSION}`;
   return img || "/assets/img/template/flacon_template.jpg";
 }
 

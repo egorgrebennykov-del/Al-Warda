@@ -459,6 +459,7 @@ async function main() {
           descriptionRu,
           descriptionEn,
           gtin: item.gtin || "",
+          rawImage: item.rawImage || "",
           inStock: true,
           deliveryTime: "4–7 дней (прямая поставка из ОАЭ/ЕС)",
           deliveryTimeEn: "4–7 days (direct dispatch from UAE/EU)",
