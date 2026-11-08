@@ -152,6 +152,10 @@ export default function Featured() {
       ? raw.split(",").map((n) => n.trim().toLowerCase()).filter(Boolean)
       : [];
   });
+  const [notesCombination, setNotesCombination] = useState(() => {
+    const raw = searchParams.get("combination") || searchParams.get("combo");
+    return raw === "1" || raw === "true";
+  });
 
   // Sync state back to URL query parameters without resetting scroll position
   useEffect(() => {
@@ -160,8 +164,9 @@ export default function Featured() {
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
     if (selectedGenders.length > 0) params.set("gender", selectedGenders.join(","));
     if (selectedNotes.length > 0) params.set("notes", selectedNotes.join(","));
+    if (notesCombination) params.set("combination", "1");
     setSearchParams(params, { replace: true, preventScrollReset: true });
-  }, [selectedCategories, selectedBrands, selectedGenders, selectedNotes, setSearchParams]);
+  }, [selectedCategories, selectedBrands, selectedGenders, selectedNotes, notesCombination, setSearchParams]);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -247,6 +252,7 @@ export default function Featured() {
     setSelectedBrands([]);
     setSelectedGenders([]);
     setSelectedNotes([]);
+    setNotesCombination(false);
     setVisibleLimit(PAGE_SIZE);
     setSearchParams({}, { replace: true, preventScrollReset: true });
   };
@@ -364,9 +370,11 @@ export default function Featured() {
         if (!matchesGender) return false;
       }
 
-      // 4. Notes filter (OR within selected notes, matching stems/synonyms across top, heart, base notes)
+      // 4. Notes filter:
+      //    - Unchecked ("Комбинация" off): OR logic — matches any selected note
+      //    - Checked ("Комбинация" on): AND logic — must contain ALL selected notes simultaneously
       if (selectedNotes.length > 0) {
-        const matchesNotes = selectedNotes.some((noteKey) => {
+        const checkSingleNote = (noteKey) => {
           const cleanKey = noteKey.toLowerCase();
           const noteObj = POPULAR_NOTES.find(
             (n) =>
@@ -384,13 +392,17 @@ export default function Featured() {
             allNotesText.includes(noteObj.nameRu.toLowerCase()) ||
             allNotesText.includes(noteObj.nameEn.toLowerCase())
           );
-        });
+        };
+
+        const matchesNotes = notesCombination
+          ? selectedNotes.every(checkSingleNote)
+          : selectedNotes.some(checkSingleNote);
         if (!matchesNotes) return false;
       }
 
       return true;
     });
-  }, [perfumes, shuffledPerfumes, totalActiveFilters, selectedCategories, selectedBrands, selectedGenders, selectedNotes]);
+  }, [perfumes, shuffledPerfumes, totalActiveFilters, selectedCategories, selectedBrands, selectedGenders, selectedNotes, notesCombination]);
 
   const visiblePerfumes = filteredPerfumes.slice(0, visibleLimit);
   const remainingCount = Math.max(0, filteredPerfumes.length - visibleLimit);
@@ -597,8 +609,48 @@ export default function Featured() {
 
               {/* Notes section */}
               <div>
-                <div className="warda-filter-section-title">
-                  🌿 {language === "ru" ? "Ноты композиции:" : "Olfactory Notes:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title" style={{ marginBottom: 0 }}>
+                    🌿 {language === "ru" ? "Ноты композиции:" : "Olfactory Notes:"}
+                  </div>
+                  <div className="warda-combination-control">
+                    <label className="warda-combination-checkbox-label">
+                      <input
+                        type="checkbox"
+                        className="warda-combination-checkbox"
+                        checked={notesCombination}
+                        onChange={(e) => {
+                          setVisibleLimit(PAGE_SIZE);
+                          setNotesCombination(e.target.checked);
+                        }}
+                      />
+                      <span className="warda-combination-custom-check" aria-hidden="true" />
+                      <span className="warda-combination-label-text">
+                        {language === "ru" ? "Комбинация" : "Combination"}
+                      </span>
+                    </label>
+                    <div
+                      className="warda-combination-help"
+                      tabIndex={0}
+                      aria-label={
+                        language === "ru"
+                          ? "Как работает фильтр Комбинация"
+                          : "How Combination filter works"
+                      }
+                    >
+                      <span className="warda-combination-help-icon">?</span>
+                      <div className="warda-combination-tooltip" role="tooltip">
+                        <strong>
+                          {language === "ru" ? "Режим «Комбинация»" : "Combination Mode"}
+                        </strong>
+                        <p>
+                          {language === "ru"
+                            ? "Работает по принципу совпадения всех выбранных нот (например, выбраны Табак и Шафран): без этой галочки выдаются все духи, которые содержат или то, или другое, а с галочкой — только те духи, которые содержат и Шафран, и Табак одновременно."
+                            : "Matches all selected notes together (for example, Tobacco and Saffron): unchecked shows all perfumes containing either one or the other, while checked shows only perfumes that contain both Saffron and Tobacco."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="warda-pills-wrap">
                   {POPULAR_NOTES.map((note) => {

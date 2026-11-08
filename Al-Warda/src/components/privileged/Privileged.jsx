@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import {
   getAllUsers,
@@ -67,10 +67,48 @@ function formatDate(dateString, language = "ru") {
   }
 }
 
+const PRIVILEGED_TAB_ALIASES = {
+  users: "users",
+  privileged: "privileged",
+  priviledged: "privileged",
+  admins: "privileged",
+  roles: "privileged",
+  coupons: "coupons",
+  orders: "orders",
+  inquiries: "inquiries",
+  messenger: "inquiries",
+  messages: "inquiries",
+  announcements: "announcements",
+  "git-actions": "git-actions",
+  gitactions: "git-actions",
+  git: "git-actions",
+  actions: "git-actions",
+  qogita: "qogita",
+  "product-images": "product-images",
+  productimages: "product-images",
+  images: "product-images",
+  photos: "product-images",
+};
+
+function resolvePrivilegedTab(rawTab) {
+  if (!rawTab) return "users";
+  const key = String(rawTab).trim().toLowerCase();
+  return PRIVILEGED_TAB_ALIASES[key] || "users";
+}
+
+function getPrivilegedBasePath(pathname = "") {
+  if (pathname.startsWith("/priviledged")) return "/priviledged";
+  if (pathname.startsWith("/admin")) return "/admin";
+  return "/privileged";
+}
+
 export default function Privileged() {
   const { language, t } = useLanguage();
   const confirm = useConfirm();
   const customAlert = useAlert();
+  const { tab: routeTab } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user: authUser, isLoggedIn: loggedIn, isPrivileged: isPrivContext } = useAuth();
   const cookieUser = authUser || getCookieUser();
 
@@ -88,7 +126,32 @@ export default function Privileged() {
     }
   }, [isPrivContext]);
 
-  const [activeSection, setActiveSection] = useState("users");
+  const [activeSection, setActiveSectionState] = useState(() => resolvePrivilegedTab(routeTab));
+
+  useEffect(() => {
+    const resolved = resolvePrivilegedTab(routeTab);
+    setActiveSectionState(resolved);
+    const basePath = getPrivilegedBasePath(location.pathname);
+    if (!routeTab || String(routeTab).toLowerCase() !== resolved) {
+      navigate(`${basePath}/${resolved}${location.search || ""}`, {
+        replace: true,
+        state: { preventScrollReset: true },
+      });
+    }
+  }, [routeTab, location.pathname, location.search, navigate]);
+
+  const setActiveSection = useCallback(
+    (nextTab) => {
+      const resolved = resolvePrivilegedTab(nextTab);
+      setActiveSectionState(resolved);
+      const basePath = getPrivilegedBasePath(location.pathname);
+      const targetPath = `${basePath}/${resolved}`;
+      if (location.pathname !== targetPath) {
+        navigate(targetPath, { state: { preventScrollReset: true } });
+      }
+    },
+    [location.pathname, navigate]
+  );
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [coupons, setCoupons] = useState([]);

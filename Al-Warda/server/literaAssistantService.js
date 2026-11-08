@@ -175,8 +175,31 @@ const STOP_WORDS = new Set([
 ]);
 
 // ============================================================================
-// 3. INTELLIGENT PERFUME DATABASE SEARCH (STRICTLY CATALOG ITEMS)
+// 3. INTELLIGENT PERFUME DATABASE SEARCH (STRICTLY CATALOG ITEMS & GENDER-AWARE)
 // ============================================================================
+function getPerfumeGenderFlags(p) {
+  const g = (p?.gender || "").toLowerCase();
+  const isWomen = g.includes("жен") || g.includes("women") || g.includes("femme");
+  const isMen = (g.includes("муж") || g.includes("men") || g.includes("homme")) && !isWomen;
+  const isUnisex = g.includes("уни") || g.includes("uni") || (!isWomen && !isMen);
+  return { isWomen, isMen, isUnisex };
+}
+
+function matchesTargetGender(p, preferredGender) {
+  const { isWomen, isMen, isUnisex } = getPerfumeGenderFlags(p);
+  // If interlocutor gender is unknown or unisex is requested -> strictly recommend ONLY unisex perfumes
+  if (!preferredGender || preferredGender === "унисекс") {
+    return isUnisex;
+  }
+  if (preferredGender === "мужской") {
+    return isMen || isUnisex;
+  }
+  if (preferredGender === "женский") {
+    return isWomen || isUnisex;
+  }
+  return isUnisex;
+}
+
 export function searchPerfumesInDatabase(query, options = {}) {
   const {
     excludeIds = new Set(),
@@ -215,10 +238,12 @@ export function searchPerfumesInDatabase(query, options = {}) {
     if (maxPrice !== null && p.price > maxPrice) continue;
     if (minPrice !== null && p.price < minPrice) continue;
 
-    if (preferredGender) {
-      const pGender = (p.gender || "").toLowerCase();
-      if (preferredGender === "мужской" && pGender === "женский") continue;
-      if (preferredGender === "женский" && pGender === "мужской") continue;
+    // Strictly enforce gender rules:
+    // - Unknown gender or "унисекс" -> ONLY unisex perfumes
+    // - "мужской" -> Men's & Unisex perfumes (never Women's)
+    // - "женский" -> Women's & Unisex perfumes (never Men's)
+    if (!matchesTargetGender(p, preferredGender)) {
+      continue;
     }
 
     let score = 0;
@@ -275,8 +300,15 @@ export function searchPerfumesInDatabase(query, options = {}) {
       else if (allText.includes(tok)) score += 8;
     }
 
-    if (preferredGender && genderLower.includes(preferredGender)) {
-      score += 18;
+    const { isWomen, isMen, isUnisex } = getPerfumeGenderFlags(p);
+    if (preferredGender === "мужской") {
+      if (isMen) score += 35;
+      else if (isUnisex) score += 12;
+    } else if (preferredGender === "женский") {
+      if (isWomen) score += 35;
+      else if (isUnisex) score += 12;
+    } else if (isUnisex) {
+      score += 20;
     }
 
     scored.push({ perfume: p, score });
@@ -293,13 +325,14 @@ export function searchPerfumesInDatabase(query, options = {}) {
   const positiveMatches = scored.filter((x) => x.score > 0).map((x) => x.perfume);
   const combined = [...positiveMatches];
 
-  // Pad with same brand if a specific brand was matched
+  // Pad with same brand if a specific brand was matched (respecting gender filter!)
   if (combined.length > 0 && combined.length < limit) {
     const primaryBrand = combined[0].brand?.toLowerCase();
     if (primaryBrand) {
       for (const p of ALL_PERFUMES) {
         if (
           p.brand?.toLowerCase() === primaryBrand &&
+          matchesTargetGender(p, preferredGender) &&
           !excludeIds.has(p.id) &&
           !combined.some((item) => item.id === p.id)
         ) {
@@ -310,7 +343,7 @@ export function searchPerfumesInDatabase(query, options = {}) {
     }
   }
 
-  // Pad with remaining real catalog items so assistant always has real catalog items to recommend
+  // Pad with remaining gender-matching catalog items
   if (combined.length < limit) {
     for (const item of scored.map((s) => s.perfume)) {
       if (!combined.some((c) => c.id === item.id)) {
@@ -324,9 +357,88 @@ export function searchPerfumesInDatabase(query, options = {}) {
 }
 
 // ============================================================================
-// 4. MULTI-TURN CONVERSATIONAL MEMORY EXTRACTION
+// 4. MULTI-TURN CONVERSATIONAL MEMORY & GENDER DETECTION
 // ============================================================================
-export function extractDialogueMemory(history = [], currentMessage = "") {
+function inferInterlocutorGender(fullConversationText = "", latestText = "", userInfo = {}) {
+  const latestLower = (latestText || "").toLowerCase();
+  const fullLower = (fullConversationText || "").toLowerCase();
+
+  // 1. Check if latest message explicitly specifies target gender
+  if (/(унисекс|unisex)/i.test(latestLower)) return "унисекс";
+  if (/(мужск(ие|ой|их|им)|для мужчин|для мужа|для парня|мужчине|парню|папе|отцу|брату|сыну|другу|коллеге-мужчине|я мужчина|я парень|\bfor men\b|\bfor him\b|\bmen's\b|\bmale\b)/i.test(latestLower)) {
+    return "мужской";
+  }
+  if (/(женск(ие|ий|их|им)|для женщин|для девушки|девушке|жене|супруге|маме|матери|сестре|дочери|подруге|невесте|я девушка|я женщина|\bfor women\b|\bfor her\b|\bwomen's\b|\bfemale\b)/i.test(latestLower)) {
+    return "женский";
+  }
+
+  // 2. Check full conversation history for explicit gender requests
+  if (/(унисекс|unisex)/i.test(fullLower)) return "унисекс";
+  if (/(мужск(ие|ой|их|им)|для мужчин|для мужа|для парня|мужчине|парню|папе|отцу|брату|сыну|другу|я мужчина|я парень|\bfor men\b|\bfor him\b|\bmen's\b|\bmale\b)/i.test(fullLower)) {
+    return "мужской";
+  }
+  if (/(женск(ие|ий|их|им)|для женщин|для девушки|девушке|жене|супруге|маме|матери|сестре|дочери|подруге|невесте|я девушка|я женщина|\bfor women\b|\bfor her\b|\bwomen's\b|\bfemale\b)/i.test(fullLower)) {
+    return "женский";
+  }
+
+  // 3. Check Russian grammatical gender in user's self-referential phrases ("я хотел" vs "я хотела")
+  const femaleGrammarRe = /(?:^|[\s,!.?])я\s+(?:бы\s+|очень\s+|давно\s+|уже\s+|не\s+|просто\s+)*(?:хотела|искала|выбрала|решила|купила|носила|пробовала|смотрела|увидела|подумала|слышала|взяла|заказала|получила|рада|готова|уверена|сама|довольна|влюбленна|пришла|зашла)(?=[\s,!.?]|$)/i;
+  const maleGrammarRe = /(?:^|[\s,!.?])я\s+(?:бы\s+|очень\s+|давно\s+|уже\s+|не\s+|просто\s+)*(?:хотел|искал|выбрал|решил|купил|носил|пробовал|смотрел|увидел|подумал|слышал|взял|заказал|получил|рад|готов|уверен|сам|доволен|пришел|пришёл|зашел|зашёл)(?=[\s,!.?]|$)/i;
+
+  if (femaleGrammarRe.test(latestLower) || femaleGrammarRe.test(fullLower)) {
+    return "женский";
+  }
+  if (maleGrammarRe.test(latestLower) || maleGrammarRe.test(fullLower)) {
+    return "мужской";
+  }
+
+  // 4. Check logged-in user profile gender or unambiguous first name (unless buying a gift for someone else)
+  const isGiftQuery = /(подарок|подарить|в подарок|для подарка|что подарить)/i.test(fullLower);
+  if (!isGiftQuery && userInfo) {
+    const profileGender = String(userInfo.gender || "").toLowerCase();
+    if (profileGender.includes("жен") || profileGender === "female" || profileGender === "f" || profileGender === "woman") {
+      return "женский";
+    }
+    if (profileGender.includes("муж") || profileGender === "male" || profileGender === "m" || profileGender === "man") {
+      return "мужской";
+    }
+
+    const rawFirst = String(userInfo.firstName || (userInfo.name || "").split(/\s+/)[0] || "")
+      .trim()
+      .toLowerCase();
+    if (rawFirst && rawFirst.length >= 3) {
+      const knownMaleNames = new Set([
+        "александр", "алексей", "андрей", "антон", "артем", "артём", "борис", "вадим", "валентин", "валерий",
+        "василий", "виктор", "виталий", "владимир", "владислав", "вячеслав", "геннадий", "георгий", "глеб", "григорий",
+        "даниил", "данил", "денис", "дмитрий", "евгений", "егор", "иван", "игорь", "илья", "кирилл", "константин",
+        "лев", "леонид", "максим", "марат", "марк", "матвей", "михаил", "никита", "николай", "олег", "павел", "петр",
+        "пётр", "роман", "руслан", "сергей", "станислав", "степан", "тимур", "федор", "фёдор", "юрий", "ярослав",
+        "мухаммад", "ахмед", "али", "омар", "карим", "рашид", "тарик", "хасан", "хусейн", "ибрагим", "султан",
+        "alexander", "alex", "andrew", "anton", "artem", "boris", "daniel", "david", "denis", "dmitry", "ivan",
+        "igor", "maxim", "michael", "nikita", "nikolai", "oleg", "pavel", "peter", "roman", "ruslan", "sergey",
+        "vladimir", "vladislav", "mohammed", "ahmed", "omar", "karim", "hassan", "ibrahim"
+      ]);
+      const knownFemaleNames = new Set([
+        "александра", "алена", "алёна", "алина", "алиса", "алла", "анастасия", "ангелина", "анна", "валентина",
+        "валерия", "варвара", "вера", "вероника", "виктория", "галина", "дарья", "диана", "ева", "евгения",
+        "екатерина", "елена", "елизавета", "жанна", "зинаида", "зоя", "инна", "ирина", "карина", "кира",
+        "кристина", "ксения", "лариса", "лидия", "лилия", "любовь", "людмила", "маргарита", "марина", "мария",
+        "милана", "надежда", "наталья", "наталия", "нина", "оксана", "олеся", "ольга", "полина", "раиса",
+        "регина", "светлана", "софия", "софья", "тамара", "татьяна", "ульяна", "элеонора", "элина", "эльвира",
+        "юлия", "яна", "ясмин", "фатима", "айша", "лейла", "зара", "амина", "марьям", "сара",
+        "alexandra", "alina", "alice", "anastasia", "anna", "daria", "diana", "ekaterina", "elena", "elizabeth",
+        "irina", "julia", "karina", "kristina", "ksenia", "marina", "maria", "mary", "natalia", "olga",
+        "polina", "sofia", "svetlana", "tatiana", "victoria", "yasmin", "fatima", "aisha", "layla", "zara", "sarah"
+      ]);
+      if (knownFemaleNames.has(rawFirst)) return "женский";
+      if (knownMaleNames.has(rawFirst)) return "мужской";
+    }
+  }
+
+  return null;
+}
+
+export function extractDialogueMemory(history = [], currentMessage = "", userInfo = {}) {
   const previouslyRecommended = [];
   const previouslyRecommendedIds = new Set();
   const userQueries = [];
@@ -402,14 +514,7 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
 
   const fullConversationText = [...userQueries, cleanCurrent].join(" ").toLowerCase();
 
-  let preferredGender = null;
-  if (/(мужские|для мужчин|для мужа|для парня|мужчине|папе|брату|men)/i.test(fullConversationText)) {
-    preferredGender = "мужской";
-  } else if (/(женские|для женщин|для девушки|девушке|жене|маме|сестре|women)/i.test(fullConversationText)) {
-    preferredGender = "женский";
-  } else if (/(унисекс|unisex)/i.test(fullConversationText)) {
-    preferredGender = "унисекс";
-  }
+  const preferredGender = inferInterlocutorGender(fullConversationText, cleanCurrent, userInfo);
 
   const isGift = /(подарок|подарить|в подарок|для подарка|что подарить)/i.test(fullConversationText);
   const isLuxury = /(подороже|люкс|премиум|эксклюзив|коллекционн)/i.test(cleanCurrent) || isGift;
@@ -445,18 +550,22 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
 const YASMIN_SYSTEM_INSTRUCTION = `
 You are Yasmin (Ясмин), the personal fragrance concierge for "Al-Warda Parfumes" (Арабские парфюмы Al-Warda).
 
-STRICT CATALOG GROUNDING RULES (CRITICAL — ZERO HALLUCINATIONS ALLOWED):
+STRICT CATALOG GROUNDING & GENDER RULES (CRITICAL — ZERO HALLUCINATIONS ALLOWED):
 1. ONLY REAL CATALOG PRODUCTS:
    - You MUST ONLY mention, describe, or recommend perfumes that are explicitly provided to you in the "AL-WARDA REAL CATALOG ITEMS" JSON list in the prompt.
    - NEVER invent, guess, or mention any perfume name, brand, price, volume, or note that is NOT in "AL-WARDA REAL CATALOG ITEMS".
    - Always use the EXACT perfume title, brand, price (in EUR), and notes from "AL-WARDA REAL CATALOG ITEMS".
    - If the customer asks for a brand or perfume that is not present in "AL-WARDA REAL CATALOG ITEMS", politely state that this specific item is not currently in our catalog and immediately offer the closest real items from "AL-WARDA REAL CATALOG ITEMS".
-2. BOOK IDS ARRAY:
+2. GENDER-AWARE RECOMMENDATIONS (MANDATORY):
+   - Always tailor your recommendations to the interlocutor's gender (indicated in "Detected interlocutor/target gender").
+   - When the interlocutor's gender is UNKNOWN ("неизвестен (рекомендовать ТОЛЬКО Унисекс)"), you MUST ONLY recommend UNISEX ("Унисекс") perfumes from "AL-WARDA REAL CATALOG ITEMS" and briefly note that you selected versatile unisex fragrances (or invite them to specify if they prefer men's or women's fragrances).
+   - When the gender is known ("мужской" or "женский"), recommend fragrances tailored to that gender from "AL-WARDA REAL CATALOG ITEMS".
+3. BOOK IDS ARRAY:
    - In "bookIds", return ONLY exact "id" values from "AL-WARDA REAL CATALOG ITEMS" (typically 3 to 6 IDs for recommendations, or 1 ID when describing a single requested bottle).
    - Every perfume you name in your "message" MUST also have its "id" included in "bookIds".
-3. CART & NAVIGATION QUESTIONS:
+4. CART & NAVIGATION QUESTIONS:
    - When the user asks only about their cart, orders, account, or navigation, answer using "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
-4. TONE & LANGUAGE:
+5. TONE & LANGUAGE:
    - Warm, refined, concise (2–4 sentences).
    - Reply in the exact language used by the user (Russian or English).
 
@@ -518,7 +627,11 @@ export async function processLiteraChat({ messages = [], language = "ru", contex
   const history = Array.isArray(messages) ? messages.slice(-12) : [];
   const latestMessage = history[history.length - 1]?.content || "";
 
-  const memory = extractDialogueMemory(history.slice(0, -1), latestMessage);
+  const cartInfo = context?.cart;
+  const userInfo = context?.user;
+  const pageInfo = context?.page;
+
+  const memory = extractDialogueMemory(history.slice(0, -1), latestMessage, userInfo);
   const cleanQ = latestMessage.trim().toLowerCase();
 
   const isPureGreeting =
@@ -563,10 +676,6 @@ export async function processLiteraChat({ messages = [], language = "ru", contex
     }
   }
 
-  const cartInfo = context?.cart;
-  const userInfo = context?.user;
-  const pageInfo = context?.page;
-
   const catalogBrandsSummary = Array.from(
     new Set(ALL_PERFUMES.map((p) => p.brand).filter(Boolean))
   ).join(", ");
@@ -576,6 +685,7 @@ CURRENT USER & SITE CONTEXT:
 - Total real products in Al-Warda catalog: ${ALL_PERFUMES.length}
 - Brands currently in Al-Warda catalog: ${catalogBrandsSummary || "Afnan, Al Haramain, Risala, Lattafa, Armaf"}
 - User is logged in: ${userInfo?.isLoggedIn ? `Yes (${userInfo.name || "Guest"})` : "No (Guest)"}
+- Detected interlocutor/target gender: ${memory.preferredGender || "неизвестен (рекомендовать ТОЛЬКО Унисекс)"}
 - Current route: ${pageInfo?.pathname || "/"}
 - Cart: ${
     !cartInfo?.isLoggedIn
@@ -651,12 +761,12 @@ Do NOT invent any perfume names or prices. Set "bookIds": [].
     }
   }
 
-  // Validate that Gemini did not hallucinate non-catalog bookIds
+  // Validate that Gemini did not hallucinate non-catalog bookIds and respected target gender
   let resolvedAI = [];
   if (aiResult && Array.isArray(aiResult.bookIds)) {
     resolvedAI = aiResult.bookIds
       .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
-      .filter(Boolean);
+      .filter((p) => p && (memory.isSpecificInquiry || matchesTargetGender(p, memory.preferredGender)));
   }
 
   if (!aiResult || !aiResult.message || (isPerfumeSearch && foundPerfumes.length > 0 && resolvedAI.length === 0)) {
@@ -772,8 +882,8 @@ function generateHeuristicResponse({
 
     return {
       message: isRu
-        ? `В нашем каталоге представлен аромат «${p.title}» от бренда ${p.brand} по цене €${p.price.toFixed(2)} (${p.volume}). ✨\n\nВерхние ноты: ${top}. Ноты сердца: ${heart}. База: ${base}. Стойкость: ${p.longevity}.`
-        : `From our catalog: «${p.title}» by ${p.brand}, priced at €${p.price.toFixed(2)} (${p.volume}). ✨\n\nTop notes: ${top}. Heart notes: ${heart}. Base: ${base}. Longevity: ${p.longevity}.`,
+        ? `В нашем каталоге представлен аромат «${p.title}» от бренда ${p.brand} по цене €${p.price.toFixed(2)} (${p.volume}, ${p.gender || "Унисекс"}). ✨\n\nВерхние ноты: ${top}. Ноты сердца: ${heart}. База: ${base}. Стойкость: ${p.longevity}.`
+        : `From our catalog: «${p.title}» by ${p.brand}, priced at €${p.price.toFixed(2)} (${p.volume}, ${p.gender || "Unisex"}). ✨\n\nTop notes: ${top}. Heart notes: ${heart}. Base: ${base}. Longevity: ${p.longevity}.`,
       emotion: "speaking",
       bookIds: [p.id],
     };
@@ -804,10 +914,24 @@ function generateHeuristicResponse({
       )
       .join("; ");
 
+    const genderIntroRu =
+      memory.preferredGender === "мужской"
+        ? "Вот лучшие мужские и унисекс ароматы из нашего каталога по вашему запросу"
+        : memory.preferredGender === "женский"
+        ? "Вот утончённые женские и унисекс ароматы из нашего каталога по вашему запросу"
+        : "Подобрала для вас универсальные унисекс ароматы из нашего каталога (уточните, если ищете мужской или женский парфюм)";
+
+    const genderIntroEn =
+      memory.preferredGender === "мужской"
+        ? "Here are the finest men's and unisex fragrances from our catalog"
+        : memory.preferredGender === "женский"
+        ? "Here are the finest women's and unisex fragrances from our catalog"
+        : "I have selected versatile unisex fragrances from our catalog for you (let me know if you prefer men's or women's perfumes)";
+
     return {
       message: isRu
-        ? `Вот актуальные ароматы из нашего каталога по вашему запросу: ${summaryList}. Нажмите на любую карточку ниже, чтобы открыть страницу товара! ✨`
-        : `Here are the matching fragrances from our live catalog: ${summaryList}. Click any card below to view the product page! ✨`,
+        ? `${genderIntroRu}: ${summaryList}. Нажмите на любую карточку ниже, чтобы открыть страницу товара! ✨`
+        : `${genderIntroEn}: ${summaryList}. Click any card below to view the product page! ✨`,
       emotion: "happy",
       bookIds: foundPerfumes.map((p) => p.id),
     };

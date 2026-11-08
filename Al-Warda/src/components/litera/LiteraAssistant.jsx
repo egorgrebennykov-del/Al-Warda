@@ -9,7 +9,7 @@ import { getPerfumeUrl } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./LiteraAssistant.css";
 
-const STORAGE_KEY = "litera_assistant_history_v4";
+const STORAGE_KEY = "litera_assistant_history_v5";
 const DIALOG_LANG_KEY = "litera_assistant_dialog_lang_v1";
 
 const isSearchQuery = (text) =>
@@ -390,7 +390,10 @@ export default function LiteraAssistant() {
       const userObj = getCookieUser();
       const userContext = {
         isLoggedIn: isLoggedIn(),
-        name: userObj?.name || userObj?.email?.split("@")[0] || "",
+        name: userObj?.name || userObj?.firstName || userObj?.email?.split("@")[0] || "",
+        firstName: userObj?.firstName || "",
+        lastName: userObj?.lastName || "",
+        gender: userObj?.gender || "",
         email: userObj?.email || "",
       };
 

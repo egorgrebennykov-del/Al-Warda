@@ -145,8 +145,16 @@ function App() {
 
   useEffect(() => {
     if (shouldRestoreScroll) return;
+    // Do not force scroll-to-top when switching tabs inside /privileged, /priviledged, /admin, or /orders
+    const path = location.pathname || "";
+    if (
+      /^\/(privileged|priviledged|admin|orders)\/[^/]+/i.test(path) &&
+      location.state?.preventScrollReset
+    ) {
+      return;
+    }
     window.scrollTo(0, 0);
-  }, [location.pathname, shouldRestoreScroll]);
+  }, [location.pathname, shouldRestoreScroll, location.state]);
 
   useEffect(() => {
     document.body.classList.toggle("dark-theme", !lightTheme);
@@ -228,7 +236,39 @@ function App() {
             }
           />
           <Route
+            path="/privileged/:tab"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/priviledged"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/priviledged/:tab"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/admin"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/:tab"
             element={
               <PrivateRoute privilegedOnly>
                 <Privileged />

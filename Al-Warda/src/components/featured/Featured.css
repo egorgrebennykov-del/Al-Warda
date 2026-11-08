@@ -180,6 +180,158 @@
   gap: 0.5rem;
 }
 
+.warda-filter-section-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.warda-combination-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.warda-combination-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  user-select: none;
+  color: #f4ebe1;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.warda-combination-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.warda-combination-custom-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(212, 175, 55, 0.65);
+  background: rgba(10, 8, 6, 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.warda-combination-checkbox:checked + .warda-combination-custom-check {
+  background: linear-gradient(135deg, #d4af37, #aa820a);
+  border-color: #d4af37;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.45);
+}
+
+.warda-combination-checkbox:checked + .warda-combination-custom-check::after {
+  content: "✓";
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #080605;
+  line-height: 1;
+}
+
+.warda-combination-label-text {
+  letter-spacing: 0.04em;
+  color: #e8dccb;
+  transition: color 0.2s ease;
+}
+
+.warda-combination-checkbox:checked ~ .warda-combination-label-text {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.warda-combination-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.warda-combination-help-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.warda-combination-help:hover .warda-combination-help-icon,
+.warda-combination-help:focus-within .warda-combination-help-icon {
+  background: #d4af37;
+  color: #080605;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+.warda-combination-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  width: 310px;
+  max-width: 82vw;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(14, 10, 7, 0.97);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.85), 0 0 20px rgba(212, 175, 55, 0.14);
+  color: #e8dccb;
+  font-size: 0.78rem;
+  line-height: 1.48;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 40;
+}
+
+.warda-combination-tooltip strong {
+  display: block;
+  color: #d4af37;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.06em;
+}
+
+.warda-combination-tooltip p {
+  margin: 0;
+  color: #d8cab8;
+}
+
+.warda-combination-help:hover .warda-combination-tooltip,
+.warda-combination-help:focus .warda-combination-tooltip,
+.warda-combination-help:focus-within .warda-combination-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 .warda-pills-wrap {
   display: flex;
   flex-wrap: wrap;

@@ -126,13 +126,13 @@
 
 .warda-details-grid {
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
-  gap: 3.5rem;
+  grid-template-columns: 1.15fr 1.15fr;
+  gap: 3rem;
   align-items: start;
 }
 
 .warda-details-card {
-  padding: 1.25rem 0.75rem;
+  padding: 0.5rem 0.25rem;
   background: transparent;
   display: flex;
   align-items: center;
@@ -146,10 +146,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 550px;
-  height: 550px;
+  min-height: 620px;
+  height: 620px;
   position: relative;
-  padding: 1.5rem;
+  padding: 0.75rem;
   background: transparent;
   border-radius: 6px;
   border: none !important;
@@ -190,41 +190,44 @@
 
 /* Volumetric Golden Ambient Aura behind the flacon */
 .warda-details-aura {
-  display: none;
+  display: block;
   position: absolute;
-  top: 48%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 320px;
-  height: 380px;
+  width: 440px;
+  height: 480px;
   border-radius: 50%;
-  filter: blur(40px);
+  filter: blur(45px);
   pointer-events: none;
   background: radial-gradient(
     circle at center,
-    rgba(255, 245, 230, 0.07) 0%,
-    rgba(212, 175, 55, 0.04) 45%,
-    rgba(180, 130, 40, 0.01) 68%,
-    transparent 80%
+    rgba(255, 245, 230, 0.09) 0%,
+    rgba(212, 175, 55, 0.06) 45%,
+    rgba(180, 130, 40, 0.02) 68%,
+    transparent 82%
   );
   z-index: 1;
 }
 
 .warda-details-photo {
   position: relative;
-  max-width: 88%;
-  max-height: 390px;
-  height: auto;
-  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-width: 560px;
+  max-height: 560px;
   z-index: 2;
 }
 
 .warda-details-img {
   display: block;
-  max-width: 100%;
-  max-height: 390px;
-  height: auto;
-  width: auto;
+  width: 100%;
+  height: 100%;
+  max-width: 560px;
+  max-height: 560px;
   object-fit: contain;
   position: relative;
   z-index: 2;
@@ -232,7 +235,7 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
-  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.7));
+  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.78));
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
 }
 
@@ -639,8 +642,8 @@
 }
 
 .warda-lightbox-img {
-  max-width: 78%;
-  max-height: 540px;
+  max-width: 90%;
+  max-height: 680px;
   object-fit: contain;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   image-rendering: auto;
