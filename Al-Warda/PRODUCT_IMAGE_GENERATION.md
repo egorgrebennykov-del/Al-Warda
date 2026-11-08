@@ -94,6 +94,11 @@ created before this feature must sign in once to receive a refresh token.
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.
 
+When running the Vite development server against the shared catalog, a
+completed generated image may not yet exist in the local checkout. Vite serves
+local files when present and redirects missing generated image files to the
+published site. This development-only fallback does not apply to production.
+
 If publication times out, records remain in `publishing` and the next workflow
 run verifies them again before generating new images. If a generated file was
 never committed, its record is marked failed and can be retried on a later run.
