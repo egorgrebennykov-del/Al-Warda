@@ -11,6 +11,7 @@ import { sendGuestInquiryEmail } from "./emailService.js";
 import {
   getProductImageQueueStatus,
 } from "./productImageQueueAdmin.js";
+import { handleQogitaWorker } from "./qogitaWorker.js";
 
 const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
@@ -140,6 +141,9 @@ export default {
       return getProductImageQueueStatus(request, env);
     }
 
+    if (pathname.startsWith("/api/qogita/") && pathname !== "/api/qogita/arabian-perfumes") {
+      return handleQogitaWorker(request, env);
+    }
 
     if (method === "POST" && pathname === "/api/warmup") {
       return jsonResponse({ ready: true });

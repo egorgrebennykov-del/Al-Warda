@@ -57,6 +57,9 @@ VITE_EMAILJS_TEMPLATE_ID=template_tco32u6
 npm run dev
 ```
 - This command launches both the **Vite React frontend** (`http://localhost:5173`) and the **local Node.js API server** (`http://localhost:3001`, proxied via `/api/*`) concurrently.
+- The local Qogita client reads `QOGITA_EMAIL` and `QOGITA_PASSWORD` from the server environment or the local `.env` file. Do not put these credentials in frontend variables or source control.
+- In the Cloudflare dashboard, sign in with the Qogita account in the Qogita connection settings. The Worker keeps the Qogita session in an encrypted, HTTP-only cookie and uses `QOGITA_SESSION_SECRET` or the existing server-side Supabase secret to encrypt it. The session expires and requires another Qogita sign-in. The existing site user authentication is separate.
+- Product catalog exports use Qogita Public API v1. Configure server-side `QOGITA_CLIENT_ID`, `QOGITA_CLIENT_SECRET` and `QOGITA_TOKEN_SCOPE` from a Qogita credential with `catalog:read`, and set `QOGITA_EXPORT_ACCOUNT_EMAIL` to its owning Qogita account. Export IDs are stored in the browser; pending exports are refreshed every 10 seconds while the exports tab is open. Do not expose these values as frontend variables.
 
 ### 4. Production Build & Preview
 ```bash

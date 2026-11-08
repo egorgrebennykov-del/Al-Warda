@@ -1,20 +1,19 @@
 import crypto from "node:crypto";
-import axios from "node:https";
-import https from "node:https";
+import { Buffer } from "node:buffer";
 import process from "node:process";
 
 const DEFAULT_API_URL = "https://api.qogita.com";
 const DEFAULT_TOLERANCE_SECONDS = 5 * 60; // 5 minutes
 
-class QogitaClient {
+export class QogitaClient {
   constructor(options = {}) {
     this.apiUrl = (options.apiUrl || process.env.QOGITA_API_URL || DEFAULT_API_URL).replace(/\/+$/, "");
-    this.email = options.email || process.env.QOGITA_EMAIL || "litera.eu@gmail.com";
-    this.password = options.password || process.env.QOGITA_PASSWORD || "Egorka2330$";
+    this.email = options.email || "";
+    this.password = options.password || "";
+    this.useEnvironmentCredentials = options.useEnvironmentCredentials !== false;
     this.webhookSecret = options.webhookSecret || process.env.QOGITA_WEBHOOK_SECRET || "";
     this.accessToken = options.accessToken || null;
-    this.tokenExpiresAt = 0;
-    this.httpsAgent = new https.Agent({ rejectUnauthorized: true, keepAlive: true });
+    this.tokenExpiresAt = options.tokenExpiresAt || 0;
   }
 
   setCredentials(email, password, apiUrl = null) {
@@ -28,13 +27,14 @@ class QogitaClient {
   }
 
   isConfigured() {
-    return Boolean(this.email && this.password);
+    return Boolean((this.email || (this.useEnvironmentCredentials && process.env.QOGITA_EMAIL)) && (this.password || (this.useEnvironmentCredentials && process.env.QOGITA_PASSWORD)));
   }
 
   getStatus() {
+    const email = this.email || (this.useEnvironmentCredentials && process.env.QOGITA_EMAIL);
     return {
       apiUrl: this.apiUrl,
-      email: this.email ? `${this.email.slice(0, 3)}***@${this.email.split("@")[1] || ""}` : null,
+      email: email ? `${email.slice(0, 3)}***@${email.split("@")[1] || ""}` : null,
       isConfigured: this.isConfigured(),
       isAuthenticated: Boolean(this.accessToken && Date.now() < this.tokenExpiresAt),
       hasWebhookSecret: Boolean(this.webhookSecret),
@@ -50,7 +50,9 @@ class QogitaClient {
       return this.accessToken;
     }
 
-    if (!this.email || !this.password) {
+    const email = this.email || (this.useEnvironmentCredentials && process.env.QOGITA_EMAIL);
+    const password = this.password || (this.useEnvironmentCredentials && process.env.QOGITA_PASSWORD);
+    if (!email || !password) {
       throw new Error("Qogita credentials not configured. Please set QOGITA_EMAIL and QOGITA_PASSWORD.");
     }
 
@@ -59,8 +61,8 @@ class QogitaClient {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: this.email,
-        password: this.password,
+        email,
+        password,
       }),
     });
 
@@ -73,13 +75,18 @@ class QogitaClient {
         // fallback
       }
       const msg = parsedErr.detail || parsedErr.message || parsedErr.error || `Login failed with status ${res.status}`;
-      throw new Error(`Qogita Auth Error: ${msg}`);
+      const error = new Error(`Qogita Auth Error: ${msg}`);
+      error.status = res.status;
+      throw error;
     }
 
     const data = await res.json();
-    this.accessToken = data.accessToken;
-    // Default expiration buffer: 1 hour if not specified
-    this.tokenExpiresAt = Date.now() + 55 * 60 * 1000;
+    this.accessToken = data.accessToken || data.access_token;
+    if (!this.accessToken) throw new Error("Qogita login response did not contain an access token");
+    const expires = Number(data.accessExp || data.access_exp);
+    this.tokenExpiresAt = Number.isFinite(expires) && expires > Date.now()
+      ? Math.min(expires - 60_000, Date.now() + 55 * 60 * 1000)
+      : Date.now() + 55 * 60 * 1000;
     return this.accessToken;
   }
 
@@ -112,6 +119,11 @@ class QogitaClient {
     });
 
     if (res.status === 401 && retryOnAuth) {
+      if (!this.isConfigured()) {
+        const error = new Error("Qogita session expired. Sign in again.");
+        error.status = 401;
+        throw error;
+      }
       this.accessToken = null;
       await this.login(true);
       return this.request(path, options, false);

@@ -9,13 +9,15 @@ import {
   updateQogitaCartItem,
   deleteQogitaCartItem,
   requestQogitaCatalogDownload,
-  getQogitaCatalogDownloads,
+  getQogitaDownloadStatus,
   getQogitaWebhooks,
   createQogitaWebhook,
   deleteQogitaWebhook,
   sendQogitaTestWebhook,
 } from "../../utils/qogitaApi";
 import "./QogitaManager.css";
+
+const EXPORTS_STORAGE_KEY = "qogita-product-export-ids";
 
 export default function QogitaManager({ language = "ru" }) {
   const [activeTab, setActiveTab] = useState("cart"); // "cart" | "products" | "downloads" | "webhooks" | "config"
@@ -25,18 +27,18 @@ export default function QogitaManager({ language = "ru" }) {
   const [notice, setNotice] = useState(null); // { type: 'success'|'error', message }
 
   // Config state
-  const [email, setEmail] = useState("litera.eu@gmail.com");
-  const [password, setPassword] = useState("Egorka2330$");
-  const [webhookSecret, setWebhookSecret] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // Cart state
   const [cartData, setCartData] = useState(null);
   const [cartLoading, setCartLoading] = useState(false);
+  const [cartError, setCartError] = useState("");
 
   // Products & Offers state
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchCategory, setSearchCategory] = useState("Fragrances");
+  const [searchCategory, setSearchCategory] = useState("");
   const [searchBrand, setSearchBrand] = useState("");
   const [inStockOnly, setInStockOnly] = useState(true);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -45,13 +47,23 @@ export default function QogitaManager({ language = "ru" }) {
   const [offersLoading, setOffersLoading] = useState(false);
 
   // Catalog downloads state
-  const [downloads, setDownloads] = useState([]);
+  const [downloads, setDownloads] = useState(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem(EXPORTS_STORAGE_KEY) || "[]");
+      return Array.isArray(ids) ? ids.filter(id => typeof id === "string").map(id => ({ id, status: "pending" })) : [];
+    } catch (error) {
+      console.error("Could not read saved Qogita exports:", error);
+      return [];
+    }
+  });
   const [downloadsLoading, setDownloadsLoading] = useState(false);
+  const [downloadsError, setDownloadsError] = useState("");
 
   // Webhooks state
   const [webhooks, setWebhooks] = useState([]);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhooksLoading, setWebhooksLoading] = useState(false);
+  const [webhooksError, setWebhooksError] = useState("");
 
   // Initial load
   useEffect(() => {
@@ -69,6 +81,7 @@ export default function QogitaManager({ language = "ru" }) {
       const data = await getQogitaStatus();
       setStatus(data);
       setStatusError("");
+      if (!data.isConfigured) setActiveTab("config");
     } catch (err) {
       console.warn("Failed to load Qogita status:", err);
       setStatus(null);
@@ -82,8 +95,11 @@ export default function QogitaManager({ language = "ru" }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await configureQogita({ email, password, webhookSecret });
+      const res = await configureQogita({ email, password });
       setStatus(res.status);
+      setPassword("");
+      setStatusError("");
+      setActiveTab("cart");
       showNotice("Авторизация в Qogita прошла успешно!");
       loadCart();
     } catch (err) {
@@ -101,8 +117,11 @@ export default function QogitaManager({ language = "ru" }) {
     try {
       const data = await getQogitaCart();
       setCartData(data);
+      setCartError("");
     } catch (err) {
       console.warn("Failed to load cart:", err);
+      setCartData(null);
+      setCartError(language === "ru" ? "Не удалось загрузить корзину через сайт." : "Could not load the cart through this site.");
     } finally {
       setCartLoading(false);
     }
@@ -187,13 +206,15 @@ export default function QogitaManager({ language = "ru" }) {
   // -------------------------------------------------------------
   // Catalog Downloads
   // -------------------------------------------------------------
-  const loadDownloads = async () => {
+  const loadDownloads = async (jobs = downloads) => {
     setDownloadsLoading(true);
     try {
-      const res = await getQogitaCatalogDownloads();
-      setDownloads(res.results || []);
+      const results = await Promise.all(jobs.map(job => getQogitaDownloadStatus(job.id)));
+      setDownloads(results);
+      setDownloadsError("");
     } catch (err) {
       console.warn("Failed to load downloads:", err);
+      setDownloadsError(err.message);
     } finally {
       setDownloadsLoading(false);
     }
@@ -202,17 +223,27 @@ export default function QogitaManager({ language = "ru" }) {
   const handleRequestDownload = async () => {
     setDownloadsLoading(true);
     try {
-      const res = await requestQogitaCatalogDownload({
-        categories: ["Fragrances"],
-      });
-      showNotice(`Запрос на скачивание каталога отправлен (QID: ${res.result?.qid || "OK"})`);
-      loadDownloads();
+      const res = await requestQogitaCatalogDownload({});
+      const job = res.result;
+      if (!job?.id) throw new Error("Qogita не вернула идентификатор выгрузки");
+      const jobs = [job, ...downloads.filter(item => item.id !== job.id)];
+      localStorage.setItem(EXPORTS_STORAGE_KEY, JSON.stringify(jobs.map(item => item.id)));
+      setDownloads(jobs);
+      setDownloadsError("");
+      showNotice("Выгрузка каталога запущена");
     } catch (err) {
       showNotice(err.message || "Ошибка запроса выгрузки", "error");
     } finally {
       setDownloadsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab !== "downloads" || downloadsLoading || downloadsError ||
+      !downloads.some(job => job.status === "pending" || job.status === "processing")) return;
+    const timer = setTimeout(() => loadDownloads(), 10000);
+    return () => clearTimeout(timer);
+  }, [activeTab, downloads, downloadsLoading, downloadsError]);
 
   // -------------------------------------------------------------
   // Webhooks
@@ -222,8 +253,10 @@ export default function QogitaManager({ language = "ru" }) {
     try {
       const res = await getQogitaWebhooks();
       setWebhooks(res.results || []);
+      setWebhooksError("");
     } catch (err) {
       console.warn("Failed to load webhooks:", err);
+      setWebhooksError(err.message);
     } finally {
       setWebhooksLoading(false);
     }
@@ -312,6 +345,12 @@ export default function QogitaManager({ language = "ru" }) {
         {statusError && <div role="alert">{statusError}</div>}
 
         <div className="qogita-header-actions">
+          <a className="qogita-btn qogita-btn--primary qogita-btn--sm" href="https://www.qogita.com/categories/" target="_blank" rel="noopener noreferrer">
+            {language === "ru" ? "Каталог Qogita" : "Qogita catalog"}
+          </a>
+          <a className="qogita-btn qogita-btn--secondary qogita-btn--sm" href="https://www.qogita.com/cart/" target="_blank" rel="noopener noreferrer">
+            {language === "ru" ? "Корзина Qogita" : "Qogita cart"}
+          </a>
           <button
             className="qogita-btn qogita-btn--secondary qogita-btn--sm"
             onClick={() => {
@@ -408,7 +447,14 @@ export default function QogitaManager({ language = "ru" }) {
               <i className="ri-loader-4-line ri-spin" style={{ fontSize: "2rem" }} />
               <p>Загрузка корзины и распределений Qogita...</p>
             </div>
-          ) : !cartData?.cart || (cartData?.allocations?.length === 0 && !cartData?.cart?.linesCount) ? (
+          ) : cartError ? (
+            <div className="qogita-empty-state" role="alert">
+              <p>{cartError}</p>
+              <a className="qogita-btn qogita-btn--primary" href="https://www.qogita.com/cart/" target="_blank" rel="noopener noreferrer">
+                {language === "ru" ? "Открыть корзину в Qogita" : "Open cart in Qogita"}
+              </a>
+            </div>
+          ) : !cartData?.cart || (cartData?.allocations?.length === 0 && !(cartData?.cart?.cartlinesCount ?? cartData?.cart?.linesCount)) ? (
             <div className="qogita-empty-state">
               <i className="ri-shopping-cart-line" style={{ fontSize: "2.5rem", color: "#d4af37" }} />
               <h4>Оптовая корзина пуста</h4>
@@ -431,13 +477,13 @@ export default function QogitaManager({ language = "ru" }) {
                 <div className="qogita-stat-box">
                   <span className="label">Общая сумма заказа</span>
                   <span className="value">
-                    {cartData.cart?.totalAmount} {cartData.cart?.currency || "EUR"}
+                    {cartData.cart?.estimatedTotal?.amount ?? cartData.cart?.subtotal?.amount ?? cartData.cart?.totalAmount} {cartData.cart?.estimatedTotal?.currency || cartData.cart?.subtotal?.currency || cartData.cart?.currency || "EUR"}
                   </span>
                 </div>
                 <div className="qogita-stat-box">
                   <span className="label">Позиций / Единиц</span>
                   <span className="value">
-                    {cartData.cart?.linesCount || 0} / {cartData.cart?.itemsCount || 0}
+                    {cartData.cart?.cartlinesCount ?? cartData.cart?.linesCount ?? 0} / {cartData.cart?.quantity ?? cartData.cart?.itemsCount ?? 0}
                   </span>
                 </div>
                 <div className="qogita-stat-box">
@@ -448,10 +494,10 @@ export default function QogitaManager({ language = "ru" }) {
 
               {/* Allocations breakdown with MOV */}
               {cartData.allocations?.map((alloc) => {
-                const total = parseFloat(alloc.totalAmount?.amount || alloc.totalAmount || 0);
-                const mov = parseFloat(alloc.minimumOrderValue?.amount || alloc.minimumOrderValue || 0);
-                const currency = alloc.totalAmount?.currency || alloc.minimumOrderValue?.currency || "EUR";
-                const isMet = alloc.movMet || (mov > 0 && total >= mov);
+                const total = parseFloat(alloc.subtotal?.amount ?? alloc.totalAmount?.amount ?? alloc.totalAmount ?? 0);
+                const mov = parseFloat(alloc.mov?.amount ?? alloc.minimumOrderValue?.amount ?? alloc.minimumOrderValue ?? 0);
+                const currency = alloc.subtotal?.currency || alloc.mov?.currency || alloc.totalAmount?.currency || alloc.minimumOrderValue?.currency || "EUR";
+                const isMet = alloc.isMovMet ?? alloc.movMet ?? (mov > 0 && total >= mov);
                 const percent = mov > 0 ? Math.min(100, Math.round((total / mov) * 100)) : 100;
                 const remaining = alloc.remainingToMov?.amount || Math.max(0, mov - total).toFixed(2);
 
@@ -495,6 +541,7 @@ export default function QogitaManager({ language = "ru" }) {
                       </div>
                     </div>
 
+                    {alloc.linesError && <p role="alert">Не удалось загрузить товары поставщика: {alloc.linesError}</p>}
                     {/* Allocation Lines Table */}
                     <div className="qogita-table-container">
                       <table className="qogita-table">
@@ -511,13 +558,13 @@ export default function QogitaManager({ language = "ru" }) {
                           {alloc.lines?.map((line) => (
                             <tr key={line.qid || line.fid}>
                               <td>
-                                <div style={{ fontWeight: 600 }}>{line.productName || line.product?.name || "Товар"}</div>
+                                <div style={{ fontWeight: 600 }}>{line.productName || line.product?.name || line.variant?.name || "Товар"}</div>
                                 <div style={{ fontSize: "0.8rem", color: "var(--text-color-light, #a0a0ab)" }}>
                                   {line.variantName || line.variant?.name || "Стандарт"} &bull; Оффер: {line.offerQid?.slice(0, 8)}...
                                 </div>
                               </td>
                               <td>
-                                {line.unitPrice?.amount || line.unitPrice} {line.unitPrice?.currency || currency}
+                                {line.activeTierPrice?.amount ?? line.unitPrice?.amount ?? line.unitPrice} {line.activeTierPrice?.currency || line.unitPrice?.currency || currency}
                               </td>
                               <td style={{ textAlign: "center" }}>
                                 <div className="qogita-qty-control">
@@ -539,8 +586,8 @@ export default function QogitaManager({ language = "ru" }) {
                                 </div>
                               </td>
                               <td style={{ fontWeight: 600 }}>
-                                {line.totalPrice?.amount || line.totalPrice || (line.unitPrice?.amount * line.quantity).toFixed(2)}{" "}
-                                {line.totalPrice?.currency || currency}
+                                {line.activeTierSubtotal?.amount ?? line.subtotal?.amount ?? line.totalPrice?.amount ?? line.totalPrice ?? "—"}{" "}
+                                {line.activeTierSubtotal?.currency || line.subtotal?.currency || line.totalPrice?.currency || currency}
                               </td>
                               <td>
                                 <button
@@ -679,9 +726,9 @@ export default function QogitaManager({ language = "ru" }) {
                             </button>
                           ))
                         ) : (
-                          <div style={{ fontSize: "0.82rem", color: "var(--text-color-light, #a0a0ab)", textAlign: "center", padding: "0.4rem" }}>
-                            Предложений: {item.offerCount || 1}
-                          </div>
+                          <a className="qogita-btn qogita-btn--secondary qogita-btn--sm" href={/^https:\/\/www\.qogita\.com\/products\//.test(item.productUrl || "") ? item.productUrl : "https://www.qogita.com/categories/"} target="_blank" rel="noopener noreferrer">
+                            Открыть предложения в Qogita
+                          </a>
                         )}
                       </div>
                     </div>
@@ -820,49 +867,57 @@ export default function QogitaManager({ language = "ru" }) {
           </div>
 
           <p style={{ fontSize: "0.9rem", color: "var(--text-color-light, #a0a0ab)", marginBottom: "1.25rem" }}>
-            Выгрузка формирует полный каталог предложений в формате gzipped JSONL. По готовности Qogita отправляет вебхук
-            событие <code>catalog_download.completed</code> со ссылкой на скачивание. Лимиты: 3 запроса в минуту, 50 запросов в сутки.
+            Выгрузка формирует каталог товаров в формате CSV. Статус обновляется каждые 10 секунд; ссылка на скачивание действует один час.
           </p>
 
+          {downloadsError && (
+            <div role="alert">
+              <p>Не удалось загрузить список выгрузок: {downloadsError}</p>
+              <a className="qogita-btn qogita-btn--secondary qogita-btn--sm" href="https://www.qogita.com/account/catalog/" target="_blank" rel="noopener noreferrer">
+                Открыть выгрузку каталога в Qogita
+              </a>
+            </div>
+          )}
           <div className="qogita-table-container">
             <table className="qogita-table">
               <thead>
                 <tr>
-                  <th>QID выгрузки</th>
+                  <th>ID выгрузки</th>
                   <th>Статус</th>
                   <th>Создан</th>
                   <th>Действие</th>
                 </tr>
               </thead>
               <tbody>
-                {downloads.length === 0 ? (
+                {downloads.length === 0 && !downloadsError ? (
                   <tr>
                     <td colSpan="4" style={{ textAlign: "center", padding: "2rem" }}>
                       Нет недавних задач выгрузки. Нажмите "Запросить выгрузку каталога".
                     </td>
                   </tr>
-                ) : (
+                ) : downloads.length ? (
                   downloads.map((job) => (
-                    <tr key={job.qid}>
+                    <tr key={job.id}>
                       <td>
-                        <code>{job.qid}</code>
+                        <code>{job.id}</code>
                       </td>
                       <td>
                         <span
                           className={`qogita-badge ${
-                            job.status === "completed"
+                            job.status === "succeeded"
                               ? "qogita-badge--connected"
                               : "qogita-badge--disconnected"
                           }`}
                         >
                           {job.status}
                         </span>
+                        {job.error?.message && <div role="alert">{job.error.message}</div>}
                       </td>
-                      <td>{job.createdAt ? new Date(job.createdAt).toLocaleString() : "-"}</td>
+                      <td>{job.requested_at ? new Date(job.requested_at).toLocaleString() : "-"}</td>
                       <td>
-                        {job.status === "completed" && job.url ? (
+                        {job.status === "succeeded" && job.download_url ? (
                           <a
-                            href={job.url}
+                            href={job.download_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="qogita-btn qogita-btn--secondary qogita-btn--sm"
@@ -870,12 +925,12 @@ export default function QogitaManager({ language = "ru" }) {
                             <i className="ri-download-line" /> Скачать файл
                           </a>
                         ) : (
-                          <span style={{ fontSize: "0.85rem", color: "var(--text-color-light)" }}>В обработке</span>
+                          <span style={{ fontSize: "0.85rem", color: "var(--text-color-light)" }}>{job.status === "failed" ? "Ошибка" : "В обработке"}</span>
                         )}
                       </td>
                     </tr>
                   ))
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -911,6 +966,7 @@ export default function QogitaManager({ language = "ru" }) {
 
           {/* Webhooks table */}
           <h4 style={{ color: "#fff", marginBottom: "0.5rem" }}>Зарегистрированные Webhook Endpoints</h4>
+          {webhooksError && <p role="alert">Не удалось загрузить вебхуки: {webhooksError}</p>}
           <div className="qogita-table-container" style={{ marginBottom: "2rem" }}>
             <table className="qogita-table">
               <thead>
@@ -922,13 +978,13 @@ export default function QogitaManager({ language = "ru" }) {
                 </tr>
               </thead>
               <tbody>
-                {webhooks.length === 0 ? (
+                {webhooks.length === 0 && !webhooksError ? (
                   <tr>
                     <td colSpan="4" style={{ textAlign: "center", padding: "1.5rem" }}>
                       Нет зарегистрированных вебхуков.
                     </td>
                   </tr>
-                ) : (
+                ) : webhooks.length ? (
                   webhooks.map((w) => (
                     <tr key={w.qid}>
                       <td>{w.url}</td>
@@ -948,7 +1004,7 @@ export default function QogitaManager({ language = "ru" }) {
                       </td>
                     </tr>
                   ))
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -1012,16 +1068,6 @@ export default function QogitaManager({ language = "ru" }) {
                 />
               </div>
 
-              <div className="qogita-form-group">
-                <label>Webhook Signing Secret (для верификации подписи)</label>
-                <input
-                  type="text"
-                  className="qogita-input"
-                  placeholder="Секрет, полученный при создании вебхука"
-                  value={webhookSecret}
-                  onChange={(e) => setWebhookSecret(e.target.value)}
-                />
-              </div>
             </div>
 
             <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
