@@ -201,20 +201,20 @@ export async function sendVerificationCodeEmail({
   const subject =
     purpose === "reset"
       ? isRu
-        ? `Код для смены пароля Litera: ${cleanCode}`
-        : `Litera Password Reset Code: ${cleanCode}`
+        ? `Код для смены пароля Al-Warda: ${cleanCode}`
+        : `Al-Warda Password Reset Code: ${cleanCode}`
       : isRu
-        ? `Код подтверждения регистрации Litera: ${cleanCode}`
-        : `Litera Registration Verification Code: ${cleanCode}`;
+        ? `Код подтверждения регистрации Al-Warda: ${cleanCode}`
+        : `Al-Warda Registration Verification Code: ${cleanCode}`;
 
   const text =
     purpose === "reset"
       ? isRu
-        ? `Здравствуйте, ${cleanName}!\n\nВаш 6-значный код для восстановления и смены пароля в книжном магазине Litera:\n\n${cleanCode}\n\nВведите этот код в окне смены пароля на сайте и укажите новый пароль.\nЕсли вы не запрашивали смену пароля, просто проигнорируйте это письмо.`
-        : `Hello, ${cleanName}!\n\nYour 6-digit verification code to reset your password on Litera bookstore is:\n\n${cleanCode}\n\nEnter this code in the password reset window on the website.\nIf you did not request a password reset, please ignore this email.`
+        ? `Здравствуйте, ${cleanName}!\n\nВаш 6-значный код для восстановления и смены пароля в бутике парфюмерии Al-Warda:\n\n${cleanCode}\n\nВведите этот код в окне смены пароля на сайте и укажите новый пароль.\nЕсли вы не запрашивали смену пароля, просто проигнорируйте это письмо.`
+        : `Hello, ${cleanName}!\n\nYour 6-digit verification code to reset your password at Al-Warda Parfumes is:\n\n${cleanCode}\n\nEnter this code in the password reset window on the website.\nIf you did not request a password reset, please ignore this email.`
       : isRu
-        ? `Здравствуйте, ${cleanName}!\n\nВаш 6-значный код для подтверждения электронной почты при регистрации в книжном магазине Litera:\n\n${cleanCode}\n\nВведите этот код в окне подтверждения на сайте, чтобы завершить создание аккаунта.`
-        : `Hello, ${cleanName}!\n\nYour 6-digit verification code to confirm your email on Litera bookstore is:\n\n${cleanCode}\n\nEnter this code in the verification window on the website to complete your registration.`;
+        ? `Здравствуйте, ${cleanName}!\n\nВаш 6-значный код для подтверждения электронной почты при регистрации в бутике парфюмерии Al-Warda:\n\n${cleanCode}\n\nВведите этот код в окне подтверждения на сайте, чтобы завершить создание аккаунта.`
+        : `Hello, ${cleanName}!\n\nYour 6-digit verification code to confirm your email at Al-Warda Parfumes is:\n\n${cleanCode}\n\nEnter this code in the verification window on the website to complete your registration.`;
 
   const timeStr = new Date().toLocaleString(isRu ? "ru-RU" : "en-US");
   const templateParams = {
@@ -225,10 +225,10 @@ export async function sendVerificationCodeEmail({
     to: cleanEmail,
     to_name: cleanName,
     user_name: cleanName,
-    name: "Litera Bookstore",
-    from_name: "Litera Bookstore",
-    admin_name: "Litera Bookstore",
-    sender_name: "Litera Bookstore",
+    name: "Al-Warda Parfumes",
+    from_name: "Al-Warda Parfumes",
+    admin_name: "Al-Warda Parfumes",
+    sender_name: "Al-Warda Parfumes",
     subject,
     title: subject,
     message: text,
@@ -239,7 +239,7 @@ export async function sendVerificationCodeEmail({
     verification_code: cleanCode,
     otp: cleanCode,
     time: timeStr,
-    reply_to: "litera.eu@gmail.com",
+    reply_to: "alwardaparfumes@gmail.com",
   };
 
   if (typeof window !== "undefined") {
@@ -268,7 +268,7 @@ export async function sendVerificationCodeEmail({
     body: JSON.stringify({
       to: cleanEmail,
       userName: cleanName,
-      adminName: "Litera Bookstore",
+      adminName: "Al-Warda Parfumes",
       subject,
       text,
     }),

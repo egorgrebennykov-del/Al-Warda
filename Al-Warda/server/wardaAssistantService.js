@@ -130,7 +130,7 @@ export async function ensureCatalogLoaded(contextCatalog = null) {
       return ALL_PERFUMES;
     }
   } catch (err) {
-    console.warn("[LiteraAssistant] fetchPerfumesFromSupabase warning:", err?.message || err);
+    console.warn("[WardaAssistant] fetchPerfumesFromSupabase warning:", err?.message || err);
   }
 
   try {
@@ -139,7 +139,7 @@ export async function ensureCatalogLoaded(contextCatalog = null) {
       indexCatalogItems(items);
     }
   } catch (err) {
-    console.warn("[LiteraAssistant] getPerfumes fallback warning:", err?.message || err);
+    console.warn("[WardaAssistant] getPerfumes fallback warning:", err?.message || err);
   }
 
   return ALL_PERFUMES;
@@ -620,7 +620,7 @@ export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
 // ============================================================================
 // 6. MAIN CHAT HANDLER WITH FULL MEMORY & LIVE CATALOG GROUNDING
 // ============================================================================
-export async function processLiteraChat({ messages = [], language = "ru", context = {}, onStatus } = {}) {
+export async function processWardaChat({ messages = [], language = "ru", context = {}, onStatus } = {}) {
   await ensureCatalogLoaded(context?.catalog);
 
   const apiKey = getGeminiApiKey();
@@ -957,14 +957,111 @@ export async function filterInquiryMessageWithAI({ text, language = "ru" }) {
       reason: language === "ru" ? "Сообщение не может быть пустым." : "Message cannot be empty.",
     };
   }
-  return { allowed: true, redirectToLitera: false };
+  return { allowed: true, redirectToWarda: false };
 }
 
-export async function translateLiteraDialog({ messages, targetLanguage = "ru" } = {}) {
+export async function translateWardaDialog({ messages, targetLanguage = "ru" } = {}) {
   const items = (Array.isArray(messages) ? messages : [])
     .filter((m) => m && m.id && typeof m.content === "string" && m.content.trim())
     .slice(-40)
     .map((m) => ({ id: String(m.id), content: String(m.content) }));
 
   return { translations: items };
+}
+
+export async function translateAnnouncementText({ text = "" } = {}) {
+  const clean = String(text || "").trim();
+  if (!clean) {
+    return { text_ru: "", text_en: "" };
+  }
+
+  const apiKey = getGeminiApiKey();
+  if (apiKey) {
+    try {
+      const parsed = await callGeminiJson({
+        apiKey,
+        systemInstruction:
+          "You are a professional bilingual translator for the luxury Arabian perfume boutique Al-Warda. Translate the user's announcement (from any input language such as Ukrainian, Russian, English, Romanian, etc.) into natural Russian (text_ru) and natural English (text_en). Preserve all promo codes, numbers, percentages, and emojis. Output valid JSON: {\"text_ru\": \"...\", \"text_en\": \"...\"}",
+        prompt: `Translate this store announcement into Russian and English:\n${clean}`,
+      });
+      if (parsed?.text_ru && parsed?.text_en) {
+        return {
+          text_ru: String(parsed.text_ru).trim(),
+          text_en: String(parsed.text_en).trim(),
+        };
+      }
+    } catch {
+      // Fallback below
+    }
+  }
+
+  const translateSingle = async (targetLang) => {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(clean)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if (Array.isArray(d?.[0])) {
+      return d[0].map((segment) => segment?.[0] || "").join("").trim();
+    }
+    return clean;
+  };
+
+  try {
+    const [ruText, enText] = await Promise.all([
+      translateSingle("ru"),
+      translateSingle("en"),
+    ]);
+    return {
+      text_ru: ruText || clean,
+      text_en: enText || clean,
+    };
+  } catch {
+    return {
+      text_ru: clean,
+      text_en: clean,
+    };
+  }
+}
+
+export async function enrichPerfumeWithAI({ name = "", brand = "Al-Warda", notes = "" } = {}) {
+  const cleanName = String(name || "").trim();
+  const cleanBrand = String(brand || "Al-Warda").trim();
+  const apiKey = getGeminiApiKey();
+
+  if (apiKey && cleanName) {
+    try {
+      const parsed = await callGeminiJson({
+        apiKey,
+        systemInstruction:
+          "You are an expert luxury perfumery copywriter for Al-Warda Parfumes (Middle Eastern niche fragrances). Given a perfume name and brand, determine its olfactory category and write a rich, evocative, multi-sentence description in both Russian (descriptionRu) and English (descriptionEn). Always refer to its origin as 'Ближний Восток' in Russian and 'the Middle East' in English (never mention UAE, Oman, or Saudi Arabia). Output JSON: {\"categorySlug\": \"oud|gourmand|floral|fresh|spicy|fougere|citrus-fresh\", \"categoryRu\": \"...\", \"categoryEn\": \"...\", \"descriptionRu\": \"...\", \"descriptionEn\": \"...\"}",
+        prompt: `Perfume: ${cleanBrand} ${cleanName}${notes ? `\nNotes: ${notes}` : ""}`,
+      });
+      if (parsed?.descriptionRu && parsed?.descriptionEn) {
+        return {
+          categorySlug: parsed.categorySlug || "oud",
+          categoryRu: parsed.categoryRu || "Восточные",
+          categoryEn: parsed.categoryEn || "Oriental",
+          origin: "Ближний Восток",
+          originEn: "Middle East",
+          description: String(parsed.descriptionRu).trim(),
+          descriptionRu: String(parsed.descriptionRu).trim(),
+          descriptionEn: String(parsed.descriptionEn).trim(),
+        };
+      }
+    } catch {
+      // Fallback to deterministic rich generator
+    }
+  }
+
+  const enriched = ensurePerfumeEnrichment({ name: cleanName, brand: cleanBrand });
+  return {
+    categorySlug: enriched.categorySlug,
+    categoryRu: enriched.categoryRu,
+    categoryEn: enriched.categoryEn,
+    origin: "Ближний Восток",
+    originEn: "Middle East",
+    description: enriched.descriptionRu,
+    descriptionRu: enriched.descriptionRu,
+    descriptionEn: enriched.descriptionEn,
+  };
 }

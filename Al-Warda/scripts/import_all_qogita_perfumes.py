@@ -16,6 +16,7 @@ from scripts.qogita_weekly_sync_upscayl import (
     ARABIAN_BRANDS,
     sync_to_supabase,
     save_enriched_stocks,
+    build_rich_bilingual_enrichment,
 )
 
 print("=" * 65)
@@ -114,6 +115,7 @@ for brand in ARABIAN_BRANDS:
             "Мужской" if any(w in nm_lower for w in ["homme", "man", "men", "him"]) else "Унисекс"
         )
 
+        rich = build_rich_bilingual_enrichment(name, brand)
         perfume_entry = {
             "name": name,
             "brand": brand,
@@ -122,9 +124,15 @@ for brand in ARABIAN_BRANDS:
             "image": img_url,
             "rawImage": raw_img,
             "gtin": gtin,
-            "category": cat,
-            "gender": gender,
-            "notesSummary": f"{brand} · Элитный восточный парфюм",
+            "category": rich["category"],
+            "categoryEn": rich["categoryEn"],
+            "categorySlug": rich["categorySlug"],
+            "gender": rich["gender"],
+            "genderEn": rich["genderEn"],
+            "notesSummary": rich["notesSummary"],
+            "notesSummaryEn": rich["notesSummaryEn"],
+            "descriptionRu": rich["descriptionRu"],
+            "descriptionEn": rich["descriptionEn"],
         }
         all_synced_perfumes.append(perfume_entry)
 
@@ -135,14 +143,26 @@ for brand in ARABIAN_BRANDS:
                 "brand": brand,
                 "price": round(amount, 2),
                 "image": img_url,
+                "description": rich["descriptionRu"],
                 "info": {
-                    "category": cat,
-                    "gender": gender,
-                    "notesSummary": f"{brand} · Премиальный арабский парфюм",
+                    "category": rich["category"],
+                    "categoryEn": rich["categoryEn"],
+                    "categorySlug": rich["categorySlug"],
+                    "gender": rich["gender"],
+                    "genderEn": rich["genderEn"],
+                    "origin": "Ближний Восток",
+                    "originEn": "Middle East",
+                    "notes": rich["notes"],
+                    "notesSummary": rich["notesSummary"],
+                    "notesSummaryEn": rich["notesSummaryEn"],
                     "longevity": "10–14 часов",
+                    "longevityEn": "10–14 hours",
                     "sillage": "Заметный, шлейфовый",
+                    "sillageEn": "Noticeable, alluring sillage",
                     "volume": "100 мл EDP",
-                    "descriptionRu": f"{name} — оригинальный премиальный парфюм бренда {brand}.",
+                    "description": rich["descriptionRu"],
+                    "descriptionRu": rich["descriptionRu"],
+                    "descriptionEn": rich["descriptionEn"],
                     "rawImage": raw_img,
                     "gtin": gtin,
                     "imageGeneration": {"status": "pending"},

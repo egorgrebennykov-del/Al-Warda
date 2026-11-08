@@ -472,12 +472,6 @@ export const translations = {
     "privileged.gitActions.wfFullRefreshTitle": "Полное обновление базы (Full Refresh)",
     "privileged.gitActions.wfFullRefreshDesc":
       "Генеральное обновление всех 44+ брендов, полная синхронизация таблиц Supabase 'stocks', проверка цен, статусов и пересборка продакшн-каталога.",
-    "privileged.gitActions.wfLocalStudioSyncTitle": "Локальная обработка фото Qogita",
-    "privileged.gitActions.wfLocalStudioSyncDesc":
-      "Запускает синхронизацию Qogita и передаёт ИИ полное оригинальное фото для аккуратного улучшения без вырезания флакона или замены фона.",
-    "privileged.gitActions.wfExchangeRateTitle": "Синхронизация курсов валют (EUR / MDL / USD)",
-    "privileged.gitActions.wfExchangeRateDesc":
-      "Обновление официальных курсов конвертации цен парфюмерии.",
 
     // Al-Warda AI Fragrance Concierge
     "assistant.name": "Ясмин",
@@ -509,29 +503,29 @@ export const translations = {
     // 404 Not Found
     "notFound.code": "404",
     "notFound.tag": "Страница не найдена",
-    "notFound.title": "Страница затерялась между строк",
+    "notFound.title": "Страница растворилась в облаке аромата",
     "notFound.subtitle":
-      "Похоже, эта глава отсутствует в книге, адрес был введен неверно или запрашиваемая страница переехала на другую полку.",
-    "notFound.searchPlaceholder": "Поиск книги по названию или автору...",
+      "Похоже, этот парфюм переместился в другую коллекцию или адрес страницы был введен неверно.",
+    "notFound.searchPlaceholder": "Поиск духов по названию, бренду или нотам...",
     "notFound.searchBtn": "Найти",
     "notFound.goHome": "На главную страницу",
-    "notFound.catalog": "Книги со скидкой",
-    "notFound.featured": "Подборка книг",
+    "notFound.catalog": "Ароматы со скидкой",
+    "notFound.featured": "Коллекция ароматов",
     "notFound.new": "Новинки",
-    "notFound.askAssistant": "Спросить ассистентку Литеру",
+    "notFound.askAssistant": "Спросить консьержа Ясмин",
     "notFound.quickNavTitle": "Или перейдите в популярные разделы:",
 
     // Contacts
     "contacts.title": "Контакты",
-    "contacts.subtitle": "Основатель проекта Litera и прямая связь",
-    "contacts.role": "Основатель и разработчик Litera",
+    "contacts.subtitle": "Основатель бутика Al-Warda и прямая связь",
+    "contacts.role": "Основатель и руководитель Al-Warda Parfumes",
     "contacts.name": "Егор Гребенников",
     "contacts.aboutP1":
-      "Litera — проект, направленный на то, чтобы сделать русскоязычную литературу доступнее для читателей в Европе и за её пределами.",
+      "Al-Warda — дом селективной парфюмерии с Ближнего Востока, созданный для ценителей подлинных восточных ароматов в Европе и за её пределами.",
     "contacts.aboutP2":
-      "Создавая Litera, я стремлюсь упростить поиск и приобретение книг на родном языке, предоставляя читателям больше возможностей для интеллектуального и личностного развития. Я убеждён, что книги играют важную роль в приобретении знаний, расширении кругозора и формировании жизненных ценностей.",
+      "Создавая Al-Warda, мы объединили лучшие парфюмерные дома Ближнего Востока в одной коллекции, чтобы каждый мог открыть для себя редкие удовые, амбровые, цветочные и гурманские композиции с безупречной стойкостью и благородным шлейфом.",
     "contacts.aboutP3":
-      "Моя цель — развивать проект, который помогает людям сохранять связь с родным языком, открывать новые идеи и находить литературу, способствующую их развитию.",
+      "Наша цель — развивать парфюмерную культуру, гарантировать 100% оригинальность каждого флакона и дарить незабываемые ольфакторные эмоции.",
     "contacts.direct": "Прямая связь",
     "contacts.phone": "Телефон",
     "contacts.email": "Электронная почта",
@@ -548,7 +542,7 @@ export const translations = {
     "nav.home": "Home",
     "nav.bookPicks": "Fragrances",
     "nav.discount": "Discount",
-    "nav.newBooks": "New Books",
+    "nav.newBooks": "New Arrivals",
     "nav.testimonial": "Reviews",
     "nav.contacts": "Contacts",
     "nav.search": "Search",
@@ -563,9 +557,9 @@ export const translations = {
     "nav.language": "Switch language",
 
     // Home
-    "home.title": "Your Favorite Books Already in Europe",
+    "home.title": "Authentic Perfumes from the Middle East",
     "home.description":
-      "Litera finds the book you’re looking for across bookstores and calculates the best option with delivery across Europe at one transparent final price.",
+      "Al-Warda curates luxury fragrances from premier perfume houses of the Middle East with express delivery across Europe at a transparent price.",
     "home.startShopping": "Start Shopping",
     "home.freeShipping": "Free Shipping",
     "home.freeShippingDesc": "Order More Than €100",
@@ -1010,12 +1004,6 @@ export const translations = {
     "privileged.gitActions.wfFullRefreshTitle": "Full Database Refresh",
     "privileged.gitActions.wfFullRefreshDesc":
       "Comprehensive scan of all 44+ brands, full Supabase stocks database synchronization, price checks, and production catalog rebuild.",
-    "privileged.gitActions.wfLocalStudioSyncTitle": "Local Qogita Studio Image Sync",
-    "privileged.gitActions.wfLocalStudioSyncDesc":
-      "Run Qogita sync and carefully enhance each complete original photo with AI without removing the bottle or replacing its background.",
-    "privileged.gitActions.wfExchangeRateTitle": "Currency Rates Sync (EUR / MDL / USD)",
-    "privileged.gitActions.wfExchangeRateDesc":
-      "Update daily exchange rates for real-time perfume price conversion.",
 
     // Al-Warda AI Fragrance Concierge
     "assistant.name": "Yasmin",
@@ -1047,29 +1035,29 @@ export const translations = {
     // 404 Not Found
     "notFound.code": "404",
     "notFound.tag": "Page Not Found",
-    "notFound.title": "Page Lost Between the Lines",
+    "notFound.title": "Page Vanished Like a Fleeting Note",
     "notFound.subtitle":
-      "It seems this chapter is missing from the book, the URL was mistyped, or the page has moved to another shelf.",
-    "notFound.searchPlaceholder": "Search books by title or author...",
+      "It seems this fragrance has moved to another collection or the URL was mistyped.",
+    "notFound.searchPlaceholder": "Search perfumes by name, brand, or notes...",
     "notFound.searchBtn": "Search",
     "notFound.goHome": "Back to Home",
-    "notFound.catalog": "Discounted Books",
-    "notFound.featured": "Book Picks",
+    "notFound.catalog": "Discounted Fragrances",
+    "notFound.featured": "Fragrance Collection",
     "notFound.new": "New Arrivals",
-    "notFound.askAssistant": "Ask Litera Assistant",
+    "notFound.askAssistant": "Ask Yasmin Concierge",
     "notFound.quickNavTitle": "Or explore popular sections:",
 
     // Contacts
     "contacts.title": "Contacts",
-    "contacts.subtitle": "Founder of Litera and direct contact",
-    "contacts.role": "Founder and developer of Litera",
+    "contacts.subtitle": "Founder of Al-Warda and direct contact",
+    "contacts.role": "Founder and Director of Al-Warda Parfumes",
     "contacts.name": "Yegor Grebennykov",
     "contacts.aboutP1":
-      "Litera is a project aimed at making Russian-language literature more accessible to readers in Europe and beyond.",
+      "Al-Warda is a house of niche perfumery from the Middle East, dedicated to bringing authentic oriental fragrances to connoisseurs across Europe and beyond.",
     "contacts.aboutP2":
-      "By creating Litera, I strive to simplify the search and purchase of books in their native language, providing readers with more opportunities for intellectual and personal growth. I am convinced that books play an essential role in acquiring knowledge, broadening horizons, and shaping life values.",
+      "By creating Al-Warda, we united premier perfume houses of the Middle East into a single curated boutique, making it effortless to discover rare oud, amber, floral, and gourmand creations with extraordinary longevity and noble sillage.",
     "contacts.aboutP3":
-      "My goal is to develop a project that helps people maintain a connection with their native language, discover new ideas, and find literature that contributes to their development.",
+      "Our mission is to elevate fragrance culture, guarantee 100% authenticity in every bottle, and deliver unforgettable olfactory experiences.",
     "contacts.direct": "Direct Contact",
     "contacts.phone": "Phone",
     "contacts.email": "Email",

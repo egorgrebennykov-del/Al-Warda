@@ -210,12 +210,6 @@ export async function executeCatalogActionById(actionId, params = {}) {
   if (actionId === "full-database-refresh") {
     return await runPythonProcess([pythonScript, "--all", "--force"]);
   }
-  if (actionId === "local-upscayl-sync") {
-    return await runPythonProcess([pythonScript, "--limit", "10"]);
-  }
-  if (actionId === "update-exchange-rate") {
-    return "Курсы валют проверены: 1 EUR = 19.50 MDL, 1 EUR = 1.08 USD.";
-  }
   if (actionId === "sync-perfumes" || actionId === "update-perfume-catalog") {
     return await syncPerfumeCatalog();
   }

@@ -18,7 +18,7 @@
     <script>
       (function () {
         try {
-          var m = document.cookie.match(/(?:^|;\s*)alwarda_theme=([^;]+)/) || document.cookie.match(/(?:^|;\s*)litera_theme=([^;]+)/);
+          var m = document.cookie.match(/(?:^|;\s*)alwarda_theme=([^;]+)/) ;
           if (m && decodeURIComponent(m[1]) === "light") {
             document.documentElement.classList.remove("dark-theme");
           } else {

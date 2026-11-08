@@ -64,8 +64,8 @@ export default function Contacts() {
                 <i className="ri-code-box-line" />
                 {language === "ru" ? "Девелопер" : "Developer"}
               </span>
-              <span className="contacts__tag contacts__tag--litera">
-                <i className="ri-book-read-line" /> Litera
+              <span className="contacts__tag contacts__tag--warda">
+                <i className="ri-sparkling-2-line" /> Al-Warda
               </span>
             </div>
 

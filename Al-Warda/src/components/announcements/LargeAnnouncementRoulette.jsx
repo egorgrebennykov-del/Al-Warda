@@ -62,7 +62,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
 
   return (
     <div
-      className="litera-poster-roulette-container"
+      className="warda-poster-roulette-container"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={(e) => {
@@ -79,27 +79,27 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
         }
       }}
     >
-      <div className="litera-poster-slide-wrapper">
+      <div className="warda-poster-slide-wrapper">
         {hasLink ? (
           <a
             href={posterLinkUrl}
             target={isExternal ? "_blank" : "_self"}
             rel={isExternal ? "noopener noreferrer" : undefined}
-            className="litera-poster-link"
+            className="warda-poster-link"
           >
             <img
               src={posterImageUrl}
               alt={language === "ru" ? "Рекламный плакат" : "Promotional poster"}
-              className="litera-poster-image"
+              className="warda-poster-image"
               loading="eager"
             />
           </a>
         ) : (
-          <div className="litera-poster-link">
+          <div className="warda-poster-link">
             <img
               src={posterImageUrl}
               alt={language === "ru" ? "Рекламный плакат" : "Promotional poster"}
-              className="litera-poster-image"
+              className="warda-poster-image"
               loading="eager"
             />
           </div>
@@ -110,7 +110,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
           <>
             <button
               type="button"
-              className="litera-poster-btn litera-poster-btn--prev"
+              className="warda-poster-btn warda-poster-btn--prev"
               onClick={handlePrev}
               aria-label="Предыдущий плакат"
             >
@@ -118,7 +118,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
             </button>
             <button
               type="button"
-              className="litera-poster-btn litera-poster-btn--next"
+              className="warda-poster-btn warda-poster-btn--next"
               onClick={handleNext}
               aria-label="Следующий плакат"
             >
@@ -126,12 +126,12 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
             </button>
 
             {/* Dots */}
-            <div className="litera-poster-dots">
+            <div className="warda-poster-dots">
               {posters.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  className={`litera-poster-dot ${idx === currentIndex ? "litera-poster-dot--active" : ""}`}
+                  className={`warda-poster-dot ${idx === currentIndex ? "warda-poster-dot--active" : ""}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setCurrentIndex(idx);

@@ -1082,6 +1082,179 @@ export function getHarmoniousNotes(perfume) {
   };
 }
 
+function hashPerfumeSeed(str = "") {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+export function generateRichPerfumeDescriptions({
+  name = "",
+  brand = "Al-Warda",
+  category = "oud",
+  categoryRu = "Восточные",
+  categoryEn = "Oriental",
+  genderRu = "Унисекс",
+  genderEn = "Unisex",
+  longevityRu = "8–12 часов",
+  longevityEn = "8–12 hours",
+  topRu = [],
+  heartRu = [],
+  baseRu = [],
+  topEn = [],
+  heartEn = [],
+  baseEn = [],
+}) {
+  const cleanName = String(name || "").trim();
+  const cleanBrand = String(brand || "Al-Warda").trim();
+  const seed = hashPerfumeSeed(`${cleanName}-${cleanBrand}`);
+
+  const topStrRu = topRu.join(", ").toLowerCase();
+  const heartStrRu = heartRu.join(", ").toLowerCase();
+  const baseStrRu = baseRu.join(", ").toLowerCase();
+
+  const topStrEn = topEn.join(", ");
+  const heartStrEn = heartEn.join(", ");
+  const baseStrEn = baseEn.join(", ");
+
+  const catMoodRu = {
+    oud: [
+      "величественная и гипнотическая композиция, вдохновлённая древними парфюмерными традициями Ближнего Востока",
+      "глубокий и статусный аромат, сочетающий благородную древесную теплоту и мистическое восточное очарование",
+      "роскошное ольфакторное полотно с бархатистым дымным характером, созданное мастерами парфюмерии Ближнего Востока",
+    ],
+    gourmand: [
+      "чувственный и обволакивающий эликсир с утончённым гурманским характером, рождённый на Ближнем Востоке",
+      "соблазнительная и тёплая симфония сладости и благородных восточных акцентов, притягивающая внимание с первого вдоха",
+      "изысканный десертно-пряный аромат, в котором восточная роскошь гармонично переплетается с мягкой бархатной нежностью",
+    ],
+    floral: [
+      "утончённый и сияющий букет, воспевающий королевскую красоту цветущих садов Ближнего Востока",
+      "элегантная и пленительная композиция, наполненная нежностью лепестков и тёплым восточным магнетизмом",
+      "воздушная и грациозная парфюмерная история, сочетающая цветочную утончённость с чувственной глубиной",
+    ],
+    fresh: [
+      "кристально чистый и бодрящий аромат, дарящий ощущение прохладного бриза и безупречной элегантности",
+      "динамичная и освежающая композиция, в которой прохлада акватических аккордов встречается с благородной восточной базой",
+      "современный и энергичный парфюм с ярким характером, наполняющий каждый момент свежестью и внутренней свободой",
+    ],
+    fougere: [
+      "аристократичный и харизматичный фужерный аромат с безупречным балансом свежести, пряных трав и благородной древесины",
+      "стильная и выразительная композиция, подчёркивающая уверенность, утончённый вкус и природный магнетизм",
+      "многогранный ароматический парфюм с породистым звучанием, сочетающий классическую элегантность и восточную стойкость",
+    ],
+    "citrus-fresh": [
+      "искрящийся и солнечный аромат, заряжающий яркой энергией спелых цитрусов и утончённой восточной прохладой",
+      "жизнерадостная и сияющая композиция, где сочная цитрусовая свежесть обрамлена дорогим шлейфовым аккордом",
+      "динамичный и свежий эликсир с благородным звучанием, созданный для ярких акцентов в любое время года",
+    ],
+    spicy: [
+      "страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока",
+      "богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней",
+      "выразительный и глубокий парфюм, в котором экзотические пряности создают неповторимую ауру роскоши и тайны",
+    ],
+  };
+
+  const catMoodEn = {
+    oud: [
+      "a majestic and hypnotic creation inspired by the timeless perfumery traditions of the Middle East",
+      "a deep, commanding fragrance that unites noble woody warmth with mystical Middle Eastern allure",
+      "an opulent olfactory masterpiece with a velvety, resinous character crafted by master perfumers of the Middle East",
+    ],
+    gourmand: [
+      "a sensual and enveloping elixir with a refined gourmand character born in the Middle East",
+      "a seductive symphony of warm sweetness and noble oriental accords that captivates from the very first breath",
+      "an exquisite gourmand-oriental fragrance where Middle Eastern luxury meets velvety softness",
+    ],
+    floral: [
+      "a radiant and sophisticated bouquet celebrating the royal blooming gardens of the Middle East",
+      "a harmonious blend of delicate petals and warm oriental magnetism woven into a captivating composition",
+      "a graceful and luminous fragrance story blending floral refinement with sensual Middle Eastern depth",
+    ],
+    fresh: [
+      "a crystalline and invigorating fragrance that evokes a cool coastal breeze and effortless elegance",
+      "a dynamic, refreshing composition where crisp aquatic accords meet a noble Middle Eastern base",
+      "a modern, energetic scent with a luminous profile that brings freshness and poise to every moment",
+    ],
+    fougere: [
+      "an aristocratic and charismatic fougère fragrance balancing crisp aromatic herbs with noble woods",
+      "a refined, expressive composition that highlights confidence, impeccable taste, and natural magnetism",
+      "a multifaceted aromatic creation uniting classic elegance with enduring Middle Eastern craftsmanship",
+    ],
+    "citrus-fresh": [
+      "a sparkling, sun-drenched fragrance brimming with vibrant citrus energy and refined Middle Eastern elegance",
+      "a luminous and uplifting composition where zesty citrus freshness is framed by a luxurious sillage",
+      "a dynamic, radiant elixir with a noble profile designed to leave a memorable impression in any season",
+    ],
+    spicy: [
+      "a passionate, warming spicy-oriental fragrance woven from rare spices and precious resins of the Middle East",
+      "a rich, temperamental composition with a hypnotic aura that unfolds in warm, sensual layers",
+      "an expressive and opulent scent where exotic spices create an unforgettable atmosphere of mystery and luxury",
+    ],
+  };
+
+  const moodsRu = catMoodRu[category] || catMoodRu.spicy;
+  const moodsEn = catMoodEn[category] || catMoodEn.spicy;
+  const moodRu = moodsRu[seed % moodsRu.length];
+  const moodEn = moodsEn[seed % moodsEn.length];
+
+  const audienceRu =
+    genderRu === "Женский"
+      ? "Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера."
+      : genderRu === "Мужской"
+      ? "Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке."
+      : "Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.";
+
+  const audienceEn =
+    genderEn === "Women"
+      ? "Effortlessly highlights femininity, grace, and allure for both daytime elegance and special evening occasions."
+      : genderEn === "Men"
+      ? "Impeccably complements a masculine presence, accentuating charisma, poise, and confidence in any setting."
+      : "Its versatile unisex character adapts beautifully to both men and women, evolving uniquely on the skin.";
+
+  const brandIntroRu = cleanName.toLowerCase().includes(cleanBrand.toLowerCase())
+    ? `${cleanName} от парфюмерного дома ${cleanBrand}`
+    : `${cleanBrand} ${cleanName}`;
+
+  const brandIntroEn = cleanName.toLowerCase().includes(cleanBrand.toLowerCase())
+    ? `${cleanName} by the house of ${cleanBrand}`
+    : `${cleanBrand} ${cleanName}`;
+
+  const descriptionRu =
+    `${brandIntroRu} — ${moodRu} (${categoryRu.toLowerCase()}). ` +
+    `С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются ${topStrRu}. ` +
+    `Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ${heartStrRu}, придающих звучанию глубину и объём. ` +
+    `В финале остаётся благородный, долгоиграющий шлейф (стойкость ${longevityRu}), сотканный из оттенков: ${baseStrRu}. ` +
+    `${audienceRu}`;
+
+  const descriptionEn =
+    `${brandIntroEn} is ${moodEn} (${categoryEn.toLowerCase()}). ` +
+    `From the very first spritz, the composition captivates with a vibrant opening of ${topStrEn}. ` +
+    `As it warms on the skin, the fragrance reveals an alluring heart of ${heartStrEn}, lending remarkable depth and dimension. ` +
+    `It settles into a velvety, long-lasting sillage (longevity ${longevityEn}) crafted from ${baseStrEn}. ` +
+    `${audienceEn}`;
+
+  return { descriptionRu, descriptionEn };
+}
+
+function isGenericOrShortDescription(text = "") {
+  const clean = String(text || "").trim();
+  if (clean.length < 160) return true;
+  return (
+    clean.includes("Сертифицированная оригинальная") ||
+    clean.includes("оригинальный премиальный парфюм") ||
+    clean.includes("премиальный оригинальный арабский") ||
+    clean.includes("Роскошный восточный аромат Al-Warda") ||
+    clean.includes("Поставляется напрямую со складов") ||
+    clean.includes("Delivered directly from certified distribution hubs") ||
+    clean.includes("exquisite authentic luxury Arabian fragrance") ||
+    clean.includes("ОАЭ") ||
+    clean.includes("UAE")
+  );
+}
+
 export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
   const name = p.name || p.title || "";
@@ -1113,34 +1286,46 @@ export function ensurePerfumeEnrichment(p) {
     : p.categoryEn;
 
   let notesSummaryRu = p.notesSummaryRu || p.notesSummary || "";
-  if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu === brand) {
+  if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu.includes("Элитный восточный парфюм") || notesSummaryRu === brand) {
     notesSummaryRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)].join(" · ");
   }
 
   let notesSummaryEn = p.notesSummaryEn || "";
-  if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn === brand) {
+  if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn.includes("Элитный восточный парфюм") || notesSummaryEn === brand) {
     notesSummaryEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)].join(" · ");
   }
 
+  const genderRu = p.genderRu || p.gender || "Унисекс";
+  const genderEn = p.genderEn || (genderRu === "Женский" ? "Women" : genderRu === "Мужской" ? "Men" : "Unisex");
+  const longevityRu = p.longevityRu || p.longevity || "8–12 часов";
+  const longevityEn = p.longevityEn || "8–12 hours";
+
+  const generatedDescs = generateRichPerfumeDescriptions({
+    name,
+    brand,
+    category,
+    categoryRu,
+    categoryEn,
+    genderRu,
+    genderEn,
+    longevityRu,
+    longevityEn,
+    topRu,
+    heartRu,
+    baseRu,
+    topEn,
+    heartEn,
+    baseEn,
+  });
+
   let descRu = p.descriptionRu || p.description;
-  if (
-    !descRu ||
-    descRu.includes("Сертифицированная оригинальная") ||
-    descRu.includes("оригинальный премиальный парфюм") ||
-    descRu.includes("Роскошный восточный аромат Al-Warda") ||
-    descRu.length < 40
-  ) {
-    descRu = `${name} от дома ${brand} — роскошный восточный аромат (${categoryRu.toLowerCase()}). Композиция открывается аккордами: ${topRu.join(", ")}, переходит в сердце из ${heartRu.join(", ")} и завершается чувственным шлейфом: ${baseRu.join(", ")}.`;
+  if (isGenericOrShortDescription(descRu)) {
+    descRu = generatedDescs.descriptionRu;
   }
 
   let descEn = p.descriptionEn;
-  if (
-    !descEn ||
-    descEn.includes("Сертифицированная оригинальная") ||
-    descEn.includes("exquisite authentic luxury Arabian fragrance") ||
-    descEn.length < 40
-  ) {
-    descEn = `${name} by ${brand} is an authentic luxury Arabian creation (${categoryEn.toLowerCase()}). Opens with vibrant notes of ${topEn.join(", ")}, unfolds into a rich heart of ${heartEn.join(", ")}, resting upon an opulent sillage of ${baseEn.join(", ")}.`;
+  if (isGenericOrShortDescription(descEn)) {
+    descEn = generatedDescs.descriptionEn;
   }
 
   const rawImage = p.rawImage || p.info?.rawImage || null;

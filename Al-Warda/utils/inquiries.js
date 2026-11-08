@@ -22,15 +22,15 @@ const EMAILJS_PUBLIC_KEY =
 function buildEmailJsParams({
   to,
   userName = "Читатель",
-  adminName = "Администратор Litera",
-  subject = "Ответ от службы поддержки Litera",
+  adminName = "Администратор Al-Warda",
+  subject = "Ответ от службы поддержки Al-Warda",
   text = "",
 }) {
   const cleanTo = String(to || "").trim().toLowerCase();
   const cleanUser = String(userName || "Читатель").trim();
-  const cleanAdmin = String(adminName || "Администратор Litera").trim();
+  const cleanAdmin = String(adminName || "Администратор Al-Warda").trim();
   const cleanSubject = String(
-    subject || "Ответ от службы поддержки Litera",
+    subject || "Ответ от службы поддержки Al-Warda",
   ).trim();
   const cleanText = String(text || "").trim();
   const timeStr = new Date().toLocaleString("ru-RU");
@@ -54,7 +54,7 @@ function buildEmailJsParams({
     reply: cleanText,
     content: cleanText,
     time: timeStr,
-    reply_to: "litera.eu@gmail.com",
+    reply_to: "alwardaparfumes@gmail.com",
   };
 }
 
@@ -154,10 +154,10 @@ export async function getCandidateAdmins() {
   // Fallback placeholder if no users exist
   return [
     {
-      id: "litera_admin_default",
+      id: "warda_admin_default",
       firstName: "Администратор",
-      lastName: "Litera",
-      email: "support@litera.md",
+      lastName: "Al-Warda",
+      email: "alwardaparfumes@gmail.com",
     },
   ];
 }
@@ -170,10 +170,10 @@ export async function assignAdminForNewInquiry() {
     const admins = await getCandidateAdmins();
     if (!admins || admins.length === 0) {
       return {
-        id: "litera_admin_default",
+        id: "warda_admin_default",
         firstName: "Администратор",
-        lastName: "Litera",
-        email: "support@litera.md",
+        lastName: "Al-Warda",
+        email: "alwardaparfumes@gmail.com",
       };
     }
     if (admins.length === 1) {
@@ -216,10 +216,10 @@ export async function assignAdminForNewInquiry() {
   } catch (err) {
     console.warn("Error calculating admin load balance:", err);
     return {
-      id: "litera_admin_default",
+      id: "warda_admin_default",
       firstName: "Администратор",
-      lastName: "Litera",
-      email: "support@litera.md",
+      lastName: "Al-Warda",
+      email: "alwardaparfumes@gmail.com",
     };
   }
 }
@@ -311,7 +311,7 @@ export async function getOrCreateInquiry({ user = null, guestEmail = null, guest
 
   // Fallback email for registered users so lack of email in cookie never blocks messaging
   if (userId && !userEmail) {
-    userEmail = `user_${userId.slice(0, 8)}@litera.customer`;
+    userEmail = `user_${userId.slice(0, 8)}@al-warda.customer`;
   }
 
   const isGuest = !userId;
@@ -498,7 +498,7 @@ export async function sendInquiryMessage({
         to: info.userEmail,
         userName: info.userName || "Уважаемый гость",
         adminName: senderName,
-        subject: "Ответ от службы поддержки Litera",
+        subject: "Ответ от службы поддержки Al-Warda",
         text: cleanText,
       });
     } catch (mailErr) {
@@ -508,7 +508,7 @@ export async function sendInquiryMessage({
   }
 
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("litera-inquiries-updated"));
+    window.dispatchEvent(new CustomEvent("warda-inquiries-updated"));
   }
 
   const updatedRow = await patchRes.json().catch(() => null);
@@ -615,7 +615,7 @@ export async function transferInquiryAdmin({
         to: info.userEmail,
         userName: info.userName || "Уважаемый гость",
         adminName: toAdminName || "Администратор",
-        subject: "Ответ от службы поддержки Litera",
+        subject: "Ответ от службы поддержки Al-Warda",
         text: `Ваше обращение в службу поддержки передано специалисту: ${toAdminName}.${cleanReason ? ` Причина: ${cleanReason}` : ""}`,
       }).catch((mErr) =>
         console.warn("Failed to notify guest about transfer via email:", mErr),
@@ -626,7 +626,7 @@ export async function transferInquiryAdmin({
   }
 
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("litera-inquiries-updated"));
+    window.dispatchEvent(new CustomEvent("warda-inquiries-updated"));
   }
 
   const updatedRow = await patchRes.json().catch(() => null);
@@ -651,7 +651,7 @@ export async function markInquiryReadByUser(inquiryId) {
       body: JSON.stringify({ notifications_user: 0 }),
     });
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("litera-inquiries-updated"));
+      window.dispatchEvent(new CustomEvent("warda-inquiries-updated"));
     }
   } catch (err) {
     console.warn("Error marking inquiry read by user:", err);
@@ -670,7 +670,7 @@ export async function markInquiryReadByAdmin(inquiryId) {
       body: JSON.stringify({ notifications_admin: 0 }),
     });
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("litera-inquiries-updated"));
+      window.dispatchEvent(new CustomEvent("warda-inquiries-updated"));
     }
   } catch (err) {
     console.warn("Error marking inquiry read by admin:", err);

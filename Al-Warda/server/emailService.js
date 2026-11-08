@@ -1,5 +1,5 @@
 /**
- * Email dispatch service for Litera customer support.
+ * Email dispatch service for Al-Warda customer support.
  * Uses EmailJS API as primary delivery to send administrator replies directly to unregistered guest users,
  * with Resend API as fallback.
  */
@@ -11,8 +11,8 @@ const DEFAULT_EMAILJS_PUBLIC_KEY = "mq7sRq7QGzp9XQUTh";
 const DEFAULT_EMAILJS_PRIVATE_KEY = "q20TuIwHcTj_gHXePCXIG";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const DEFAULT_SUPPORT_EMAIL = "litera.eu@gmail.com";
-const DEFAULT_FROM = "Litera Support <onboarding@resend.dev>";
+const DEFAULT_SUPPORT_EMAIL = "alwardaparfumes@gmail.com";
+const DEFAULT_FROM = "Al-Warda Support <onboarding@resend.dev>";
 
 export async function sendGuestInquiryEmail({
   to,
@@ -30,8 +30,8 @@ export async function sendGuestInquiryEmail({
   const cleanText = String(text).trim();
   const senderName = adminName
     ? String(adminName).trim()
-    : "Служба поддержки Litera";
-  const mailSubject = subject || "Ответ от службы поддержки Litera";
+    : "Служба поддержки Al-Warda";
+  const mailSubject = subject || "Ответ от службы поддержки Al-Warda";
   const supportEmail =
     process.env.SUPPORT_EMAIL ||
     process.env.RESEND_REPLY_TO ||
@@ -90,8 +90,8 @@ export async function sendGuestInquiryEmail({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Origin: "https://litera.egor-grebennykov.workers.dev",
-            Referer: "https://litera.egor-grebennykov.workers.dev/",
+            Origin: "https://al-warda.egor-grebennykov.workers.dev",
+            Referer: "https://al-warda.egor-grebennykov.workers.dev/",
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
           },
@@ -147,7 +147,7 @@ export async function sendGuestInquiryEmail({
               <!-- Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 28px 32px; color: #ffffff;">
-                  <h1 style="margin: 0 0 6px 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Litera</h1>
+                  <h1 style="margin: 0 0 6px 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Al-Warda</h1>
                   <p style="margin: 0; font-size: 14px; opacity: 0.9; font-weight: 500;">Книжный интернет-магазин • Служба поддержки читателей</p>
                 </td>
               </tr>
@@ -166,7 +166,7 @@ export async function sendGuestInquiryEmail({
                     Здравствуйте!
                   </p>
                   <p style="font-size: 15px; margin: 0 0 20px 0; color: #475569; line-height: 1.5;">
-                    Администратор <strong>${senderName}</strong> ответил на ваше обращение на сайте Litera:
+                    Администратор <strong>${senderName}</strong> ответил на ваше обращение на сайте Al-Warda:
                   </p>
 
                   <!-- Message Bubble -->
@@ -182,10 +182,10 @@ export async function sendGuestInquiryEmail({
               <tr>
                 <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
                   <p style="margin: 0 0 6px 0;">
-                    Вы получили это письмо, так как указали свой email в чате с администратором на сайте <a href="https://litera.md" style="color: #6366f1; text-decoration: none; font-weight: 600;">Litera</a>.
+                    Вы получили это письмо, так как указали свой email в чате с администратором на сайте <a href="https://al-warda.com" style="color: #6366f1; text-decoration: none; font-weight: 600;">Al-Warda</a>.
                   </p>
                   <p style="margin: 0;">
-                    Litera Bookstore © ${new Date().getFullYear()} • Связь с поддержкой: <a href="mailto:${supportEmail}" style="color: #6366f1; text-decoration: none;">${supportEmail}</a>
+                    Al-Warda Parfumes © ${new Date().getFullYear()} • Связь с поддержкой: <a href="mailto:${supportEmail}" style="color: #6366f1; text-decoration: none;">${supportEmail}</a>
                   </p>
                 </td>
               </tr>
@@ -204,7 +204,7 @@ export async function sendGuestInquiryEmail({
       reply_to: supportEmail,
       subject: (isFallback ? `[Тест Resend: для ${cleanTo}] ` : "") + mailSubject,
       text: (isFallback ? `[Тестовый режим Resend: предназначено для ${cleanTo}]\n\n` : "") +
-        `Здравствуйте!\n\nАдминистратор ${senderName} ответил на ваше обращение:\n\n${cleanText}\n\nСлужба поддержки Litera\nКонтакты: ${supportEmail}`,
+        `Здравствуйте!\n\nАдминистратор ${senderName} ответил на ваше обращение:\n\n${cleanText}\n\nСлужба поддержки Al-Warda\nКонтакты: ${supportEmail}`,
       html: buildHtml(cleanTo, isFallback),
     };
 
@@ -258,7 +258,7 @@ export async function sendGuestInquiryEmail({
           provider: "resend",
           recipient: cleanTo,
           deliveredTo: supportEmail,
-          warning: "Resend sandbox mode: delivered to developer email (litera.eu@gmail.com). Add custom domain at resend.com/domains to send to external guests.",
+          warning: "Resend sandbox mode: delivered to developer email (alwardaparfumes@gmail.com). Add custom domain at resend.com/domains to send to external guests.",
         };
       }
     }

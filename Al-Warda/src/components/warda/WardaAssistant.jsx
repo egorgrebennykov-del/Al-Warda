@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import LiteraCharacter from "./LiteraCharacter";
+import WardaCharacter from "./WardaCharacter";
 import BookImage from "../common/BookImage";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
 import { getPerfumeUrl } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
-import "./LiteraAssistant.css";
+import "./WardaAssistant.css";
 
-const STORAGE_KEY = "litera_assistant_history_v5";
-const DIALOG_LANG_KEY = "litera_assistant_dialog_lang_v1";
+const STORAGE_KEY = "warda_assistant_history_v5";
+const DIALOG_LANG_KEY = "warda_assistant_dialog_lang_v1";
 
 const isSearchQuery = (text) =>
   !/(корзин|в корзине|заказ|мои заказы|профиль|аккаунт|где найти|куда нажать|войти|пароль)/i.test(
@@ -23,11 +23,10 @@ const getNowIso = () => new Date().toISOString();
 
 const STORE_NAMES = {
   "alwarda.ae": "Al-Warda Boutique",
-  "dubai": "Dubai Hub",
-  "uae": "UAE Hub",
+  "middle_east": "Middle East Hub",
 };
 
-export default function LiteraAssistant() {
+export default function WardaAssistant() {
   const { language, t } = useLanguage();
   const confirm = useConfirm();
   const customAlert = useAlert();
@@ -138,7 +137,7 @@ export default function LiteraAssistant() {
       .map((m) => ({ id: m.id, content: m.content }));
 
     setIsTranslating(true);
-    fetch("/api/litera-translate", {
+    fetch("/api/warda-translate", {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({ messages: toTranslate, targetLanguage }),
@@ -147,10 +146,10 @@ export default function LiteraAssistant() {
       .catch(async () => {
         // Local dev fallback: call the service directly
         try {
-          const { translateLiteraDialog } = await import(
-            "../../../server/literaAssistantService"
+          const { translateWardaDialog } = await import(
+            "../../../server/wardaAssistantService"
           );
-          return await translateLiteraDialog({ messages: toTranslate, targetLanguage });
+          return await translateWardaDialog({ messages: toTranslate, targetLanguage });
         } catch {
           return { translations: [] };
         }
@@ -256,11 +255,11 @@ export default function LiteraAssistant() {
       }
     };
 
-    window.addEventListener("open-litera-assistant", handleTrigger);
-    window.addEventListener("litera-offer-help", handleOfferHelp);
+    window.addEventListener("open-warda-assistant", handleTrigger);
+    window.addEventListener("warda-offer-help", handleOfferHelp);
     return () => {
-      window.removeEventListener("open-litera-assistant", handleTrigger);
-      window.removeEventListener("litera-offer-help", handleOfferHelp);
+      window.removeEventListener("open-warda-assistant", handleTrigger);
+      window.removeEventListener("warda-offer-help", handleOfferHelp);
     };
   }, []);
 
@@ -429,7 +428,7 @@ export default function LiteraAssistant() {
 
       let data = null;
       try {
-        const response = await fetch("/api/litera-chat", {
+        const response = await fetch("/api/warda-chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json; charset=utf-8",
@@ -481,10 +480,10 @@ export default function LiteraAssistant() {
           throw new Error("Unexpected response content-type");
         }
       } catch {
-        const { processLiteraChat } = await import(
-          "../../../server/literaAssistantService"
+        const { processWardaChat } = await import(
+          "../../../server/wardaAssistantService"
         );
-        data = await processLiteraChat({
+        data = await processWardaChat({
           ...payload,
           onStatus: (status) => {
             setLoadingStatus(status);
@@ -499,7 +498,7 @@ export default function LiteraAssistant() {
       }
 
       if (data?.referToAdmin) {
-        window.dispatchEvent(new CustomEvent("litera-refer-to-admin"));
+        window.dispatchEvent(new CustomEvent("warda-refer-to-admin"));
       }
 
       const assistantEmotion = data?.emotion || "happy";
@@ -520,7 +519,7 @@ export default function LiteraAssistant() {
         setHasUnread(true);
       }
     } catch (err) {
-      console.error("Litera chat error:", err);
+      console.error("Al-Warda chat error:", err);
       setEmotion("concerned");
       setMessages((prev) => [
         ...prev,
@@ -604,31 +603,31 @@ export default function LiteraAssistant() {
   ];
 
   return (
-    <div className={`litera-assistant-root ${isOpen ? "litera-assistant-root--open" : ""}`}>
+    <div className={`warda-assistant-root ${isOpen ? "warda-assistant-root--open" : ""}`}>
       {/* Floating trigger button when closed */}
       {!isOpen && (
-        <div className="litera-trigger-container">
+        <div className="warda-trigger-container">
           {showHelpOfferBubble ? (
             <div
-              className="litera-trigger-bubble litera-trigger-bubble--offer"
+              className="warda-trigger-bubble warda-trigger-bubble--offer"
               onClick={() => handleOpen()}
               title={
                 language === "ru"
-                  ? "Нажмите, чтобы задать вопрос Литере"
-                  : "Click to ask Litera"
+                  ? "Нажмите, чтобы задать вопрос Ясмин"
+                  : "Click to ask Al-Warda"
               }
               role="button"
               tabIndex={0}
             >
-              <span className="litera-offer-badge-icon">✨</span>
-              <span className="litera-offer-badge-text">
+              <span className="warda-offer-badge-icon">✨</span>
+              <span className="warda-offer-badge-text">
                 {language === "ru"
                   ? "Я с радостью отвечу на этот вопрос! Нажмите на меня 🤍"
                   : "I'll gladly answer this question! Click me 🤍"}
               </span>
               <button
                 type="button"
-                className="litera-trigger-bubble__close"
+                className="warda-trigger-bubble__close"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowHelpOfferBubble(false);
@@ -639,11 +638,11 @@ export default function LiteraAssistant() {
               </button>
             </div>
           ) : showGreetingBubble ? (
-            <div className="litera-trigger-bubble">
+            <div className="warda-trigger-bubble">
               <span>{t("assistant.badge")}</span>
               <button
                 type="button"
-                className="litera-trigger-bubble__close"
+                className="warda-trigger-bubble__close"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowGreetingBubble(false);
@@ -656,38 +655,38 @@ export default function LiteraAssistant() {
           ) : null}
           <button
             type="button"
-            className="litera-trigger-btn"
+            className="warda-trigger-btn"
             onClick={handleOpen}
             aria-label={t("assistant.openChat")}
             title={t("assistant.openChat")}
           >
-            <LiteraCharacter
+            <WardaCharacter
               emotion={emotion}
               size={64}
-              className="litera-trigger-avatar"
+              className="warda-trigger-avatar"
             />
-            {hasUnread && <span className="litera-unread-badge" />}
+            {hasUnread && <span className="warda-unread-badge" />}
           </button>
         </div>
       )}
 
       {/* Interactive Chat Window */}
       {isOpen && (
-        <div className="litera-window-wrapper">
+        <div className="warda-window-wrapper">
           {/* Side character companion (Desktop) */}
-          <div className="litera-companion-dock">
-            <div className="litera-companion-dock__character-box">
-              <LiteraCharacter
+          <div className="warda-companion-dock">
+            <div className="warda-companion-dock__character-box">
+              <WardaCharacter
                 emotion={loading ? (loadingStatus === "searching" ? "thinking" : "speaking") : emotion}
                 size={170}
-                className="litera-companion-dock__character"
+                className="warda-companion-dock__character"
               />
-              <div className="litera-companion-dock__name-tag">
-                <span className="litera-companion-dock__name">{t("assistant.name")}</span>
-                <span className="litera-companion-dock__status">
-                  <span className="litera-status-dot" />
+              <div className="warda-companion-dock__name-tag">
+                <span className="warda-companion-dock__name">{t("assistant.name")}</span>
+                <span className="warda-companion-dock__status">
+                  <span className="warda-status-dot" />
                   {loading ? (
-                    <span className="litera-status-inline">
+                    <span className="warda-status-inline">
                       {loadingStatus === "searching"
                         ? t("assistant.searching")
                         : t("assistant.typing")}
@@ -701,28 +700,28 @@ export default function LiteraAssistant() {
           </div>
 
           {/* Main Chat Panel */}
-          <div className="litera-chat-panel">
+          <div className="warda-chat-panel">
             {/* Header */}
-            <div className="litera-chat-header">
-              <div className="litera-chat-header__info">
-                <div className="litera-chat-header__avatar-wrap">
-                  <LiteraCharacter
+            <div className="warda-chat-header">
+              <div className="warda-chat-header__info">
+                <div className="warda-chat-header__avatar-wrap">
+                  <WardaCharacter
                     emotion={loading ? (loadingStatus === "searching" ? "thinking" : "speaking") : emotion}
                     size={38}
-                    className="litera-chat-header__avatar"
+                    className="warda-chat-header__avatar"
                   />
-                  <span className="litera-status-dot litera-status-dot--online" />
+                  <span className="warda-status-dot warda-status-dot--online" />
                 </div>
                 <div>
-                  <h3 className="litera-chat-header__title">{t("assistant.name")}</h3>
-                  <p className="litera-chat-header__subtitle">{t("assistant.title")}</p>
+                  <h3 className="warda-chat-header__title">{t("assistant.name")}</h3>
+                  <p className="warda-chat-header__subtitle">{t("assistant.title")}</p>
                 </div>
               </div>
 
-              <div className="litera-chat-header__actions">
+              <div className="warda-chat-header__actions">
                 <button
                   type="button"
-                  className="litera-header-btn"
+                  className="warda-header-btn"
                   onClick={handleClearHistory}
                   title={t("assistant.clearHistory")}
                   aria-label={t("assistant.clearHistory")}
@@ -731,7 +730,7 @@ export default function LiteraAssistant() {
                 </button>
                 <button
                   type="button"
-                  className="litera-header-btn litera-header-btn--close"
+                  className="warda-header-btn warda-header-btn--close"
                   onClick={handleClose}
                   title={t("assistant.closeChat")}
                   aria-label={t("assistant.closeChat")}
@@ -743,11 +742,11 @@ export default function LiteraAssistant() {
 
             {/* Login Required Notice */}
             {loginAlert && (
-              <div className="litera-alert-banner">
+              <div className="warda-alert-banner">
                 <span>{loginAlert}</span>
                 <button
                   type="button"
-                  className="litera-alert-banner__link"
+                  className="warda-alert-banner__link"
                   onClick={() => navigate("/login")}
                 >
                   {t("nav.login")}
@@ -756,7 +755,7 @@ export default function LiteraAssistant() {
             )}
 
             {/* Messages Body */}
-            <div className="litera-chat-body">
+            <div className="warda-chat-body">
               {messages.map((msg) => {
                 const isUser = msg.role === "user";
                 const isLongMsg =
@@ -770,23 +769,23 @@ export default function LiteraAssistant() {
                 return (
                   <div
                     key={msg.id}
-                    className={`litera-msg-row litera-msg-row--${msg.role}`}
+                    className={`warda-msg-row warda-msg-row--${msg.role}`}
                   >
                     {msg.role === "assistant" && (
-                      <LiteraCharacter
+                      <WardaCharacter
                         emotion={msg.emotion || "neutral"}
                         size={32}
-                        className="litera-msg-avatar"
+                        className="warda-msg-avatar"
                       />
                     )}
 
-                    <div className="litera-msg-bubble-wrap">
+                    <div className="warda-msg-bubble-wrap">
                       <div
-                        className={`litera-msg-bubble ${
+                        className={`warda-msg-bubble ${
                           isLongMsg
                             ? isMsgExpanded
-                              ? "litera-msg-bubble--expanded"
-                              : "litera-msg-bubble--collapsed"
+                              ? "warda-msg-bubble--expanded"
+                              : "warda-msg-bubble--collapsed"
                             : ""
                         }`}
                         onClick={
@@ -800,12 +799,12 @@ export default function LiteraAssistant() {
                             : undefined
                         }
                       >
-                        <p className="litera-msg-text">{msg.content}</p>
+                        <p className="warda-msg-text">{msg.content}</p>
 
                         {isLongMsg && (
                           <button
                             type="button"
-                            className="litera-msg-expand-btn"
+                            className="warda-msg-expand-btn"
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleMsgExpand(msg.id);
@@ -840,14 +839,14 @@ export default function LiteraAssistant() {
                         )}
 
                         {msg.referToAdmin && (
-                          <div className="litera-msg-admin-action">
+                          <div className="warda-msg-admin-action">
                             <button
                               type="button"
-                              className="litera-msg-admin-btn"
+                              className="warda-msg-admin-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 window.dispatchEvent(
-                                  new CustomEvent("litera-open-messenger"),
+                                  new CustomEvent("warda-open-messenger"),
                                 );
                               }}
                             >
@@ -863,12 +862,12 @@ export default function LiteraAssistant() {
 
                       {/* Recommended Real Book Cards */}
                       {Array.isArray(msg.books) && msg.books.length > 0 && (
-                        <div className="litera-books-container">
-                          <div className="litera-books-container__label">
+                        <div className="warda-books-container">
+                          <div className="warda-books-container__label">
                             <i className="ri-sparkling-2-line" />
                             <span>{t("assistant.recommendationsTitle")}</span>
                           </div>
-                          <div className="litera-books-grid">
+                          <div className="warda-books-grid">
                             {msg.books.map((book) => {
                               const storeLabel =
                                 STORE_NAMES[book.store] || book.store;
@@ -883,10 +882,10 @@ export default function LiteraAssistant() {
                               return (
                                 <div
                                   key={book.id || book.url}
-                                  className="litera-book-card"
+                                  className="warda-book-card"
                                 >
                                   <div
-                                    className="litera-book-card__cover-wrap"
+                                    className="warda-book-card__cover-wrap"
                                     onClick={() => handleViewBook(book)}
                                     role="button"
                                     tabIndex={0}
@@ -894,45 +893,45 @@ export default function LiteraAssistant() {
                                     <BookImage
                                       src={book.image}
                                       alt={book.title}
-                                      className="litera-book-card__cover"
+                                      className="warda-book-card__cover"
                                       loading="eager"
                                       decoding="async"
                                       fetchPriority="high"
                                     />
                                     {isPrivileged() && storeLabel && (
-                                      <span className="litera-book-card__store-badge">
+                                      <span className="warda-book-card__store-badge">
                                         {storeLabel}
                                       </span>
                                     )}
                                   </div>
 
-                                  <div className="litera-book-card__details">
+                                  <div className="warda-book-card__details">
                                     <h4
-                                      className="litera-book-card__title"
+                                      className="warda-book-card__title"
                                       onClick={() => handleViewBook(book)}
                                       title={book.title}
                                     >
                                       {book.title}
                                     </h4>
                                     {book.author && (
-                                      <p className="litera-book-card__author">
+                                      <p className="warda-book-card__author">
                                         {book.author}
                                       </p>
                                     )}
-                                    <div className="litera-book-card__price-row">
-                                      <span className="litera-book-card__price">
+                                    <div className="warda-book-card__price-row">
+                                      <span className="warda-book-card__price">
                                         €{Number(book.price).toFixed(2)}
                                       </span>
                                     </div>
 
-                                    <div className="litera-book-card__actions">
+                                    <div className="warda-book-card__actions">
                                       <button
                                         type="button"
-                                        className={`litera-book-card__btn-cart ${
+                                        className={`warda-book-card__btn-cart ${
                                           isSuccess
-                                            ? "litera-book-card__btn-cart--success"
+                                            ? "warda-book-card__btn-cart--success"
                                             : isLoginPrompt
-                                              ? "litera-book-card__btn-cart--login-prompt"
+                                              ? "warda-book-card__btn-cart--login-prompt"
                                               : ""
                                         }`}
                                         onClick={() => handleAddToCart(book)}
@@ -959,7 +958,7 @@ export default function LiteraAssistant() {
                                       </button>
                                       <button
                                         type="button"
-                                        className="litera-book-card__btn-view"
+                                        className="warda-book-card__btn-view"
                                         onClick={() => handleViewBook(book)}
                                         title={t("assistant.viewBook")}
                                       >
@@ -974,7 +973,7 @@ export default function LiteraAssistant() {
                         </div>
                       )}
                     </div>
-                    <span className="litera-msg-timestamp">
+                    <span className="warda-msg-timestamp">
                       {msg.timestamp
                         ? new Date(msg.timestamp).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -989,20 +988,20 @@ export default function LiteraAssistant() {
 
               {/* Thinking / Searching / Typing animation */}
               {loading && (
-                <div className="litera-msg-row litera-msg-row--assistant">
-                  <LiteraCharacter
+                <div className="warda-msg-row warda-msg-row--assistant">
+                  <WardaCharacter
                     emotion={loadingStatus === "searching" ? "thinking" : "speaking"}
                     size={32}
-                    className="litera-msg-avatar"
+                    className="warda-msg-avatar"
                   />
-                  <div className="litera-msg-bubble-wrap">
-                    <div className="litera-msg-bubble litera-msg-bubble--thinking">
-                      <div className="litera-typing-dots">
+                  <div className="warda-msg-bubble-wrap">
+                    <div className="warda-msg-bubble warda-msg-bubble--thinking">
+                      <div className="warda-typing-dots">
                         <span />
                         <span />
                         <span />
                       </div>
-                      <span className="litera-typing-text">
+                      <span className="warda-typing-text">
                         {loadingStatus === "searching"
                           ? t("assistant.searching")
                           : t("assistant.typing")}
@@ -1016,25 +1015,25 @@ export default function LiteraAssistant() {
             </div>
 
             {isTranslating && (
-              <div className="litera-translating-banner" role="status">
+              <div className="warda-translating-banner" role="status">
                 <i className="ri-translate-2 ri-spin" />
                 <span>
                   {language === "ru"
-                    ? "Литера переводит диалог на русский..."
-                    : "Litera is translating the dialog into English..."}
+                    ? "Ясмин переводит диалог на русский..."
+                    : "Al-Warda is translating the dialog into English..."}
                 </span>
               </div>
             )}
 
             {/* 5 Suggestion Questions in a Scrollable Row (When starting a new dialog) */}
             {isNewDialog && !loading && (
-              <div className="litera-questions-bar">
-                <div className="litera-questions-track">
+              <div className="warda-questions-bar">
+                <div className="warda-questions-track">
                   {initialQuestions.map((q, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      className="litera-question-chip"
+                      className="warda-question-chip"
                       onClick={() => handleSendMessage(q)}
                       title={q}
                     >
@@ -1046,9 +1045,9 @@ export default function LiteraAssistant() {
             )}
 
             {/* Input Bar */}
-            <div className={`litera-chat-footer ${isExpanded ? "footer-expanded" : ""}`}>
+            <div className={`warda-chat-footer ${isExpanded ? "footer-expanded" : ""}`}>
               <form
-                className={`litera-chat-input-form ${(!isMobile && isTooLarge) || isExpanded ? "multiline" : ""} ${isExpanded ? "litera-input-expanded" : ""}`}
+                className={`warda-chat-input-form ${(!isMobile && isTooLarge) || isExpanded ? "multiline" : ""} ${isExpanded ? "warda-input-expanded" : ""}`}
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage();
@@ -1056,7 +1055,7 @@ export default function LiteraAssistant() {
               >
                 <textarea
                   ref={inputRef}
-                  className={`litera-chat-textarea ${isExpanded ? "expanded" : ""}`}
+                  className={`warda-chat-textarea ${isExpanded ? "expanded" : ""}`}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -1070,11 +1069,11 @@ export default function LiteraAssistant() {
                   rows={1}
                   disabled={loading || isTranslating}
                 />
-                <div className="litera-input-actions">
+                <div className="warda-input-actions">
                   {(isTooLarge || isExpanded) && (
                     <button
                       type="button"
-                      className={`litera-expand-btn ${isExpanded ? "active" : ""}`}
+                      className={`warda-expand-btn ${isExpanded ? "active" : ""}`}
                       onClick={() => setIsExpanded((prev) => !prev)}
                       title={
                         language === "ru"
@@ -1100,7 +1099,7 @@ export default function LiteraAssistant() {
                   )}
                   <button
                     type="submit"
-                    className="litera-send-btn"
+                    className="warda-send-btn"
                     disabled={!input.trim() || loading || isTranslating}
                     aria-label={t("assistant.send")}
                     title={t("assistant.send")}

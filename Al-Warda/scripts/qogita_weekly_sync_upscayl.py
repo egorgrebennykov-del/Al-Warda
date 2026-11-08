@@ -200,6 +200,73 @@ class QogitaSyncClient:
         time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
+def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
+    nm_lower = f"{name} {brand}".lower()
+    if any(w in nm_lower for w in ["fresh", "aqua", "marine", "ice", "cool", "blue", "bleu", "ocean", "sea", "hawas"]):
+        cat_ru, cat_en, cat_slug = "Свежие акватические", "Fresh Aquatic", "fresh"
+        top_ru, heart_ru, base_ru = ["Морской бриз", "Калабрийский бергамот", "Грейпфрут"], ["Мята", "Лаванда", "Морская соль"], ["Амброксан", "Белый кедр", "Белый мускус"]
+        top_en, heart_en, base_en = ["Sea Breeze", "Calabrian Bergamot", "Grapefruit"], ["Peppermint", "Lavender", "Sea Salt"], ["Ambroxan", "White Cedar", "White Musk"]
+    elif any(w in nm_lower for w in ["vanilla", "sweet", "caramel", "candy", "sugar", "tonka", "khamrah", "yara", "eclaire", "nebras", "choco", "praline"]):
+        cat_ru, cat_en, cat_slug = "Восточные гурманские", "Oriental Gourmand", "gourmand"
+        top_ru, heart_ru, base_ru = ["Корица", "Бергамот", "Гелиотроп"], ["Карамель", "Пралине", "Финики"], ["Бурбонская ваниль", "Бобы тонка", "Сандал"]
+        top_en, heart_en, base_en = ["Cinnamon", "Bergamot", "Heliotrope"], ["Caramel", "Praline", "Dates"], ["Bourbon Vanilla", "Tonka Bean", "Sandalwood"]
+    elif any(w in nm_lower for w in ["floral", "rose", "jasmine", "blossom", "flower", "peony", "orchid", "tuberose"]):
+        cat_ru, cat_en, cat_slug = "Цветочные восточные", "Oriental Floral", "floral"
+        top_ru, heart_ru, base_ru = ["Дамасская роза", "Красные ягоды", "Бергамот"], ["Таифская роза", "Жасмин самбак", "Пион"], ["Кашемировое дерево", "Серая амбра", "Шелковистый мускус"]
+        top_en, heart_en, base_en = ["Damask Rose", "Red Berries", "Bergamot"], ["Taif Rose", "Jasmine Sambac", "Peony"], ["Cashmere Wood", "Ambergris", "Silk Musk"]
+    elif any(w in nm_lower for w in ["fougere", "lavender", "sage", "sauvage", "club de nuit", "aventus", "fakhar", "hunter"]):
+        cat_ru, cat_en, cat_slug = "Фужерные ароматические", "Aromatic Fougère", "fougere"
+        top_ru, heart_ru, base_ru = ["Французская лаванда", "Зеленое яблоко", "Имбирь"], ["Мускатный шалфей", "Бурбонская герань", "Можжевельник"], ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"]
+        top_en, heart_en, base_en = ["French Lavender", "Green Apple", "Fresh Ginger"], ["Clary Sage", "Bourbon Geranium", "Juniper"], ["Oakmoss", "Haitian Vetiver", "Tonka Bean"]
+    elif any(w in nm_lower for w in ["spice", "pepper", "saffron", "asad", "cinnamon", "cardamom", "tobacco"]):
+        cat_ru, cat_en, cat_slug = "Восточные пряные", "Oriental Spicy", "spicy"
+        top_ru, heart_ru, base_ru = ["Королевский шафран", "Черный перец", "Кардамон"], ["Корица", "Кофейное зерно", "Благородный табак"], ["Золотая амбра", "Бобы тонка", "Сандал"]
+        top_en, heart_en, base_en = ["Royal Saffron", "Black Pepper", "Cardamom"], ["Cinnamon Bark", "Roasted Coffee Bean", "Rich Tobacco"], ["Golden Amber", "Tonka Bean", "Sandalwood"]
+    else:
+        cat_ru, cat_en, cat_slug = "Восточные древесные", "Oriental Woody", "oud"
+        top_ru, heart_ru, base_ru = ["Камбоджийский уд", "Шафран", "Розовый перец"], ["Дамасская роза", "Пачули", "Амбра"], ["Агаровое дерево", "Сандал", "Мадагаскарская ваниль"]
+        top_en, heart_en, base_en = ["Cambodian Oud", "Saffron", "Pink Pepper"], ["Damask Rose", "Patchouli", "Amber"], ["Agarwood", "Sandalwood", "Madagascar Vanilla"]
+
+    if any(w in nm_lower for w in ["femme", "woman", "women", "pour femme", "mademoiselle", "lady", "girl", "queen", "princess", "yara"]):
+        gender_ru, gender_en = "Женский", "Women"
+    elif any(w in nm_lower for w in ["pour homme", "men", "man", "asad", "hunter"]) and "women" not in nm_lower and "femme" not in nm_lower:
+        gender_ru, gender_en = "Мужской", "Men"
+    else:
+        gender_ru, gender_en = "Унисекс", "Unisex"
+
+    desc_ru = (
+        f"{brand} {name} — роскошный селективный аромат с Ближнего Востока ({cat_ru.lower()}), созданный в лучших традициях восточного парфюмерного искусства. "
+        f"С первых мгновений композиция завораживает ярким вступлением верхних нот ({', '.join(top_ru)}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: {', '.join(heart_ru)}. "
+        f"В финале аромат окутывает благородной, бархатистой базой ({', '.join(base_ru)}), формируя дорогой и узнаваемый шлейф. "
+        f"Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (10–14 часов). "
+        f"Оригинальная продукция от сертифицированных парфюмерных домов Ближнего Востока."
+    )
+    desc_en = (
+        f"{brand} {name} is an opulent niche fragrance from the Middle East ({cat_en.lower()}), crafted in the finest traditions of oriental perfumery. "
+        f"From the very first spritz, the composition captivates with luminous top notes of {', '.join(top_en)}, seamlessly unfolding into a rich, multifaceted heart of {', '.join(heart_en)}. "
+        f"As it settles on the skin, a velvety, resonant base of {', '.join(base_en)} emerges, leaving an unforgettable and sophisticated trail. "
+        f"Formulated with a high concentration of precious aromatic oils, it delivers remarkable longevity (10–14 hours). "
+        f"100% authentic creation sourced directly from certified perfume houses in the Middle East."
+    )
+    return {
+        "category": cat_ru,
+        "categoryEn": cat_en,
+        "categorySlug": cat_slug,
+        "gender": gender_ru,
+        "genderEn": gender_en,
+        "origin": "Ближний Восток",
+        "originEn": "Middle East",
+        "notesSummary": " · ".join(top_ru[:2] + heart_ru[:1] + base_ru[:1]),
+        "notesSummaryEn": " · ".join(top_en[:2] + heart_en[:1] + base_en[:1]),
+        "notes": {
+            "ru": {"top": top_ru, "heart": heart_ru, "base": base_ru},
+            "en": {"top": top_en, "heart": heart_en, "base": base_en},
+        },
+        "description": desc_ru,
+        "descriptionRu": desc_ru,
+        "descriptionEn": desc_en,
+    }
+
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -277,28 +344,41 @@ def sync_to_supabase(perfumes_list):
             )
         ):
             image = previous["image"]
+        rich = build_rich_bilingual_enrichment(p["name"], p.get("brand") or "Al-Warda")
         record = {
             "slug": slug,
             "name": p["name"],
             "title": p["name"],
             "brand": p.get("brand") or "Al-Warda",
-            "category": p.get("category") or "Восточные",
+            "category": p.get("category") or rich["category"],
             "price": float(p.get("price") or 25.0),
             "currency": p.get("currency") or "EUR",
             "image": image,
             "in_stock": True,
+            "description": p.get("descriptionRu") or rich["descriptionRu"],
             "info": {
-                "category": p.get("category") or "Восточные",
-                "gender": p.get("gender") or "Унисекс",
-                "notesSummary": p.get("notesSummary") or "Уд · Амбра · Ваниль",
+                "category": p.get("category") or rich["category"],
+                "categoryEn": p.get("categoryEn") or rich["categoryEn"],
+                "categorySlug": p.get("categorySlug") or rich["categorySlug"],
+                "gender": p.get("gender") or rich["gender"],
+                "genderEn": p.get("genderEn") or rich["genderEn"],
+                "origin": "Ближний Восток",
+                "originEn": "Middle East",
+                "notes": rich["notes"],
+                "notesSummary": p.get("notesSummary") or rich["notesSummary"],
+                "notesSummaryEn": p.get("notesSummaryEn") or rich["notesSummaryEn"],
                 "longevity": "10–14 часов",
+                "longevityEn": "10–14 hours",
                 "sillage": "Заметный, притягательный",
+                "sillageEn": "Noticeable, alluring sillage",
                 "volume": "100 мл EDP",
                 "concentration": "Eau de Parfum",
                 "gtin": p.get("gtin") or "",
                 "rawImage": raw_image,
                 "imageGeneration": generation,
-                "descriptionRu": f"{p['name']} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
+                "description": p.get("descriptionRu") or rich["descriptionRu"],
+                "descriptionRu": p.get("descriptionRu") or rich["descriptionRu"],
+                "descriptionEn": p.get("descriptionEn") or rich["descriptionEn"],
             }
         }
         batch.append(record)
@@ -483,6 +563,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 })
                 continue
 
+            rich = build_rich_bilingual_enrichment(name, brand)
             perfume_entry = {
                 "name": name,
                 "brand": brand,
@@ -492,9 +573,15 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 "rawImage": raw_img,
                 "imageGeneration": {"status": "pending"},
                 "gtin": gtin,
-                "category": "Восточные",
-                "gender": "Унисекс",
-                "notesSummary": f"{brand} · Премиальный арабский парфюм",
+                "category": rich["category"],
+                "categoryEn": rich["categoryEn"],
+                "categorySlug": rich["categorySlug"],
+                "gender": rich["gender"],
+                "genderEn": rich["genderEn"],
+                "notesSummary": rich["notesSummary"],
+                "notesSummaryEn": rich["notesSummaryEn"],
+                "descriptionRu": rich["descriptionRu"],
+                "descriptionEn": rich["descriptionEn"],
             }
             all_perfumes.append(perfume_entry)
 
@@ -508,17 +595,29 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                     "image": perfume_entry["image"],
                     "gtin": gtin,
                     "rawImage": raw_img,
+                    "description": rich["descriptionRu"],
                     "info": {
-                        "category": perfume_entry["category"],
-                        "gender": perfume_entry["gender"],
-                        "notesSummary": perfume_entry["notesSummary"],
+                        "category": rich["category"],
+                        "categoryEn": rich["categoryEn"],
+                        "categorySlug": rich["categorySlug"],
+                        "gender": rich["gender"],
+                        "genderEn": rich["genderEn"],
+                        "origin": "Ближний Восток",
+                        "originEn": "Middle East",
+                        "notes": rich["notes"],
+                        "notesSummary": rich["notesSummary"],
+                        "notesSummaryEn": rich["notesSummaryEn"],
                         "longevity": "10–14 часов",
+                        "longevityEn": "10–14 hours",
                         "sillage": "Заметный, притягательный",
+                        "sillageEn": "Noticeable, alluring sillage",
                         "volume": "100 мл EDP",
                         "gtin": gtin or "",
                         "rawImage": raw_img,
                         "imageGeneration": {"status": "pending"},
-                        "descriptionRu": f"{name} — премиальный оригинальный арабский парфюм со стойким шлейфом.",
+                        "description": rich["descriptionRu"],
+                        "descriptionRu": rich["descriptionRu"],
+                        "descriptionEn": rich["descriptionEn"],
                     }
                 }
             else:

@@ -3,7 +3,6 @@ import getBooksFromCarturesti from "./getBooksFromCarturesti.js";
 import getBooksFromUlysses from "./getBooksFromUlysses.js";
 import getBooksFromCarteamea from "./getBooksFromCarteamea.js";
 import getBooksFromBiblion from "./getBooksFromBiblion.js";
-import getExchangeRate, { DEFAULT_RATE, getCachedExchangeRate } from "./getExchangeRate.js";
 import dedupeBooks, { dedupeBooksFast } from "./dedupeBooks.js";
 import enhancedImageUrl from "./enhancedImageUrl.js";
 import decodeHtmlEntities from "./decodeHtmlEntities.js";
@@ -181,13 +180,7 @@ function rankAndSort(books, searchBook) {
 }
 
 export default async function searchBooks(searchBook, { onProgress } = {}) {
-  let activeRate = getCachedExchangeRate() || DEFAULT_RATE;
-  const ratePromise = getExchangeRate()
-    .then((r) => {
-      if (r) activeRate = r;
-      return r;
-    })
-    .catch(() => activeRate);
+  const activeRate = 20.2;
 
   const partialByStore = new Map();
   const fullCompletedStores = new Set();
@@ -255,24 +248,22 @@ export default async function searchBooks(searchBook, { onProgress } = {}) {
         return [];
       });
 
-  // Query all bookstores and the exchange rate concurrently in parallel
+  // Query all bookstores concurrently in parallel
   const [
     librariusRaw,
     carturestiRaw,
     ulyssesRaw,
     carteameaRaw,
     biblionRaw,
-    rate,
   ] = await Promise.all([
     wrapStore("librarius.md", getBooksFromLibrarius(searchBook)),
     wrapStore("carturesti.md", getBooksFromCarturesti(searchBook)),
     wrapStore("ulysses.md", getBooksFromUlysses(searchBook)),
     wrapStore("carteamea.md", getBooksFromCarteamea(searchBook)),
     wrapStore("biblion.md", getBooksFromBiblion(searchBook)),
-    ratePromise,
   ]);
 
-  const finalRate = rate || activeRate;
+  const finalRate = activeRate;
 
   const librariusBooks = (librariusRaw ?? []).map((p) =>
     normalize(p, "librarius.md", finalRate),

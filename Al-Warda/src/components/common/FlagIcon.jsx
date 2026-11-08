@@ -10,7 +10,7 @@ export function RussianFlag({
       viewBox="0 0 640 480"
       width={width}
       height={height}
-      className={`litera-flag-svg litera-flag-svg--ru ${className}`}
+      className={`warda-flag-svg warda-flag-svg--ru ${className}`}
       style={{
         borderRadius: "3px",
         boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)",
@@ -42,7 +42,7 @@ export function BritishFlag({
       viewBox="0 0 640 480"
       width={width}
       height={height}
-      className={`litera-flag-svg litera-flag-svg--en ${className}`}
+      className={`warda-flag-svg warda-flag-svg--en ${className}`}
       style={{
         borderRadius: "3px",
         boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)",

@@ -170,13 +170,13 @@
   color: hsl(205, 90%, 65%);
 }
 
-.contacts__tag--litera {
+.contacts__tag--warda {
   background-color: hsla(265, 80%, 55%, 0.15);
   color: hsl(265, 80%, 50%);
   border: 1px solid hsla(265, 80%, 55%, 0.3);
 }
 
-.dark-theme .contacts__tag--litera {
+.dark-theme .contacts__tag--warda {
   color: hsl(265, 80%, 70%);
 }
 

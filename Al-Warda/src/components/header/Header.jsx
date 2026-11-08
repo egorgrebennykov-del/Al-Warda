@@ -54,12 +54,12 @@ export default function Header({ theme, isLight, onSearch }) {
       setAdminAttention(false);
     };
 
-    window.addEventListener("litera-refer-to-admin", onRefer);
-    window.addEventListener("litera-open-messenger", onOpen);
+    window.addEventListener("warda-refer-to-admin", onRefer);
+    window.addEventListener("warda-open-messenger", onOpen);
 
     return () => {
-      window.removeEventListener("litera-refer-to-admin", onRefer);
-      window.removeEventListener("litera-open-messenger", onOpen);
+      window.removeEventListener("warda-refer-to-admin", onRefer);
+      window.removeEventListener("warda-open-messenger", onOpen);
     };
   }, []);
 
@@ -76,7 +76,7 @@ export default function Header({ theme, isLight, onSearch }) {
     if (isAdminOrDev) return;
     const checkUnread = async () => {
       try {
-        const guestEmail = localStorage.getItem("litera_guest_inquiry_email");
+        const guestEmail = localStorage.getItem("warda_guest_inquiry_email");
         const activeUserId = loggedIn ? user?.id : null;
         if (!activeUserId && !guestEmail) return;
         const inq = await fetchUserInquiry({
@@ -95,11 +95,11 @@ export default function Header({ theme, isLight, onSearch }) {
     const initTimer = setTimeout(checkUnread, 2000);
     const interval = setInterval(checkUnread, 15000);
     const onUpdated = () => checkUnread();
-    window.addEventListener("litera-inquiries-updated", onUpdated);
+    window.addEventListener("warda-inquiries-updated", onUpdated);
     return () => {
       clearTimeout(initTimer);
       clearInterval(interval);
-      window.removeEventListener("litera-inquiries-updated", onUpdated);
+      window.removeEventListener("warda-inquiries-updated", onUpdated);
     };
   }, [loggedIn, user?.id, isAdminOrDev]);
 
@@ -117,11 +117,11 @@ export default function Header({ theme, isLight, onSearch }) {
     const initTimer = setTimeout(checkAdminUnread, 2000);
     const interval = setInterval(checkAdminUnread, 15000);
     const onUpdated = () => checkAdminUnread();
-    window.addEventListener("litera-inquiries-updated", onUpdated);
+    window.addEventListener("warda-inquiries-updated", onUpdated);
     return () => {
       clearTimeout(initTimer);
       clearInterval(interval);
-      window.removeEventListener("litera-inquiries-updated", onUpdated);
+      window.removeEventListener("warda-inquiries-updated", onUpdated);
     };
   }, [isPrivilegedUser, isAdminOrDev, user?.id]);
 

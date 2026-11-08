@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { addToCart, getCart, removeFromCart } from "../../../utils/cart";
 import { getCookieUser, isLoggedIn, isPrivileged } from "../../../utils/auth";
-import getExchangeRate, { getCachedExchangeRate, DEFAULT_RATE } from "../../../utils/getExchangeRate";
 import getDiscountSnapshot, { getCachedDiscountSnapshot } from "../../../utils/getDiscountSnapshot";
 import BookImage from "../common/BookImage";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
@@ -71,7 +70,7 @@ export default function Discount() {
     const cached = getCachedDiscountSnapshot();
     return cached ? normalizeSnapshot(cached) : null;
   });
-  const [rate, setRate] = useState(() => getCachedExchangeRate() ?? DEFAULT_RATE);
+  const [rate] = useState(20.2);
   const [error, setError] = useState("");
   const [cartItems, setCartItems] = useState(() => new Map());
   const [quantities, setQuantities] = useState(() => new Map());
@@ -83,11 +82,10 @@ export default function Discount() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getDiscountSnapshot(), getExchangeRate().catch(() => null)])
-      .then(([data, exchangeRate]) => {
+    getDiscountSnapshot()
+      .then((data) => {
         if (cancelled) return;
         setSnapshot(normalizeSnapshot(data));
-        setRate(exchangeRate);
       })
       .catch((err) => !cancelled && setError(err.message));
 

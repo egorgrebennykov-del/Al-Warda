@@ -2,10 +2,12 @@ import workerEnv from "./workerEnv.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import {
-  processLiteraChat,
+  processWardaChat,
   filterInquiryMessageWithAI,
-  translateLiteraDialog,
-} from "./literaAssistantService.js";
+  translateWardaDialog,
+  translateAnnouncementText,
+  enrichPerfumeWithAI,
+} from "./wardaAssistantService.js";
 import { sendGuestInquiryEmail } from "./emailService.js";
 import {
   getProductImageQueueStatus,
@@ -17,8 +19,6 @@ const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
   "brand-sync": { status: "idle", lastRun: null, error: null, output: "" },
   "full-database-refresh": { status: "idle", lastRun: null, error: null, output: "" },
-  "local-upscayl-sync": { status: "idle", lastRun: null, error: null, output: "" },
-  "update-exchange-rate": { status: "idle", lastRun: null, error: null, output: "" },
 };
 
 function syncProcessEnv(env) {
@@ -61,16 +61,18 @@ function enrichPerfumeObj(p) {
   }
 
   let descRu = p.descriptionRu || p.description;
-  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.length < 30) {
-    descRu = `${p.name} от бренда ${p.brand} — изысканный восточный аромат. Раскрывается аккордами: ${topRu.join(", ")}, с сердцем из ${heartRu.join(", ")} и чувственным шлейфом: ${baseRu.join(", ")}.`;
+  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.includes("в ОАЭ") || descRu.length < 160) {
+    descRu = `${p.name} от парфюмерного дома ${p.brand} — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (${topRu.join(", ")}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: ${heartRu.join(", ")}. В финале аромат окутывает благородной, бархатистой базой (${baseRu.join(", ")}), формируя дорогой, стойкий и узнаваемый шлейф.`;
   }
   let descEn = p.descriptionEn;
-  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.length < 30) {
-    descEn = `${p.name} by ${p.brand} is an authentic luxury fragrance. Opening with ${(topEn || topRu).join(", ")}, leading into ${(heartEn || heartRu).join(", ")}, resting upon ${(baseEn || baseRu).join(", ")}.`;
+  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.includes("in the UAE") || descEn.length < 160) {
+    descEn = `${p.name} by ${p.brand} is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of ${(topEn || topRu).join(", ")}, seamlessly unfolding into a rich, multifaceted heart of ${(heartEn || heartRu).join(", ")}. As it settles on the skin, a velvety, resonant base of ${(baseEn || baseRu).join(", ")} emerges, leaving an unforgettable and long-lasting trail.`;
   }
 
   return {
     ...p,
+    origin: "Ближний Восток",
+    originEn: "Middle East",
     topNotes: topRu,
     heartNotes: heartRu,
     baseNotes: baseRu,
@@ -222,7 +224,7 @@ export default {
     }
 
     // AI Concierge Chat (Yasmin)
-    if (method === "POST" && (pathname === "/api/litera-chat" || pathname === "/api/warda-chat")) {
+    if (method === "POST" && (pathname === "/api/warda-chat" || pathname === "/api/warda-chat")) {
       try {
         const body = await request.json().catch(() => ({}));
         const isSse = request.headers.get("accept")?.includes("text/event-stream");
@@ -237,7 +239,7 @@ export default {
               const onStatus = async (status) => {
                 await writer.write(encoder.encode(`data: ${JSON.stringify({ type: "status", status })}\n\n`));
               };
-              const result = await processLiteraChat({ ...body, onStatus });
+              const result = await processWardaChat({ ...body, onStatus });
               await writer.write(encoder.encode(`data: ${JSON.stringify({ type: "result", ...result })}\n\n`));
               await writer.write(encoder.encode("data: [DONE]\n\n"));
             } catch (err) {
@@ -259,23 +261,43 @@ export default {
           });
         }
 
-        const result = await processLiteraChat(body);
+        const result = await processWardaChat(body);
         return jsonResponse(result);
       } catch (err) {
         return jsonResponse({ error: "Yasmin assistant failed to respond", message: err.message }, 500);
       }
     }
 
-    if (method === "POST" && pathname === "/api/litera-translate") {
+    if (method === "POST" && (pathname === "/api/warda-translate" || pathname === "/api/warda-translate")) {
       try {
         const body = await request.json().catch(() => ({}));
-        const result = await translateLiteraDialog({
+        const result = await translateWardaDialog({
           messages: body?.messages,
           targetLanguage: body?.targetLanguage,
         });
         return jsonResponse(result);
       } catch (err) {
         return jsonResponse({ translations: [], error: err.message }, 500);
+      }
+    }
+
+    if (method === "POST" && pathname === "/api/translate-announcement") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        const result = await translateAnnouncementText({ text: body?.text });
+        return jsonResponse(result);
+      } catch (err) {
+        return jsonResponse({ error: err.message }, 500);
+      }
+    }
+
+    if (method === "POST" && pathname === "/api/enrich-perfume") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        const result = await enrichPerfumeWithAI(body || {});
+        return jsonResponse(result);
+      } catch (err) {
+        return jsonResponse({ error: err.message }, 500);
       }
     }
 

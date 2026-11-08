@@ -10,8 +10,8 @@ import {
 import { useLanguage } from "../../context/languageContext";
 import "./MessengerModal.css";
 
-const GUEST_EMAIL_KEY = "litera_guest_inquiry_email";
-const GUEST_NAME_KEY = "litera_guest_inquiry_name";
+const GUEST_EMAIL_KEY = "warda_guest_inquiry_email";
+const GUEST_NAME_KEY = "warda_guest_inquiry_name";
 
 function formatMsgTime(isoStr) {
   if (!isoStr) return "";
@@ -66,7 +66,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
   const [sending, setSending] = useState(false);
   const [isEditingGuest, setIsEditingGuest] = useState(false);
   const [expandedMsgIds, setExpandedMsgIds] = useState(() => new Set());
-  const [literaRedirectQuery, setLiteraRedirectQuery] = useState(null);
+  const [wardaRedirectQuery, setWardaRedirectQuery] = useState(null);
 
   const toggleMsgExpand = (id) => {
     setExpandedMsgIds((prev) => {
@@ -278,25 +278,25 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
     setSending(true);
 
     try {
-      // 1. AI Pre-filtering & Routing: Check if message is for Litera or prohibited
+      // 1. AI Pre-filtering & Routing: Check if message is for Al-Warda or prohibited
       const check = await filterInquiryMessage({ text, language });
       if (!check.allowed) {
-        if (check.redirectToLitera) {
-          setLiteraRedirectQuery(text);
+        if (check.redirectToWarda) {
+          setWardaRedirectQuery(text);
           setSendError(
             check.reason ||
               (language === "ru"
-                ? "Наш ИИ-ассистент Литера с удовольствием ответит на этот вопрос о книгах, сюжете, авторах или корзине! Нажмите на Литеру в углу экрана."
-                : "Our AI assistant Litera will gladly answer this question about books, plots, authors, or your cart! Click on Litera in the corner.")
+                ? "Наш ИИ-ассистент Ясмин с удовольствием ответит на этот вопрос о книгах, сюжете, авторах или корзине! Нажмите на Ясмин в углу экрана."
+                : "Our AI assistant Al-Warda will gladly answer this question about books, plots, authors, or your cart! Click on Al-Warda in the corner.")
           );
-          // Trigger Litera's floating speech bubble with help offer
+          // Trigger Al-Warda's floating speech bubble with help offer
           window.dispatchEvent(
-            new CustomEvent("litera-offer-help", {
+            new CustomEvent("warda-offer-help", {
               detail: { query: text },
             })
           );
         } else {
-          setLiteraRedirectQuery(null);
+          setWardaRedirectQuery(null);
           setSendError(
             check.reason ||
               (language === "ru"
@@ -308,7 +308,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         return;
       }
 
-      setLiteraRedirectQuery(null);
+      setWardaRedirectQuery(null);
 
       let activeInquiry = inquiryRef.current || inquiry;
       if (!activeInquiry?.id) {
@@ -390,35 +390,35 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
   const adminName = inquiry?.interlocutors_info?.adminName || "Администратор";
 
   return (
-    <div className="litera-messenger-overlay" onClick={onClose}>
+    <div className="warda-messenger-overlay" onClick={onClose}>
       <div
-        className="litera-messenger-container"
+        className="warda-messenger-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="litera-messenger-header">
-          <div className="litera-messenger-admin-info">
-            <div className="litera-messenger-avatar">
+        <div className="warda-messenger-header">
+          <div className="warda-messenger-admin-info">
+            <div className="warda-messenger-avatar">
               <i className="ri-customer-service-2-line" />
-              <span className="litera-messenger-online-dot" />
+              <span className="warda-messenger-online-dot" />
             </div>
             <div>
-              <h3 className="litera-messenger-title">
+              <h3 className="warda-messenger-title">
                 {language === "ru"
-                  ? "Служба поддержки Litera"
-                  : "Litera Customer Support"}
+                  ? "Служба поддержки Al-Warda"
+                  : "Al-Warda Customer Support"}
               </h3>
-              <p className="litera-messenger-subtitle">
+              <p className="warda-messenger-subtitle">
                 {adminName} • {language === "ru" ? "в сети" : "online"}
               </p>
             </div>
           </div>
-          <div className="litera-messenger-header-actions">
+          <div className="warda-messenger-header-actions">
             {Array.isArray(inquiry?.interlocutors_info?.transferHistory) &&
               inquiry.interlocutors_info.transferHistory.length > 0 && (
                 <button
                   type="button"
-                  className="litera-messenger-history-btn"
+                  className="warda-messenger-history-btn"
                   onClick={() => setShowTransferHistoryModal(true)}
                   title={
                     language === "ru"
@@ -434,7 +434,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               )}
             <button
               type="button"
-              className="litera-messenger-close-btn"
+              className="warda-messenger-close-btn"
               onClick={onClose}
               aria-label="Close"
             >
@@ -445,9 +445,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
 
         {/* Guest Identification Form */}
         {!isIdentified ? (
-          <div className="litera-messenger-guest-form">
-            <div className="litera-messenger-guest-intro">
-              <div className="litera-messenger-guest-icon">
+          <div className="warda-messenger-guest-form">
+            <div className="warda-messenger-guest-intro">
+              <div className="warda-messenger-guest-icon">
                 <i className="ri-mail-send-line" />
               </div>
               <h4>
@@ -463,7 +463,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
             </div>
 
             <form onSubmit={handleGuestSubmit}>
-              <div className="litera-messenger-field">
+              <div className="warda-messenger-field">
                 <label>
                   {language === "ru" ? "Ваш Email" : "Your Email"} *
                 </label>
@@ -477,7 +477,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 />
               </div>
 
-              <div className="litera-messenger-field">
+              <div className="warda-messenger-field">
                 <label>
                   {language === "ru"
                     ? "Ваше имя (необязательно)"
@@ -492,12 +492,12 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               </div>
 
               {emailError && (
-                <div className="litera-messenger-error">{emailError}</div>
+                <div className="warda-messenger-error">{emailError}</div>
               )}
 
               <button
                 type="submit"
-                className="litera-messenger-submit-btn"
+                className="warda-messenger-submit-btn"
               >
                 <i className="ri-chat-1-line" />
                 {language === "ru" ? "Начать чат" : "Start Chat"}
@@ -506,16 +506,16 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
           </div>
         ) : (
           /* Chat Area */
-          <div className="litera-messenger-body">
+          <div className="warda-messenger-body">
             {/* Guest Banner if guest */}
             {!loggedIn && guestEmail && (
-              <div className="litera-messenger-guest-banner">
+              <div className="warda-messenger-guest-banner">
                 <span>
                   <i className="ri-mail-line" /> {guestEmail}
                 </span>
                 <button
                   type="button"
-                  className="litera-messenger-change-email-btn"
+                  className="warda-messenger-change-email-btn"
                   onClick={() => setIsEditingGuest(true)}
                   title={language === "ru" ? "Изменить email" : "Change email"}
                 >
@@ -525,9 +525,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
             )}
 
             {/* Messages List */}
-            <div className="litera-messenger-messages">
+            <div className="warda-messenger-messages">
               {loading && messages.length === 0 ? (
-                <div className="litera-messenger-loading">
+                <div className="warda-messenger-loading">
                   <i className="ri-loader-4-line ri-spin" />
                   <span>
                     {language === "ru"
@@ -536,8 +536,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   </span>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="litera-messenger-empty">
-                  <div className="litera-messenger-empty-icon">
+                <div className="warda-messenger-empty">
+                  <div className="warda-messenger-empty-icon">
                     <i className="ri-chat-smile-2-line" />
                   </div>
                   <p>
@@ -662,30 +662,30 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Error or Litera Suggestion Banner */}
+            {/* Error or Al-Warda Suggestion Banner */}
             {sendError && (
               <div
-                className={`litera-messenger-send-error ${
-                  literaRedirectQuery ? "litera-messenger-send-error--litera" : ""
+                className={`warda-messenger-send-error ${
+                  wardaRedirectQuery ? "warda-messenger-send-error--warda" : ""
                 }`}
               >
                 <i
                   className={
-                    literaRedirectQuery
+                    wardaRedirectQuery
                       ? "ri-sparkling-fill"
                       : "ri-shield-keyhole-line"
                   }
                 />
-                <div className="litera-messenger-send-error-content">
-                  <span className="litera-messenger-send-error-text">{sendError}</span>
-                  {literaRedirectQuery && (
+                <div className="warda-messenger-send-error-content">
+                  <span className="warda-messenger-send-error-text">{sendError}</span>
+                  {wardaRedirectQuery && (
                     <button
                       type="button"
-                      className="litera-messenger-ask-litera-btn"
+                      className="warda-messenger-ask-warda-btn"
                       onClick={() => {
                         window.dispatchEvent(
-                          new CustomEvent("open-litera-assistant", {
-                            detail: { query: literaRedirectQuery },
+                          new CustomEvent("open-warda-assistant", {
+                            detail: { query: wardaRedirectQuery },
                           })
                         );
                         onClose?.();
@@ -694,18 +694,18 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                       <i className="ri-chat-smile-3-line" />
                       <span>
                         {language === "ru"
-                          ? "Спросить Литеру прямо сейчас"
-                          : "Ask Litera right now"}
+                          ? "Спросить Ясмин прямо сейчас"
+                          : "Ask Al-Warda right now"}
                       </span>
                     </button>
                   )}
                 </div>
                 <button
                   type="button"
-                  className="litera-messenger-send-error-close"
+                  className="warda-messenger-send-error-close"
                   onClick={() => {
                     setSendError("");
-                    setLiteraRedirectQuery(null);
+                    setWardaRedirectQuery(null);
                   }}
                   aria-label="Close error"
                 >
@@ -716,13 +716,13 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
 
             {/* Input Footer */}
             <form
-              className={`litera-messenger-footer ${isInputExpanded ? "litera-messenger-footer--expanded" : ""}`}
+              className={`warda-messenger-footer ${isInputExpanded ? "warda-messenger-footer--expanded" : ""}`}
               onSubmit={handleSend}
             >
               <textarea
                 ref={inputRef}
                 rows={1}
-                className={`litera-messenger-input ${isInputExpanded ? "expanded" : ""}`}
+                className={`warda-messenger-input ${isInputExpanded ? "expanded" : ""}`}
                 placeholder={
                   language === "ru"
                     ? "Напишите сообщение..."
@@ -736,11 +736,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 onKeyDown={handleKeyDown}
                 disabled={sending}
               />
-              <div className="litera-messenger-input-actions">
+              <div className="warda-messenger-input-actions">
                 {(isInputTooLarge || isInputExpanded) && (
                   <button
                     type="button"
-                    className={`litera-messenger-expand-btn ${isInputExpanded ? "active" : ""}`}
+                    className={`warda-messenger-expand-btn ${isInputExpanded ? "active" : ""}`}
                     onClick={() => setIsInputExpanded((prev) => !prev)}
                     title={
                       language === "ru"
@@ -772,7 +772,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 )}
                 <button
                   type="submit"
-                  className="litera-messenger-send-btn"
+                  className="warda-messenger-send-btn"
                   disabled={!inputText.trim() || sending}
                   title={language === "ru" ? "Отправить (Enter)" : "Send (Enter)"}
                   aria-label="Send message"
@@ -791,18 +791,18 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         {/* User / Guest Support Transfer History Modal */}
         {showTransferHistoryModal && inquiry && (
           <div
-            className="litera-messenger-transfer-modal-backdrop"
+            className="warda-messenger-transfer-modal-backdrop"
             onClick={() => setShowTransferHistoryModal(false)}
           >
             <div
-              className="litera-messenger-transfer-modal"
+              className="warda-messenger-transfer-modal"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="litera-messenger-transfer-modal-header">
-                <div className="litera-messenger-transfer-icon">
+              <div className="warda-messenger-transfer-modal-header">
+                <div className="warda-messenger-transfer-icon">
                   <i className="ri-history-line" />
                 </div>
-                <div className="litera-messenger-transfer-title-group">
+                <div className="warda-messenger-transfer-title-group">
                   <h4>
                     {language === "ru"
                       ? "История передачи обращения"
@@ -816,7 +816,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 </div>
                 <button
                   type="button"
-                  className="litera-messenger-transfer-close"
+                  className="warda-messenger-transfer-close"
                   onClick={() => setShowTransferHistoryModal(false)}
                   aria-label="Close"
                 >
@@ -824,29 +824,29 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 </button>
               </div>
 
-              <div className="litera-messenger-transfer-modal-body">
+              <div className="warda-messenger-transfer-modal-body">
                 {Array.isArray(inquiry.interlocutors_info?.transferHistory) &&
                 inquiry.interlocutors_info.transferHistory.length > 0 ? (
-                  <div className="litera-messenger-transfer-timeline">
+                  <div className="warda-messenger-transfer-timeline">
                     {inquiry.interlocutors_info.transferHistory.map((tr, idx) => (
-                      <div key={tr.id || idx} className="litera-messenger-transfer-item">
-                        <div className="litera-messenger-transfer-marker">
-                          <span className="litera-messenger-transfer-num">{idx + 1}</span>
+                      <div key={tr.id || idx} className="warda-messenger-transfer-item">
+                        <div className="warda-messenger-transfer-marker">
+                          <span className="warda-messenger-transfer-num">{idx + 1}</span>
                           {idx < inquiry.interlocutors_info.transferHistory.length - 1 && (
-                            <span className="litera-messenger-transfer-line" />
+                            <span className="warda-messenger-transfer-line" />
                           )}
                         </div>
-                        <div className="litera-messenger-transfer-info">
-                          <div className="litera-messenger-transfer-route">
-                            <span className="litera-messenger-transfer-admin-from">{tr.fromAdminName}</span>
+                        <div className="warda-messenger-transfer-info">
+                          <div className="warda-messenger-transfer-route">
+                            <span className="warda-messenger-transfer-admin-from">{tr.fromAdminName}</span>
                             <i className="ri-arrow-right-line" />
-                            <span className="litera-messenger-transfer-admin-to">{tr.toAdminName}</span>
+                            <span className="warda-messenger-transfer-admin-to">{tr.toAdminName}</span>
                           </div>
-                          <time className="litera-messenger-transfer-time">
+                          <time className="warda-messenger-transfer-time">
                             {formatTransferTime(tr.timestamp, language)}
                           </time>
                           {tr.reason && (
-                            <div className="litera-messenger-transfer-reason">
+                            <div className="warda-messenger-transfer-reason">
                               <span>«{tr.reason}»</span>
                             </div>
                           )}
@@ -855,7 +855,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                     ))}
                   </div>
                 ) : (
-                  <p className="litera-messenger-transfer-empty">
+                  <p className="warda-messenger-transfer-empty">
                     {language === "ru"
                       ? "Диалог закреплен за администратором и не передавался."
                       : "The inquiry is assigned to the administrator and has not been transferred."}
@@ -863,10 +863,10 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 )}
               </div>
 
-              <div className="litera-messenger-transfer-modal-footer">
+              <div className="warda-messenger-transfer-modal-footer">
                 <button
                   type="button"
-                  className="litera-messenger-transfer-close-btn"
+                  className="warda-messenger-transfer-close-btn"
                   onClick={() => setShowTransferHistoryModal(false)}
                 >
                   {language === "ru" ? "Понятно" : "Got it"}

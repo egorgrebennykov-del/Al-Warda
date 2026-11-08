@@ -1657,9 +1657,9 @@ html.dark-theme body {
 }
 
 /* ==========================================================================
-   Custom Litera Form Validation Bubble (replaces browser native tooltips)
+   Custom Al-Warda Form Validation Bubble (replaces browser native tooltips)
    ========================================================================== */
-.litera-validation-bubble {
+.warda-validation-bubble {
   position: fixed;
   z-index: 100000;
   display: none;
@@ -1682,16 +1682,16 @@ html.dark-theme body {
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.litera-validation-bubble--visible {
+.warda-validation-bubble--visible {
   display: flex !important;
 }
 
-.litera-validation-bubble--animate {
-  animation: literaValidationBubblePop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+.warda-validation-bubble--animate {
+  animation: wardaValidationBubblePop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 /* Arrow when bubble is placed ABOVE target input */
-.litera-validation-bubble--above::after {
+.warda-validation-bubble--above::after {
   content: "";
   position: absolute;
   bottom: -6px;
@@ -1706,7 +1706,7 @@ html.dark-theme body {
 }
 
 /* Arrow when bubble is placed BELOW target input */
-.litera-validation-bubble--below::after {
+.warda-validation-bubble--below::after {
   content: "";
   position: absolute;
   top: -6px;
@@ -1720,7 +1720,7 @@ html.dark-theme body {
   pointer-events: none;
 }
 
-.litera-validation-bubble__icon {
+.warda-validation-bubble__icon {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
@@ -1737,18 +1737,18 @@ html.dark-theme body {
   user-select: none;
 }
 
-.litera-validation-bubble__content {
+.warda-validation-bubble__content {
   flex: 1;
   min-width: 0;
 }
 
-.litera-validation-bubble__text {
+.warda-validation-bubble__text {
   display: block;
   color: var(--title-color, #1e1b4b);
   word-break: break-word;
 }
 
-.litera-validation-bubble__close {
+.warda-validation-bubble__close {
   flex-shrink: 0;
   background: transparent;
   border: none;
@@ -1762,12 +1762,12 @@ html.dark-theme body {
   transition: opacity 0.15s ease, color 0.15s ease;
 }
 
-.litera-validation-bubble__close:hover {
+.warda-validation-bubble__close:hover {
   opacity: 1;
   color: var(--title-color, #1e1b4b);
 }
 
-@keyframes literaValidationBubblePop {
+@keyframes wardaValidationBubblePop {
   0% {
     opacity: 0;
     transform: translateY(4px) scale(0.95);
@@ -1865,8 +1865,8 @@ html.dark-theme body {
     padding-bottom: calc(var(--mobile-tabbar-height) + 1rem + env(safe-area-inset-bottom));
   }
 
-  /* Litera assistant sits above the tab bar */
-  .litera-assistant-root {
+  /* Al-Warda assistant sits above the tab bar */
+  .warda-assistant-root {
     right: 14px !important;
     bottom: calc(var(--mobile-tabbar-height) + 22px + env(safe-area-inset-bottom)) !important;
   }
@@ -2015,7 +2015,7 @@ html.dark-theme body {
   }
 
   .carousel__controls,
-  .litera-poster-btn {
+  .warda-poster-btn {
     display: none !important;
   }
 
@@ -2024,16 +2024,16 @@ html.dark-theme body {
   }
 
   /* Assistant: smaller launcher, no greeting bubble covering content */
-  .litera-trigger-btn {
+  .warda-trigger-btn {
     width: 54px;
     height: 54px;
   }
 
-  .litera-trigger-bubble {
+  .warda-trigger-bubble {
     display: none;
   }
 
-  .litera-chat-panel {
+  .warda-chat-panel {
     width: calc(100vw - 28px);
     max-width: none;
     height: min(460px, calc(100vh - var(--mobile-tabbar-height) - 148px));
@@ -2047,12 +2047,12 @@ html.dark-theme body {
   select,
   .search__input,
   .login__input,
-  .litera-chat-textarea {
+  .warda-chat-textarea {
     font-size: 16px !important;
   }
 
   /* Auth pages (login / sign-up): assistant would cover the submit button */
-  body:has(.login__form) .litera-assistant-root {
+  body:has(.login__form) .warda-assistant-root {
     display: none;
   }
 

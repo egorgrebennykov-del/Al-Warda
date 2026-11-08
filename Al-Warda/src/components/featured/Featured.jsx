@@ -450,8 +450,8 @@ export default function Featured() {
         </h1>
         <p className="warda-shop-subtitle">
           {language === "ru"
-            ? "Аутентичные масляные и восточные ароматы из ОАЭ, Омана и Саудовской Аравии. Прямые поставки от сертифицированных производителей."
-            : "Authentic luxury Eau de Parfum and precious attars from UAE, Oman, and Saudi Arabia. Direct supply from certified perfume houses."}
+            ? "Аутентичные масляные и восточные ароматы с Ближнего Востока. Прямые поставки от сертифицированных парфюмерных домов."
+            : "Authentic luxury Eau de Parfum and precious attars from the Middle East. Direct supply from certified perfume houses."}
         </p>
 
         {/* MULTI-FILTER TOOLBAR */}

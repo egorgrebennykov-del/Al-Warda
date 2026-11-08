@@ -3,8 +3,8 @@ import { LanguageContext } from "./languageContext";
 import { translations } from "./translations";
 import { getCookie, setCookie } from "../../utils/cookies";
 
-const COOKIE_KEY = "litera_language";
-const STORAGE_KEY = "litera_language";
+const COOKIE_KEY = "warda_language";
+const STORAGE_KEY = "warda_language";
 
 function getInitialLanguage() {
   if (typeof document === "undefined") return "ru";

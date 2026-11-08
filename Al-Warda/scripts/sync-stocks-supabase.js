@@ -49,30 +49,10 @@ const STOCKS_API_URL = `${SUPABASE_URL}/rest/v1/stocks`;
 const CATALOG_PATH = path.resolve(rootDir, "server", "data", "cachedArabianPerfumes.json");
 const ENRICHED_CACHE_PATH = path.resolve(rootDir, "server", "data", "enrichedStocks.json");
 
-const BRAND_ORIGINS = {
-  Lattafa: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Armaf: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Al Haramain": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Maison Alhambra": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Khadlaj: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Rasasi: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Paris Corner": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Afnan: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Swiss Arabian": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Riiffs: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Zimaya: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Gulf Orchid": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Rayhaan: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Orientica: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Al Rehab": { ru: "Саудовская Аравия", en: "Saudi Arabia" },
-  Nabeel: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Fragrance World": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  Amouage: { ru: "Оман", en: "Oman" },
-  "Arabian Oud": { ru: "Саудовская Аравия", en: "Saudi Arabia" },
-  Asdaaf: { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "Ayat Perfumes": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-  "French Avenue": { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" },
-};
+const DEFAULT_ORIGIN = { ru: "Ближний Восток", en: "Middle East" };
+const BRAND_ORIGINS = new Proxy({}, {
+  get: () => DEFAULT_ORIGIN,
+});
 
 const FEMININE_KEYWORDS = [
   "femme", "woman", "women", "pour femme", "mademoiselle", "girl", "queen",
@@ -327,18 +307,28 @@ function extractConcentration(name) {
   return "Eau de Parfum";
 }
 
-function generateRussianDescription(name, brand, category, gender, notesSummary, longevity) {
-  return `${brand} ${name} — премиальный оригинальный арабский аромат (${category.toLowerCase()}), созданный для ценителей утонченной восточной парфюмерии. ` +
-    `Звучание раскрывается гармоничным букетом: ${notesSummary}. ` +
-    `Обладает великолепной стойкостью (${longevity}) и богатым, запоминающимся шлейфом. Подходит: ${gender === "Унисекс" ? "для мужчин и женщин" : (gender === "Женский" ? "для утонченных женщин" : "для стильных мужчин")}. ` +
-    `Поставляется напрямую со складов сертифицированных дистрибьюторов в ОАЭ и Европе в оригинальном флаконе.`;
+function generateRussianDescription(name, brand, category, gender, notesSummary, longevity, notes) {
+  const topStr = (notes?.ru?.top || []).join(", ") || notesSummary;
+  const heartStr = (notes?.ru?.heart || []).join(", ") || notesSummary;
+  const baseStr = (notes?.ru?.base || []).join(", ") || notesSummary;
+  const audience = gender === "Унисекс" ? "для мужчин и женщин, ценящих селективную нишевую парфюмерию" : (gender === "Женский" ? "для утонченных женщин, предпочитающих комплиментарные и пленительные композиции" : "для уверенных в себе мужчин, выбирающих харизматичные и статусные ароматы");
+  return `${brand} ${name} — роскошный селективный аромат с Ближнего Востока (${category.toLowerCase()}), созданный в лучших традициях восточного парфюмерного искусства. ` +
+    `С первых мгновений композиция завораживает ярким вступлением верхних нот (${topStr}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: ${heartStr}. ` +
+    `В финале аромат окутывает благородной, бархатистой базой (${baseStr}), формируя дорогой и узнаваемый шлейф. ` +
+    `Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (${longevity}). Идеально подходит ${audience}. ` +
+    `Оригинальная продукция от сертифицированных парфюмерных домов Ближнего Востока.`;
 }
 
-function generateEnglishDescription(name, brand, categoryEn, genderEn, notesSummaryEn, longevityEn) {
-  return `${brand} ${name} is an authentic luxury Arabian fragrance (${categoryEn.toLowerCase()}) crafted for connoisseurs of refined oriental perfumery. ` +
-    `The olfactory composition opens with a distinguished bouquet of ${notesSummaryEn}. ` +
-    `Offers remarkable longevity (${longevityEn}) with an opulent, memorable sillage. Designed for ${genderEn.toLowerCase()}. ` +
-    `Delivered directly from certified distribution hubs in the UAE and Europe in pristine factory packaging.`;
+function generateEnglishDescription(name, brand, categoryEn, genderEn, notesSummaryEn, longevityEn, notes) {
+  const topStr = (notes?.en?.top || []).join(", ") || notesSummaryEn;
+  const heartStr = (notes?.en?.heart || []).join(", ") || notesSummaryEn;
+  const baseStr = (notes?.en?.base || []).join(", ") || notesSummaryEn;
+  const audience = genderEn === "Unisex" ? "both men and women who appreciate niche luxury perfumery" : (genderEn === "Women" ? "sophisticated women seeking a captivating, compliment-worthy signature scent" : "discerning men who value charismatic and distinguished fragrances");
+  return `${brand} ${name} is an opulent niche fragrance from the Middle East (${categoryEn.toLowerCase()}), crafted in the finest traditions of oriental perfumery. ` +
+    `From the very first spritz, the composition captivates with luminous top notes of ${topStr}, seamlessly unfolding into a rich, multifaceted heart of ${heartStr}. ` +
+    `As it settles on the skin, a velvety, resonant base of ${baseStr} emerges, leaving an unforgettable and sophisticated trail. ` +
+    `Formulated with a high concentration of precious aromatic oils, it delivers remarkable longevity (${longevityEn}). Perfectly suited for ${audience}. ` +
+    `100% authentic creation sourced directly from certified perfume houses in the Middle East.`;
 }
 
 async function fetchAllExistingStocks() {
@@ -413,7 +403,7 @@ async function main() {
       const catNotes = detectCategoryAndNotes(item.name, item.brand, gender);
       const volume = extractVolume(item.name);
       const concentration = extractConcentration(item.name);
-      const origin = BRAND_ORIGINS[item.brand] || { ru: "ОАЭ (Дубай)", en: "UAE (Dubai)" };
+      const origin = BRAND_ORIGINS[item.brand] || { ru: "Ближний Восток", en: "Middle East" };
       const season = catNotes.categorySlug === "fresh" || catNotes.categorySlug === "citrus-fresh"
         ? { ru: "Весна / Лето", en: "Spring / Summer" }
         : (catNotes.categorySlug === "gourmand" || catNotes.categorySlug === "oud"
@@ -426,7 +416,8 @@ async function main() {
         catNotes.categoryRu,
         gender.ru,
         catNotes.notesSummaryRu,
-        catNotes.longevityRu
+        catNotes.longevityRu,
+        catNotes.notes
       );
 
       const descriptionEn = generateEnglishDescription(
@@ -435,7 +426,8 @@ async function main() {
         catNotes.categoryEn,
         gender.en,
         catNotes.notesSummaryEn,
-        catNotes.longevityEn
+        catNotes.longevityEn,
+        catNotes.notes
       );
 
       enriched = {
@@ -468,8 +460,8 @@ async function main() {
           gtin: item.gtin || "",
           rawImage: item.rawImage || "",
           inStock: true,
-          deliveryTime: "4–7 дней (прямая поставка из ОАЭ/ЕС)",
-          deliveryTimeEn: "4–7 days (direct dispatch from UAE/EU)",
+          deliveryTime: "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
+          deliveryTimeEn: "4–7 days (direct dispatch from the Middle East / EU)",
           updatedAt: new Date().toISOString(),
         },
       };

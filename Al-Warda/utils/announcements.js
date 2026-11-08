@@ -110,7 +110,7 @@ export async function fetchAllAnnouncementsAdmin() {
   }
 }
 
-const ACTIVE_STORAGE_KEY = "kazbook_active_announcements_v1";
+const ACTIVE_STORAGE_KEY = "alwarda_active_announcements_v1";
 const ACTIVE_CACHE_TTL_MS = 2 * 60 * 1000;
 
 const DEFAULT_ACTIVE_ANNOUNCEMENTS = [
@@ -121,7 +121,7 @@ const DEFAULT_ACTIVE_ANNOUNCEMENTS = [
     until: "2026-11-30T22:00:00+00:00",
     content_ru: {
       type: "small",
-      text: "Пока Litera находится в разработке, реальные заказы недоступны. Используйте промокод TEST, чтобы получить скидку 100% на весь заказ.",
+      text: "Пока Al-Warda находится в разработке, реальные заказы недоступны. Используйте промокод TEST, чтобы получить скидку 100% на весь заказ.",
       imageUrl: "",
       linkUrl: "",
       order: 1,
@@ -129,7 +129,7 @@ const DEFAULT_ACTIVE_ANNOUNCEMENTS = [
     },
     content_en: {
       type: "small",
-      text: "Litera is currently under development, and real orders are not yet available. Use promo code TEST to get 100% off your entire order.",
+      text: "Al-Warda is currently under development, and real orders are not yet available. Use promo code TEST to get 100% off your entire order.",
       imageUrl: "",
       linkUrl: "",
       order: 1,
@@ -238,7 +238,107 @@ export async function fetchActiveAnnouncements() {
 }
 
 /**
- * Create a new announcement with both Russian and English variants.
+ * Translate announcement text from any input language (e.g. Ukrainian, Russian, English, Romanian)
+ * into the site's supported languages: Russian (text_ru) and English (text_en).
+ */
+export async function translateAnnouncementWithAI(rawText) {
+  const clean = String(rawText || "").trim();
+  if (!clean) {
+    return { text_ru: "", text_en: "" };
+  }
+
+  // 1. Try backend AI translation endpoint (/api/translate-announcement)
+  try {
+    const res = await fetch("/api/translate-announcement", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ text: clean }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.text_ru && data?.text_en) {
+        return {
+          text_ru: String(data.text_ru).trim(),
+          text_en: String(data.text_en).trim(),
+        };
+      }
+    }
+  } catch {
+    // Fallback to direct client-side translation below
+  }
+
+  // 2. Try direct Gemini API if VITE_GEMINI_API_KEY is available
+  const geminiKey =
+    typeof import.meta !== "undefined" && import.meta.env?.VITE_GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const prompt = `Translate the following store announcement (which may be written in Ukrainian, Russian, English, or any other language) into both Russian and English for the luxury Arabian perfume boutique "Al-Warda". Keep all promo codes, numbers, percentages, dates, and emojis intact. Return ONLY valid JSON: {"text_ru": "...", "text_en": "..."}\n\nInput announcement:\n${clean}`;
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.2,
+            },
+          }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawJson) {
+          const parsed = JSON.parse(
+            rawJson.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}")
+          );
+          if (parsed?.text_ru && parsed?.text_en) {
+            return {
+              text_ru: String(parsed.text_ru).trim(),
+              text_en: String(parsed.text_en).trim(),
+            };
+          }
+        }
+      }
+    } catch {
+      // Fallback to Google Translate neural endpoint below
+    }
+  }
+
+  // 3. Direct Google neural translation fallback (supports Ukrainian, Russian, English, etc. without API key)
+  const translateSingle = async (targetLang) => {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(clean)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if (Array.isArray(d?.[0])) {
+      return d[0].map((segment) => segment?.[0] || "").join("").trim();
+    }
+    return clean;
+  };
+
+  try {
+    const [ruText, enText] = await Promise.all([
+      translateSingle("ru"),
+      translateSingle("en"),
+    ]);
+    return {
+      text_ru: ruText || clean,
+      text_en: enText || clean,
+    };
+  } catch {
+    return {
+      text_ru: clean,
+      text_en: clean,
+    };
+  }
+}
+
+/**
+ * Create a new announcement. If a single `text` (in any language) is provided,
+ * AI automatically translates it into Russian (`text_ru`) and English (`text_en`).
  * 'until' is mandatory!
  */
 export async function createAnnouncement({
@@ -256,33 +356,36 @@ export async function createAnnouncement({
   text = "",
   imageUrl = "",
   linkUrl = "",
+  autoTranslate = true,
 }) {
   if (!until) {
     throw new Error("Срок окончания показа объявления обязателен для заполнения");
   }
 
-  const final_text_ru = (text_ru || text || "").trim();
-  const final_text_en = (text_en || text || "").trim();
-  const final_image_ru = (imageUrl_ru || imageUrl || "").trim();
-  const final_image_en = (imageUrl_en || imageUrl || "").trim();
-  const final_link_ru = (linkUrl_ru || linkUrl || "").trim();
-  const final_link_en = (linkUrl_en || final_link_ru).trim();
+  let final_text_ru = (text_ru || "").trim();
+  let final_text_en = (text_en || "").trim();
+  const sourceText = (text || final_text_ru || final_text_en).trim();
+
+  if (type === "small" && sourceText && (autoTranslate || !final_text_ru || !final_text_en)) {
+    const translated = await translateAnnouncementWithAI(sourceText);
+    final_text_ru = translated.text_ru || sourceText;
+    final_text_en = translated.text_en || sourceText;
+  }
+
+  const final_image_ru = (imageUrl_ru || imageUrl || imageUrl_en || "").trim();
+  const final_image_en = (imageUrl_en || imageUrl || final_image_ru || "").trim();
+  const final_link_ru = (linkUrl_ru || linkUrl || linkUrl_en || "").trim();
+  const final_link_en = (linkUrl_en || linkUrl || final_link_ru || "").trim();
 
   if (type === "small") {
-    if (!final_text_ru) {
-      throw new Error("Для небольшого объявления текст на русском языке обязателен");
-    }
-    if (!final_text_en) {
-      throw new Error("Для небольшого объявления текст на английском языке обязателен");
+    if (!final_text_ru || !final_text_en) {
+      throw new Error("Для небольшого объявления введите текст на любом языке");
     }
   }
 
   if (type === "large") {
     if (!final_image_ru) {
-      throw new Error("Для большого объявления ссылка на фото (RU) обязательна");
-    }
-    if (!final_image_en) {
-      throw new Error("Для большого объявления ссылка на фото (EN) обязательна");
+      throw new Error("Для большого объявления ссылка на фото обязательна");
     }
   }
 
@@ -332,7 +435,7 @@ export async function createAnnouncement({
 }
 
 /**
- * Update an existing announcement with Russian and English variants.
+ * Update an existing announcement. Automatically translates any single-input text into RU & EN.
  */
 export async function updateAnnouncement(id, {
   type = "small",
@@ -349,34 +452,37 @@ export async function updateAnnouncement(id, {
   text = "",
   imageUrl = "",
   linkUrl = "",
+  autoTranslate = true,
 }) {
   if (!id) throw new Error("ID объявления обязателен");
   if (!until) {
     throw new Error("Срок окончания показа объявления обязателен для заполнения");
   }
 
-  const final_text_ru = (text_ru || text || "").trim();
-  const final_text_en = (text_en || text || "").trim();
-  const final_image_ru = (imageUrl_ru || imageUrl || "").trim();
-  const final_image_en = (imageUrl_en || imageUrl || "").trim();
-  const final_link_ru = (linkUrl_ru || linkUrl || "").trim();
-  const final_link_en = (linkUrl_en || final_link_ru).trim();
+  let final_text_ru = (text_ru || "").trim();
+  let final_text_en = (text_en || "").trim();
+  const sourceText = (text || final_text_ru || final_text_en).trim();
+
+  if (type === "small" && sourceText && (autoTranslate || !final_text_ru || !final_text_en)) {
+    const translated = await translateAnnouncementWithAI(sourceText);
+    final_text_ru = translated.text_ru || sourceText;
+    final_text_en = translated.text_en || sourceText;
+  }
+
+  const final_image_ru = (imageUrl_ru || imageUrl || imageUrl_en || "").trim();
+  const final_image_en = (imageUrl_en || imageUrl || final_image_ru || "").trim();
+  const final_link_ru = (linkUrl_ru || linkUrl || linkUrl_en || "").trim();
+  const final_link_en = (linkUrl_en || linkUrl || final_link_ru || "").trim();
 
   if (type === "small") {
-    if (!final_text_ru) {
-      throw new Error("Для небольшого объявления текст на русском языке обязателен");
-    }
-    if (!final_text_en) {
-      throw new Error("Для небольшого объявления текст на английском языке обязателен");
+    if (!final_text_ru || !final_text_en) {
+      throw new Error("Для небольшого объявления введите текст на любом языке");
     }
   }
 
   if (type === "large") {
     if (!final_image_ru) {
-      throw new Error("Для большого объявления ссылка на фото (RU) обязательна");
-    }
-    if (!final_image_en) {
-      throw new Error("Для большого объявления ссылка на фото (EN) обязательна");
+      throw new Error("Для большого объявления ссылка на фото обязательна");
     }
   }
 

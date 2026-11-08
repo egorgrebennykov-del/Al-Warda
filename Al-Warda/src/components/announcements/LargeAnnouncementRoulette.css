@@ -1,4 +1,4 @@
-.litera-poster-roulette-container {
+.warda-poster-roulette-container {
   width: 100%;
   max-width: 1220px;
   margin: 0 auto 2.5rem auto;
@@ -10,7 +10,7 @@
   border: 1px solid var(--border-color, #e2e8f0);
 }
 
-.litera-poster-slide-wrapper {
+.warda-poster-slide-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 21 / 8;
@@ -22,13 +22,13 @@
   background-color: #0f172a;
 }
 
-.litera-poster-link {
+.warda-poster-link {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-.litera-poster-image {
+.warda-poster-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -38,7 +38,7 @@
 }
 
 /* Prev / Next Buttons */
-.litera-poster-btn {
+.warda-poster-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -61,21 +61,21 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.litera-poster-btn:hover {
+.warda-poster-btn:hover {
   background: #ffffff;
   transform: translateY(-50%) scale(1.08);
 }
 
-.litera-poster-btn--prev {
+.warda-poster-btn--prev {
   left: 12px;
 }
 
-.litera-poster-btn--next {
+.warda-poster-btn--next {
   right: 12px;
 }
 
 /* Dots */
-.litera-poster-dots {
+.warda-poster-dots {
   position: absolute;
   bottom: 12px;
   left: 50%;
@@ -90,7 +90,7 @@
   border-radius: 20px;
 }
 
-.litera-poster-dot {
+.warda-poster-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -103,19 +103,19 @@
     background-color 0.2s;
 }
 
-.litera-poster-dot--active {
+.warda-poster-dot--active {
   width: 20px;
   border-radius: 10px;
   background: #ffffff;
 }
 
 @media screen and (max-width: 768px) {
-  .litera-poster-slide-wrapper {
+  .warda-poster-slide-wrapper {
     aspect-ratio: 16 / 9;
     max-height: 220px;
   }
 
-  .litera-poster-btn {
+  .warda-poster-btn {
     display: none !important;
   }
 }

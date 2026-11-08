@@ -25,7 +25,7 @@ const VALID_EMOTIONS = new Set([
   "confident",
 ]);
 
-export default function LiteraCharacter({
+export default function WardaCharacter({
   emotion = "neutral",
   size = 130,
   className = "",
@@ -40,12 +40,12 @@ export default function LiteraCharacter({
 
   const cleanEmotion = VALID_EMOTIONS.has(emotion) ? emotion : "neutral";
   const imageSrc = imgError
-    ? "/assets/img/litera_assistant/neutral.png"
-    : `/assets/img/litera_assistant/${cleanEmotion}.png`;
+    ? "/assets/img/warda_assistant/neutral.png"
+    : `/assets/img/warda_assistant/${cleanEmotion}.png`;
 
   return (
     <div
-      className={`litera-character litera-character--${cleanEmotion} ${className}`}
+      className={`warda-character warda-character--${cleanEmotion} ${className}`}
       onClick={onClick}
       style={{
         width: typeof size === "number" ? `${size}px` : size,
@@ -55,14 +55,14 @@ export default function LiteraCharacter({
       tabIndex={onClick ? 0 : undefined}
       aria-label={alt}
     >
-      <div className="litera-character__aura" aria-hidden="true" />
+      <div className="warda-character__aura" aria-hidden="true" />
       <img
         src={imageSrc}
         alt={alt}
-        className="litera-character__image"
+        className="warda-character__image"
         onError={(e) => {
           if (!e.target.src.includes("neutral.png")) {
-            e.target.src = "/assets/img/litera_assistant/neutral.png";
+            e.target.src = "/assets/img/warda_assistant/neutral.png";
           } else {
             setImgError(true);
           }

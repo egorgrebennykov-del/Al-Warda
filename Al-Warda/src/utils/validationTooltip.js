@@ -1,5 +1,5 @@
 /**
- * Custom Litera Validation Tooltip
+ * Custom Al-Warda Validation Tooltip
  * Replaces native browser validation balloons with styled site tooltips.
  */
 
@@ -10,7 +10,7 @@ let dismissTimer = null;
 function getSiteLanguage() {
   try {
     return (
-      localStorage.getItem("litera_lang") ||
+      localStorage.getItem("warda_lang") ||
       localStorage.getItem("language") ||
       "ru"
     ).toLowerCase();
@@ -34,11 +34,11 @@ export function hideValidationTooltip() {
     activeTarget = null;
   }
   if (activeBubble) {
-    activeBubble.classList.remove("litera-validation-bubble--visible");
+    activeBubble.classList.remove("warda-validation-bubble--visible");
     activeBubble.style.opacity = "0";
     activeBubble.style.pointerEvents = "none";
     setTimeout(() => {
-      if (activeBubble && !activeBubble.classList.contains("litera-validation-bubble--visible")) {
+      if (activeBubble && !activeBubble.classList.contains("warda-validation-bubble--visible")) {
         activeBubble.style.display = "none";
       }
     }, 200);
@@ -50,7 +50,7 @@ function onTargetInput() {
 }
 
 function onScrollOrResize() {
-  if (!activeTarget || !activeBubble || !activeBubble.classList.contains("litera-validation-bubble--visible")) {
+  if (!activeTarget || !activeBubble || !activeBubble.classList.contains("warda-validation-bubble--visible")) {
     return;
   }
   // Check if target is still in viewport
@@ -85,12 +85,12 @@ function repositionBubble(element, bubble) {
   let top;
   if (placeAbove) {
     top = rect.top - bubbleHeight - 8;
-    bubble.classList.add("litera-validation-bubble--above");
-    bubble.classList.remove("litera-validation-bubble--below");
+    bubble.classList.add("warda-validation-bubble--above");
+    bubble.classList.remove("warda-validation-bubble--below");
   } else {
     top = rect.bottom + 8;
-    bubble.classList.add("litera-validation-bubble--below");
-    bubble.classList.remove("litera-validation-bubble--above");
+    bubble.classList.add("warda-validation-bubble--below");
+    bubble.classList.remove("warda-validation-bubble--above");
   }
 
   bubble.style.left = `${Math.round(left)}px`;
@@ -103,19 +103,19 @@ function getOrCreateBubble() {
   }
 
   const bubble = document.createElement("div");
-  bubble.className = "litera-validation-bubble";
+  bubble.className = "warda-validation-bubble";
   bubble.setAttribute("role", "alert");
   bubble.setAttribute("aria-live", "polite");
 
   bubble.innerHTML = `
-    <div class="litera-validation-bubble__icon" aria-hidden="true">!</div>
-    <div class="litera-validation-bubble__content">
-      <span class="litera-validation-bubble__text"></span>
+    <div class="warda-validation-bubble__icon" aria-hidden="true">!</div>
+    <div class="warda-validation-bubble__content">
+      <span class="warda-validation-bubble__text"></span>
     </div>
-    <button type="button" class="litera-validation-bubble__close" aria-label="Закрыть">×</button>
+    <button type="button" class="warda-validation-bubble__close" aria-label="Закрыть">×</button>
   `;
 
-  const closeBtn = bubble.querySelector(".litera-validation-bubble__close");
+  const closeBtn = bubble.querySelector(".warda-validation-bubble__close");
   if (closeBtn) {
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -132,7 +132,7 @@ export function showValidationTooltip(element, customMessage) {
   if (!element || typeof element.getBoundingClientRect !== "function") return;
 
   const bubble = getOrCreateBubble();
-  const textEl = bubble.querySelector(".litera-validation-bubble__text");
+  const textEl = bubble.querySelector(".warda-validation-bubble__text");
   if (textEl) {
     textEl.textContent = customMessage || "Пожалуйста, проверьте это поле.";
   }
@@ -146,12 +146,12 @@ export function showValidationTooltip(element, customMessage) {
 
   bubble.style.visibility = "visible";
   bubble.style.opacity = "1";
-  bubble.classList.add("litera-validation-bubble--visible");
+  bubble.classList.add("warda-validation-bubble--visible");
 
   // Re-trigger CSS pop animation
-  bubble.classList.remove("litera-validation-bubble--animate");
+  bubble.classList.remove("warda-validation-bubble--animate");
   void bubble.offsetWidth;
-  bubble.classList.add("litera-validation-bubble--animate");
+  bubble.classList.add("warda-validation-bubble--animate");
 
   activeTarget = element;
 
@@ -231,10 +231,10 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 
       const form = target.form;
       if (form) {
-        if (form.__literaValidationActive) return;
-        form.__literaValidationActive = true;
+        if (form.__wardaValidationActive) return;
+        form.__wardaValidationActive = true;
         setTimeout(() => {
-          delete form.__literaValidationActive;
+          delete form.__wardaValidationActive;
         }, 350);
       }
 

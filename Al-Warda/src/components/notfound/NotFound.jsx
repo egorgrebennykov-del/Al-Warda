@@ -16,7 +16,7 @@ export default function NotFound() {
   };
 
   const handleOpenAssistant = () => {
-    window.dispatchEvent(new CustomEvent("open-litera-assistant"));
+    window.dispatchEvent(new CustomEvent("open-warda-assistant"));
   };
 
   return (

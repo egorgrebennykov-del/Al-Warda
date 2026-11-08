@@ -95,14 +95,14 @@ not workflow secrets.
 ## 🏗️ Project Architecture & Folder Structure
 
 ```text
-Litera/
+Al-Warda/
 ├── public/
 │   └── assets/                  # Static images, favicons, and global responsive CSS (styles.css)
 ├── server/                      # Backend API (Cloudflare Worker & Node.js HTTP server)
 │   ├── worker.js                # Cloudflare Worker entry point (/api/* routes + scheduled crons)
 │   ├── index.js                 # Local Node.js API server
 │   ├── catalogActionsService.js # Automated catalog & EUR exchange rate synchronization with Supabase
-│   ├── literaAssistantService.js# AI Book Assistant (Google Gemini + live catalog search)
+│   ├── wardaAssistantService.js# AI Book Assistant (Google Gemini + live catalog search)
 │   ├── emailService.js          # Transactional email service
 │   └── *Service.js              # Real-time bookstore scrapers/adapters (Librarius, Carturesti, Ulysses, etc.)
 ├── src/
@@ -120,7 +120,7 @@ Litera/
 │   │   ├── header/              # Header.jsx & Header.css (navigation, theme toggle, language switcher, messenger)
 │   │   ├── home/                # Home.jsx & Home.css (hero showcase, announcements, featured carousel)
 │   │   ├── join/                # Join.jsx (newsletter subscription)
-│   │   ├── litera/              # LiteraAssistant.jsx & LiteraCharacter.jsx (interactive AI assistant)
+│   │   ├── warda/              # WardaAssistant.jsx & WardaCharacter.jsx (interactive AI assistant)
 │   │   ├── login/               # Login.jsx (authentication & 6-digit email code password reset flow)
 │   │   ├── newbooks/            # NewBooks.jsx & NewBooks.css (new arrivals catalog)
 │   │   ├── notfound/            # NotFound.jsx & NotFound.css (404 page with quick search)
@@ -155,10 +155,10 @@ Litera/
 
 ## 1. Project Overview
 
-- **Application Name:** Litera
+- **Application Name:** Al-Warda
 - **Application Category / Topic:** E-commerce Site & Book Discovery Platform (Online Bookstore)
 - **Main Purpose:**
-  Litera is an online bookstore and book discovery platform designed to make Russian-language literature easily accessible to readers across Europe. It aggregates books in real time from multiple bookstores, automatically converts local prices into Euros (`EUR`) using daily synchronized exchange rates, and provides an interactive AI assistant (*Litera*) to help readers find books by plot, mood, or author. Users can browse curated catalogs (Book Picks, Discounts, New Arrivals), read and publish verified customer reviews, manage their shopping cart and delivery addresses, apply promotional coupons, place orders, and communicate directly with administrators.
+  Al-Warda is an online bookstore and book discovery platform designed to make Russian-language wardature easily accessible to readers across Europe. It aggregates books in real time from multiple bookstores, automatically converts local prices into Euros (`EUR`) using daily synchronized exchange rates, and provides an interactive AI assistant (*Al-Warda*) to help readers find books by plot, mood, or author. Users can browse curated catalogs (Book Picks, Discounts, New Arrivals), read and publish verified customer reviews, manage their shopping cart and delivery addresses, apply promotional coupons, place orders, and communicate directly with administrators.
 
 ---
 
@@ -178,7 +178,7 @@ Litera/
   - `/cart`, `/checkout`, `/orders` (Display guest informational prompts inviting the visitor to sign in or register)
 - **Public data shown:**
   - Book catalogs, cover images, titles, authors, publishers, descriptions, ISBNs, EUR prices, discount percentages, active site announcements, and approved customer reviews.
-  - Guests can also interact with the **Litera AI Assistant** to get book recommendations and send guest support inquiries (which are delivered to their email when an admin replies).
+  - Guests can also interact with the **Al-Warda AI Assistant** to get book recommendations and send guest support inquiries (which are delivered to their email when an admin replies).
 
 ### Authenticated User
 - **Main sections / pages:**
@@ -227,7 +227,7 @@ Litera/
 ### Session Persistence
 - **How is the user session stored?**
   - The session identity (`id`, `firstName`, `lastName`, `email`, `phone`, `status`, `roles`) is persisted in the browser cookie `kazbook_user` (with a 7-day expiration and `SameSite=Lax`) and synchronized with Supabase via `getProfile()`.
-  - UI preferences such as theme (`litera_theme`: light/dark) and language (`litera_language`: `ru`/`en`) are also persisted in cookies/localStorage and shared via Context.
+  - UI preferences such as theme (`warda_theme`: light/dark) and language (`warda_language`: `ru`/`en`) are also persisted in cookies/localStorage and shared via Context.
 - **How is automatic login handled after a page refresh?**
   - On page refresh, `getCookieUser()` synchronously parses the `kazbook_user` cookie before the first React render, so the user remains logged in without any flicker or unexpected redirect, while `getProfile()` refreshes their latest profile and role data from Supabase in the background.
 
@@ -275,12 +275,12 @@ The application defines **15+ client-side routes** in `src/App.jsx` (using React
 - **Displayed Data:**
   - The catalog pages (`/featured`, `/discount`, `/new`, and `/search`) display responsive grids of book cards. Each card renders the high-resolution cover (`<BookImage>`), book title, price in `EUR` (converted via the live `exchange_rate` table), discount badge (`-%` on `/discount`), and direct **Add to Cart** / quantity controls.
 - **User Interaction (Search / Filter / Sort / Stream):**
-  - Users can open the global search modal (`Search.jsx`) from any page or use the Litera AI Assistant to search by title, author, genre, or keywords.
+  - Users can open the global search modal (`Search.jsx`) from any page or use the Al-Warda AI Assistant to search by title, author, genre, or keywords.
   - On `/search`, results stream progressively in two waves (a fast Page-1 wave followed by deep multi-page catalog aggregation and deduplication) with a live inline progress indicator above the grid.
 
 ### Details Page (`/book`)
 - **How navigation is triggered:**
-  - Clicking any book card in `Home`, `Featured`, `Discount`, `NewBooks`, `SearchResults`, `Cart`, or `LiteraAssistant` navigates to `/book?url=${encodeURIComponent(book.url)}` via React Router's `<Link>` or `useNavigate()`.
+  - Clicking any book card in `Home`, `Featured`, `Discount`, `NewBooks`, `SearchResults`, `Cart`, or `WardaAssistant` navigates to `/book?url=${encodeURIComponent(book.url)}` via React Router's `<Link>` or `useNavigate()`.
 - **Data received via route parameters:**
   - `BookDetails.jsx` reads the `url` / `bookId` parameter via `useSearchParams()` / `useParams()`, immediately renders preview state if passed via `location.state.book`, and fetches full book metadata (`getBookDetails(url)`) and the EUR exchange rate (`getExchangeRate()`) from `/api/book-details` and Supabase.
 
@@ -301,7 +301,7 @@ The application defines **15+ client-side routes** in `src/App.jsx` (using React
     - `book_picks`, `discounts`, `new_books`, `books_on_home_page`, `exchange_rate` (synchronized catalog snapshots and EUR/MDL exchange rates)
   - **Cloudflare Worker / Node.js Backend (`/api/*`):**
     - `/api/search-*` & `/api/book-details` — real-time book scraping and metadata extraction across 5 bookstores (`librarius.md`, `carturesti.md`, `ulysses.md`, `carteamea.md`, `biblion.md`).
-    - `/api/litera-chat` — Server-Sent Events (SSE) streaming endpoint for the Gemini-powered Litera AI Assistant.
+    - `/api/warda-chat` — Server-Sent Events (SSE) streaming endpoint for the Gemini-powered Al-Warda AI Assistant.
     - `/api/run-action` & Scheduled Cron Triggers — automated catalog and exchange rate synchronization.
 
 ---
@@ -382,21 +382,21 @@ The project implements full **Create, Read, Update, and Delete (CRUD)** operatio
 
 ### Context API
 1. **`LanguageContext` (`src/context/languageContext.jsx`):**
-   - Shares `language` (`"ru"` | `"en"`), `setLanguage`, `toggleLanguage`, and the translation function `t(key)` across **all components** (`Header`, `Home`, `Featured`, `Discount`, `NewBooks`, `SearchResults`, `BookDetails`, `Cart`, `Checkout`, `Orders`, `Testimonial`, `Login`, `SignUp`, `Profile`, `Privileged`, `LiteraAssistant`, `Contacts`, `Footer`).
+   - Shares `language` (`"ru"` | `"en"`), `setLanguage`, `toggleLanguage`, and the translation function `t(key)` across **all components** (`Header`, `Home`, `Featured`, `Discount`, `NewBooks`, `SearchResults`, `BookDetails`, `Cart`, `Checkout`, `Orders`, `Testimonial`, `Login`, `SignUp`, `Profile`, `Privileged`, `WardaAssistant`, `Contacts`, `Footer`).
 2. **`ConfirmContext` (`src/context/ConfirmContext.jsx`):**
-   - Provides promise-based modal dialogs via `useConfirm()` and `useAlert()` consumed by `Testimonial`, `Checkout`, `Header`, `LiteraAssistant`, and `Privileged` for deletion confirmations and status alerts.
+   - Provides promise-based modal dialogs via `useConfirm()` and `useAlert()` consumed by `Testimonial`, `Checkout`, `Header`, `WardaAssistant`, and `Privileged` for deletion confirmations and status alerts.
 3. **`SearchCacheContext` (`src/context/searchCache.jsx`):**
    - Shares cached search results (`get`, `set`) between `Search.jsx` and `SearchResults.jsx` so navigating back from `BookDetails` to `SearchResults` restores results instantaneously.
 
 ### Component Styling
-- Components are styled using dedicated **external CSS files** co-located with each component (e.g., `Home.css`, `BookDetails.css`, `SearchResults.css`, `Discount.css`, `Featured.css`, `NewBooks.css`, `Cart.css`, `Checkout.css`, `Orders.css`, `Testimonial.css`, `Profile.css`, `Privileged.css`, `LiteraAssistant.css`, `Contacts.css`, `Header.css`) alongside global design tokens, CSS custom properties (variables for light and dark themes), and responsive mobile media queries in `public/assets/css/styles.css`.
+- Components are styled using dedicated **external CSS files** co-located with each component (e.g., `Home.css`, `BookDetails.css`, `SearchResults.css`, `Discount.css`, `Featured.css`, `NewBooks.css`, `Cart.css`, `Checkout.css`, `Orders.css`, `Testimonial.css`, `Profile.css`, `Privileged.css`, `WardaAssistant.css`, `Contacts.css`, `Header.css`) alongside global design tokens, CSS custom properties (variables for light and dark themes), and responsive mobile media queries in `public/assets/css/styles.css`.
 
 ---
 
 ## 10. Typical User Flow
 
 1. **Discovery & Browsing (Guest):**
-   The visitor opens Litera (`/`), views active announcements and featured books, switches the interface language (RU/EN) or theme (Light/Dark), and browses curated catalogs (`/featured`, `/discount`, `/new`) or searches for a specific book (`/search?q=...`) or asks the **Litera AI Assistant** for recommendations.
+   The visitor opens Al-Warda (`/`), views active announcements and featured books, switches the interface language (RU/EN) or theme (Light/Dark), and browses curated catalogs (`/featured`, `/discount`, `/new`) or searches for a specific book (`/search?q=...`) or asks the **Al-Warda AI Assistant** for recommendations.
 2. **Inspecting Book Details:**
    The user clicks on a book card to open `/book?url=...`, where they inspect the high-resolution cover, author, publisher, ISBN, page count, availability badge, synopsis, and price in Euros.
 3. **Registration / Authentication:**

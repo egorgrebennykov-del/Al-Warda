@@ -13,10 +13,12 @@ import dotenv from "dotenv";
 import sharp from "sharp";
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById, getPerfumesByCategory, getBestSellers } from "../src/data/perfumesData.js";
 import {
-  processLiteraChat,
+  processWardaChat,
   filterInquiryMessageWithAI,
-  translateLiteraDialog,
-} from "./literaAssistantService.js";
+  translateWardaDialog,
+  translateAnnouncementText,
+  enrichPerfumeWithAI,
+} from "./wardaAssistantService.js";
 import { sendGuestInquiryEmail } from "./emailService.js";
 import { syncPerfumeCatalog, executeCatalogActionById } from "./catalogActionsService.js";
 import { setHttpAdapter } from "./httpClient.js";
@@ -49,11 +51,6 @@ const ACTIONS = {
     name: "Sync Perfume Catalog with Supabase",
     action: "sync-perfumes",
   },
-  "update-exchange-rate": {
-    id: "update-exchange-rate",
-    name: "Update Exchange Rate",
-    action: "update-exchange-rate",
-  },
   "sync-qogita": {
     id: "sync-qogita",
     name: "Sync Qogita Wholesale Fragrances",
@@ -65,8 +62,6 @@ const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
   "brand-sync": { status: "idle", lastRun: null, error: null, output: "" },
   "full-database-refresh": { status: "idle", lastRun: null, error: null, output: "" },
-  "local-upscayl-sync": { status: "idle", lastRun: null, error: null, output: "" },
-  "update-exchange-rate": { status: "idle", lastRun: null, error: null, output: "" },
 };
 
 const PORT = Number(process.env.BOOK_COMPARE_PORT) || 3001;
@@ -663,7 +658,7 @@ const server = createServer(async (req, res) => {
   }
 
   // Chat / Assistant
-  if (req.method === "POST" && (pathname === "/api/litera-chat" || pathname === "/api/warda-chat")) {
+  if (req.method === "POST" && (pathname === "/api/warda-chat" || pathname === "/api/warda-chat")) {
     try {
       const body = await readJson(req);
       const isSse = req.headers.accept?.includes("text/event-stream");
@@ -679,13 +674,13 @@ const server = createServer(async (req, res) => {
           res.write(`data: ${JSON.stringify({ type: "status", status })}\n\n`);
         };
 
-        const result = await processLiteraChat({ ...body, onStatus });
+        const result = await processWardaChat({ ...body, onStatus });
         res.write(`data: ${JSON.stringify({ type: "result", ...result })}\n\n`);
         res.end();
         return;
       }
 
-      const result = await processLiteraChat(body);
+      const result = await processWardaChat(body);
       respond(res, 200, result);
     } catch (err) {
       console.error("Assistant chat error:", err);
@@ -724,16 +719,38 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && pathname === "/api/litera-translate") {
+  if (req.method === "POST" && (pathname === "/api/warda-translate" || pathname === "/api/warda-translate")) {
     try {
       const body = await readJson(req);
-      const result = await translateLiteraDialog({
+      const result = await translateWardaDialog({
         messages: body?.messages,
         targetLanguage: body?.targetLanguage,
       });
       respond(res, 200, result);
     } catch (err) {
       respond(res, 500, { translations: [], error: err.message });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/translate-announcement") {
+    try {
+      const body = await readJson(req);
+      const result = await translateAnnouncementText({ text: body?.text });
+      respond(res, 200, result);
+    } catch (err) {
+      respond(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/enrich-perfume") {
+    try {
+      const body = await readJson(req);
+      const result = await enrichPerfumeWithAI(body || {});
+      respond(res, 200, result);
+    } catch (err) {
+      respond(res, 500, { error: err.message });
     }
     return;
   }

@@ -36,7 +36,7 @@ const loadLogin = () => import("./components/login/Login");
 const loadSignUp = () => import("./components/signup/SignUp");
 const loadJoin = () => import("./components/join/Join");
 const loadNotFound = () => import("./components/notfound/NotFound");
-const loadLiteraAssistant = () => import("./components/litera/LiteraAssistant");
+const loadWardaAssistant = () => import("./components/warda/WardaAssistant");
 
 const Featured = lazy(loadFeatured);
 const Discount = lazy(loadDiscount);
@@ -54,14 +54,14 @@ const Login = lazy(loadLogin);
 const SignUp = lazy(loadSignUp);
 const Join = lazy(loadJoin);
 const NotFound = lazy(loadNotFound);
-const LiteraAssistant = lazy(loadLiteraAssistant);
+const WardaAssistant = lazy(loadWardaAssistant);
 
 const THEME_COOKIE_KEY = "alwarda_theme";
 
 function getInitialTheme() {
   if (typeof document === "undefined") return false;
   try {
-    const saved = getCookie(THEME_COOKIE_KEY) || getCookie("litera_theme") || getCookie("theme");
+    const saved = getCookie(THEME_COOKIE_KEY)  || getCookie("theme");
     if (saved === "light") return true;
     if (saved === "dark") return false;
   } catch {
@@ -303,7 +303,7 @@ function App() {
 
       <main className="main"></main>
       <Suspense fallback={null}>
-        <LiteraAssistant />
+        <WardaAssistant />
       </Suspense>
       <Footer />
       <a href="#" className="scrollup" id="scroll-up">

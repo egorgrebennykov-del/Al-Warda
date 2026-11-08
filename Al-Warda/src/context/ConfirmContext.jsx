@@ -152,19 +152,19 @@ export function ConfirmProvider({ children }) {
 
       {modalState.isOpen && (
         <div
-          className="litera-confirm-backdrop"
+          className="warda-confirm-backdrop"
           onClick={handleCancel}
           role="dialog"
           aria-modal="true"
         >
           <div
-            className="litera-confirm-modal"
+            className="warda-confirm-modal"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Cross */}
             <button
               type="button"
-              className="litera-confirm-close"
+              className="warda-confirm-close"
               onClick={handleCancel}
               aria-label={isRu ? "Закрыть" : "Close"}
             >
@@ -173,21 +173,21 @@ export function ConfirmProvider({ children }) {
 
             {/* Icon Wrap */}
             <div
-              className={`litera-confirm-icon-wrap litera-confirm-icon-wrap--${modalState.type}`}
+              className={`warda-confirm-icon-wrap warda-confirm-icon-wrap--${modalState.type}`}
             >
               <i className={iconClass} />
             </div>
 
             {/* Title & Message */}
-            <h3 className="litera-confirm-title">{title}</h3>
-            <p className="litera-confirm-message">{modalState.message}</p>
+            <h3 className="warda-confirm-title">{title}</h3>
+            <p className="warda-confirm-message">{modalState.message}</p>
 
             {/* Buttons */}
-            <div className="litera-confirm-actions">
+            <div className="warda-confirm-actions">
               {!modalState.isAlert && (
                 <button
                   type="button"
-                  className="litera-confirm-btn litera-confirm-btn--cancel"
+                  className="warda-confirm-btn warda-confirm-btn--cancel"
                   onClick={handleCancel}
                 >
                   {cancelText}
@@ -195,7 +195,7 @@ export function ConfirmProvider({ children }) {
               )}
               <button
                 type="button"
-                className={`litera-confirm-btn litera-confirm-btn--${modalState.type === "danger" ? "danger" : modalState.type === "warning" ? "warning" : "primary"}`}
+                className={`warda-confirm-btn warda-confirm-btn--${modalState.type === "danger" ? "danger" : modalState.type === "warning" ? "warning" : "primary"}`}
                 onClick={handleConfirm}
                 autoFocus
               >

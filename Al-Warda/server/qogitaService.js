@@ -260,6 +260,8 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     rawImage: rawImageUrl,
     qogitaQid: qogitaItem.qid,
     gtin: gtin,
+    origin: "Ближний Восток",
+    originEn: "Middle East",
     categoryRu: "Восточные",
     categoryEn: "Oriental",
     topNotes: ["Шафран", "Бергамот", "Розовый перец"],
@@ -271,9 +273,9 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     topNotesEn: ["Saffron", "Bergamot", "Pink Pepper"],
     heartNotesEn: ["Damask Rose", "Precious Oud", "Amber"],
     baseNotesEn: ["White Musk", "Sandalwood", "Madagascar Vanilla"],
-    description: `${brand} ${name} — премиальный оригинальный арабский парфюм с богатой ольфакторной пирамидой.`,
-    descriptionRu: `${brand} ${name} — премиальный оригинальный арабский парфюм со стойким шлейфом.`,
-    descriptionEn: `${brand} ${name} is an authentic luxury Arabian fragrance with an opulent sillage.`,
+    description: `${brand} ${name} — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.`,
+    descriptionRu: `${brand} ${name} — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.`,
+    descriptionEn: `${brand} ${name} is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla.`,
   };
 }
 

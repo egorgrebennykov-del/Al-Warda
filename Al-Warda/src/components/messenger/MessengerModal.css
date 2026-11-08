@@ -1,6 +1,6 @@
-/* Litera Messenger Styles */
+/* Al-Warda Messenger Styles */
 
-.litera-messenger-overlay {
+.warda-messenger-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -13,10 +13,10 @@
   padding-bottom: 165px; /* Appears vertically above the AI assistant button and tooltip */
   padding-left: 20px;
   padding-top: 20px;
-  animation: literaFadeIn 0.2s ease-out;
+  animation: wardaFadeIn 0.2s ease-out;
 }
 
-@keyframes literaFadeIn {
+@keyframes wardaFadeIn {
   from {
     opacity: 0;
   }
@@ -25,7 +25,7 @@
   }
 }
 
-.litera-messenger-container {
+.warda-messenger-container {
   pointer-events: auto;
   width: 380px;
   max-width: calc(100vw - 32px);
@@ -40,10 +40,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: literaSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: wardaSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes literaSlideUp {
+@keyframes wardaSlideUp {
   from {
     transform: translateY(24px) scale(0.97);
     opacity: 0;
@@ -55,7 +55,7 @@
 }
 
 /* Header */
-.litera-messenger-header {
+.warda-messenger-header {
   padding: 14px 18px;
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   color: #ffffff;
@@ -67,13 +67,13 @@
   box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
 }
 
-.litera-messenger-admin-info {
+.warda-messenger-admin-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.litera-messenger-avatar {
+.warda-messenger-avatar {
   position: relative;
   width: 40px;
   height: 40px;
@@ -87,7 +87,7 @@
   border: 1.5px solid rgba(255, 255, 255, 0.3);
 }
 
-.litera-messenger-online-dot {
+.warda-messenger-online-dot {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -98,7 +98,7 @@
   border-radius: 50%;
 }
 
-.litera-messenger-title {
+.warda-messenger-title {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
@@ -106,7 +106,7 @@
   color: #ffffff;
 }
 
-.litera-messenger-subtitle {
+.warda-messenger-subtitle {
   font-size: 12px;
   margin: 2px 0 0 0;
   color: rgba(255, 255, 255, 0.85);
@@ -115,14 +115,14 @@
   gap: 4px;
 }
 
-.litera-messenger-header-actions {
+.warda-messenger-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.litera-messenger-history-btn {
+.warda-messenger-history-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -138,16 +138,16 @@
   white-space: nowrap;
 }
 
-.litera-messenger-history-btn:hover {
+.warda-messenger-history-btn:hover {
   background: rgba(255, 255, 255, 0.28);
   transform: translateY(-1px);
 }
 
-.litera-messenger-history-btn i {
+.warda-messenger-history-btn i {
   font-size: 13px;
 }
 
-.litera-messenger-close-btn {
+.warda-messenger-close-btn {
   background: rgba(255, 255, 255, 0.15);
   border: none;
   width: 32px;
@@ -164,13 +164,13 @@
     transform 0.15s ease;
 }
 
-.litera-messenger-close-btn:hover {
+.warda-messenger-close-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.05);
 }
 
 /* Guest Form */
-.litera-messenger-guest-form {
+.warda-messenger-guest-form {
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
@@ -180,12 +180,12 @@
   background: var(--container-color, #ffffff);
 }
 
-.litera-messenger-guest-intro {
+.warda-messenger-guest-intro {
   text-align: center;
   margin-bottom: 24px;
 }
 
-.litera-messenger-guest-icon {
+.warda-messenger-guest-icon {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -198,26 +198,26 @@
   margin: 0 auto 12px auto;
 }
 
-.litera-messenger-guest-intro h4 {
+.warda-messenger-guest-intro h4 {
   font-size: 17px;
   font-weight: 600;
   color: var(--title-color, #1e293b);
   margin: 0 0 6px 0;
 }
 
-.litera-messenger-guest-intro p {
+.warda-messenger-guest-intro p {
   font-size: 13px;
   color: var(--text-color, #64748b);
   line-height: 1.5;
   margin: 0;
 }
 
-.litera-messenger-field {
+.warda-messenger-field {
   margin-bottom: 16px;
   text-align: left;
 }
 
-.litera-messenger-field label {
+.warda-messenger-field label {
   display: block;
   font-size: 12px;
   font-weight: 600;
@@ -225,7 +225,7 @@
   margin-bottom: 6px;
 }
 
-.litera-messenger-field input {
+.warda-messenger-field input {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 14px;
@@ -238,12 +238,12 @@
   transition: border-color 0.2s;
 }
 
-.litera-messenger-field input:focus {
+.warda-messenger-field input:focus {
   border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.litera-messenger-error {
+.warda-messenger-error {
   font-size: 12px;
   color: #ef4444;
   margin-bottom: 12px;
@@ -252,7 +252,7 @@
   border-radius: 8px;
 }
 
-.litera-messenger-submit-btn {
+.warda-messenger-submit-btn {
   width: 100%;
   display: flex;
   align-items: center;
@@ -269,12 +269,12 @@
   transition: background 0.15s;
 }
 
-.litera-messenger-submit-btn:hover {
+.warda-messenger-submit-btn:hover {
   background: #4338ca;
 }
 
 /* Chat Body */
-.litera-messenger-body {
+.warda-messenger-body {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -282,7 +282,7 @@
   background: var(--container-color, #ffffff);
 }
 
-.litera-messenger-guest-banner {
+.warda-messenger-guest-banner {
   background: rgba(99, 102, 241, 0.08);
   border-bottom: 1px solid rgba(99, 102, 241, 0.15);
   padding: 6px 14px;
@@ -293,7 +293,7 @@
   justify-content: space-between;
 }
 
-.litera-messenger-change-email-btn {
+.warda-messenger-change-email-btn {
   background: none;
   border: none;
   color: #4f46e5;
@@ -304,7 +304,7 @@
 }
 
 /* Messages container */
-.litera-messenger-messages {
+.warda-messenger-messages {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
@@ -313,21 +313,21 @@
   gap: 12px;
 }
 
-.litera-messenger-loading,
-.litera-messenger-empty {
+.warda-messenger-loading,
+.warda-messenger-empty {
   margin: auto;
   text-align: center;
   color: var(--text-color, #64748b);
   padding: 24px 16px;
 }
 
-.litera-messenger-empty-icon {
+.warda-messenger-empty-icon {
   font-size: 36px;
   color: #a5b4fc;
   margin-bottom: 8px;
 }
 
-.litera-messenger-empty p {
+.warda-messenger-empty p {
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
@@ -515,7 +515,7 @@
 
 
 /* Footer / Input */
-.litera-messenger-footer {
+.warda-messenger-footer {
   padding: 10px 14px;
   border-top: 1px solid var(--border-color, #e2e8f0);
   background: var(--container-color, #ffffff);
@@ -528,12 +528,12 @@
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.litera-messenger-footer--expanded {
+.warda-messenger-footer--expanded {
   padding: 12px 14px;
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
 }
 
-.litera-messenger-input {
+.warda-messenger-input {
   flex: 1;
   border: 1px solid var(--border-color, #cbd5e1);
   background: var(--body-color, #f8fafc);
@@ -552,17 +552,17 @@
   box-sizing: border-box;
 }
 
-.litera-messenger-input:focus {
+.warda-messenger-input:focus {
   border-color: #4f46e5;
   background: var(--body-color, #ffffff);
 }
 
-.litera-messenger-input.expanded {
+.warda-messenger-input.expanded {
   border-radius: 12px;
   padding: 10px 14px;
 }
 
-.litera-messenger-input-actions {
+.warda-messenger-input-actions {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -570,7 +570,7 @@
   margin-bottom: 2px;
 }
 
-.litera-messenger-expand-btn {
+.warda-messenger-expand-btn {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -586,23 +586,23 @@
   flex-shrink: 0;
 }
 
-.litera-messenger-expand-btn:hover {
+.warda-messenger-expand-btn:hover {
   background: #4f46e5;
   color: #ffffff;
   transform: scale(1.08);
   box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
 }
 
-.litera-messenger-expand-btn.active {
+.warda-messenger-expand-btn.active {
   background: #4f46e5;
   color: #ffffff;
 }
 
-.litera-messenger-expand-btn.active:hover {
+.warda-messenger-expand-btn.active:hover {
   background: #4338ca;
 }
 
-.litera-messenger-send-btn {
+.warda-messenger-send-btn {
   background: #4f46e5;
   color: #ffffff;
   border: none;
@@ -623,17 +623,17 @@
     transform 0.15s;
 }
 
-.litera-messenger-send-btn:hover:not(:disabled) {
+.warda-messenger-send-btn:hover:not(:disabled) {
   background: #4338ca;
   transform: scale(1.05);
 }
 
-.litera-messenger-send-btn:disabled {
+.warda-messenger-send-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.litera-messenger-send-error {
+.warda-messenger-send-error {
   padding: 10px 14px;
   background-color: #fef2f2;
   color: #991b1b;
@@ -644,40 +644,40 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  animation: literaFadeIn 0.2s ease-out;
+  animation: wardaFadeIn 0.2s ease-out;
 }
 
-.litera-messenger-send-error--litera {
+.warda-messenger-send-error--warda {
   background: linear-gradient(135deg, #f7f3ff 0%, #efe7fd 100%);
   color: #4c1d95;
   border-top-color: #e9d5ff;
   border-bottom-color: #e9d5ff;
 }
 
-.litera-messenger-send-error i {
+.warda-messenger-send-error i {
   font-size: 16px;
   color: #ef4444;
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.litera-messenger-send-error--litera i {
+.warda-messenger-send-error--warda i {
   color: #7952b3;
 }
 
-.litera-messenger-send-error-content {
+.warda-messenger-send-error-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.litera-messenger-send-error-text {
+.warda-messenger-send-error-text {
   flex: 1;
   font-weight: 500;
 }
 
-.litera-messenger-ask-litera-btn {
+.warda-messenger-ask-warda-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -694,12 +694,12 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.litera-messenger-ask-litera-btn:hover {
+.warda-messenger-ask-warda-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(121, 82, 179, 0.5);
 }
 
-.litera-messenger-send-error-close {
+.warda-messenger-send-error-close {
   background: none;
   border: none;
   color: inherit;
@@ -713,7 +713,7 @@
   transition: opacity 0.15s;
 }
 
-.litera-messenger-send-error-close:hover {
+.warda-messenger-send-error-close:hover {
   opacity: 1;
 }
 
@@ -736,7 +736,7 @@
   color: var(--first-color);
 }
 
-/* Nav Messenger Button Attention Animation (Triggered by Litera referral) */
+/* Nav Messenger Button Attention Animation (Triggered by Al-Warda referral) */
 .nav__messenger-btn--attention {
   color: #8b5cf6 !important;
   position: relative;
@@ -874,26 +874,26 @@
 }
 
 @media screen and (max-width: 480px) {
-  .litera-messenger-overlay {
+  .warda-messenger-overlay {
     padding-right: 12px;
     padding-left: 12px;
     padding-bottom: 145px;
     padding-top: 12px;
   }
-  .litera-messenger-container {
+  .warda-messenger-container {
     width: 100%;
     height: 480px;
     max-width: 100%;
     max-height: calc(100vh - 165px);
     border-radius: 18px;
   }
-  .litera-messenger-header {
+  .warda-messenger-header {
     border-radius: 17px 17px 0 0;
   }
 }
 
 /* User / Guest Transfer History Modal */
-.litera-messenger-transfer-modal-backdrop {
+.warda-messenger-transfer-modal-backdrop {
   position: absolute;
   top: 0;
   left: 0;
@@ -906,11 +906,11 @@
   justify-content: center;
   padding: 16px;
   z-index: 50;
-  animation: literaFadeIn 0.2s ease;
+  animation: wardaFadeIn 0.2s ease;
   box-sizing: border-box;
 }
 
-.litera-messenger-transfer-modal {
+.warda-messenger-transfer-modal {
   background: var(--container-color, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 16px;
@@ -921,10 +921,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: literaScaleIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: wardaScaleIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.litera-messenger-transfer-modal-header {
+.warda-messenger-transfer-modal-header {
   padding: 14px 16px;
   display: flex;
   align-items: center;
@@ -933,7 +933,7 @@
   background: var(--body-color, #f8fafc);
 }
 
-.litera-messenger-transfer-icon {
+.warda-messenger-transfer-icon {
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -946,19 +946,19 @@
   flex-shrink: 0;
 }
 
-.litera-messenger-transfer-title-group {
+.warda-messenger-transfer-title-group {
   flex: 1;
   min-width: 0;
 }
 
-.litera-messenger-transfer-title-group h4 {
+.warda-messenger-transfer-title-group h4 {
   margin: 0;
   font-size: 13.5px;
   font-weight: 700;
   color: var(--title-color, #1e293b);
 }
 
-.litera-messenger-transfer-title-group p {
+.warda-messenger-transfer-title-group p {
   margin: 2px 0 0 0;
   font-size: 11.5px;
   color: var(--text-color, #64748b);
@@ -967,7 +967,7 @@
   text-overflow: ellipsis;
 }
 
-.litera-messenger-transfer-close {
+.warda-messenger-transfer-close {
   background: none;
   border: none;
   cursor: pointer;
@@ -981,31 +981,31 @@
   transition: all 0.15s ease;
 }
 
-.litera-messenger-transfer-close:hover {
+.warda-messenger-transfer-close:hover {
   background: var(--border-color, #e2e8f0);
   color: var(--title-color, #1e293b);
 }
 
-.litera-messenger-transfer-modal-body {
+.warda-messenger-transfer-modal-body {
   padding: 14px 16px;
   overflow-y: auto;
   flex: 1;
 }
 
-.litera-messenger-transfer-timeline {
+.warda-messenger-transfer-timeline {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.litera-messenger-transfer-item {
+.warda-messenger-transfer-item {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   position: relative;
 }
 
-.litera-messenger-transfer-marker {
+.warda-messenger-transfer-marker {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1013,7 +1013,7 @@
   width: 22px;
 }
 
-.litera-messenger-transfer-num {
+.warda-messenger-transfer-num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -1026,7 +1026,7 @@
   justify-content: center;
 }
 
-.litera-messenger-transfer-line {
+.warda-messenger-transfer-line {
   width: 2px;
   flex: 1;
   min-height: 22px;
@@ -1034,7 +1034,7 @@
   margin-top: 4px;
 }
 
-.litera-messenger-transfer-info {
+.warda-messenger-transfer-info {
   flex: 1;
   background: var(--body-color, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
@@ -1042,7 +1042,7 @@
   padding: 8px 12px;
 }
 
-.litera-messenger-transfer-route {
+.warda-messenger-transfer-route {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1051,27 +1051,27 @@
   color: var(--title-color, #1e293b);
 }
 
-.litera-messenger-transfer-route i {
+.warda-messenger-transfer-route i {
   color: #4f46e5;
   font-size: 12px;
 }
 
-.litera-messenger-transfer-admin-from {
+.warda-messenger-transfer-admin-from {
   color: var(--text-color, #64748b);
 }
 
-.litera-messenger-transfer-admin-to {
+.warda-messenger-transfer-admin-to {
   color: #4f46e5;
 }
 
-.litera-messenger-transfer-time {
+.warda-messenger-transfer-time {
   display: block;
   font-size: 11px;
   color: var(--text-color, #94a3b8);
   margin-top: 3px;
 }
 
-.litera-messenger-transfer-reason {
+.warda-messenger-transfer-reason {
   margin-top: 5px;
   font-size: 11.5px;
   color: var(--title-color, #334155);
@@ -1081,14 +1081,14 @@
   border-left: 2px solid #4f46e5;
 }
 
-.litera-messenger-transfer-empty {
+.warda-messenger-transfer-empty {
   text-align: center;
   font-size: 12.5px;
   color: var(--text-color, #64748b);
   margin: 10px 0;
 }
 
-.litera-messenger-transfer-modal-footer {
+.warda-messenger-transfer-modal-footer {
   padding: 10px 16px;
   border-top: 1px solid var(--border-color, #e2e8f0);
   display: flex;
@@ -1096,7 +1096,7 @@
   background: var(--body-color, #f8fafc);
 }
 
-.litera-messenger-transfer-close-btn {
+.warda-messenger-transfer-close-btn {
   background: #4f46e5;
   color: #ffffff;
   border: none;
@@ -1108,6 +1108,6 @@
   transition: background 0.15s ease;
 }
 
-.litera-messenger-transfer-close-btn:hover {
+.warda-messenger-transfer-close-btn:hover {
   background: #4338ca;
 }

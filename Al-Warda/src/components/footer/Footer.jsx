@@ -23,8 +23,8 @@ export default function Footer() {
           </Link>
           <p className="warda-footer__desc">
             {isRu
-              ? "Дом эксклюзивной арабской парфюмерии. Оригинальные селективные ароматы прямиком из парфюмерных мануфактур Дубая и ОАЭ: редчайший уд, дамасская роза, золотая амбра и чувственный мускус."
-              : "House of exclusive Arabian perfumery. Authentic niche creations sourced directly from premier master perfumers in Dubai and the UAE: precious oud, Damask rose, solar amber, and alluring white musk."}
+              ? "Дом эксклюзивной арабской парфюмерии. Оригинальные селективные ароматы прямиком из парфюмерных мануфактур Ближнего Востока: редчайший уд, дамасская роза, золотая амбра и чувственный мускус."
+              : "House of exclusive Arabian perfumery. Authentic niche creations sourced directly from premier master perfumers in the Middle East: precious oud, Damask rose, solar amber, and alluring white musk."}
           </p>
 
           <div className="warda-footer__badges">
@@ -133,7 +133,7 @@ export default function Footer() {
             </span>
             <span className="warda-footer__info-item">
               <i className="ri-map-pin-line" />
-              <span>Chisinau / Dubai</span>
+              <span>{isRu ? "Кишинёв / Ближний Восток" : "Chisinau / Middle East"}</span>
             </span>
           </div>
 

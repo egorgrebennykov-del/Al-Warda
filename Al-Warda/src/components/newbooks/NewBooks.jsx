@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { addToCart, getCart, removeFromCart } from "../../../utils/cart";
 import { getCookieUser, isLoggedIn, isPrivileged } from "../../../utils/auth";
-import getExchangeRate, { getCachedExchangeRate, DEFAULT_RATE } from "../../../utils/getExchangeRate";
 import getNewBooks, { getCachedNewBooks } from "../../../utils/getNewBooks";
 import BookImage from "../common/BookImage";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
@@ -48,7 +47,7 @@ export default function NewBooks() {
         : [];
     return products.length ? "ready" : "empty";
   });
-  const [rate, setRate] = useState(() => getCachedExchangeRate() ?? DEFAULT_RATE);
+  const [rate] = useState(20.2);
   const [cartItems, setCartItems] = useState(() => new Map());
   const [quantities, setQuantities] = useState(() => new Map());
   const [pendingUrls, setPendingUrls] = useState(() => new Set());
@@ -61,8 +60,8 @@ export default function NewBooks() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getNewBooks(), getExchangeRate().catch(() => null)])
-      .then(([snapshot, exchangeRate]) => {
+    getNewBooks()
+      .then((snapshot) => {
         if (cancelled) return;
         const products = Array.isArray(snapshot)
           ? snapshot
@@ -73,7 +72,6 @@ export default function NewBooks() {
           updatedAt: snapshot?.updatedAt ?? null,
           products,
         });
-        setRate(exchangeRate);
         setStatus(products.length ? "ready" : "empty");
       })
       .catch(() => !cancelled && setStatus("error"));

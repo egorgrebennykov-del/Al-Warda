@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useLanguage } from "../../context/languageContext";
 import "./SmallAnnouncements.css";
 
-const DISMISSED_KEY = "litera_dismissed_announcements";
+const DISMISSED_KEY = "warda_dismissed_announcements";
 
 export default function SmallAnnouncements({ items = [] }) {
   const { language } = useLanguage();
@@ -33,7 +33,7 @@ export default function SmallAnnouncements({ items = [] }) {
   if (visibleItems.length === 0) return null;
 
   return (
-    <div className="litera-small-announcements-stack">
+    <div className="warda-small-announcements-stack">
       {visibleItems.map((item) => {
         const text =
           language === "en"
@@ -49,13 +49,13 @@ export default function SmallAnnouncements({ items = [] }) {
           (linkUrl.startsWith("http://") || linkUrl.startsWith("https://"));
 
         return (
-          <div key={item.id} className="litera-small-announcement-banner">
-            <div className="litera-small-announcement-icon">
+          <div key={item.id} className="warda-small-announcement-banner">
+            <div className="warda-small-announcement-icon">
               <i className="ri-megaphone-fill" />
             </div>
 
-            <div className="litera-small-announcement-content">
-              <span className="litera-small-announcement-text">{text}</span>
+            <div className="warda-small-announcement-content">
+              <span className="warda-small-announcement-text">{text}</span>
 
               {hasLink &&
                 (isExternal ? (
@@ -63,7 +63,7 @@ export default function SmallAnnouncements({ items = [] }) {
                     href={linkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="litera-small-announcement-link"
+                    className="warda-small-announcement-link"
                   >
                     {language === "ru" ? "Подробнее" : "Learn more"}{" "}
                     <i className="ri-arrow-right-line" />
@@ -71,7 +71,7 @@ export default function SmallAnnouncements({ items = [] }) {
                 ) : (
                   <Link
                     to={linkUrl}
-                    className="litera-small-announcement-link"
+                    className="warda-small-announcement-link"
                   >
                     {language === "ru" ? "Подробнее" : "Learn more"}{" "}
                     <i className="ri-arrow-right-line" />
@@ -81,7 +81,7 @@ export default function SmallAnnouncements({ items = [] }) {
 
             <button
               type="button"
-              className="litera-small-announcement-close"
+              className="warda-small-announcement-close"
               onClick={() => handleDismiss(item.id)}
               aria-label={
                 language === "ru"
