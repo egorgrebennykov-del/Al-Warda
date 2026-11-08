@@ -135,13 +135,13 @@ export default function Home() {
         <div className="warda-hero__visual">
           <div className="warda-hero__img-frame">
             <img
-              src="/assets/img/perfumes/al-warda-rose-smoke-cropped.webp?v=seamless-20261108"
+              src="/assets/img/perfumes/al-warda-rose-smoke-cropped.webp?v=grand-hero-20261108"
               alt="Al-Warda Royal Fragrance"
               className="warda-hero__img"
               loading="eager"
               fetchPriority="high"
-              width="1024"
-              height="682"
+              width="1600"
+              height="1066"
             />
           </div>
         </div>

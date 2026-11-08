@@ -146,7 +146,7 @@ function App() {
   useEffect(() => {
     if (shouldRestoreScroll) return;
     window.scrollTo(0, 0);
-  }, [location.pathname, location.search, shouldRestoreScroll]);
+  }, [location.pathname, shouldRestoreScroll]);
 
   useEffect(() => {
     document.body.classList.toggle("dark-theme", !lightTheme);

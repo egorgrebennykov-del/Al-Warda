@@ -54,128 +54,1031 @@ export function getPerfumeUrl(perfume) {
 }
 
 
-export function getHarmoniousNotes(perfume) {
-  const name = ((perfume && (perfume.name || perfume.title)) || "").toLowerCase();
-  const cat = ((perfume && perfume.category) || "").toLowerCase();
-
-  // Keyword-specific tailored notes
-  if (name.includes("vanilla") || name.includes("rose")) {
-    return {
-      ru: {
-        top: ["Розовый перец", "Ваниль", "Сладкий персик"],
-        heart: ["Дамасская роза", "Жасмин", "Лепестки фиалки"],
-        base: ["Мадагаскарская ваниль", "Белый мускус", "Золотая амбра"],
-      },
-      en: {
-        top: ["Pink Pepper", "Vanilla", "Sweet Peach"],
-        heart: ["Damask Rose", "Jasmine", "Violet Petals"],
-        base: ["Madagascar Vanilla", "White Musk", "Golden Amber"],
-      },
-    };
-  }
-
-  if (name.includes("oud") || cat === "oud" || cat.includes("древес")) {
-    return {
-      ru: {
-        top: ["Шафран", "Мускатный орех", "Лаванда"],
-        heart: ["Благородный уд", "Кожаный аккорд", "Пачули"],
-        base: ["Серая амбра", "Дымный ладан", "Белый мускус"],
-      },
-      en: {
-        top: ["Saffron", "Nutmeg", "Lavender"],
-        heart: ["Precious Oud", "Leather Accord", "Patchouli"],
-        base: ["Grey Amber", "Smoky Frankincense", "White Musk"],
-      },
-    };
-  }
-
-  if (cat === "gourmand" || cat.includes("гурман")) {
-    return {
-      ru: {
-        top: ["Мадагаскарская ваниль", "Сладкий миндаль", "Бергамот"],
-        heart: ["Карамель", "Дамасская роза", "Взбитые сливки"],
-        base: ["Бурбонская ваниль", "Белый мускус", "Золотая амбра"],
-      },
-      en: {
-        top: ["Madagascar Vanilla", "Sweet Almond", "Bergamot"],
-        heart: ["Caramel", "Damask Rose", "Whipped Cream"],
-        base: ["Bourbon Vanilla", "White Musk", "Golden Amber"],
-      },
-    };
-  }
-
-  if (cat === "floral" || cat.includes("цвет")) {
-    return {
-      ru: {
-        top: ["Нероли", "Розовый перец", "Мандарин"],
-        heart: ["Дамасская роза", "Жасмин самбак", "Иланг-иланг"],
-        base: ["Белый мускус", "Сандал", "Светлая амбра"],
-      },
-      en: {
-        top: ["Neroli", "Pink Pepper", "Mandarin"],
-        heart: ["Damask Rose", "Jasmine Sambac", "Ylang-Ylang"],
-        base: ["White Musk", "Sandalwood", "Light Amber"],
-      },
-    };
-  }
-
-  if (cat === "fresh" || cat === "aquatic" || cat.includes("морск") || cat.includes("акват")) {
-    return {
-      ru: {
-        top: ["Морской бриз", "Бергамот", "Зеленое яблоко"],
-        heart: ["Свежая мята", "Лаванда", "Шалфей"],
-        base: ["Кедр", "Серая амбра", "Белый мускус"],
-      },
-      en: {
-        top: ["Sea Breeze", "Bergamot", "Green Apple"],
-        heart: ["Fresh Mint", "Lavender", "Clary Sage"],
-        base: ["Cedarwood", "Grey Amber", "White Musk"],
-      },
-    };
-  }
-
-  if (cat === "fougere" || cat.includes("фужер")) {
-    return {
-      ru: {
-        top: ["Французская лаванда", "Бергамот", "Мускатный шалфей"],
-        heart: ["Герань", "Черный перец", "Дубовый мох"],
-        base: ["Ветивер", "Кумарин", "Благородный кедр"],
-      },
-      en: {
-        top: ["French Lavender", "Bergamot", "Clary Sage"],
-        heart: ["Geranium", "Black Pepper", "Oakmoss"],
-        base: ["Vetiver", "Coumarin", "Noble Cedar"],
-      },
-    };
-  }
-
-  if (cat === "citrus-fresh" || cat.includes("цитрус")) {
-    return {
-      ru: {
-        top: ["Сицилийский бергамот", "Грейпфрут", "Лайм"],
-        heart: ["Флердоранж", "Имбирь", "Кардамон"],
-        base: ["Ветивер", "Белый кедр", "Амброксан"],
-      },
-      en: {
-        top: ["Sicilian Bergamot", "Grapefruit", "Lime"],
-        heart: ["Orange Blossom", "Ginger", "Cardamom"],
-        base: ["Vetiver", "White Cedar", "Ambroxan"],
-      },
-    };
-  }
-
-  // Universal oriental spicy fallback
-  return {
+const SPECIFIC_PERFUME_PROFILES = [
+  {
+    match: ["supremacy noir"],
+    category: "oud",
+    categoryRu: "Уд и кожа",
+    categoryEn: "Oud & Leather",
     ru: {
-      top: ["Кардамон", "Розовый перец", "Корица"],
-      heart: ["Гвоздика", "Цветок шафрана", "Табак"],
-      base: ["Восточная амбра", "Бобы тонка", "Сандаловое дерево"],
+      top: ["Сицилийский бергамот", "Фиалка", "Еловая хвоя"],
+      heart: ["Кожаный аккорд", "Французская лаванда", "Сосна"],
+      base: ["Пачули", "Лабданум", "Благородный уд"],
     },
     en: {
-      top: ["Cardamom", "Pink Pepper", "Cinnamon"],
-      heart: ["Clove", "Saffron Blossom", "Tobacco"],
-      base: ["Oriental Amber", "Tonka Bean", "Sandalwood"],
+      top: ["Sicilian Bergamot", "Violet", "Spruce"],
+      heart: ["Leather Accord", "French Lavender", "Pine"],
+      base: ["Patchouli", "Labdanum", "Precious Oud"],
     },
+  },
+  {
+    match: ["9 pm pour femme", "9pm pour femme"],
+    category: "floral",
+    categoryRu: "Цветочные и фруктовые",
+    categoryEn: "Floral & Fruity",
+    ru: {
+      top: ["Малина", "Зеленое яблоко", "Фиалка", "Мандарин"],
+      heart: ["Дамасская роза", "Ирис", "Жасмин", "Пион"],
+      base: ["Кедр", "Пачули", "Золотая амбра", "Ваниль"],
+    },
+    en: {
+      top: ["Raspberry", "Green Apple", "Violet", "Mandarin"],
+      heart: ["Damask Rose", "Iris", "Jasmine", "Peony"],
+      base: ["Cedarwood", "Patchouli", "Golden Amber", "Vanilla"],
+    },
+  },
+  {
+    match: ["9 pm", "9pm"],
+    category: "gourmand",
+    categoryRu: "Гурманские и пряные",
+    categoryEn: "Gourmand & Spicy",
+    ru: {
+      top: ["Бергамот", "Корица", "Французская лаванда", "Зеленое яблоко"],
+      heart: ["Флердоранж", "Ландыш", "Кардамон"],
+      base: ["Мадагаскарская ваниль", "Бобы тонка", "Золотая амбра", "Пачули"],
+    },
+    en: {
+      top: ["Bergamot", "Cinnamon", "French Lavender", "Green Apple"],
+      heart: ["Orange Blossom", "Lily of the Valley", "Cardamom"],
+      base: ["Madagascar Vanilla", "Tonka Bean", "Golden Amber", "Patchouli"],
+    },
+  },
+  {
+    match: ["9 am dive", "9am dive"],
+    category: "fresh",
+    categoryRu: "Свежие и акватические",
+    categoryEn: "Fresh & Aquatic",
+    ru: {
+      top: ["Лимон", "Грейпфрут", "Свежая мята", "Розовый перец", "Черная смородина"],
+      heart: ["Зеленое яблоко", "Дымный ладан", "Кедр", "Морской бриз"],
+      base: ["Пачули", "Имбирь", "Сандал", "Белый мускус"],
+    },
+    en: {
+      top: ["Lemon", "Grapefruit", "Fresh Mint", "Pink Pepper", "Blackcurrant"],
+      heart: ["Green Apple", "Frankincense", "Cedarwood", "Sea Breeze"],
+      base: ["Patchouli", "Ginger", "Sandalwood", "White Musk"],
+    },
+  },
+  {
+    match: ["abadi saga"],
+    category: "fougere",
+    categoryRu: "Фужерные и цитрусовые",
+    categoryEn: "Fougère & Citrus",
+    ru: {
+      top: ["Сицилийский бергамот", "Грейпфрут", "Имбирь", "Кардамон"],
+      heart: ["Французская лаванда", "Дубовый мох", "Шалфей"],
+      base: ["Ветивер", "Благородный кедр", "Серая амбра", "Пачули"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Grapefruit", "Ginger", "Cardamom"],
+      heart: ["French Lavender", "Oakmoss", "Clary Sage"],
+      base: ["Vetiver", "Noble Cedar", "Grey Amber", "Patchouli"],
+    },
+  },
+  {
+    match: ["amber is great"],
+    category: "gourmand",
+    categoryRu: "Гурманские и амбровые",
+    categoryEn: "Gourmand & Amber",
+    ru: {
+      top: ["Шафран", "Бергамот", "Персик", "Мандарин"],
+      heart: ["Золотая амбра", "Карамель", "Груша", "Древесные ноты"],
+      base: ["Мадагаскарская ваниль", "Белый мускус", "Сандал", "Благородный уд"],
+    },
+    en: {
+      top: ["Saffron", "Bergamot", "Peach", "Mandarin"],
+      heart: ["Golden Amber", "Caramel", "Pear", "Woody Notes"],
+      base: ["Madagascar Vanilla", "White Musk", "Sandalwood", "Precious Oud"],
+    },
+  },
+  {
+    match: ["supremacy gold"],
+    category: "gourmand",
+    categoryRu: "Восточные и гурманские",
+    categoryEn: "Oriental & Gourmand",
+    ru: {
+      top: ["Фиалка", "Мускатный орех", "Персик", "Кумин"],
+      heart: ["Ирис", "Пачули", "Дамасская роза"],
+      base: ["Мадагаскарская ваниль", "Золотая амбра", "Благородный уд", "Бобы тонка"],
+    },
+    en: {
+      top: ["Violet", "Nutmeg", "Peach", "Cumin"],
+      heart: ["Iris", "Patchouli", "Damask Rose"],
+      base: ["Madagascar Vanilla", "Golden Amber", "Precious Oud", "Tonka Bean"],
+    },
+  },
+  {
+    match: ["ornament purple"],
+    category: "floral",
+    categoryRu: "Цветочные и гурманские",
+    categoryEn: "Floral & Gourmand",
+    ru: {
+      top: ["Малина", "Персик", "Мандарин", "Грейпфрут"],
+      heart: ["Флердоранж", "Жасмин", "Кардамон", "Иланг-иланг"],
+      base: ["Ваниль", "Белый мускус", "Пачули", "Миндаль", "Золотая амбра"],
+    },
+    en: {
+      top: ["Raspberry", "Peach", "Mandarin", "Grapefruit"],
+      heart: ["Orange Blossom", "Jasmine", "Cardamom", "Ylang-Ylang"],
+      base: ["Vanilla", "White Musk", "Patchouli", "Almond", "Golden Amber"],
+    },
+  },
+  {
+    match: ["ornament pour homme"],
+    category: "fougere",
+    categoryRu: "Фужерные и пряные",
+    categoryEn: "Fougère & Spicy",
+    ru: {
+      top: ["Зеленое яблоко", "Кардамон", "Черный перец", "Мускатный орех"],
+      heart: ["Французская лаванда", "Герань", "Пачули", "Гвоздика"],
+      base: ["Кедр", "Кожаный аккорд", "Сандал", "Золотая амбра", "Ветивер"],
+    },
+    en: {
+      top: ["Green Apple", "Cardamom", "Black Pepper", "Nutmeg"],
+      heart: ["French Lavender", "Geranium", "Patchouli", "Clove"],
+      base: ["Cedarwood", "Leather Accord", "Sandalwood", "Golden Amber", "Vetiver"],
+    },
+  },
+  {
+    match: ["mirsaal of trust"],
+    category: "spicy",
+    categoryRu: "Кожаные и пряные",
+    categoryEn: "Leather & Spicy",
+    ru: {
+      top: ["Ветивер", "Амброксан", "Шафран"],
+      heart: ["Малина", "Кожаный аккорд", "Кашмеран"],
+      base: ["Золотая амбра", "Гвоздика", "Белый мускус", "Кедр"],
+    },
+    en: {
+      top: ["Vetiver", "Ambroxan", "Saffron"],
+      heart: ["Raspberry", "Leather Accord", "Cashmeran"],
+      base: ["Golden Amber", "Clove", "White Musk", "Cedarwood"],
+    },
+  },
+  {
+    match: ["highness iv red"],
+    category: "spicy",
+    categoryRu: "Пряные и удовые",
+    categoryEn: "Spicy & Oud",
+    ru: {
+      top: ["Сицилийский бергамот", "Лимон", "Кардамон", "Корица"],
+      heart: ["Дамасская роза", "Благородный уд", "Кожаный аккорд"],
+      base: ["Серая амбра", "Белый мускус", "Сандал", "Пачули"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Lemon", "Cardamom", "Cinnamon"],
+      heart: ["Damask Rose", "Precious Oud", "Leather Accord"],
+      base: ["Grey Amber", "White Musk", "Sandalwood", "Patchouli"],
+    },
+  },
+  {
+    match: ["highness iii green"],
+    category: "fougere",
+    categoryRu: "Фужерные и древесные",
+    categoryEn: "Fougère & Woody",
+    ru: {
+      top: ["Бергамот", "Кипарис", "Розовый перец", "Мускатный орех"],
+      heart: ["Французская лаванда", "Дубовый мох", "Кедр", "Шалфей"],
+      base: ["Благородный уд", "Кожаный аккорд", "Ветивер", "Серая амбра"],
+    },
+    en: {
+      top: ["Bergamot", "Cypress", "Pink Pepper", "Nutmeg"],
+      heart: ["French Lavender", "Oakmoss", "Cedarwood", "Clary Sage"],
+      base: ["Precious Oud", "Leather Accord", "Vetiver", "Grey Amber"],
+    },
+  },
+  {
+    match: ["highness vi blue"],
+    category: "fresh",
+    categoryRu: "Свежие и морские",
+    categoryEn: "Fresh & Marine",
+    ru: {
+      top: ["Сицилийский бергамот", "Грейпфрут", "Морской бриз", "Мандарин"],
+      heart: ["Французская лаванда", "Мускатный орех", "Свежая мята", "Фиалка"],
+      base: ["Пачули", "Серая амбра", "Дубовый мох", "Белый мускус"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Grapefruit", "Sea Breeze", "Mandarin"],
+      heart: ["French Lavender", "Nutmeg", "Fresh Mint", "Violet"],
+      base: ["Patchouli", "Grey Amber", "Oakmoss", "White Musk"],
+    },
+  },
+  {
+    match: ["his highness white"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и свежие",
+    categoryEn: "Citrus & Fresh",
+    ru: {
+      top: ["Сицилийский бергамот", "Грейпфрут", "Мандарин", "Черная смородина"],
+      heart: ["Французская лаванда", "Фиалка", "Флердоранж", "Сандал"],
+      base: ["Белый мускус", "Дубовый мох", "Золотая амбра", "Ветивер"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Grapefruit", "Mandarin", "Blackcurrant"],
+      heart: ["French Lavender", "Violet", "Orange Blossom", "Sandalwood"],
+      base: ["White Musk", "Oakmoss", "Golden Amber", "Vetiver"],
+    },
+  },
+  {
+    match: ["desert rose"],
+    category: "floral",
+    categoryRu: "Цветочные и фруктовые",
+    categoryEn: "Floral & Fruity",
+    ru: {
+      top: ["Персик", "Малина", "Черная смородина", "Карамель"],
+      heart: ["Дамасская роза", "Белый мускус", "Жасмин"],
+      base: ["Сандал", "Мандарин", "Золотая амбра", "Ваниль"],
+    },
+    en: {
+      top: ["Peach", "Raspberry", "Blackcurrant", "Caramel"],
+      heart: ["Damask Rose", "White Musk", "Jasmine"],
+      base: ["Sandalwood", "Mandarin", "Golden Amber", "Vanilla"],
+    },
+  },
+  {
+    match: ["blooming bliss"],
+    category: "gourmand",
+    categoryRu: "Гурманские и цветочные",
+    categoryEn: "Gourmand & Floral",
+    ru: {
+      top: ["Мадагаскарская ваниль", "Бергамот", "Груша"],
+      heart: ["Карамель", "Пачули", "Миндаль", "Жасмин"],
+      base: ["Сандал", "Белый мускус", "Бобы тонка", "Кокос"],
+    },
+    en: {
+      top: ["Madagascar Vanilla", "Bergamot", "Pear"],
+      heart: ["Caramel", "Patchouli", "Almond", "Jasmine"],
+      base: ["Sandalwood", "White Musk", "Tonka Bean", "Coconut"],
+    },
+  },
+  {
+    match: ["amberythme"],
+    category: "gourmand",
+    categoryRu: "Гурманские и пряные",
+    categoryEn: "Gourmand & Spicy",
+    ru: {
+      top: ["Корица", "Бобы тонка", "Шафран", "Бергамот"],
+      heart: ["Ваниль", "Жасмин", "Золотая амбра", "Карамель"],
+      base: ["Серая амбра", "Сандал", "Кедр", "Миндаль"],
+    },
+    en: {
+      top: ["Cinnamon", "Tonka Bean", "Saffron", "Bergamot"],
+      heart: ["Vanilla", "Jasmine", "Golden Amber", "Caramel"],
+      base: ["Grey Amber", "Sandalwood", "Cedarwood", "Almond"],
+    },
+  },
+  {
+    match: ["patchouli on fire"],
+    category: "spicy",
+    categoryRu: "Древесные и пряные",
+    categoryEn: "Woody & Spicy",
+    ru: {
+      top: ["Дымный ладан", "Розовый перец", "Корица", "Бергамот"],
+      heart: ["Пачули", "Ирис", "Французская лаванда"],
+      base: ["Пачули", "Кожаный аккорд", "Ветивер", "Сандал", "Золотая амбра"],
+    },
+    en: {
+      top: ["Smoky Frankincense", "Pink Pepper", "Cinnamon", "Bergamot"],
+      heart: ["Patchouli", "Iris", "French Lavender"],
+      base: ["Patchouli", "Leather Accord", "Vetiver", "Sandalwood", "Golden Amber"],
+    },
+  },
+  {
+    match: ["rare tiffany"],
+    category: "floral",
+    categoryRu: "Цветочные и гурманские",
+    categoryEn: "Floral & Gourmand",
+    ru: {
+      top: ["Дамасская роза", "Иланг-иланг", "Жасмин", "Мандарин"],
+      heart: ["Карамель", "Мадагаскарская ваниль", "Белый мускус", "Персик"],
+      base: ["Сандал", "Розовый перец", "Имбирь", "Золотая амбра"],
+    },
+    en: {
+      top: ["Damask Rose", "Ylang-Ylang", "Jasmine", "Mandarin"],
+      heart: ["Caramel", "Madagascar Vanilla", "White Musk", "Peach"],
+      base: ["Sandalwood", "Pink Pepper", "Ginger", "Golden Amber"],
+    },
+  },
+  {
+    match: ["rare passion"],
+    category: "floral",
+    categoryRu: "Цветочные и восточные",
+    categoryEn: "Floral & Oriental",
+    ru: {
+      top: ["Дамасская роза", "Мандарин", "Белый мускус", "Бергамот"],
+      heart: ["Золотая амбра", "Ваниль", "Фиалка", "Ирис"],
+      base: ["Белый мускус", "Кожаный аккорд", "Сандал", "Кедр"],
+    },
+    en: {
+      top: ["Damask Rose", "Mandarin", "White Musk", "Bergamot"],
+      heart: ["Golden Amber", "Vanilla", "Violet", "Iris"],
+      base: ["White Musk", "Leather Accord", "Sandalwood", "Cedarwood"],
+    },
+  },
+  {
+    match: ["supremacy incense"],
+    category: "oud",
+    categoryRu: "Уд и дым",
+    categoryEn: "Oud & Smoke",
+    ru: {
+      top: ["Бергамот", "Кардамон", "Розовый перец", "Шалфей"],
+      heart: ["Дымный ладан", "Золотая амбра", "Опопонакс", "Лабданум"],
+      base: ["Благородный уд", "Кожаный аккорд", "Пачули", "Сандал"],
+    },
+    en: {
+      top: ["Bergamot", "Cardamom", "Pink Pepper", "Clary Sage"],
+      heart: ["Smoky Frankincense", "Golden Amber", "Opoponax", "Labdanum"],
+      base: ["Precious Oud", "Leather Accord", "Patchouli", "Sandalwood"],
+    },
+  },
+  {
+    match: ["not only intense"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и фужерные",
+    categoryEn: "Citrus & Fougère",
+    ru: {
+      top: ["Черная смородина", "Сицилийский бергамот", "Зеленое яблоко", "Грейпфрут"],
+      heart: ["Дубовый мох", "Пачули", "Французская лаванда", "Кардамон"],
+      base: ["Серая амбра", "Шафран", "Белый мускус", "Ветивер"],
+    },
+    en: {
+      top: ["Blackcurrant", "Sicilian Bergamot", "Green Apple", "Grapefruit"],
+      heart: ["Oakmoss", "Patchouli", "French Lavender", "Cardamom"],
+      base: ["Grey Amber", "Saffron", "White Musk", "Vetiver"],
+    },
+  },
+  {
+    match: ["supremacy silver", "supermacy silver"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и свежие",
+    categoryEn: "Citrus & Fresh",
+    ru: {
+      top: ["Зеленое яблоко", "Сицилийский бергамот", "Черная смородина", "Грейпфрут"],
+      heart: ["Дамасская роза", "Береза", "Жасмин", "Пачули"],
+      base: ["Дубовый мох", "Белый мускус", "Серая амбра", "Ваниль"],
+    },
+    en: {
+      top: ["Green Apple", "Sicilian Bergamot", "Blackcurrant", "Grapefruit"],
+      heart: ["Damask Rose", "Birch", "Jasmine", "Patchouli"],
+      base: ["Oakmoss", "White Musk", "Grey Amber", "Vanilla"],
+    },
+  },
+  {
+    match: ["supremacy pink"],
+    category: "floral",
+    categoryRu: "Цветочные и пудровые",
+    categoryEn: "Floral & Powdery",
+    ru: {
+      top: ["Розовый перец", "Фиалка", "Персик"],
+      heart: ["Дамасская роза", "Пион", "Жасмин", "Ирис"],
+      base: ["Белый мускус", "Золотая амбра", "Сандал"],
+    },
+    en: {
+      top: ["Pink Pepper", "Violet", "Peach"],
+      heart: ["Damask Rose", "Peony", "Jasmine", "Iris"],
+      base: ["White Musk", "Golden Amber", "Sandalwood"],
+    },
+  },
+  {
+    match: ["supremacy gala"],
+    category: "gourmand",
+    categoryRu: "Гурманские и цветочные",
+    categoryEn: "Gourmand & Floral",
+    ru: {
+      top: ["Груша", "Мандарин", "Черная смородина"],
+      heart: ["Флердоранж", "Жасмин", "Карамель", "Персик"],
+      base: ["Мадагаскарская ваниль", "Миндаль", "Пачули", "Сандал", "Бобы тонка"],
+    },
+    en: {
+      top: ["Pear", "Mandarin", "Blackcurrant"],
+      heart: ["Orange Blossom", "Jasmine", "Caramel", "Peach"],
+      base: ["Madagascar Vanilla", "Almond", "Patchouli", "Sandalwood", "Tonka Bean"],
+    },
+  },
+  {
+    match: ["supremacy in oud"],
+    category: "oud",
+    categoryRu: "Уд и специи",
+    categoryEn: "Oud & Spices",
+    ru: {
+      top: ["Шафран", "Мускатный орех", "Французская лаванда"],
+      heart: ["Благородный уд", "Карамель", "Дымный ладан"],
+      base: ["Пачули", "Белый мускус", "Золотая амбра"],
+    },
+    en: {
+      top: ["Saffron", "Nutmeg", "French Lavender"],
+      heart: ["Precious Oud", "Caramel", "Smoky Frankincense"],
+      base: ["Patchouli", "White Musk", "Golden Amber"],
+    },
+  },
+  {
+    match: ["kiaana crush", "kiana crush"],
+    category: "gourmand",
+    categoryRu: "Гурманские и фруктовые",
+    categoryEn: "Gourmand & Fruity",
+    ru: {
+      top: ["Шафран", "Персик", "Груша"],
+      heart: ["Благородный уд", "Пачули", "Ирис", "Карамель"],
+      base: ["Мадагаскарская ваниль", "Золотая амбра", "Белый мускус", "Сандал"],
+    },
+    en: {
+      top: ["Saffron", "Peach", "Pear"],
+      heart: ["Precious Oud", "Patchouli", "Iris", "Caramel"],
+      base: ["Madagascar Vanilla", "Golden Amber", "White Musk", "Sandalwood"],
+    },
+  },
+  {
+    match: ["cherry bouquet"],
+    category: "gourmand",
+    categoryRu: "Гурманские и вишневые",
+    categoryEn: "Gourmand & Cherry",
+    ru: {
+      top: ["Спелая вишня", "Миндаль", "Черная смородина"],
+      heart: ["Дамасская роза", "Жасмин самбак", "Корица"],
+      base: ["Мадагаскарская ваниль", "Бобы тонка", "Пачули", "Сандал"],
+    },
+    en: {
+      top: ["Ripe Cherry", "Almond", "Blackcurrant"],
+      heart: ["Damask Rose", "Jasmine Sambac", "Cinnamon"],
+      base: ["Madagascar Vanilla", "Tonka Bean", "Patchouli", "Sandalwood"],
+    },
+  },
+  {
+    match: ["modest une"],
+    category: "fougere",
+    categoryRu: "Фужерные и свежие",
+    categoryEn: "Fougère & Fresh",
+    ru: {
+      top: ["Розовый перец", "Французская лаванда", "Свежая мята", "Мускатный орех"],
+      heart: ["Сицилийский бергамот", "Грейпфрут", "Кедр"],
+      base: ["Серая амбра", "Ветивер", "Белый мускус", "Пачули"],
+    },
+    en: {
+      top: ["Pink Pepper", "French Lavender", "Fresh Mint", "Nutmeg"],
+      heart: ["Sicilian Bergamot", "Grapefruit", "Cedarwood"],
+      base: ["Grey Amber", "Vetiver", "White Musk", "Patchouli"],
+    },
+  },
+  {
+    match: ["oud rising"],
+    category: "oud",
+    categoryRu: "Уд и древесные",
+    categoryEn: "Oud & Woody",
+    ru: {
+      top: ["Кипарис", "Флердоранж", "Кардамон", "Бергамот"],
+      heart: ["Благородный уд", "Дымный ладан", "Кожаный аккорд", "Пачули"],
+      base: ["Бобы тонка", "Серая амбра", "Ветивер", "Белый мускус"],
+    },
+    en: {
+      top: ["Cypress", "Orange Blossom", "Cardamom", "Bergamot"],
+      heart: ["Precious Oud", "Smoky Frankincense", "Leather Accord", "Patchouli"],
+      base: ["Tonka Bean", "Grey Amber", "Vetiver", "White Musk"],
+    },
+  },
+  {
+    match: ["stardust"],
+    category: "gourmand",
+    categoryRu: "Гурманские и цветочные",
+    categoryEn: "Gourmand & Floral",
+    ru: {
+      top: ["Мандарин", "Бергамот", "Груша"],
+      heart: ["Дамасская роза", "Жасмин", "Флердоранж", "Карамель"],
+      base: ["Мадагаскарская ваниль", "Белый мускус", "Сандал", "Пачули"],
+    },
+    en: {
+      top: ["Mandarin", "Bergamot", "Pear"],
+      heart: ["Damask Rose", "Jasmine", "Orange Blossom", "Caramel"],
+      base: ["Madagascar Vanilla", "White Musk", "Sandalwood", "Patchouli"],
+    },
+  },
+  {
+    match: ["night shadow"],
+    category: "oud",
+    categoryRu: "Уд и табак",
+    categoryEn: "Oud & Tobacco",
+    ru: {
+      top: ["Дымный ладан", "Шафран", "Малина", "Кардамон"],
+      heart: ["Благородный уд", "Дамасская роза", "Кожаный аккорд", "Пачули"],
+      base: ["Табачный лист", "Серая амбра", "Кедр", "Бобы тонка"],
+    },
+    en: {
+      top: ["Smoky Frankincense", "Saffron", "Raspberry", "Cardamom"],
+      heart: ["Precious Oud", "Damask Rose", "Leather Accord", "Patchouli"],
+      base: ["Tobacco Leaf", "Grey Amber", "Cedarwood", "Tonka Bean"],
+    },
+  },
+  {
+    match: ["zimaya cult", "cult eau"],
+    category: "fougere",
+    categoryRu: "Фужерные и свежие",
+    categoryEn: "Fougère & Fresh",
+    ru: {
+      top: ["Сицилийский бергамот", "Зеленое яблоко", "Имбирь", "Французская лаванда"],
+      heart: ["Шалфей", "Свежая мята", "Герань", "Дубовый мох"],
+      base: ["Ветивер", "Кедр", "Бобы тонка", "Золотая амбра"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Green Apple", "Ginger", "French Lavender"],
+      heart: ["Clary Sage", "Fresh Mint", "Geranium", "Oakmoss"],
+      base: ["Vetiver", "Cedarwood", "Tonka Bean", "Golden Amber"],
+    },
+  },
+  {
+    match: ["enroute"],
+    category: "spicy",
+    categoryRu: "Пряные и кофейные",
+    categoryEn: "Spicy & Coffee",
+    ru: {
+      top: ["Кофе", "Кардамон", "Бергамот", "Корица"],
+      heart: ["Табачный лист", "Французская лаванда", "Кожаный аккорд", "Ирис"],
+      base: ["Бобы тонка", "Мадагаскарская ваниль", "Сандал", "Пачули"],
+    },
+    en: {
+      top: ["Coffee", "Cardamom", "Bergamot", "Cinnamon"],
+      heart: ["Tobacco Leaf", "French Lavender", "Leather Accord", "Iris"],
+      base: ["Tonka Bean", "Madagascar Vanilla", "Sandalwood", "Patchouli"],
+    },
+  },
+  {
+    match: ["naseej al khuzama"],
+    category: "fougere",
+    categoryRu: "Фужерные и лавандовые",
+    categoryEn: "Fougère & Lavender",
+    ru: {
+      top: ["Французская лаванда", "Сицилийский бергамот", "Мандарин"],
+      heart: ["Флердоранж", "Жасмин", "Фиалка", "Ирис"],
+      base: ["Мадагаскарская ваниль", "Белый мускус", "Бобы тонка", "Серая амбра"],
+    },
+    en: {
+      top: ["French Lavender", "Sicilian Bergamot", "Mandarin"],
+      heart: ["Orange Blossom", "Jasmine", "Violet", "Iris"],
+      base: ["Madagascar Vanilla", "White Musk", "Tonka Bean", "Grey Amber"],
+    },
+  },
+  {
+    match: ["paris oud"],
+    category: "oud",
+    categoryRu: "Уд и роза",
+    categoryEn: "Oud & Rose",
+    ru: {
+      top: ["Черная смородина", "Мандарин", "Бергамот", "Персик"],
+      heart: ["Дамасская роза", "Благородный уд", "Жасмин"],
+      base: ["Белый мускус", "Ваниль", "Золотая амбра", "Сандал"],
+    },
+    en: {
+      top: ["Blackcurrant", "Mandarin", "Bergamot", "Peach"],
+      heart: ["Damask Rose", "Precious Oud", "Jasmine"],
+      base: ["White Musk", "Vanilla", "Golden Amber", "Sandalwood"],
+    },
+  },
+  {
+    match: ["naseej al ward"],
+    category: "floral",
+    categoryRu: "Цветочные и удовые",
+    categoryEn: "Floral & Oud",
+    ru: {
+      top: ["Дамасская роза", "Малина", "Шафран"],
+      heart: ["Таифская роза", "Пачули", "Фиалка", "Жасмин"],
+      base: ["Благородный уд", "Белый мускус", "Золотая амбра", "Ваниль"],
+    },
+    en: {
+      top: ["Damask Rose", "Raspberry", "Saffron"],
+      heart: ["Taif Rose", "Patchouli", "Violet", "Jasmine"],
+      base: ["Precious Oud", "White Musk", "Golden Amber", "Vanilla"],
+    },
+  },
+  {
+    match: ["musk abiyad", "silver musk"],
+    category: "floral",
+    categoryRu: "Мускусные и пудровые",
+    categoryEn: "Musky & Powdery",
+    ru: {
+      top: ["Белый мускус", "Флердоранж", "Бергамот"],
+      heart: ["Ирис", "Дамасская роза", "Фиалка", "Жасмин"],
+      base: ["Сандал", "Белый мускус", "Бобы тонка", "Золотая амбра"],
+    },
+    en: {
+      top: ["White Musk", "Orange Blossom", "Bergamot"],
+      heart: ["Iris", "Damask Rose", "Violet", "Jasmine"],
+      base: ["Sandalwood", "White Musk", "Tonka Bean", "Golden Amber"],
+    },
+  },
+  {
+    match: ["adwaa al sharq"],
+    category: "spicy",
+    categoryRu: "Пряные и восточные",
+    categoryEn: "Spicy & Oriental",
+    ru: {
+      top: ["Шафран", "Кардамон", "Сицилийский бергамот"],
+      heart: ["Дамасская роза", "Золотая амбра", "Корица"],
+      base: ["Благородный уд", "Сандал", "Белый мускус", "Дымный ладан"],
+    },
+    en: {
+      top: ["Saffron", "Cardamom", "Sicilian Bergamot"],
+      heart: ["Damask Rose", "Golden Amber", "Cinnamon"],
+      base: ["Precious Oud", "Sandalwood", "White Musk", "Smoky Frankincense"],
+    },
+  },
+  {
+    match: ["sandal abiyad"],
+    category: "oud",
+    categoryRu: "Древесные и сандаловые",
+    categoryEn: "Woody & Sandalwood",
+    ru: {
+      top: ["Кардамон", "Бергамот", "Фиалка"],
+      heart: ["Сандал", "Ирис", "Кедр", "Дамасская роза"],
+      base: ["Белый мускус", "Сандаловое дерево", "Золотая амбра", "Кожаный аккорд"],
+    },
+    en: {
+      top: ["Cardamom", "Bergamot", "Violet"],
+      heart: ["Sandalwood", "Iris", "Cedarwood", "Damask Rose"],
+      base: ["White Musk", "Sandalwood", "Golden Amber", "Leather Accord"],
+    },
+  },
+  {
+    match: ["fakhr"],
+    category: "oud",
+    categoryRu: "Уд и специи",
+    categoryEn: "Oud & Spices",
+    ru: {
+      top: ["Шафран", "Корица", "Дымный ладан"],
+      heart: ["Благородный уд", "Дамасская роза", "Пачули"],
+      base: ["Золотая амбра", "Кожаный аккорд", "Сандал", "Табачный лист"],
+    },
+    en: {
+      top: ["Saffron", "Cinnamon", "Smoky Frankincense"],
+      heart: ["Precious Oud", "Damask Rose", "Patchouli"],
+      base: ["Golden Amber", "Leather Accord", "Sandalwood", "Tobacco Leaf"],
+    },
+  },
+  {
+    match: ["pink rose", "rose d' arabia", "soft & floral"],
+    category: "floral",
+    categoryRu: "Цветочные и розовые",
+    categoryEn: "Floral & Rose",
+    ru: {
+      top: ["Дамасская роза", "Пион", "Мандарин"],
+      heart: ["Таифская роза", "Жасмин", "Фиалка", "Иланг-иланг"],
+      base: ["Белый мускус", "Ваниль", "Сандал"],
+    },
+    en: {
+      top: ["Damask Rose", "Peony", "Mandarin"],
+      heart: ["Taif Rose", "Jasmine", "Violet", "Ylang-Ylang"],
+      base: ["White Musk", "Vanilla", "Sandalwood"],
+    },
+  },
+  {
+    match: ["tribute white"],
+    category: "floral",
+    categoryRu: "Цветочные и свежие",
+    categoryEn: "Floral & Fresh",
+    ru: {
+      top: ["Груша", "Сицилийский бергамот", "Флердоранж"],
+      heart: ["Жасмин", "Ирис", "Дамасская роза"],
+      base: ["Белый мускус", "Мадагаскарская ваниль", "Кедр", "Сандал"],
+    },
+    en: {
+      top: ["Pear", "Sicilian Bergamot", "Orange Blossom"],
+      heart: ["Jasmine", "Iris", "Damask Rose"],
+      base: ["White Musk", "Madagascar Vanilla", "Cedarwood", "Sandalwood"],
+    },
+  },
+  {
+    match: ["naseej al kiswah"],
+    category: "oud",
+    categoryRu: "Уд и ладан",
+    categoryEn: "Oud & Incense",
+    ru: {
+      top: ["Шафран", "Дымный ладан", "Розовый перец"],
+      heart: ["Благородный уд", "Дамасская роза", "Пачули"],
+      base: ["Серая амбра", "Сандал", "Белый мускус", "Кожаный аккорд"],
+    },
+    en: {
+      top: ["Saffron", "Smoky Frankincense", "Pink Pepper"],
+      heart: ["Precious Oud", "Damask Rose", "Patchouli"],
+      base: ["Grey Amber", "Sandalwood", "White Musk", "Leather Accord"],
+    },
+  },
+  {
+    match: ["palace of dreams"],
+    category: "gourmand",
+    categoryRu: "Гурманские и кофейные",
+    categoryEn: "Gourmand & Coffee",
+    ru: {
+      top: ["Карамель", "Миндаль", "Груша", "Персик"],
+      heart: ["Мадагаскарская ваниль", "Кофе", "Жасмин", "Дамасская роза"],
+      base: ["Бобы тонка", "Белый мускус", "Сандал", "Золотая амбра"],
+    },
+    en: {
+      top: ["Caramel", "Almond", "Pear", "Peach"],
+      heart: ["Madagascar Vanilla", "Coffee", "Jasmine", "Damask Rose"],
+      base: ["Tonka Bean", "White Musk", "Sandalwood", "Golden Amber"],
+    },
+  },
+  {
+    match: ["evoke gold"],
+    category: "floral",
+    categoryRu: "Цветочные и фруктовые",
+    categoryEn: "Floral & Fruity",
+    ru: {
+      top: ["Розовый перец", "Черная смородина", "Зеленое яблоко"],
+      heart: ["Пион", "Дамасская роза", "Жасмин"],
+      base: ["Мадагаскарская ваниль", "Белый мускус", "Бобы тонка", "Сандал"],
+    },
+    en: {
+      top: ["Pink Pepper", "Blackcurrant", "Green Apple"],
+      heart: ["Peony", "Damask Rose", "Jasmine"],
+      base: ["Madagascar Vanilla", "White Musk", "Tonka Bean", "Sandalwood"],
+    },
+  },
+  {
+    match: ["amaze her"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и цветочные",
+    categoryEn: "Citrus & Floral",
+    ru: {
+      top: ["Флердоранж", "Мандарин", "Сицилийский бергамот", "Груша"],
+      heart: ["Дамасская роза", "Персик", "Жасмин"],
+      base: ["Белый мускус", "Бобы тонка", "Мадагаскарская ваниль"],
+    },
+    en: {
+      top: ["Orange Blossom", "Mandarin", "Sicilian Bergamot", "Pear"],
+      heart: ["Damask Rose", "Peach", "Jasmine"],
+      base: ["White Musk", "Tonka Bean", "Madagascar Vanilla"],
+    },
+  },
+  {
+    match: ["incense wood"],
+    category: "oud",
+    categoryRu: "Уд и дым",
+    categoryEn: "Oud & Smoke",
+    ru: {
+      top: ["Кардамон", "Розовый перец", "Бергамот", "Шафран"],
+      heart: ["Дымный ладан", "Кедр", "Пачули"],
+      base: ["Благородный уд", "Сандал", "Ваниль", "Белый мускус"],
+    },
+    en: {
+      top: ["Cardamom", "Pink Pepper", "Bergamot", "Saffron"],
+      heart: ["Smoky Frankincense", "Cedarwood", "Patchouli"],
+      base: ["Precious Oud", "Sandalwood", "Vanilla", "White Musk"],
+    },
+  },
+  {
+    match: ["kuro"],
+    category: "fresh",
+    categoryRu: "Свежие и пряные",
+    categoryEn: "Fresh & Spicy",
+    ru: {
+      top: ["Сицилийский бергамот", "Морской бриз", "Розовый перец", "Имбирь"],
+      heart: ["Французская лаванда", "Герань", "Свежая мята", "Дубовый мох"],
+      base: ["Ветивер", "Пачули", "Серая амбра", "Кедр"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Sea Breeze", "Pink Pepper", "Ginger"],
+      heart: ["French Lavender", "Geranium", "Fresh Mint", "Oakmoss"],
+      base: ["Vetiver", "Patchouli", "Grey Amber", "Cedarwood"],
+    },
+  },
+  {
+    match: ["amber leather"],
+    category: "oud",
+    categoryRu: "Кожаные и амбровые",
+    categoryEn: "Leather & Amber",
+    ru: {
+      top: ["Кардамон", "Шафран", "Розовый перец"],
+      heart: ["Кожаный аккорд", "Жасмин самбак", "Дымный ладан"],
+      base: ["Золотая амбра", "Пачули", "Дубовый мох", "Благородный уд"],
+    },
+    en: {
+      top: ["Cardamom", "Saffron", "Pink Pepper"],
+      heart: ["Leather Accord", "Jasmine Sambac", "Smoky Frankincense"],
+      base: ["Golden Amber", "Patchouli", "Oakmoss", "Precious Oud"],
+    },
+  },
+  {
+    match: ["evoke midnight"],
+    category: "spicy",
+    categoryRu: "Пряные и ягодные",
+    categoryEn: "Spicy & Berry",
+    ru: {
+      top: ["Малина", "Черная смородина", "Розовый перец", "Спелая вишня"],
+      heart: ["Фиалка", "Дамасская роза", "Шафран", "Кофе"],
+      base: ["Пачули", "Белый мускус", "Бобы тонка", "Ваниль"],
+    },
+    en: {
+      top: ["Raspberry", "Blackcurrant", "Pink Pepper", "Ripe Cherry"],
+      heart: ["Violet", "Damask Rose", "Saffron", "Coffee"],
+      base: ["Patchouli", "White Musk", "Tonka Bean", "Vanilla"],
+    },
+  },
+  {
+    match: ["evoke her"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и шипровые",
+    categoryEn: "Citrus & Chypre",
+    ru: {
+      top: ["Сицилийский бергамот", "Розовый перец", "Грейпфрут"],
+      heart: ["Дамасская роза", "Ирис", "Жасмин"],
+      base: ["Пачули", "Мадагаскарская ваниль", "Дубовый мох", "Белый мускус"],
+    },
+    en: {
+      top: ["Sicilian Bergamot", "Pink Pepper", "Grapefruit"],
+      heart: ["Damask Rose", "Iris", "Jasmine"],
+      base: ["Patchouli", "Madagascar Vanilla", "Oakmoss", "White Musk"],
+    },
+  },
+  {
+    match: ["aristocrat"],
+    category: "citrus-fresh",
+    categoryRu: "Цитрусовые и амбровые",
+    categoryEn: "Citrus & Amber",
+    ru: {
+      top: ["Мандарин", "Сицилийский бергамот", "Грейпфрут"],
+      heart: ["Шафран", "Карамель", "Жасмин"],
+      base: ["Золотая амбра", "Дубовый мох", "Белый мускус", "Благородный уд"],
+    },
+    en: {
+      top: ["Mandarin", "Sicilian Bergamot", "Grapefruit"],
+      heart: ["Saffron", "Caramel", "Jasmine"],
+      base: ["Golden Amber", "Oakmoss", "White Musk", "Precious Oud"],
+    },
+  },
+  {
+    match: ["shadow for her"],
+    category: "floral",
+    categoryRu: "Цветочные и древесные",
+    categoryEn: "Floral & Woody",
+    ru: {
+      top: ["Французская лаванда", "Персик", "Мандарин"],
+      heart: ["Флердоранж", "Пачули", "Иланг-иланг", "Дамасская роза"],
+      base: ["Белый мускус", "Серая амбра", "Кедр", "Сандал"],
+    },
+    en: {
+      top: ["French Lavender", "Peach", "Mandarin"],
+      heart: ["Orange Blossom", "Patchouli", "Ylang-Ylang", "Damask Rose"],
+      base: ["White Musk", "Grey Amber", "Cedarwood", "Sandalwood"],
+    },
+  },
+];
+
+export function inferPerfumeProfile(perfume) {
+  const name = ((perfume && (perfume.name || perfume.title)) || "").toLowerCase();
+  const cat = ((perfume && (perfume.category || perfume.categoryRu || perfume.info?.category)) || "").toLowerCase();
+
+  for (const profile of SPECIFIC_PERFUME_PROFILES) {
+    if (profile.match.some((kw) => name.includes(kw))) {
+      return profile;
+    }
+  }
+
+  if (name.includes("cherry") || name.includes("вишн")) {
+    return {
+      category: "gourmand",
+      categoryRu: "Гурманские",
+      categoryEn: "Gourmand",
+      ru: {
+        top: ["Спелая вишня", "Миндаль", "Черная смородина"],
+        heart: ["Дамасская роза", "Жасмин", "Корица"],
+        base: ["Мадагаскарская ваниль", "Бобы тонка", "Сандал"],
+      },
+      en: {
+        top: ["Ripe Cherry", "Almond", "Blackcurrant"],
+        heart: ["Damask Rose", "Jasmine", "Cinnamon"],
+        base: ["Madagascar Vanilla", "Tonka Bean", "Sandalwood"],
+      },
+    };
+  }
+
+  if (name.includes("vanilla") || name.includes("khamrah") || name.includes("yara") || name.includes("caramel") || cat === "gourmand" || cat.includes("гурман")) {
+    return {
+      category: "gourmand",
+      categoryRu: "Гурманские",
+      categoryEn: "Gourmand",
+      ru: {
+        top: ["Мадагаскарская ваниль", "Миндаль", "Корица", "Бергамот"],
+        heart: ["Карамель", "Дамасская роза", "Кофе", "Персик"],
+        base: ["Бобы тонка", "Белый мускус", "Золотая амбра", "Сандал"],
+      },
+      en: {
+        top: ["Madagascar Vanilla", "Almond", "Cinnamon", "Bergamot"],
+        heart: ["Caramel", "Damask Rose", "Coffee", "Peach"],
+        base: ["Tonka Bean", "White Musk", "Golden Amber", "Sandalwood"],
+      },
+    };
+  }
+
+  if (name.includes("oud") || name.includes("incense") || name.includes("wood") || name.includes("sandal") || name.includes("leather") || cat === "oud" || cat.includes("древес")) {
+    return {
+      category: "oud",
+      categoryRu: "Уд и дым",
+      categoryEn: "Oud & Smoke",
+      ru: {
+        top: ["Шафран", "Кардамон", "Французская лаванда"],
+        heart: ["Благородный уд", "Кожаный аккорд", "Пачули"],
+        base: ["Серая амбра", "Дымный ладан", "Сандал", "Белый мускус"],
+      },
+      en: {
+        top: ["Saffron", "Cardamom", "French Lavender"],
+        heart: ["Precious Oud", "Leather Accord", "Patchouli"],
+        base: ["Grey Amber", "Smoky Frankincense", "Sandalwood", "White Musk"],
+      },
+    };
+  }
+
+  if (name.includes("rose") || name.includes("ward") || name.includes("floral") || name.includes("bloom") || name.includes("pink") || cat === "floral" || cat.includes("цвет")) {
+    return {
+      category: "floral",
+      categoryRu: "Цветочные",
+      categoryEn: "Floral",
+      ru: {
+        top: ["Флердоранж", "Розовый перец", "Мандарин", "Груша"],
+        heart: ["Дамасская роза", "Жасмин самбак", "Иланг-иланг", "Ирис"],
+        base: ["Белый мускус", "Сандал", "Золотая амбра", "Ваниль"],
+      },
+      en: {
+        top: ["Orange Blossom", "Pink Pepper", "Mandarin", "Pear"],
+        heart: ["Damask Rose", "Jasmine Sambac", "Ylang-Ylang", "Iris"],
+        base: ["White Musk", "Sandalwood", "Golden Amber", "Vanilla"],
+      },
+    };
+  }
+
+  if (name.includes("blue") || name.includes("aqua") || name.includes("dive") || name.includes("ocean") || cat === "fresh" || cat === "aquatic" || cat.includes("морск") || cat.includes("свеж")) {
+    return {
+      category: "fresh",
+      categoryRu: "Свежие",
+      categoryEn: "Fresh",
+      ru: {
+        top: ["Морской бриз", "Сицилийский бергамот", "Зеленое яблоко", "Грейпфрут"],
+        heart: ["Свежая мята", "Французская лаванда", "Шалфей"],
+        base: ["Кедр", "Серая амбра", "Белый мускус", "Ветивер"],
+      },
+      en: {
+        top: ["Sea Breeze", "Sicilian Bergamot", "Green Apple", "Grapefruit"],
+        heart: ["Fresh Mint", "French Lavender", "Clary Sage"],
+        base: ["Cedarwood", "Grey Amber", "White Musk", "Vetiver"],
+      },
+    };
+  }
+
+  if (name.includes("green") || name.includes("khuzama") || name.includes("lavender") || name.includes("homme") || cat === "fougere" || cat.includes("фужер")) {
+    return {
+      category: "fougere",
+      categoryRu: "Фужерные",
+      categoryEn: "Fougère",
+      ru: {
+        top: ["Французская лаванда", "Сицилийский бергамот", "Шалфей"],
+        heart: ["Герань", "Розовый перец", "Дубовый мох", "Свежая мята"],
+        base: ["Ветивер", "Бобы тонка", "Кедр", "Пачули"],
+      },
+      en: {
+        top: ["French Lavender", "Sicilian Bergamot", "Clary Sage"],
+        heart: ["Geranium", "Pink Pepper", "Oakmoss", "Fresh Mint"],
+        base: ["Vetiver", "Tonka Bean", "Cedarwood", "Patchouli"],
+      },
+    };
+  }
+
+  if (name.includes("citrus") || name.includes("silver") || name.includes("white") || cat === "citrus-fresh" || cat.includes("цитрус")) {
+    return {
+      category: "citrus-fresh",
+      categoryRu: "Цитрусовые",
+      categoryEn: "Citrus",
+      ru: {
+        top: ["Сицилийский бергамот", "Грейпфрут", "Мандарин", "Зеленое яблоко"],
+        heart: ["Флердоранж", "Имбирь", "Кардамон"],
+        base: ["Ветивер", "Кедр", "Белый мускус", "Серая амбра"],
+      },
+      en: {
+        top: ["Sicilian Bergamot", "Grapefruit", "Mandarin", "Green Apple"],
+        heart: ["Orange Blossom", "Ginger", "Cardamom"],
+        base: ["Vetiver", "Cedarwood", "White Musk", "Grey Amber"],
+      },
+    };
+  }
+
+  return {
+    category: "spicy",
+    categoryRu: "Пряные и восточные",
+    categoryEn: "Spices & Oriental",
+    ru: {
+      top: ["Кардамон", "Розовый перец", "Корица", "Шафран"],
+      heart: ["Дамасская роза", "Табачный лист", "Пачули", "Кофе"],
+      base: ["Золотая амбра", "Бобы тонка", "Сандал", "Ваниль"],
+    },
+    en: {
+      top: ["Cardamom", "Pink Pepper", "Cinnamon", "Saffron"],
+      heart: ["Damask Rose", "Tobacco Leaf", "Patchouli", "Coffee"],
+      base: ["Golden Amber", "Tonka Bean", "Sandalwood", "Vanilla"],
+    },
+  };
+}
+
+export function getHarmoniousNotes(perfume) {
+  const profile = inferPerfumeProfile(perfume);
+  return {
+    ru: profile.ru,
+    en: profile.en,
   };
 }
 
@@ -183,32 +1086,61 @@ export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
   const name = p.name || p.title || "";
   const brand = p.brand || "Al-Warda";
-  const notesFallback = getHarmoniousNotes(p);
+  const profile = inferPerfumeProfile(p);
 
   const topRu = (Array.isArray(p.topNotesRu) && p.topNotesRu.length > 0)
     ? p.topNotesRu
-    : (Array.isArray(p.topNotes) && p.topNotes.length > 0 ? p.topNotes : notesFallback.ru.top);
+    : (Array.isArray(p.topNotes) && p.topNotes.length > 0 ? p.topNotes : profile.ru.top);
 
   const heartRu = (Array.isArray(p.heartNotesRu) && p.heartNotesRu.length > 0)
     ? p.heartNotesRu
-    : (Array.isArray(p.heartNotes) && p.heartNotes.length > 0 ? p.heartNotes : notesFallback.ru.heart);
+    : (Array.isArray(p.heartNotes) && p.heartNotes.length > 0 ? p.heartNotes : profile.ru.heart);
 
   const baseRu = (Array.isArray(p.baseNotesRu) && p.baseNotesRu.length > 0)
     ? p.baseNotesRu
-    : (Array.isArray(p.baseNotes) && p.baseNotes.length > 0 ? p.baseNotes : notesFallback.ru.base);
+    : (Array.isArray(p.baseNotes) && p.baseNotes.length > 0 ? p.baseNotes : profile.ru.base);
 
-  const topEn = (Array.isArray(p.topNotesEn) && p.topNotesEn.length > 0) ? p.topNotesEn : notesFallback.en.top;
-  const heartEn = (Array.isArray(p.heartNotesEn) && p.heartNotesEn.length > 0) ? p.heartNotesEn : notesFallback.en.heart;
-  const baseEn = (Array.isArray(p.baseNotesEn) && p.baseNotesEn.length > 0) ? p.baseNotesEn : notesFallback.en.base;
+  const topEn = (Array.isArray(p.topNotesEn) && p.topNotesEn.length > 0) ? p.topNotesEn : profile.en.top;
+  const heartEn = (Array.isArray(p.heartNotesEn) && p.heartNotesEn.length > 0) ? p.heartNotesEn : profile.en.heart;
+  const baseEn = (Array.isArray(p.baseNotesEn) && p.baseNotesEn.length > 0) ? p.baseNotesEn : profile.en.base;
+
+  const category = (!p.category || p.category === "spicy") ? profile.category : p.category;
+  const categoryRu = (!p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные")
+    ? profile.categoryRu
+    : p.categoryRu;
+  const categoryEn = (!p.categoryEn || p.categoryEn === "Oriental")
+    ? profile.categoryEn
+    : p.categoryEn;
+
+  let notesSummaryRu = p.notesSummaryRu || p.notesSummary || "";
+  if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu === brand) {
+    notesSummaryRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)].join(" · ");
+  }
+
+  let notesSummaryEn = p.notesSummaryEn || "";
+  if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn === brand) {
+    notesSummaryEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)].join(" · ");
+  }
 
   let descRu = p.descriptionRu || p.description;
-  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.length < 30) {
-    descRu = `${name} от дома ${brand} — роскошный восточный аромат (${p.categoryRu || "восточные"}). Композиция открывается аккордами: ${topRu.join(", ")}, переходит в сердце из ${heartRu.join(", ")} и завершается чувственным шлейфом: ${baseRu.join(", ")}.`;
+  if (
+    !descRu ||
+    descRu.includes("Сертифицированная оригинальная") ||
+    descRu.includes("оригинальный премиальный парфюм") ||
+    descRu.includes("Роскошный восточный аромат Al-Warda") ||
+    descRu.length < 40
+  ) {
+    descRu = `${name} от дома ${brand} — роскошный восточный аромат (${categoryRu.toLowerCase()}). Композиция открывается аккордами: ${topRu.join(", ")}, переходит в сердце из ${heartRu.join(", ")} и завершается чувственным шлейфом: ${baseRu.join(", ")}.`;
   }
 
   let descEn = p.descriptionEn;
-  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.length < 30) {
-    descEn = `${name} by ${brand} is an authentic luxury Arabian creation (${p.categoryEn || "oriental"}). Opens with vibrant notes of ${topEn.join(", ")}, unfolds into a rich heart of ${heartEn.join(", ")}, resting upon an opulent sillage of ${baseEn.join(", ")}.`;
+  if (
+    !descEn ||
+    descEn.includes("Сертифицированная оригинальная") ||
+    descEn.includes("exquisite authentic luxury Arabian fragrance") ||
+    descEn.length < 40
+  ) {
+    descEn = `${name} by ${brand} is an authentic luxury Arabian creation (${categoryEn.toLowerCase()}). Opens with vibrant notes of ${topEn.join(", ")}, unfolds into a rich heart of ${heartEn.join(", ")}, resting upon an opulent sillage of ${baseEn.join(", ")}.`;
   }
 
   const rawImage = p.rawImage || p.info?.rawImage || null;
@@ -219,6 +1151,13 @@ export function ensurePerfumeEnrichment(p) {
 
   return {
     ...p,
+    category,
+    categoryRu,
+    categoryEn,
+    categoryName: categoryRu,
+    notesSummary: notesSummaryRu,
+    notesSummaryRu,
+    notesSummaryEn,
     image: resolvedImg,
     fullCardImage: resolvedImg,
     rawImage: rawImage || p.rawImage || null,
@@ -362,7 +1301,7 @@ export async function fetchPerfumesFromSupabase() {
             dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
           };
           perfumeObj.url = getPerfumeUrl(perfumeObj);
-          return perfumeObj;
+          return ensurePerfumeEnrichment(perfumeObj);
         });
         memoryPerfumesCache = mapped;
         return mapped;
