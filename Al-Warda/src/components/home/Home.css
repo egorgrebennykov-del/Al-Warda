@@ -10,12 +10,12 @@
 /* 1. HERO SECTION */
 .warda-hero {
   display: grid;
-  grid-template-columns: 0.76fr 1.44fr;
+  grid-template-columns: 0.74fr 1.46fr;
   align-items: center;
   gap: 1rem;
-  min-height: 620px;
-  padding-top: 2rem;
-  padding-bottom: 2.75rem;
+  min-height: 660px;
+  padding-top: 0.25rem;
+  padding-bottom: 2.25rem;
   position: relative;
 }
 
@@ -113,8 +113,9 @@
 .warda-hero__visual {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
+  align-items: flex-start;
   position: relative;
+  margin-top: -1.75rem;
   margin-left: -3.5rem;
   margin-right: -3rem;
   z-index: 1;
@@ -138,7 +139,8 @@
 .warda-hero__img-frame {
   position: relative;
   width: 100%;
-  max-width: 980px;
+  max-width: 1060px;
+  min-height: 540px;
   border-radius: 0;
   overflow: hidden;
   background: transparent;
@@ -163,9 +165,10 @@
 
 .warda-hero__img {
   width: 100%;
-  height: auto;
+  height: clamp(500px, 58vh, 670px);
   display: block;
   object-fit: cover;
+  object-position: center 45%;
   background: transparent;
   transform: scale(1.06);
   filter: contrast(1.06) saturate(1.08) brightness(1.04);
@@ -559,17 +562,24 @@
   .warda-hero {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 1.5rem;
+    gap: 1rem;
     min-height: auto;
-    padding-top: 2.5rem;
+    padding-top: 1.25rem;
   }
   .warda-hero__content {
     align-items: center;
   }
   .warda-hero__visual {
+    margin-top: -0.5rem;
     margin-left: -1rem;
     margin-right: -1rem;
     justify-content: center;
+  }
+  .warda-hero__img-frame {
+    min-height: 360px;
+  }
+  .warda-hero__img {
+    height: clamp(360px, 48vh, 480px);
   }
   .warda-bestsellers__grid {
     gap: 1.25rem;
