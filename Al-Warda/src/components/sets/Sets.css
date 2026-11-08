@@ -1,0 +1,160 @@
+.warda-sets-hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.warda-sets-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  background: rgba(212, 175, 55, 0.08);
+  color: #d4af37;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+
+.warda-sets-controls {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  background: linear-gradient(180deg, rgba(20, 15, 10, 0.92), rgba(11, 8, 5, 0.96));
+  border: 1px solid rgba(197, 160, 89, 0.26);
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.warda-sets-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.warda-sets-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  background: rgba(255, 255, 255, 0.02);
+  color: #dfd3c3;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.warda-sets-tab:hover {
+  border-color: rgba(212, 175, 55, 0.65);
+  color: #f7ede2;
+}
+
+.warda-sets-tab.active {
+  background: linear-gradient(135deg, #d4af37 0%, #9b7424 100%);
+  border-color: #e6c665;
+  color: #0b0806;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.28);
+}
+
+.warda-sets-subbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.warda-sets-search {
+  position: relative;
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+}
+
+.warda-sets-search > i {
+  position: absolute;
+  left: 0.95rem;
+  color: #c5a059;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.warda-sets-search input {
+  width: 100%;
+  padding: 0.65rem 2.4rem 0.65rem 2.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  background: rgba(10, 7, 5, 0.88);
+  color: #f7ede2;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.warda-sets-search input:focus {
+  border-color: #d4af37;
+}
+
+.warda-sets-search-clear {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  color: #a89882;
+  cursor: pointer;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+}
+
+.warda-sets-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.warda-set-card__badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  background: rgba(12, 9, 6, 0.86);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  color: #e6c665;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 768px) {
+  .warda-sets-subbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .warda-sets-selects {
+    width: 100%;
+  }
+
+  .warda-sets-selects .warda-sort-select {
+    flex: 1 1 140px;
+  }
+}

@@ -71,6 +71,11 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/sets" className="footer__link">
+                {isRu ? "Подарочные сеты" : "Gift & Discovery Sets"}
+              </Link>
+            </li>
+            <li>
               <Link to="/featured" className="footer__link warda-footer__collection-link">
                 {isRu ? "Вся коллекция" : "All Fragrances"} →
               </Link>
@@ -90,7 +95,7 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/testimonial" className="footer__link">
+              <Link to="/about" className="footer__link">
                 {isRu ? "О бренде Al-Warda" : "About Al-Warda"}
               </Link>
             </li>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { getPerfumes, getCategories, getPerfumeUrl } from "../../../utils/perfumes";
+import { getPerfumes, getCategories, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
@@ -185,7 +185,7 @@ export default function Featured() {
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
-          setPerfumes(items);
+          setPerfumes(items.filter((p) => !isPerfumeSet(p)));
           setLoading(false);
         }
       })
@@ -196,7 +196,7 @@ export default function Featured() {
 
     const timer = window.setInterval(() => {
       getPerfumes({ refresh: true })
-        .then((items) => { if (!cancelled) setPerfumes(items); })
+        .then((items) => { if (!cancelled) setPerfumes(items.filter((p) => !isPerfumeSet(p))); })
         .catch((err) => console.warn("Could not refresh catalog:", err));
     }, 30000);
     return () => {

@@ -18,6 +18,19 @@ function formatPrice(price, currency = "EUR", language = "ru") {
   }).format(price);
 }
 
+function formatPerfumeCount(count, language = "ru") {
+  const n = Math.abs(Number(count) || 0);
+  if (language === "ru") {
+    const mod100 = n % 100;
+    const mod10 = n % 10;
+    if (mod100 >= 11 && mod100 <= 19) return `${n} парфюмов`;
+    if (mod10 === 1) return `${n} парфюм`;
+    if (mod10 >= 2 && mod10 <= 4) return `${n} парфюма`;
+    return `${n} парфюмов`;
+  }
+  return `${n} ${n === 1 ? "perfume" : "perfumes"}`;
+}
+
 export default function Cart({ onSearch }) {
   const { language, t } = useLanguage();
   const location = useLocation();
@@ -90,7 +103,7 @@ export default function Cart({ onSearch }) {
           <p className="cart__count">
             {loading
               ? (language === "ru" ? "Загрузка..." : "Loading...")
-              : `${totalItems} ${language === "ru" ? "парфюм(ов)" : "item(s)"}`}
+              : formatPerfumeCount(totalItems, language)}
           </p>
         </div>
         {!loading && items.length > 0 && (

@@ -21,6 +21,8 @@ if (typeof window !== "undefined") {
 }
 
 const loadFeatured = () => import("./components/featured/Featured");
+const loadSets = () => import("./components/sets/Sets");
+const loadAbout = () => import("./components/about/About");
 const loadDiscount = () => import("./components/discount/Discount");
 const loadNewBooks = () => import("./components/newbooks/NewBooks");
 const loadTestimonial = () => import("./components/testimonial/Testimonial");
@@ -39,6 +41,8 @@ const loadNotFound = () => import("./components/notfound/NotFound");
 const loadWardaAssistant = () => import("./components/warda/WardaAssistant");
 
 const Featured = lazy(loadFeatured);
+const Sets = lazy(loadSets);
+const About = lazy(loadAbout);
 const Discount = lazy(loadDiscount);
 const NewBooks = lazy(loadNewBooks);
 const Testimonial = lazy(loadTestimonial);
@@ -291,10 +295,12 @@ function App() {
           <Route path="/book/:bookId" element={<BookDetails />} />
           <Route path="/shop" element={<Featured />} />
           <Route path="/featured" element={<Featured />} />
+          <Route path="/sets" element={<Sets />} />
           <Route path="/discount" element={<Discount />} />
           <Route path="/new" element={<NewBooks />} />
-          <Route path="/about" element={<Testimonial />} />
-          <Route path="/testimonial" element={<Testimonial />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/testimonial" element={<About />} />
+          <Route path="/reviews" element={<Testimonial />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />

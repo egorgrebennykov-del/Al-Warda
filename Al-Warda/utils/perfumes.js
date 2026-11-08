@@ -1647,10 +1647,29 @@ export async function getPerfumeById(id, options = {}) {
   return null;
 }
 
+export function isPerfumeSet(p) {
+  if (!p) return false;
+  if (p.isSet || p.category === "sets" || p.categorySlug === "sets") return true;
+  const text = `${p.name || ""} ${p.title || ""} ${p.volume || ""}`.toLowerCase();
+  return (
+    /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i.test(text) ||
+    /\+\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
+    /\b\d+\s*[x×]\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
+    /\b\d+\s*ml\s+(shower\s*gel|body\s*lotion|body\s*milk|after\s*shave|deo|deodorant)\b/i.test(text)
+  );
+}
+
+export async function getPerfumeSets(options = {}) {
+  const all = await getPerfumes(options);
+  return all.filter((p) => isPerfumeSet(p));
+}
+
 export async function getBestSellerPerfumes(options = {}) {
   const all = await getPerfumes(options);
-  const best = all.filter((p) => p.isBestSeller);
-  return best.length > 0 ? best.slice(0, 3) : all.slice(0, 3);
+  const nonSets = all.filter((p) => !isPerfumeSet(p));
+  const pool = nonSets.length >= 3 ? nonSets : all;
+  const best = pool.filter((p) => p.isBestSeller);
+  return best.length > 0 ? best.slice(0, 3) : pool.slice(0, 3);
 }
 
 export function getCategories() {

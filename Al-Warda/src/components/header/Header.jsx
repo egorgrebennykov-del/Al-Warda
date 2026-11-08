@@ -186,7 +186,12 @@ export default function Header({ theme, isLight, onSearch }) {
               </NavLink>
             </li>
             <li className="warda-nav__item">
-              <NavLink to="/testimonial" className={navClass}>
+              <NavLink to="/sets" className={navClass}>
+                <span>{language === "ru" ? "СЕТЫ" : "SETS"}</span>
+              </NavLink>
+            </li>
+            <li className="warda-nav__item">
+              <NavLink to="/about" className={navClass}>
                 <span>{language === "ru" ? "О БРЕНДЕ" : "ABOUT"}</span>
               </NavLink>
             </li>

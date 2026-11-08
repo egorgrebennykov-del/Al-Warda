@@ -1,0 +1,324 @@
+.warda-about-page {
+  padding-top: 8.5rem;
+  padding-bottom: 5rem;
+  color: #f7ede2;
+}
+
+.warda-about-hero {
+  text-align: center;
+  max-width: 920px;
+  margin: 0 auto 3rem;
+}
+
+.warda-about-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  background: rgba(212, 175, 55, 0.08);
+  color: #d4af37;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 1.1rem;
+}
+
+.warda-about-hero__title {
+  font-family: var(--second-font);
+  font-size: clamp(2rem, 4.2vw, 3.35rem);
+  font-weight: 600;
+  line-height: 1.18;
+  color: #f7ede2;
+  margin-bottom: 1.1rem;
+  background: linear-gradient(135deg, #fff6e5 0%, #e5c168 55%, #b88b2e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.warda-about-hero__lead {
+  font-size: 1.06rem;
+  line-height: 1.75;
+  color: #cbbfa9;
+  max-width: 780px;
+  margin: 0 auto 2.4rem;
+}
+
+.warda-about-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+}
+
+.warda-about-stat {
+  background: linear-gradient(180deg, rgba(22, 16, 11, 0.92), rgba(11, 8, 5, 0.96));
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  border-radius: 12px;
+  padding: 1.35rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.warda-about-stat__num {
+  font-family: var(--second-font);
+  font-size: 1.95rem;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.warda-about-stat__label {
+  font-size: 0.82rem;
+  color: #bdb09c;
+  line-height: 1.4;
+}
+
+.warda-about-story {
+  margin: 2rem 0 3.2rem;
+}
+
+.warda-about-story__card {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  background: linear-gradient(145deg, rgba(21, 15, 10, 0.95), rgba(10, 7, 5, 0.98));
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.warda-about-story__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.14) 0%, rgba(10, 7, 5, 0) 72%);
+}
+
+.warda-about-story__emblem {
+  width: 100%;
+  max-width: 210px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(212, 175, 55, 0.25));
+}
+
+.warda-about-story__content h2 {
+  font-family: var(--second-font);
+  font-size: 1.75rem;
+  color: #f7ede2;
+  margin-bottom: 1rem;
+}
+
+.warda-about-story__content p {
+  color: #cbbfa9;
+  line-height: 1.8;
+  font-size: 0.98rem;
+  margin-bottom: 1rem;
+}
+
+.warda-about-story__content p:last-child {
+  margin-bottom: 0;
+}
+
+.warda-about-pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin: 2rem 0 3.2rem;
+}
+
+.warda-about-pillar-card {
+  padding: 1.75rem 1.4rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.warda-about-pillar__icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4af37;
+  font-size: 1.5rem;
+}
+
+.warda-about-pillar__title {
+  font-family: var(--second-font);
+  font-size: 1.2rem;
+  color: #f7ede2;
+}
+
+.warda-about-pillar__desc {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #b9ab96;
+}
+
+.warda-about-ingredients {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin: 2rem 0 3.2rem;
+}
+
+.warda-about-ingredient-card {
+  background: linear-gradient(180deg, rgba(20, 15, 10, 0.92), rgba(11, 8, 5, 0.96));
+  border: 1px solid rgba(197, 160, 89, 0.26);
+  border-radius: 14px;
+  padding: 1.65rem;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.warda-about-ingredient-card:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+  transform: translateY(-3px);
+}
+
+.warda-about-ingredient__top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.warda-about-ingredient__emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.warda-about-ingredient__name {
+  font-family: var(--second-font);
+  font-size: 1.25rem;
+  color: #f7ede2;
+  margin: 0;
+}
+
+.warda-about-ingredient__role {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #d4af37;
+}
+
+.warda-about-ingredient__desc {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #c2b5a1;
+  margin: 0;
+}
+
+.warda-about-houses {
+  text-align: center;
+  margin: 1.8rem 0 3.5rem;
+}
+
+.warda-about-houses__subtitle {
+  color: #b9ab96;
+  margin-bottom: 1.35rem;
+  font-size: 0.95rem;
+}
+
+.warda-about-houses__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.warda-about-house-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  background: rgba(20, 15, 10, 0.85);
+  color: #f0e4d2;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: all 0.22s ease;
+}
+
+.warda-about-house-pill:hover {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.14);
+  color: #d4af37;
+  transform: translateY(-2px);
+}
+
+.warda-about-cta {
+  text-align: center;
+  background: radial-gradient(circle at top, rgba(212, 175, 55, 0.14), rgba(12, 9, 6, 0.96) 70%);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  border-radius: 18px;
+  padding: 2.75rem 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.warda-about-cta__title {
+  font-family: var(--second-font);
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  color: #f7ede2;
+  margin-bottom: 0.75rem;
+}
+
+.warda-about-cta__desc {
+  color: #c5b8a4;
+  max-width: 660px;
+  margin: 0 auto 1.75rem;
+  line-height: 1.7;
+}
+
+.warda-about-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.warda-about-cta__btn-secondary {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.55) !important;
+  color: #f2e5d0 !important;
+}
+
+.warda-about-cta__btn-secondary:hover {
+  background: rgba(212, 175, 55, 0.22) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 1024px) {
+  .warda-about-stats,
+  .warda-about-pillars {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .warda-about-story__card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 1.75rem 1.25rem;
+  }
+
+  .warda-about-ingredients,
+  .warda-about-stats,
+  .warda-about-pillars {
+    grid-template-columns: 1fr;
+  }
+}
