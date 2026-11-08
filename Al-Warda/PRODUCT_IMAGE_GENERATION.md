@@ -41,6 +41,11 @@ Supabase Storage remain supported.
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.
 
+The action caches the U2Net segmentation model between runs. On a cache miss it
+tries the upstream release and a mirror, with retries and SHA-256 verification.
+If neither source is available, the job reports the failure before marking or
+attempting any products. Cache retention depends on GitHub Actions policies.
+
 If publication times out, records remain in `publishing` and the next workflow
 run verifies them again before generating new images. If a generated file was
 never committed, its record is marked failed and can be retried after the UTC

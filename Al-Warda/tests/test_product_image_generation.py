@@ -2,6 +2,7 @@ import base64
 import importlib.util
 import io
 import hashlib
+import os
 import sys
 import tempfile
 import types
@@ -31,6 +32,71 @@ def image_bytes(image, format_name="PNG"):
 
 
 class ProductImageGenerationTests(unittest.TestCase):
+    def test_segmentation_model_uses_verified_cache(self):
+        data = b"known model"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "u2net.onnx"
+            path.write_bytes(data)
+            with patch.dict(os.environ, {"U2NET_HOME": temp_dir}), \
+                 patch.object(queue, "U2NET_SHA256", hashlib.sha256(data).hexdigest()), \
+                 patch.object(queue.requests, "get") as get:
+                self.assertEqual(queue.prepare_segmentation_model(), path)
+                get.assert_not_called()
+
+    def test_segmentation_model_falls_back_after_timeout_and_verifies_bytes(self):
+        data = b"known model"
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def raise_for_status(self):
+                pass
+
+            def iter_content(self, chunk_size):
+                self.chunk_size = chunk_size
+                return iter([data])
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch.dict(os.environ, {"U2NET_HOME": temp_dir}), \
+                 patch.object(queue, "U2NET_SHA256", hashlib.sha256(data).hexdigest()), \
+                 patch.object(queue.requests, "get", side_effect=[queue.requests.Timeout("timeout"), FakeResponse()]) as get:
+                path = queue.prepare_segmentation_model()
+                self.assertEqual(path.read_bytes(), data)
+                self.assertEqual(get.call_count, 2)
+                self.assertEqual(get.call_args_list[1].args[0], queue.U2NET_URLS[1])
+                self.assertEqual(list(Path(temp_dir).glob("*.tmp")), [])
+
+    def test_segmentation_model_rejects_bad_downloads_without_replacing_cache(self):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def raise_for_status(self):
+                pass
+
+            def iter_content(self, chunk_size):
+                return iter([b"wrong model"])
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "u2net.onnx"
+            path.write_bytes(b"old invalid model")
+            with patch.dict(os.environ, {"U2NET_HOME": temp_dir}), \
+                 patch.object(queue.requests, "get", side_effect=lambda *_args, **_kwargs: FakeResponse()) as get, \
+                 patch.object(queue.time, "sleep") as sleep:
+                with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
+                    queue.prepare_segmentation_model()
+                self.assertEqual(get.call_count, 6)
+                self.assertEqual(sleep.call_count, 2)
+                self.assertEqual(path.read_bytes(), b"old invalid model")
+                self.assertEqual(list(Path(temp_dir).glob("*.tmp")), [])
+
     def test_composite_preserves_source_bottle_pixels_and_canvas(self):
         source = Image.new("RGB", (4, 3), (220, 20, 20))
         source.putpixel((1, 1), (12, 180, 90))

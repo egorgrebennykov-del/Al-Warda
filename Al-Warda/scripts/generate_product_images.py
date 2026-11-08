@@ -10,6 +10,7 @@ import math
 import os
 import re
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,10 +42,70 @@ PAGE_SIZE = 500
 MAX_SOURCE_BYTES = 20 * 1024 * 1024
 MAX_SOURCE_PIXELS = 24_000_000
 STALE_PROCESSING_MINUTES = 30
+U2NET_SHA256 = "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491"
+U2NET_URLS = (
+    "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx",
+    "https://huggingface.co/skillsafe-ai/u2net/resolve/main/u2net.onnx",
+)
+U2NET_MAX_BYTES = 200 * 1024 * 1024
 
 
 class WorkersDailyQuotaExceeded(RuntimeError):
     pass
+
+
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as model:
+        for chunk in iter(lambda: model.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def prepare_segmentation_model():
+    model_dir = Path(os.path.expanduser(os.environ.get("U2NET_HOME", "~/.u2net")))
+    model_path = model_dir / "u2net.onnx"
+    if model_path.is_file() and file_sha256(model_path) == U2NET_SHA256:
+        os.environ["U2NET_HOME"] = str(model_dir)
+        print("Using verified cached U2Net model.", flush=True)
+        return model_path
+
+    model_dir.mkdir(parents=True, exist_ok=True)
+    failures = []
+    for attempt in range(3):
+        for url in U2NET_URLS:
+            temporary_path = None
+            try:
+                print(f"Downloading U2Net model from {url} (attempt {attempt + 1}/3).", flush=True)
+                with requests.get(url, stream=True, timeout=(15, 120)) as response:
+                    response.raise_for_status()
+                    digest = hashlib.sha256()
+                    total = 0
+                    with tempfile.NamedTemporaryFile(dir=model_dir, prefix="u2net-", suffix=".tmp", delete=False) as output:
+                        temporary_path = Path(output.name)
+                        for chunk in response.iter_content(chunk_size=1024 * 1024):
+                            if not chunk:
+                                continue
+                            total += len(chunk)
+                            if total > U2NET_MAX_BYTES:
+                                raise ValueError("U2Net model download exceeds size limit")
+                            digest.update(chunk)
+                            output.write(chunk)
+                    if digest.hexdigest() != U2NET_SHA256:
+                        raise ValueError("U2Net model checksum mismatch")
+                os.replace(temporary_path, model_path)
+                os.environ["U2NET_HOME"] = str(model_dir)
+                print("U2Net model downloaded and verified.", flush=True)
+                return model_path
+            except (requests.RequestException, OSError, ValueError) as error:
+                failures.append(f"{url}: {error}")
+                print(f"U2Net download failed: {error}", file=sys.stderr, flush=True)
+            finally:
+                if temporary_path is not None:
+                    temporary_path.unlink(missing_ok=True)
+        if attempt < 2:
+            time.sleep(2 ** attempt * 5)
+    raise RuntimeError("Could not download verified U2Net model after retries: " + "; ".join(failures))
 
 
 def utc_now():
@@ -455,6 +516,7 @@ def main():
         f"{args.max_images}; estimated Neurons {used_neurons:.1f}/"
         f"{NEURON_SAFETY_BUDGET}; processing up to {min(len(candidates), remaining_images)}."
     )
+    prepare_segmentation_model()
     segmentation_session = new_session("u2net")
     completed = 0
     failed = 0

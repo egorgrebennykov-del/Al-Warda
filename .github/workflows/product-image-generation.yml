@@ -22,6 +22,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED: ${{ secrets.CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED }}
+      U2NET_HOME: ${{ runner.temp }}/al-warda-u2net
     steps:
       - name: Check required server secrets
         shell: bash
@@ -39,6 +40,11 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install image processing dependencies
         run: python -m pip install -r requirements.txt
+      - name: Restore U2Net model cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/al-warda-u2net
+          key: u2net-8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491
       - name: Finish previously deployed images
         run: python Al-Warda/scripts/generate_product_images.py --publish-only
       - name: Process up to 160 queued products
