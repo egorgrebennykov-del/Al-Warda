@@ -72,6 +72,7 @@ npm run preview
 The image workflow rebases its image commit onto the latest `main` and retries
 rejected pushes. If publication still fails after the commit is created, it
 uploads `unpublished-generated-images`, a Git bundle retained for 30 days.
+The workflow marks images missing from `main` as failed so they can be retried.
 Before starting another image workflow, an operator can download and extract
 the bundle, then recover the commit from a clean clone of the repository:
 
@@ -84,9 +85,10 @@ git push origin HEAD:main
 ```
 
 Resolve any cherry-pick conflicts manually; do not force-push. After deployment,
-start a new image workflow to finalize the pending images. If another workflow
-has already marked the missing images as failed, they must instead be generated
-again. The bundle contains only the generated-image commit, not workflow secrets.
+start a new image workflow to finalize the restored images. If another workflow
+has already regenerated or reset the affected entries, the old images will not
+be reattached automatically. The bundle contains only the generated-image commit,
+not workflow secrets.
 
 ---
 

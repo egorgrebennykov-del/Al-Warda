@@ -289,6 +289,49 @@ class ProductImageGenerationTests(unittest.TestCase):
         save.assert_not_called()
         self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
 
+    def test_only_selected_unpublished_images_are_marked_failed(self):
+        digest = "a" * 64
+        image_url = f"/assets/img/generated-products/{digest}.png"
+        row = {"id": 10, "image": "old-image", "info": {
+            "imageGeneration": {"status": "completed", "imageUrl": "old-image"},
+            "imageGenerationReplacement": {"status": "publishing", "imageUrl": image_url},
+        }}
+        other = {"id": 11, "info": {"imageGeneration": {
+            "status": "publishing", "imageUrl": f"/assets/img/generated-products/{'b' * 64}.png",
+        }}}
+        with patch.object(queue, "fetch_stock_rows", return_value=[row, other]), \
+             patch.object(queue, "patch_stock") as update:
+            queue.mark_unpublished_failed(object(), "https://db.example", [
+                f"Al-Warda/public/assets/img/generated-products/{digest}.png",
+            ])
+        update.assert_called_once()
+        info = update.call_args.args[3]
+        self.assertEqual(info["imageGeneration"]["status"], "completed")
+        self.assertEqual(info["imageGenerationReplacement"]["status"], "failed")
+        self.assertEqual(info["imageGenerationReplacement"]["error"], queue.UNPUBLISHED_ERROR)
+        self.assertEqual(update.call_args.kwargs, {"image": "old-image", "only_if_unchanged": True})
+
+    def test_restored_unpublished_image_can_be_completed(self):
+        image = b"restored-generated-image"
+        digest = hashlib.sha256(image).hexdigest()
+        image_url = f"/assets/img/generated-products/{digest}.png"
+        row = {"id": 12, "info": {"imageGeneration": {
+            "status": "failed", "error": queue.UNPUBLISHED_ERROR,
+            "failedAt": "2026-01-01T00:00:00Z", "imageUrl": image_url,
+        }}}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            (path / f"{digest}.png").write_bytes(image)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue.requests, "get", return_value=types.SimpleNamespace(ok=True, content=image)), \
+                 patch.object(queue, "patch_stock") as update:
+                queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+            job = update.call_args.args[3]["imageGeneration"]
+            self.assertEqual(job["status"], "completed")
+            self.assertNotIn("error", job)
+            self.assertNotIn("failedAt", job)
+
     def test_segmentation_rejects_opaque_and_empty_cutouts(self):
         edited = image_bytes(Image.new("RGB", (1024, 1024), "blue"))
         for alpha in (0, 255):
@@ -342,7 +385,7 @@ class ProductImageGenerationTests(unittest.TestCase):
                 queue.publish_generated_images(object(), "https://db.example", "https://site.example")
                 self.assertEqual(update.call_args.args[3]["imageGeneration"], old_job)
                 self.assertEqual(update.call_args.args[3]["imageGenerationReplacement"]["status"], "failed")
-                self.assertNotIn("image", update.call_args.kwargs)
+                self.assertEqual(update.call_args.kwargs, {"image": "/old.png", "only_if_unchanged": True})
             (path / f"{digest}.png").write_bytes(image)
             with patch.object(queue, "GENERATED_DIR", path), \
                  patch.object(queue, "fetch_stock_rows", return_value=[row]), \

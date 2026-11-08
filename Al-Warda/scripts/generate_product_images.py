@@ -34,6 +34,7 @@ PAGE_SIZE = 500
 MAX_SOURCE_BYTES = 20 * 1024 * 1024
 MAX_SOURCE_PIXELS = 24_000_000
 STALE_PROCESSING_MINUTES = 30
+UNPUBLISHED_ERROR = "Generated image was not published; generation must be retried"
 U2NET_SHA256 = "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491"
 U2NET_URLS = (
     "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx",
@@ -514,10 +515,10 @@ def publish_generated_images(session, supabase_url, site_url):
         info = row.get("info") or {}
         job_key = "imageGeneration"
         job = image_generation(info)
-        if job.get("status") != "publishing":
+        if not is_awaiting_publication(job):
             job_key = "imageGenerationReplacement"
             job = info.get(job_key) or {}
-            if job.get("status") != "publishing":
+            if not is_awaiting_publication(job):
                 continue
         image_url = job.get("imageUrl", "")
         match = re.fullmatch(r"/assets/img/generated-products/([a-f0-9]{64})\.png", image_url)
@@ -525,15 +526,17 @@ def publish_generated_images(session, supabase_url, site_url):
             raise RuntimeError(f"Invalid generated image path for stock {row['id']}")
         local_path = GENERATED_DIR / f"{match.group(1)}.png"
         if not local_path.is_file():
+            if job.get("status") == "failed":
+                continue
             updated_info = dict(info)
             updated_job = dict(job)
             updated_job.update({
                 "status": "failed",
-                "error": "Generated image was not committed; generation must be retried",
+                "error": UNPUBLISHED_ERROR,
                 "failedAt": utc_now().isoformat(),
             })
             updated_info[job_key] = updated_job
-            patch_stock(session, supabase_url, row, updated_info)
+            patch_stock(session, supabase_url, row, updated_info, image=row.get("image"), only_if_unchanged=True)
             print(f"FAILED {row['id']}: generated image was not committed", flush=True)
             continue
         if hashlib.sha256(local_path.read_bytes()).hexdigest() != match.group(1):
@@ -556,6 +559,8 @@ def publish_generated_images(session, supabase_url, site_url):
             info = dict(row["info"])
             job = dict(info[job_key])
             job.update({"status": "completed", "completedAt": utc_now().isoformat()})
+            job.pop("error", None)
+            job.pop("failedAt", None)
             previous = info.get("imageGeneration") or {}
             old_url = previous.get("imageUrl") or row.get("image")
             retired = info.get("retiredGeneratedImages")
@@ -576,6 +581,38 @@ def publish_generated_images(session, supabase_url, site_url):
                 raise RuntimeError(f"Deployment did not publish {len(pending)} images within 15 minutes")
             print(f"Waiting for deployment of {len(pending)} images", flush=True)
             time.sleep(15)
+
+
+def is_awaiting_publication(job):
+    return job.get("status") == "publishing" or (
+        job.get("status") == "failed" and job.get("error") == UNPUBLISHED_ERROR
+    )
+
+
+def mark_unpublished_failed(session, supabase_url, image_paths):
+    urls = set()
+    for path in image_paths:
+        match = re.fullmatch(r"Al-Warda/public/assets/img/generated-products/([a-f0-9]{64}\.png)", path)
+        if not match:
+            raise ValueError(f"Invalid generated image path: {path}")
+        urls.add(GENERATED_URL + match.group(1))
+    if not urls:
+        print("No unpublished image files to mark.")
+        return
+    count = 0
+    for row in fetch_stock_rows(session, supabase_url):
+        info = row.get("info") or {}
+        for key in ("imageGeneration", "imageGenerationReplacement"):
+            job = info.get(key) or {}
+            if job.get("status") != "publishing" or job.get("imageUrl") not in urls:
+                continue
+            updated_info = dict(info)
+            updated_info[key] = {**job, "status": "failed", "error": UNPUBLISHED_ERROR,
+                                 "failedAt": utc_now().isoformat()}
+            patch_stock(session, supabase_url, row, updated_info, image=row.get("image"), only_if_unchanged=True)
+            count += 1
+            break
+    print(f"Marked {count} unpublished images as failed; they can be retried.", flush=True)
 
 
 def cleanup_replaced_images(session, supabase_url):
@@ -656,14 +693,18 @@ def main():
     parser.add_argument("--publish-only", action="store_true")
     parser.add_argument("--cleanup-replaced", action="store_true")
     parser.add_argument("--delete-selected", action="store_true")
+    parser.add_argument("--mark-unpublished-failed", metavar="PATH_LIST")
     parser.add_argument("--regenerate-completed", action="store_true",
                         help="Replace completed images made with an older model")
     args = parser.parse_args()
-    if args.publish_only or args.cleanup_replaced or args.delete_selected:
+    if args.publish_only or args.cleanup_replaced or args.delete_selected or args.mark_unpublished_failed:
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
         if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
             raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
-        if args.delete_selected:
+        if args.mark_unpublished_failed:
+            paths = Path(args.mark_unpublished_failed).read_text(encoding="utf-8").splitlines()
+            mark_unpublished_failed(make_session(), supabase_url, paths)
+        elif args.delete_selected:
             delete_selected_images(make_session(), supabase_url, json.loads(os.environ["SELECTED_IMAGES"]))
         elif args.cleanup_replaced:
             cleanup_replaced_images(make_session(), supabase_url)

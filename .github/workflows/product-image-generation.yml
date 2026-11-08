@@ -105,6 +105,7 @@ jobs:
           fi
           if ! git diff --cached --quiet; then
             git commit -m "Publish generated product images"
+            git diff-tree --no-commit-id --name-only -r HEAD -- Al-Warda/public/assets/img/generated-products/ > "$RUNNER_TEMP/generated-image-paths.txt"
             git bundle create "$RUNNER_TEMP/generated-images.bundle" HEAD ^HEAD^
             echo "backup_created=true" >> "$GITHUB_OUTPUT"
             bash .github/scripts/push-main-with-retry.sh
@@ -117,6 +118,20 @@ jobs:
           path: ${{ runner.temp }}/generated-images.bundle
           if-no-files-found: error
           retention-days: 30
+      - name: Mark unpublished images for retry
+        if: ${{ always() && steps.publish.outcome == 'failure' && steps.publish.outputs.backup_created == 'true' }}
+        shell: bash
+        run: |
+          git fetch origin main
+          : > "$RUNNER_TEMP/unpublished-image-paths.txt"
+          while IFS= read -r path; do
+            [ -n "$path" ] || continue
+            published=$(git ls-tree --name-only FETCH_HEAD -- "$path")
+            if [ -z "$published" ]; then
+              printf '%s\n' "$path" >> "$RUNNER_TEMP/unpublished-image-paths.txt"
+            fi
+          done < "$RUNNER_TEMP/generated-image-paths.txt"
+          python Al-Warda/scripts/generate_product_images.py --mark-unpublished-failed "$RUNNER_TEMP/unpublished-image-paths.txt"
       - name: Verify deployment and complete queue items
         id: verify
         if: ${{ always() && steps.publish.outcome == 'success' }}
