@@ -4,7 +4,7 @@ import { useLanguage } from "../../context/languageContext";
 import "./Footer.css";
 
 export default function Footer() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const isRu = language === "ru";
   const accountPath = isLoggedIn() ? "/profile" : "/login";
   const accountLabel = isLoggedIn() ? (isRu ? "Мой профиль" : "My Account") : (isRu ? "Войти в аккаунт" : "Sign In");
@@ -71,8 +71,8 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/featured" className="footer__link" style={{ color: "#d4af37", fontWeight: 600 }}>
-                {isRu ? "Вся коллекция (1000+)" : "All Fragrances (1000+)"} →
+              <Link to="/featured" className="footer__link warda-footer__collection-link">
+                {isRu ? "Вся коллекция" : "All Fragrances"} →
               </Link>
             </li>
           </ul>

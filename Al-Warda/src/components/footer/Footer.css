@@ -1,198 +1,82 @@
 .warda-footer {
-  background-color: #060403;
-  border-top: 1px solid rgba(197, 160, 89, 0.25);
-  padding: 4rem 0 2rem;
-  color: #c2b59b;
   margin-top: auto;
+  padding: 5rem 0 1.75rem;
+  background: #14110f;
+  border-top: 1px solid rgba(201, 168, 112, 0.24);
+  color: #bfb2a2;
 }
+.warda-footer::before { display: none; }
 
 .warda-footer .footer__container {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 2.5rem;
-  margin-bottom: 3rem;
+  align-items: start;
+  grid-template-columns: minmax(230px, 1.6fr) repeat(3, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 4.5rem);
+  padding-bottom: 4rem;
 }
-
-.warda-footer__col--brand {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.warda-footer .footer__logo-image {
-  height: 52px;
-  width: auto;
-  object-fit: contain;
-}
-
-.warda-footer__desc {
-  font-family: var(--body-font, 'Montserrat', sans-serif);
-  font-size: 0.85rem;
-  line-height: 1.6;
-  color: #9c9183;
-  max-width: 320px;
-}
-
+.warda-footer .footer__brand { width: auto; height: auto; overflow: visible; }
+.warda-footer__col--brand { display: flex; align-items: flex-start; flex-direction: column; gap: 1.25rem; }
+.warda-footer .footer__logo-image { width: 94px; height: 94px; object-fit: contain; }
+.warda-footer__desc { max-width: 310px; margin: 0; color: #b5a99b; font-size: 0.86rem; line-height: 1.8; }
 .warda-footer__heading {
-  font-family: var(--second-font, 'Cinzel', serif);
-  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+  color: #ead4ae;
+  font-family: var(--second-font, serif);
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
-  color: #d4af37;
-  margin-bottom: 1.25rem;
-  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
-
-.warda-footer .footer__links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.warda-footer .footer__link {
-  font-family: var(--body-font, 'Montserrat', sans-serif);
-  font-size: 0.85rem;
-  color: #a89882;
+.warda-footer .footer__links { display: flex; flex-direction: column; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
+.warda-footer .footer__link, .warda-footer__info-item a {
+  color: #bfb2a2;
+  font-size: 0.86rem;
+  line-height: 1.5;
   text-decoration: none;
-  transition: color 0.25s ease, transform 0.25s ease;
-  display: inline-block;
+  transition: color 0.2s ease;
 }
-
-.warda-footer .footer__link:hover {
-  color: #d4af37;
-  transform: translateX(4px);
-}
-
-.warda-footer__badges {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}
-
+.warda-footer .footer__link:hover, .warda-footer__info-item a:hover { color: #f1d5a5; }
+.warda-footer .warda-footer__collection-link { color: #e4c28e; }
+.warda-footer__badges { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .warda-footer__badge {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  color: #e5c07b;
-  font-size: 0.75rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  font-family: var(--second-font, 'Cinzel', serif);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.warda-footer__info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  font-size: 0.85rem;
-  color: #a89882;
-  margin-bottom: 1.5rem;
-}
-
-.warda-footer__info-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.warda-footer__info-item i {
-  color: #d4af37;
-  font-size: 1.1rem;
-}
-
-.warda-footer__info-item a {
-  color: #cfc2a9;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.warda-footer__info-item a:hover {
-  color: #d4af37;
-}
-
-.warda-footer__payment-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.warda-footer__payment-title {
-  font-family: var(--second-font, 'Cinzel', serif);
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  color: #8c7e6b;
-  font-weight: 600;
-}
-
-.warda-footer__payment-icons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.warda-payment-pill {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #e5c07b;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  padding: 0.25rem 0.6rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #514638;
   border-radius: 4px;
-  letter-spacing: 0.05em;
+  color: #dac5a5;
+  font-size: 0.72rem;
 }
-
+.warda-footer__badge i, .warda-footer__info-item i { color: #d0ac76; font-size: 1rem; }
+.warda-footer__info { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+.warda-footer__info-item { display: flex; align-items: flex-start; gap: 0.65rem; font-size: 0.86rem; }
+.warda-footer__info-item a { overflow-wrap: anywhere; }
+.warda-footer__payment-section { display: flex; flex-direction: column; gap: 0.8rem; }
+.warda-footer__payment-title { color: #d4c2aa; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; }
+.warda-footer__payment-icons { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.warda-payment-pill { padding: 0.3rem 0.5rem; border: 1px solid #514638; border-radius: 4px; color: #d6c9b9; font-size: 0.68rem; }
 .warda-footer .footer__bottom {
-  border-top: 1px solid rgba(197, 160, 89, 0.15);
-  padding-top: 2rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 0.82rem;
-  color: #7d705e;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #443b32;
+  color: #a79a8b;
+  font-size: 0.75rem;
 }
+.warda-footer .footer__tagline { color: #cfb48f; font-family: var(--second-font, serif); letter-spacing: 0.1em; }
+.warda-footer :focus-visible { outline: 2px solid #e8c994; outline-offset: 3px; }
 
-.warda-footer .footer__tagline {
-  font-family: var(--second-font, 'Cinzel', serif);
-  letter-spacing: 0.18em;
-  color: #d4af37;
-  font-weight: 600;
+@media (max-width: 1000px) {
+  .warda-footer .footer__container { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; }
 }
-
-@media screen and (max-width: 900px) {
-  .warda-footer .footer__container {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
+@media (max-width: 767px) {
+  .warda-footer { display: block !important; }
 }
-
-@media screen and (max-width: 600px) {
-  .warda-footer {
-    padding: 2.5rem 0 1.5rem;
-  }
-  .warda-footer .footer__container {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 1.75rem;
-  }
-  .warda-footer__col--brand {
-    align-items: center;
-  }
-  .warda-footer__badges,
-  .warda-footer__info-item,
-  .warda-footer__payment-icons {
-    justify-content: center;
-  }
-  .warda-footer .footer__bottom {
-    flex-direction: column;
-    gap: 0.75rem;
-    text-align: center;
-  }
+@media (max-width: 600px) {
+  .warda-footer { padding-top: 3rem; }
+  .warda-footer .footer__container { gap: 2.5rem 1.25rem; padding-bottom: 2.5rem; }
+  .warda-footer__col--brand, .warda-footer__col:last-child { grid-column: 1 / -1; }
+  .warda-footer .footer__logo-image { width: 78px; height: 78px; }
+  .warda-footer .footer__bottom { flex-direction: column; }
 }

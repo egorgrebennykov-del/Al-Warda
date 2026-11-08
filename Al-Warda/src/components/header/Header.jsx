@@ -17,6 +17,7 @@ export default function Header({ theme, isLight, onSearch }) {
   const { language, toggleLanguage, t } = useLanguage();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const profileMenuRef = useRef(null);
 
@@ -139,6 +140,15 @@ export default function Header({ theme, isLight, onSearch }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMenuOpen]);
+
   const handleLogout = () => {
     setIsDropdownOpen(false);
     authLogout();
@@ -148,8 +158,22 @@ export default function Header({ theme, isLight, onSearch }) {
   return (
     <header className="header warda-header" id="header">
       <nav className="nav container warda-nav">
+        <button
+          type="button"
+          className="warda-nav__menu-toggle"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          aria-expanded={isMenuOpen}
+          aria-controls="warda-main-navigation"
+          aria-label={isMenuOpen
+            ? (language === "ru" ? "Закрыть меню" : "Close menu")
+            : (language === "ru" ? "Открыть меню" : "Open menu")}
+        >
+          <i className={isMenuOpen ? "ri-close-line" : "ri-menu-line"} aria-hidden="true" />
+        </button>
         {/* LEFT NAVIGATION LINKS */}
-        <div className="warda-nav__left">
+        <div id="warda-main-navigation" className={`warda-nav__left ${isMenuOpen ? "warda-nav__left--open" : ""}`} onClick={(event) => {
+          if (event.target.closest("a")) setIsMenuOpen(false);
+        }}>
           <ul className="warda-nav__links">
             <li className="warda-nav__item">
               <NavLink to="/" end className={navClass}>
