@@ -1,5 +1,10 @@
 .warda-perfume-card.ornate-card {
   padding: 0 0 1.25rem !important;
+  border-color: transparent !important;
+}
+
+.warda-perfume-card .card-ornament {
+  display: none;
 }
 
 .warda-perfume-card .warda-perfume-card__media {
@@ -12,7 +17,7 @@
   padding: 0;
   overflow: hidden;
   border-radius: 12px 12px 0 0;
-  background: #090604 !important;
+  background: transparent !important;
   -webkit-mask-image: none;
   mask-image: none;
   transform: none;
@@ -33,7 +38,7 @@
   max-height: none !important;
   object-fit: cover !important;
   transform: none !important;
-  filter: none;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .warda-perfume-card .warda-perfume-card__info,
@@ -44,6 +49,7 @@
 
 .search__card.search__card {
   padding: 0 0 1rem;
+  border-color: transparent;
 }
 
 .search__card .search__card-img-wrap {
@@ -64,12 +70,12 @@
   max-width: none;
   max-height: none;
   object-fit: cover;
-  filter: none;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .search__card:hover .search__card-img {
   animation: none;
-  filter: none;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .search__card .search__card-body {

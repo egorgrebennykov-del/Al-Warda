@@ -107,8 +107,8 @@ export default function ProductImageQueue({ language = "ru" }) {
           <h2>{isRussian ? "Генерация изображений товаров" : "Product image generation"}</h2>
           <p>
             {isRussian
-              ? "Flux редактирует исходное фото товара для студийного изображения; результат может требовать проверки деталей."
-              : "Flux edits the original product photo into a studio image; product details may need review."}
+              ? "Flux создаёт студийное 3D-изображение по исходному фото, затем фон удаляется. Проверьте детали и края флакона."
+              : "Flux creates a studio 3D image from the original photo, then the background is removed. Review the bottle details and edges."}
           </p>
         </div>
         <a

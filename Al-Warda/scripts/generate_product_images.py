@@ -226,13 +226,17 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
 def build_edit_prompt():
     return (
         "Use image 0 as the exact product reference. Create a premium photorealistic "
-        "three-dimensional studio product photograph, with refined warm light, "
-        "natural contact shadows, realistic glass reflections and a dark elegant "
-        "background. Improve sharpness and material detail gently. Preserve the exact "
-        "product identity, bottle and cap shape, proportions, colors, liquid, packaging, "
-        "logo, typography and every visible label detail. Do not invent, remove or "
-        "replace product markings or add products. Keep the entire product visible "
-        "and centered. No unrelated text or decorative objects."
+        "three-dimensional perfume product photograph for a luxury online store. "
+        "Show one large, centered product from a natural front-facing three-quarter "
+        "angle with realistic depth, refined warm studio lighting, crisp glass and "
+        "metal reflections, and carefully controlled highlights. Gently improve "
+        "sharpness and material detail without redesigning the product. Preserve "
+        "the exact product identity, bottle and cap shape, proportions, colors, "
+        "liquid, packaging, logo, typography and every visible label detail. "
+        "Keep the complete product and cap visible, with a small clear margin on "
+        "every side. Place it against a plain, uniform light grey studio background "
+        "with no horizon or cast shadow, so the background can be removed cleanly. "
+        "No frames, pedestals, props, extra bottles, invented markings or text."
     )
 
 
@@ -289,6 +293,36 @@ def save_generated_image(image_bytes):
     path = GENERATED_DIR / f"{digest}.png"
     path.write_bytes(image_bytes)
     return f"{GENERATED_URL}{digest}.png"
+
+
+def transparent_product_image(image_bytes, segmentation_session):
+    with Image.open(io.BytesIO(image_bytes)) as edited:
+        edited.load()
+        if edited.size != (1024, 1024):
+            raise ValueError(f"Unexpected generated image dimensions: {edited.size}")
+        source = edited.convert("RGB")
+
+    cutout_result = remove(source, session=segmentation_session, only_mask=False, alpha_matting=False)
+    if isinstance(cutout_result, Image.Image):
+        cutout = cutout_result.convert("RGBA")
+    else:
+        with Image.open(io.BytesIO(cutout_result)) as cutout_image:
+            cutout = cutout_image.convert("RGBA")
+    if cutout.size != source.size:
+        raise ValueError(f"Segmentation changed generated image dimensions: {source.size} -> {cutout.size}")
+    alpha = cutout.getchannel("A")
+    if alpha.getbbox() is None or alpha.getextrema()[0] == 255:
+        raise ValueError("Segmentation did not produce a visible product on a transparent background")
+    width, height = cutout.size
+    edge = alpha.crop((0, 0, width, 1)).tobytes()
+    edge += alpha.crop((0, height - 1, width, height)).tobytes()
+    edge += alpha.crop((0, 1, 1, height - 1)).tobytes()
+    edge += alpha.crop((width - 1, 1, width, height - 1)).tobytes()
+    if sum(value > 32 for value in edge) > len(edge) * 0.05:
+        raise ValueError("The segmented image has an opaque border; the product must be regenerated")
+    output = io.BytesIO()
+    cutout.save(output, format="PNG", optimize=True)
+    return output.getvalue(), cutout.size
 
 
 def is_stale_processing(job, now):
@@ -377,15 +411,8 @@ def process_product(
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
         edited_bytes = generate_product_edit(requests, account_id, api_token, source_bytes)
-        with Image.open(io.BytesIO(edited_bytes)) as edited:
-            edited.load()
-            if edited.size != (1024, 1024):
-                raise ValueError(f"Unexpected generated image dimensions: {edited.size}")
-            output = io.BytesIO()
-            edited.convert("RGB").save(output, format="PNG", optimize=True)
-            original_size = edited.size
-
-        image_url = save_generated_image(output.getvalue())
+        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+        image_url = save_generated_image(output)
 
         job.update({
             "status": "publishing",
@@ -526,7 +553,8 @@ def main():
         f"Queue: {len(candidates)} eligible; today's attempts {attempts_today}; "
         f"processing up to {min(len(candidates), args.max_images)}."
     )
-    segmentation_session = None
+    prepare_segmentation_model()
+    segmentation_session = new_session("u2net")
     completed = 0
     failed = 0
     configuration_failure = False

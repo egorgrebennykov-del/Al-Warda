@@ -194,18 +194,25 @@ class ProductImageGenerationTests(unittest.TestCase):
     def test_product_edit_is_saved_as_1024_png_and_awaits_publication(self):
         source = image_bytes(Image.new("RGB", (100, 100), "red"))
         result = image_bytes(Image.new("RGB", (1024, 1024), "blue"), "JPEG")
+        cutout = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+        cutout.paste((20, 40, 200, 255), (300, 200, 724, 850))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         now = datetime(2026, 1, 2, tzinfo=timezone.utc)
         with patch.object(queue.requests, "get", return_value=response), \
              patch.object(queue, "generate_product_edit", return_value=result) as edit, \
+             patch.object(queue, "remove", return_value=cutout) as remove_background, \
              patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/result.png") as save, \
              patch.object(queue, "patch_stock") as update:
-            queue.process_product(object(), row, "https://db.example", "account", "token", None, now)
+            queue.process_product(object(), row, "https://db.example", "account", "token", "session", now)
         self.assertEqual(edit.call_args.args[-1], source)
+        self.assertEqual(remove_background.call_args.kwargs["session"], "session")
         with Image.open(io.BytesIO(save.call_args.args[0])) as saved:
             self.assertEqual(saved.format, "PNG")
             self.assertEqual(saved.size, (1024, 1024))
+            self.assertEqual(saved.mode, "RGBA")
+            self.assertEqual(saved.getpixel((0, 0))[3], 0)
+            self.assertEqual(saved.getpixel((512, 512)), (20, 40, 200, 255))
         job = update.call_args.args[3]["imageGeneration"]
         self.assertEqual(job["status"], "publishing")
         self.assertEqual(job["model"], queue.MODEL_ID)
@@ -223,6 +230,22 @@ class ProductImageGenerationTests(unittest.TestCase):
                 queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
         save.assert_not_called()
         self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
+
+    def test_segmentation_rejects_opaque_and_empty_cutouts(self):
+        edited = image_bytes(Image.new("RGB", (1024, 1024), "blue"))
+        for alpha in (0, 255):
+            with self.subTest(alpha=alpha), \
+                 patch.object(queue, "remove", return_value=Image.new("RGBA", (1024, 1024), (0, 0, 0, alpha))):
+                with self.assertRaisesRegex(ValueError, "transparent background"):
+                    queue.transparent_product_image(edited, object())
+
+    def test_segmentation_rejects_visible_image_frame(self):
+        edited = image_bytes(Image.new("RGB", (1024, 1024), "blue"))
+        cutout = Image.new("RGBA", (1024, 1024), (0, 0, 0, 255))
+        cutout.putpixel((512, 512), (0, 0, 0, 0))
+        with patch.object(queue, "remove", return_value=cutout):
+            with self.assertRaisesRegex(ValueError, "opaque border"):
+                queue.transparent_product_image(edited, object())
 
     def test_regeneration_preserves_completed_image_on_failure(self):
         source = image_bytes(Image.new("RGB", (20, 20)))

@@ -1,9 +1,11 @@
 # Product image generation
 
 The Qogita image queue is driven by GitHub Actions. Flux 2 Klein edits the
-original Qogita photo into a studio product image, using the original as a
-reference. Generative editing can change labels or details; review the output
-against the original before relying on it. Final PNG files are committed to the repository
+original Qogita photo into a three-dimensional studio product image, using the
+original as a reference. U2Net removes the background from the edited image;
+the final PNG retains transparency so the product sits on the site's background.
+Generative editing and segmentation can change labels, details or edges; review
+the output against the original before relying on it. Final PNG files are committed to the repository
 under `public/assets/img/generated-products` and deployed as Cloudflare static
 assets; no Supabase Storage bucket is used for new images. Queue state is stored
 in the existing `stocks.info` JSON.
