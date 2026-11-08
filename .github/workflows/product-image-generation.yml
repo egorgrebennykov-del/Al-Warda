@@ -22,7 +22,6 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED: ${{ secrets.CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED }}
-      U2NET_HOME: ${{ runner.temp }}/al-warda-u2net
     steps:
       - name: Check required server secrets
         shell: bash
@@ -32,6 +31,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::CLOUDFLARE_ACCOUNT_ID is missing"; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::CLOUDFLARE_API_TOKEN is missing"; exit 1; }
           test "$CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED" = "true" || { echo "::error::Confirm Cloudflare Workers AI Free plan before running"; exit 1; }
+          echo "U2NET_HOME=$RUNNER_TEMP/al-warda-u2net" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -43,7 +43,7 @@ jobs:
       - name: Restore U2Net model cache
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/al-warda-u2net
+          path: ${{ env.U2NET_HOME }}
           key: u2net-8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491
       - name: Finish previously deployed images
         run: python Al-Warda/scripts/generate_product_images.py --publish-only
