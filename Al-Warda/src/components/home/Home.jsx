@@ -40,22 +40,25 @@ export default function Home() {
     };
   }, []);
 
-  const checkScroll = () => {
-    const el = carouselRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 10);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
-  };
-
   useEffect(() => {
     const el = carouselRef.current;
     if (!el) return;
+    let frame = 0;
+    const checkScroll = () => {
+      frame = 0;
+      setCanScrollLeft(el.scrollLeft > 10);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
+    };
+    const scheduleCheck = () => {
+      if (!frame) frame = window.requestAnimationFrame(checkScroll);
+    };
     checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
+    el.addEventListener("scroll", scheduleCheck, { passive: true });
+    window.addEventListener("resize", scheduleCheck);
     return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
+      el.removeEventListener("scroll", scheduleCheck);
+      window.removeEventListener("resize", scheduleCheck);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [categories]);
 
@@ -66,7 +69,7 @@ export default function Home() {
     const scrollAmount = el.clientWidth;
     el.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
     });
   };
 
@@ -132,12 +135,14 @@ export default function Home() {
         <div className="warda-hero__visual">
           <div className="warda-hero__img-frame">
             <img
-              src="/assets/img/perfumes/hero-perfume.png"
+              src="/assets/img/perfumes/al-warda-home-hero.webp"
               alt="Al-Warda Royal Fragrance"
               className="warda-hero__img"
               loading="eager"
+              fetchPriority="high"
+              width="1365"
+              height="768"
             />
-            <div className="warda-hero__glow"></div>
           </div>
         </div>
       </section>
