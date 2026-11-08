@@ -41,6 +41,13 @@ Supabase Storage remain supported.
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.
 
+The admin image page can start or cancel GitHub Actions runs after the operator
+enters a GitHub token with repository Actions read and write permissions. The
+token remains in the current browser tab's memory and is sent only to the
+same-origin control endpoint and GitHub's API. Do not share it in chat. Stop
+cancels active runs, not the daily schedule. A cancelled run can leave a
+processing item to be recovered on a later run.
+
 If publication times out, records remain in `publishing` and the next workflow
 run verifies them again before generating new images. If a generated file was
 never committed, its record is marked failed and can be retried after the UTC

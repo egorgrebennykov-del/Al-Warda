@@ -1,6 +1,7 @@
 import workerEnv from "./workerEnv.js";
 import { isClaudeGenerated } from "../utils/perfumeProvenance.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
+import { controlProductImageWorkflow } from "./productImageWorkflow.js";
 import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import {
   processLiteraChat,
@@ -138,6 +139,10 @@ export default {
 
     if (method === "GET" && pathname === "/api/admin/product-images/status") {
       return getProductImageQueueStatus(request, env);
+    }
+
+    if (method === "POST" && pathname === "/api/admin/product-images/workflow") {
+      return controlProductImageWorkflow(request);
     }
 
     if (method === "POST" && pathname === "/api/warmup") {
