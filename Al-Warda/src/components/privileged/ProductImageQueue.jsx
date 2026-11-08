@@ -6,81 +6,6 @@ export default function ProductImageQueue({ language = "ru" }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tokenInput, setTokenInput] = useState("");
-  const [githubToken, setGithubToken] = useState("");
-  const [workflow, setWorkflow] = useState(null);
-  const [workflowError, setWorkflowError] = useState("");
-  const [workflowMessage, setWorkflowMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const requestWorkflow = useCallback(async (action, token) => {
-    const response = await fetch("/api/admin/product-images/workflow", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, token }),
-    });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
-    return payload;
-  }, []);
-
-  const refreshWorkflow = useCallback(async () => {
-    if (!githubToken) return;
-    try {
-      setWorkflow(await requestWorkflow("status", githubToken));
-      setWorkflowError("");
-    } catch (err) {
-      setWorkflow(null);
-      setWorkflowError(err.message);
-    }
-  }, [githubToken, requestWorkflow]);
-
-  useEffect(() => {
-    if (!githubToken) return;
-    const initial = window.setTimeout(refreshWorkflow, 0);
-    const timer = window.setInterval(refreshWorkflow, 15000);
-    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
-  }, [githubToken, refreshWorkflow]);
-
-  async function connectGithub(event) {
-    event.preventDefault();
-    setBusy(true);
-    setWorkflowError("");
-    try {
-      const token = tokenInput.trim();
-      const current = await requestWorkflow("status", token);
-      setGithubToken(token);
-      setTokenInput("");
-      setWorkflow(current);
-      setWorkflowMessage("");
-    } catch (err) {
-      setGithubToken("");
-      setWorkflow(null);
-      setWorkflowError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function controlWorkflow(action) {
-    setBusy(true);
-    setWorkflowError("");
-    setWorkflowMessage("");
-    try {
-      await requestWorkflow(action, githubToken);
-      setWorkflow(null);
-      setWorkflowMessage(action === "start"
-        ? (isRussian ? "Запуск запрошен. GitHub может показать его с задержкой." : "Start requested. GitHub may take a moment to show the run.")
-        : (isRussian ? "Остановка запрошена; выполнение может завершиться не сразу." : "Cancellation requested; the run may take a moment to stop."));
-      window.setTimeout(refreshWorkflow, 5000);
-    } catch (err) {
-      await refreshWorkflow();
-      setWorkflowError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const loadStatus = useCallback(async () => {
     try {
@@ -144,35 +69,6 @@ export default function ProductImageQueue({ language = "ru" }) {
       </header>
 
       {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{error}</div>}
-      <form className="product-image-queue__controls" onSubmit={connectGithub}>
-        <label htmlFor="image-github-token">{isRussian ? "GitHub-токен для управления" : "GitHub token for workflow control"}</label>
-        <div className="product-image-queue__control-buttons">
-          <input id="image-github-token" type="password" autoComplete="off" value={tokenInput}
-            onChange={(event) => setTokenInput(event.target.value)}
-            placeholder={githubToken ? (isRussian ? "Токен подключён" : "Token connected") : "GitHub token"} />
-          <button className="product-image-queue__start" type="submit" disabled={busy || !tokenInput.trim()}>
-            {isRussian ? "Подключить" : "Connect"}
-          </button>
-          {githubToken && <button type="button" className="product-image-queue__start" onClick={() => {
-            setGithubToken(""); setWorkflow(null); setWorkflowMessage(""); setWorkflowError("");
-          }}>{isRussian ? "Отключить" : "Disconnect"}</button>}
-        </div>
-        <small>{isRussian
-          ? "Токен хранится только до закрытия или обновления вкладки. Для запуска и остановки нужны права Actions: read and write."
-          : "The token is kept only until this tab is closed or refreshed. Starting and stopping require Actions: read and write."}</small>
-      </form>
-      {workflowError && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{workflowError}</div>}
-      {workflowMessage && <div className="product-image-queue__message" role="status">{workflowMessage}</div>}
-      {githubToken && <div className="product-image-queue__control-buttons">
-        <span>{workflow ? (workflow.active ? (isRussian ? "Генерация запущена" : "Generation running") : (isRussian ? "Генерация остановлена" : "Generation stopped")) : (isRussian ? "Проверка состояния…" : "Checking status…")}</span>
-        <button className="product-image-queue__start" type="button" disabled={busy || !workflow || workflow.active} onClick={() => controlWorkflow("start")}>
-          {isRussian ? "Запустить" : "Start"}
-        </button>
-        <button className="product-image-queue__start" type="button" disabled={busy || !workflow || !workflow.active} onClick={() => controlWorkflow("stop")}>
-          {isRussian ? "Остановить" : "Stop"}
-        </button>
-        <small>{isRussian ? "Остановка не отключает ежедневное расписание." : "Stopping does not disable the daily schedule."}</small>
-      </div>}
       {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
       {dailyLimitReached && (
         <div className="product-image-queue__message">

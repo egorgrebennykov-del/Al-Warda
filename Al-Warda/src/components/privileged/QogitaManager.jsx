@@ -20,6 +20,7 @@ import "./QogitaManager.css";
 export default function QogitaManager({ language = "ru" }) {
   const [activeTab, setActiveTab] = useState("cart"); // "cart" | "products" | "downloads" | "webhooks" | "config"
   const [status, setStatus] = useState(null);
+  const [statusError, setStatusError] = useState("");
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(null); // { type: 'success'|'error', message }
 
@@ -67,8 +68,13 @@ export default function QogitaManager({ language = "ru" }) {
     try {
       const data = await getQogitaStatus();
       setStatus(data);
+      setStatusError("");
     } catch (err) {
       console.warn("Failed to load Qogita status:", err);
+      setStatus(null);
+      setStatusError(err.status === 404
+        ? (language === "ru" ? "Сервер сайта не поддерживает API панели Qogita." : "The site server does not support the Qogita dashboard API.")
+        : (language === "ru" ? `Не удалось получить статус Qogita: ${err.message}` : `Could not load Qogita status: ${err.message}`));
     }
   };
 
@@ -288,16 +294,22 @@ export default function QogitaManager({ language = "ru" }) {
               API Gateway &bull; {status?.apiUrl || "https://api.qogita.com"}
             </div>
           </div>
-          {status?.isConfigured ? (
+          {statusError ? (
+            <span className="qogita-badge qogita-badge--disconnected">
+              <i className="ri-error-warning-fill" /> {language === "ru" ? "API недоступен" : "API unavailable"}
+            </span>
+          ) : status?.isConfigured ? (
             <span className="qogita-badge qogita-badge--connected">
               <i className="ri-checkbox-circle-fill" /> Подключено ({status.email})
             </span>
-          ) : (
+          ) : status ? (
             <span className="qogita-badge qogita-badge--disconnected">
               <i className="ri-error-warning-fill" /> Требуется настройка
             </span>
-          )}
+          ) : null}
         </div>
+
+        {statusError && <div role="alert">{statusError}</div>}
 
         <div className="qogita-header-actions">
           <button

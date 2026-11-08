@@ -23,7 +23,6 @@ import { setHttpAdapter } from "./httpClient.js";
 import qogitaClient from "./qogitaClient.js";
 import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getArabianDropshipPerfumes, getTransparentImageBuffer } from "./qogitaService.js";
 import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
-import { controlProductImageWorkflow } from "./productImageWorkflow.js";
 import {
   getProductImageQueueStatus,
 } from "./productImageQueueAdmin.js";
@@ -169,26 +168,6 @@ const server = createServer(async (req, res) => {
   if (req.method === "GET" && pathname === "/api/admin/product-images/status") {
     const response = await getProductImageQueueStatus(req, process.env);
     respond(res, response.status, await response.json(), req);
-    return;
-  }
-
-  if (req.method === "POST" && pathname === "/api/admin/product-images/workflow") {
-    try {
-      const body = await readRawBody(req);
-      const host = req.headers.host || "localhost";
-      const origin = req.headers.origin;
-      const protocol = origin && origin.startsWith("https://") ? "https" : "http";
-      const request = new Request(`${protocol}://${host}${reqUrl}`, {
-        method: "POST",
-        headers: req.headers,
-        body,
-      });
-      const response = await controlProductImageWorkflow(request);
-      respond(res, response.status, await response.json(), req);
-    } catch (error) {
-      console.warn("Product image workflow request failed:", error.message);
-      respond(res, 400, { error: "Invalid workflow request" }, req);
-    }
     return;
   }
 
