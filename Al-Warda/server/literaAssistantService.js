@@ -1,7 +1,9 @@
-import { PERFUMES, PERFUME_CATEGORIES } from "../src/data/perfumesData.js";
-import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
-import enrichedStocks from "./data/enrichedStocks.json" with { type: "json" };
-import getExchangeRate, { DEFAULT_RATE } from "../utils/getExchangeRate.js";
+import {
+  fetchPerfumesFromSupabase,
+  getPerfumes,
+  getPerfumeUrl,
+  ensurePerfumeEnrichment,
+} from "../utils/perfumes.js";
 
 const DEFAULT_API_KEY = "";
 
@@ -15,158 +17,167 @@ export function getGeminiApiKey() {
 }
 
 const GEMINI_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-flash-latest",
   "gemini-flash-lite-latest",
-  "gemini-3.5-flash-lite",
-  "gemini-3-flash-preview",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.1-flash-lite",
 ];
 
 // ============================================================================
-// 1. NORMALIZE PERFUMES CATALOG FROM ENRICHED STOCKS & DATA
+// 1. LIVE CATALOG LOADER (STRICTLY REAL ITEMS FROM SITE CATALOG)
 // ============================================================================
-const ALL_PERFUMES = [];
-const PERFUME_BY_ID = new Map();
+let ALL_PERFUMES = [];
+let PERFUME_BY_ID = new Map();
+let lastCatalogFetchAt = 0;
+const CATALOG_TTL_MS = 60 * 1000;
 
-function initCatalog() {
-  if (ALL_PERFUMES.length > 0) return;
+function normalizeCatalogItem(raw) {
+  if (!raw || !(raw.name || raw.title)) return null;
+  const item = ensurePerfumeEnrichment(raw);
+  const id = String(item.id || item.slug || "").trim();
+  if (!id) return null;
 
-  // 1. Load from enrichedStocks (1100+ items with olfactory pyramids)
-  if (enrichedStocks && typeof enrichedStocks === "object") {
-    for (const [key, item] of Object.entries(enrichedStocks)) {
-      if (!item || !item.name) continue;
-      const id = item.slug || key;
-      const brand = item.brand || "Al-Warda";
-      const info = item.info || {};
-      const notesRu = info.notes?.ru || {};
-      const notesSummary = info.notesSummary || (Array.isArray(notesRu.heart) ? notesRu.heart.join(" · ") : "");
-      const category = info.category || "Восточные";
-      const gender = info.gender || "Унисекс";
+  const brand = item.brand || "Al-Warda";
+  const topNotes = Array.isArray(item.topNotesRu) && item.topNotesRu.length > 0
+    ? item.topNotesRu
+    : Array.isArray(item.topNotes) ? item.topNotes : [];
+  const heartNotes = Array.isArray(item.heartNotesRu) && item.heartNotesRu.length > 0
+    ? item.heartNotesRu
+    : Array.isArray(item.heartNotes) ? item.heartNotes : [];
+  const baseNotes = Array.isArray(item.baseNotesRu) && item.baseNotesRu.length > 0
+    ? item.baseNotesRu
+    : Array.isArray(item.baseNotes) ? item.baseNotes : [];
 
-      const p = {
-        id,
-        key,
-        slug: item.slug || key,
-        title: item.name,
-        name: item.name,
-        brand,
-        author: `${brand} • ${notesSummary || category}`,
-        price: Number(item.price) || 25.0,
-        currency: "EUR",
-        image: item.image || "/assets/img/perfumes/hero-perfume.png",
-        url: `/perfume/${item.slug || key}`,
-        category,
-        categorySlug: info.categorySlug || "oud",
-        gender,
-        notesSummary,
-        topNotes: Array.isArray(notesRu.top) ? notesRu.top : [],
-        heartNotes: Array.isArray(notesRu.heart) ? notesRu.heart : [],
-        baseNotes: Array.isArray(notesRu.base) ? notesRu.base : [],
-        longevity: info.longevity || "8–12 часов",
-        sillage: info.sillage || "Заметный, притягательный",
-        volume: info.volume || "100 мл EDP",
-        concentration: info.concentration || "Eau de Parfum",
-        description: info.descriptionRu || item.description || "",
-        store: "Al-Warda Dubai Boutique",
-      };
+  const category = item.categoryRu || item.categoryName || item.category || "Восточные";
+  const notesSummary =
+    item.notesSummaryRu ||
+    item.notesSummary ||
+    (heartNotes.length > 0 ? heartNotes.join(" · ") : category);
 
-      ALL_PERFUMES.push(p);
-      PERFUME_BY_ID.set(id.toLowerCase(), p);
-      PERFUME_BY_ID.set(key.toLowerCase(), p);
-      PERFUME_BY_ID.set(item.name.toLowerCase(), p);
-    }
+  const p = {
+    id,
+    key: id,
+    slug: item.slug || `stock-${id}`,
+    gtin: item.gtin || item.info?.gtin || "",
+    title: item.name || item.title,
+    name: item.name || item.title,
+    brand,
+    author: `${brand} • ${notesSummary || category}`,
+    price: Number(item.price) || 29.99,
+    currency: item.currency || "EUR",
+    image: item.image || item.fullCardImage || "",
+    url: item.url || getPerfumeUrl({ id, name: item.name || item.title }),
+    category,
+    categorySlug: item.category || item.info?.categorySlug || "oud",
+    gender: item.genderRu || item.gender || "Унисекс",
+    notesSummary,
+    topNotes,
+    heartNotes,
+    baseNotes,
+    longevity: item.longevityRu || item.longevity || "8–12 часов",
+    sillage: item.sillageRu || item.sillage || "Выразительный, шлейфовый",
+    volume: item.volume || "100ml / 3.4 FL.OZ.",
+    concentration: item.concentration || "Eau De Parfum",
+    description: item.descriptionRu || item.description || "",
+    descriptionEn: item.descriptionEn || "",
+    store: "Al-Warda Boutique",
+  };
+
+  return p;
+}
+
+function indexCatalogItems(rawItems) {
+  const nextList = [];
+  const nextMap = new Map();
+  const seenIds = new Set();
+
+  for (const raw of rawItems) {
+    const p = normalizeCatalogItem(raw);
+    if (!p || !p.image) continue;
+    const idKey = p.id.toLowerCase();
+    if (seenIds.has(idKey)) continue;
+    seenIds.add(idKey);
+
+    nextList.push(p);
+    nextMap.set(idKey, p);
+    if (p.slug) nextMap.set(p.slug.toLowerCase(), p);
+    if (p.gtin) nextMap.set(String(p.gtin).toLowerCase(), p);
+    if (p.name) nextMap.set(p.name.toLowerCase(), p);
+    if (p.url) nextMap.set(p.url.toLowerCase(), p);
   }
 
-  // 2. Fallback / Merge from cachedArabianPerfumes & PERFUMES if not yet indexed
-  const secondaryList = [...(Array.isArray(cachedArabianPerfumes) ? cachedArabianPerfumes : []), ...(Array.isArray(PERFUMES) ? PERFUMES : [])];
-  for (const item of secondaryList) {
-    if (!item) continue;
-    const id = item.slug || item.id;
-    if (!id || PERFUME_BY_ID.has(id.toLowerCase())) continue;
-
-    const brand = item.brand || "Al-Warda";
-    const p = {
-      id,
-      key: id,
-      slug: item.slug || item.id,
-      title: item.name || item.title,
-      name: item.name || item.title,
-      brand,
-      author: `${brand} • ${item.notesSummary || item.category || "Восточный аромат"}`,
-      price: Number(item.price) || 30.0,
-      currency: item.currency || "EUR",
-      image: item.image || "/assets/img/perfumes/hero-perfume.png",
-      url: `/perfume/${item.slug || item.id}`,
-      category: item.category || "Восточные",
-      categorySlug: item.categorySlug || "oud",
-      gender: item.gender || "Унисекс",
-      notesSummary: item.notesSummary || "",
-      topNotes: Array.isArray(item.topNotes) ? item.topNotes : [],
-      heartNotes: Array.isArray(item.heartNotes) ? item.heartNotes : [],
-      baseNotes: Array.isArray(item.baseNotes) ? item.baseNotes : [],
-      longevity: item.longevity || "8–12 часов",
-      sillage: item.sillage || "Заметный, притягательный",
-      volume: item.volume || "100 мл EDP",
-      concentration: item.concentration || "Eau de Parfum",
-      description: item.description || "",
-      store: "Al-Warda Dubai Boutique",
-    };
-
-    ALL_PERFUMES.push(p);
-    PERFUME_BY_ID.set(id.toLowerCase(), p);
-    if (p.name) PERFUME_BY_ID.set(p.name.toLowerCase(), p);
+  if (nextList.length > 0) {
+    ALL_PERFUMES = nextList;
+    PERFUME_BY_ID = nextMap;
+    lastCatalogFetchAt = Date.now();
   }
 }
 
-initCatalog();
+export async function ensureCatalogLoaded(contextCatalog = null) {
+  if (Array.isArray(contextCatalog) && contextCatalog.length > 0) {
+    indexCatalogItems(contextCatalog);
+    return ALL_PERFUMES;
+  }
+
+  if (ALL_PERFUMES.length > 0 && Date.now() - lastCatalogFetchAt < CATALOG_TTL_MS) {
+    return ALL_PERFUMES;
+  }
+
+  try {
+    const supaItems = await fetchPerfumesFromSupabase();
+    if (Array.isArray(supaItems) && supaItems.length > 0) {
+      indexCatalogItems(supaItems);
+      return ALL_PERFUMES;
+    }
+  } catch (err) {
+    console.warn("[LiteraAssistant] fetchPerfumesFromSupabase warning:", err?.message || err);
+  }
+
+  try {
+    const items = await getPerfumes();
+    if (Array.isArray(items) && items.length > 0) {
+      indexCatalogItems(items);
+    }
+  } catch (err) {
+    console.warn("[LiteraAssistant] getPerfumes fallback warning:", err?.message || err);
+  }
+
+  return ALL_PERFUMES;
+}
 
 // ============================================================================
 // 2. NOTE KEYWORDS & SYNONYMS
 // ============================================================================
 const NOTE_SYNONYMS = {
-  ваниль: ["ваниль", "карамел", "сливк", "пралине", "маршмеллоу", "vanilla", "caramel", "gourmand"],
-  уд: ["уд", "агар", "смол", "смолист", "oud", "agarwood", "smoke"],
-  роза: ["роз", "таиф", "лепестк", "rose", "taif"],
-  амбра: ["амбр", "янтарь", "amber"],
+  ваниль: ["ваниль", "карамел", "сливк", "пралине", "маршмеллоу", "бобы тонка", "гурман", "сладк", "vanilla", "caramel", "gourmand", "sweet", "tonka"],
+  уд: ["уд", "агар", "смол", "смолист", "ладан", "oud", "agarwood", "smoke", "incense", "frankincense"],
+  роза: ["роз", "таиф", "лепестк", "дамасск", "rose", "taif", "damask"],
+  амбра: ["амбр", "янтарь", "amber", "ambroxan"],
   мускус: ["мускус", "musk", "белый мускус"],
-  цитрус: ["цитрус", "бергамот", "лимон", "грейпфрут", "мандарин", "лайм", "апельсин", "citrus", "bergamot"],
+  цитрус: ["цитрус", "бергамот", "лимон", "грейпфрут", "мандарин", "лайм", "апельсин", "нероли", "citrus", "bergamot", "lemon", "grapefruit", "mandarin", "lime"],
   кофе: ["кофе", "шоколад", "какао", "кофейн", "coffee", "chocolate", "qahwa"],
-  пряност: ["прян", "шафран", "кориц", "кардамон", "перец", "гвоздик", "мускат", "spic", "saffron", "cinnamon"],
-  свежесть: ["свеж", "морск", "водн", "зелен", "акватич", "океан", "fresh", "aquatic", "ozonic"],
+  пряност: ["прян", "шафран", "кориц", "кардамон", "перец", "гвоздик", "мускат", "имбир", "табак", "spic", "saffron", "cinnamon", "cardamom", "pepper", "tobacco"],
+  свежесть: ["свеж", "морск", "водн", "зелен", "акватич", "океан", "мят", "лаванд", "фужер", "fresh", "aquatic", "ozonic", "mint", "lavender", "fougere"],
   кожа: ["кож", "замш", "leather", "suede"],
-  дерево: ["дерев", "сандал", "кедр", "пачули", "древесн", "ветивер", "wood", "sandalwood", "cedar", "patchouli"],
-  цветы: ["цвет", "жасмин", "ирис", "тубероз", "пион", "ландыш", "floral", "jasmine", "iris"],
-  фрукты: ["фрукт", "персик", "яблок", "вишн", "малин", "гранат", "слив", "fruity", "cherry", "peach"],
+  дерево: ["дерев", "сандал", "кедр", "пачули", "древесн", "ветивер", "мох", "wood", "sandalwood", "cedar", "patchouli", "vetiver"],
+  цветы: ["цвет", "жасмин", "ирис", "тубероз", "пион", "ландыш", "фиалк", "иланг", "флердоранж", "floral", "jasmine", "iris", "violet", "ylang"],
+  фрукты: ["фрукт", "персик", "яблок", "вишн", "малин", "гранат", "слив", "груш", "ананас", "fruity", "cherry", "peach", "apple", "pear"],
 };
 
-const BRAND_NAMES = [
-  "afnan", "ajmal", "al fares", "al haramain", "al majed for oud",
-  "al wataniah", "anfas", "ard al zaafaran", "armaf", "asdaaf",
-  "atyab al marshoud", "azha", "azhaara", "clive dorris", "emper",
-  "flavia", "fragrance world", "grandeur", "hamidi", "hayaati",
-  "hekayat attar", "jenny glow", "just jack", "khadlaj", "khalis",
-  "la fede", "lattafa", "le falcone", "mamlakt al oud", "ministry of oud",
-  "myperfumes", "ojar", "orientica", "paris corner", "prime collection",
-  "privezarah", "rasasi", "riifs", "risala", "shaikh mohd saeed",
-  "sterling parfums", "tayyib", "vurv", "zimaya", "maison alhambra",
-  "swiss arabian", "arabian oud", "al rehab", "french avenue", "rayhaan",
-  "asad", "khamrah", "yara", "badee al oud", "club de nuit", "meydan"
-];
-
-// ============================================================================
-// 3. INTELLIGENT PERFUME DATABASE SEARCH
-// ============================================================================
 const STOP_WORDS = new Set([
   "найди", "посоветуй", "порекомендуй", "подбери", "выбери", "покажи", "какие", "какой",
-  "есть", "ли", "у", "вас", "хочу", "купить", "духи", "духов", "парфюм", "парфюма",
-  "аромат", "ароматы", "ароматов", "ноты", "нотами", "нотах", "запах", "флакон",
-  "пожалуйста", "мне", "что", "чем", "для", "про", "find", "show", "search",
-  "recommend", "suggest", "perfume", "fragrance", "scent", "notes", "parfum"
+  "какая", "какое", "есть", "ли", "у", "вас", "хочу", "купить", "духи", "духов", "парфюм",
+  "парфюма", "парфюмы", "аромат", "ароматы", "ароматов", "ноты", "нотами", "нотах", "запах",
+  "флакон", "пожалуйста", "мне", "что", "чем", "для", "про", "каталоге", "каталог", "сайте",
+  "в", "на", "с", "и", "или", "расскажи", "опиши", "предложи", "find", "show", "search",
+  "recommend", "suggest", "perfume", "perfumes", "fragrance", "fragrances", "scent", "notes",
+  "parfum", "catalog", "what", "have", "you", "the", "with", "for"
 ]);
 
+// ============================================================================
+// 3. INTELLIGENT PERFUME DATABASE SEARCH (STRICTLY CATALOG ITEMS)
+// ============================================================================
 export function searchPerfumesInDatabase(query, options = {}) {
-  initCatalog();
   const {
     excludeIds = new Set(),
     preferredGender = null,
@@ -177,34 +188,33 @@ export function searchPerfumesInDatabase(query, options = {}) {
   } = options;
 
   const q = (query || "").trim().toLowerCase();
-  const rawTokens = q.split(/[\s,·+]+/).filter((t) => t.length > 1);
+  const rawTokens = q.split(/[\s,·+!?.;:()«»"'-]+/).filter((t) => t.length > 1);
   const meaningfulTokens = rawTokens.filter((t) => !STOP_WORDS.has(t));
-  const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : rawTokens;
 
   // Extract matched note categories from query
   const matchedNoteCategories = [];
-  for (const [catName, synonyms] of Object.entries(NOTE_SYNONYMS)) {
+  for (const [, synonyms] of Object.entries(NOTE_SYNONYMS)) {
     if (synonyms.some((syn) => q.includes(syn))) {
       matchedNoteCategories.push(synonyms);
     }
   }
 
-  // Extract brand mentions
-  const matchedBrands = BRAND_NAMES.filter((b) => q.includes(b));
+  // Extract dynamic brand names actually present in our live catalog
+  const catalogBrands = Array.from(
+    new Set(ALL_PERFUMES.map((p) => (p.brand || "").toLowerCase().trim()).filter(Boolean))
+  );
+  const matchedBrands = catalogBrands.filter((b) => q.includes(b));
 
   const scored = [];
 
   for (const p of ALL_PERFUMES) {
-    // 1. Exclude rejected or previously proposed IDs
     if (excludeIds.has(p.id) || excludeIds.has(p.slug) || excludeIds.has(p.key)) {
       continue;
     }
 
-    // 2. Price bounds
     if (maxPrice !== null && p.price > maxPrice) continue;
     if (minPrice !== null && p.price < minPrice) continue;
 
-    // 3. Gender filtering
     if (preferredGender) {
       const pGender = (p.gender || "").toLowerCase();
       if (preferredGender === "мужской" && pGender === "женский") continue;
@@ -223,76 +233,67 @@ export function searchPerfumesInDatabase(query, options = {}) {
     const baseStr = p.baseNotes.join(" ").toLowerCase();
     const allText = `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descLower}`;
 
-    // Exact or phrase match
-    if (nameLower.includes(q) && q.length > 2) score += 90;
-    if (q.includes(nameLower) && nameLower.length > 3) score += 90;
+    if (meaningfulTokens.length > 0 && nameLower.includes(q) && q.length > 2) score += 100;
+    if (meaningfulTokens.length > 0 && q.includes(nameLower) && nameLower.length > 3) score += 100;
 
-    // Direct token matches against perfume name & brand
-    for (const tok of tokens) {
+    for (const tok of meaningfulTokens) {
       if (tok.length < 2) continue;
       if (nameLower === tok) {
-        score += 80;
-      } else if (nameLower.startsWith(tok + " ") || nameLower.includes(" " + tok + " ") || nameLower.endsWith(" " + tok)) {
-        score += 55;
+        score += 85;
+      } else if (
+        nameLower.startsWith(tok + " ") ||
+        nameLower.includes(" " + tok + " ") ||
+        nameLower.endsWith(" " + tok)
+      ) {
+        score += 60;
       } else if (nameLower.includes(tok)) {
-        score += 40;
+        score += 42;
       }
-      if (brandLower.includes(tok)) {
-        score += 35;
+      if (brandLower === tok || brandLower.includes(tok)) {
+        score += 45;
       }
     }
 
-    // Brand matching
     for (const mb of matchedBrands) {
-      if (brandLower.includes(mb)) score += 45;
-      else if (nameLower.includes(mb)) score += 35;
+      if (brandLower === mb || brandLower.includes(mb)) score += 55;
+      else if (nameLower.includes(mb)) score += 40;
     }
 
-    // Notes matching
     for (const synGroup of matchedNoteCategories) {
       const groupMatched = synGroup.some((syn) => allText.includes(syn));
       if (groupMatched) {
-        score += 25;
-        if (notesSummary.includes(synGroup[0])) score += 10;
-        if (topStr.includes(synGroup[0]) || heartStr.includes(synGroup[0]) || baseStr.includes(synGroup[0])) score += 15;
+        score += 30;
+        if (synGroup.some((syn) => notesSummary.includes(syn))) score += 15;
+        if (synGroup.some((syn) => topStr.includes(syn) || heartStr.includes(syn) || baseStr.includes(syn))) {
+          score += 20;
+        }
       }
     }
 
-    for (const tok of tokens) {
-      if (notesSummary.includes(tok)) score += 12;
-      else if (allText.includes(tok)) score += 5;
+    for (const tok of meaningfulTokens) {
+      if (notesSummary.includes(tok)) score += 15;
+      else if (allText.includes(tok)) score += 8;
     }
 
-    // Preferred gender bonus
     if (preferredGender && genderLower.includes(preferredGender)) {
-      score += 15;
-    }
-
-    // Bestseller bonus for well-known favorites (only if already relevant to query)
-    if (score > 0 && /yara|khamrah|asad|badee|fakhar|ejaazi|amethyst|club de nuit/i.test(nameLower)) {
-      score += 8;
+      score += 18;
     }
 
     scored.push({ perfume: p, score });
   }
 
-  // Sorting
   if (priceOrder === "desc") {
-    // Luxury / Gifts / More expensive
     scored.sort((a, b) => b.perfume.price - a.perfume.price || b.score - a.score);
   } else if (priceOrder === "asc") {
-    // Budget / Affordable
     scored.sort((a, b) => a.perfume.price - b.perfume.price || b.score - a.score);
   } else {
-    // By relevance score
     scored.sort((a, b) => b.score - a.score);
   }
 
-  // Filter items that scored positively
   const positiveMatches = scored.filter((x) => x.score > 0).map((x) => x.perfume);
   const combined = [...positiveMatches];
 
-  // 1. If we matched a specific brand or item, pad with the same brand first
+  // Pad with same brand if a specific brand was matched
   if (combined.length > 0 && combined.length < limit) {
     const primaryBrand = combined[0].brand?.toLowerCase();
     if (primaryBrand) {
@@ -309,14 +310,11 @@ export function searchPerfumesInDatabase(query, options = {}) {
     }
   }
 
-  // 2. If still need padding, pad with diverse top Arabian favorites
+  // Pad with remaining real catalog items so assistant always has real catalog items to recommend
   if (combined.length < limit) {
-    const fallbackList = ALL_PERFUMES.filter(
-      (p) => !excludeIds.has(p.id) && !excludeIds.has(p.slug) && !excludeIds.has(p.key)
-    );
-    for (const fb of fallbackList) {
-      if (!combined.some((item) => item.id === fb.id)) {
-        combined.push(fb);
+    for (const item of scored.map((s) => s.perfume)) {
+      if (!combined.some((c) => c.id === item.id)) {
+        combined.push(item);
         if (combined.length >= limit) break;
       }
     }
@@ -341,10 +339,17 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
       if (msg.role === "assistant" && Array.isArray(msg.books)) {
         for (const item of msg.books) {
           if (item && (item.id || item.title)) {
-            const id = item.id || item.slug || item.url;
-            if (!previouslyRecommendedIds.has(id)) {
-              previouslyRecommendedIds.add(id);
-              previouslyRecommended.push(item);
+            const rawId = String(item.id || item.slug || item.url || "").toLowerCase();
+            // Resolve against real catalog so stale session items are upgraded to real catalog objects
+            const realItem =
+              PERFUME_BY_ID.get(rawId) ||
+              PERFUME_BY_ID.get(String(item.title || "").toLowerCase()) ||
+              null;
+            const resolved = realItem || item;
+            const idKey = String(resolved.id || rawId);
+            if (!previouslyRecommendedIds.has(idKey)) {
+              previouslyRecommendedIds.add(idKey);
+              previouslyRecommended.push(resolved);
             }
           }
         }
@@ -354,13 +359,11 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
 
   const cleanCurrent = (currentMessage || "").trim().toLowerCase();
 
-  // Rejection signals
   const isRejection =
     /(не хочу|не то|не нравится|не подошл|дай другие|покажи другие|что-то другое|другие варианты|смени подборку|не эти|что еще есть|а еще|покажи еще)/i.test(
       cleanCurrent
     );
 
-  // Specific inquiry about previously proposed perfume
   const isFirstItemQuery = /(перв(ый|ом|ого|ому)|1(-й|ый)?\s*(вариант|аромат|парфюм|флакон))/i.test(cleanCurrent);
   const isSecondItemQuery = /(втор(ой|ом|ого|ому)|2(-й|ой)?\s*(вариант|аромат|парфюм|флакон))/i.test(cleanCurrent);
   const isThirdItemQuery = /(трет(ий|ьем|ьего|ьему)|3(-й|ий)?\s*(вариант|аромат|парфюм|флакон))/i.test(cleanCurrent);
@@ -373,24 +376,30 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
   } else if (isThirdItemQuery && previouslyRecommended.length >= 3) {
     targetPerfume = previouslyRecommended[2];
   } else {
-    // Check if user specifically named or asked about one of the proposed perfumes
     for (const rec of previouslyRecommended) {
-      const recTitle = (rec.title || "").toLowerCase();
-      const recBrand = (rec.brand || "").toLowerCase();
-      const firstWord = recTitle.split(/\s+/)[0] || "";
-      const secondWord = recTitle.split(/\s+/)[1] || "";
+      const recTitle = (rec.title || rec.name || "").toLowerCase();
+      const words = recTitle.split(/\s+/).filter((w) => w.length > 3);
       if (
         (recTitle && cleanCurrent.includes(recTitle)) ||
-        (secondWord.length > 3 && cleanCurrent.includes(secondWord)) ||
-        (firstWord.length > 3 && cleanCurrent.includes(firstWord) && cleanCurrent.includes(secondWord))
+        words.some((w) => !["parfum", "perfume", "spray", "unisex", "women"].includes(w) && cleanCurrent.includes(w))
       ) {
-        targetPerfume = rec;
+        targetPerfume = PERFUME_BY_ID.get(String(rec.id || "").toLowerCase()) || rec;
         break;
       }
     }
   }
 
-  // Accumulated user preferences across the conversation
+  // Also check if user directly named a perfume from the live catalog
+  if (!targetPerfume && /(расскажи|опиши|какие ноты|сколько стоит|цена|стойкость)/i.test(cleanCurrent)) {
+    for (const p of ALL_PERFUMES) {
+      const pName = (p.name || "").toLowerCase();
+      if (pName && cleanCurrent.includes(pName)) {
+        targetPerfume = p;
+        break;
+      }
+    }
+  }
+
   const fullConversationText = [...userQueries, cleanCurrent].join(" ").toLowerCase();
 
   let preferredGender = null;
@@ -404,7 +413,13 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
 
   const isGift = /(подарок|подарить|в подарок|для подарка|что подарить)/i.test(fullConversationText);
   const isLuxury = /(подороже|люкс|премиум|эксклюзив|коллекционн)/i.test(cleanCurrent) || isGift;
-  const isBudget = /(подешевле|бюджетн|до 20|до 30|недорог)/i.test(cleanCurrent);
+  const isBudget = /(подешевле|бюджетн|до 20|до 25|недорог)/i.test(cleanCurrent);
+
+  let maxPrice = null;
+  const priceMatch = cleanCurrent.match(/до\s*(\d+)/i);
+  if (priceMatch) {
+    maxPrice = Number(priceMatch[1]);
+  }
 
   const priceOrder = isLuxury ? "desc" : isBudget ? "asc" : "relevance";
 
@@ -419,6 +434,7 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
     isGift,
     isLuxury,
     isBudget,
+    maxPrice,
     priceOrder,
   };
 }
@@ -427,41 +443,31 @@ export function extractDialogueMemory(history = [], currentMessage = "") {
 // 5. YASMIN SYSTEM INSTRUCTION & GEMINI CALLER
 // ============================================================================
 const YASMIN_SYSTEM_INSTRUCTION = `
-You are Yasmin (Ясмин), the gracious, culturally refined, and passionate personal fragrance concierge for "Al-Warda Parfumes" (Арабские парфюмы Al-Warda).
-You wear a dignified black abaya with intricate golden embroidery, embodying timeless oriental elegance and refined taste.
-You speak with genuine warmth, charm, and poetic appreciation for Arabian perfumery: rare agarwood (oud), velvet Taif rose, solar amber, Bourbon vanilla, crisp bergamot, smoky frankincense, saffron, and velvety musks.
+You are Yasmin (Ясмин), the personal fragrance concierge for "Al-Warda Parfumes" (Арабские парфюмы Al-Warda).
 
-DYNAMIC CONVERSATION & MEMORY RULES:
-1. CONVERSATIONAL MEMORY IS MANDATORY:
-   - Always remember the entire ongoing dialogue, previous questions, user preferences (gender, preferred notes, budget), and what perfumes you previously proposed.
-   - REJECTION HANDLING ("не хочу", "не то", "дай другие", "покажи еще"):
-     * Acknowledge the customer's feedback gracefully (e.g. "Прекрасно вас понимаю! В мире восточных ароматов важно найти точное созвучие с вашим настроением...").
-     * Present COMPLETELY NEW perfume proposals from the provided real database catalogue, NEVER repeating the rejected bottles!
-   - SPECIFIC PERFUME INQUIRIES ("расскажи про первый", "какие ноты в Yara?", "сколько держится?"):
-     * Describe the exact olfactory pyramid (top, heart, base notes), longevity, sillage, and emotional character from the provided database information.
-2. HONEST & AUTHENTIC ASSORTMENT:
-   - Recommend perfumes EXCLUSIVELY from the provided search results list from Al-Warda's database.
-   - Return their exact IDs in the "bookIds" array (at least 3, up to 6 perfumes).
-3. CASUAL & SITE QUESTIONS (CART, ORDERS, BOUTIQUE):
-   - If the user asks about their cart, site navigation, orders, shipping, or casual pleasantries:
-     Answer directly, politely, and helpfully using the provided CURRENT USER & SITE CONTEXT.
-     Set "bookIds": []. Do NOT force unsolicited perfume pitches when not asked!
-4. TONE & POLITE MANNERS:
-   - Warm, respectful, poetic, and refined.
-   - Use uppercase for names of religions (e.g. «Ислам», «Христианство»).
-   - Concise: typically 2-4 sentences in your message.
+STRICT CATALOG GROUNDING RULES (CRITICAL — ZERO HALLUCINATIONS ALLOWED):
+1. ONLY REAL CATALOG PRODUCTS:
+   - You MUST ONLY mention, describe, or recommend perfumes that are explicitly provided to you in the "AL-WARDA REAL CATALOG ITEMS" JSON list in the prompt.
+   - NEVER invent, guess, or mention any perfume name, brand, price, volume, or note that is NOT in "AL-WARDA REAL CATALOG ITEMS".
+   - Always use the EXACT perfume title, brand, price (in EUR), and notes from "AL-WARDA REAL CATALOG ITEMS".
+   - If the customer asks for a brand or perfume that is not present in "AL-WARDA REAL CATALOG ITEMS", politely state that this specific item is not currently in our catalog and immediately offer the closest real items from "AL-WARDA REAL CATALOG ITEMS".
+2. BOOK IDS ARRAY:
+   - In "bookIds", return ONLY exact "id" values from "AL-WARDA REAL CATALOG ITEMS" (typically 3 to 6 IDs for recommendations, or 1 ID when describing a single requested bottle).
+   - Every perfume you name in your "message" MUST also have its "id" included in "bookIds".
+3. CART & NAVIGATION QUESTIONS:
+   - When the user asks only about their cart, orders, account, or navigation, answer using "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
+4. TONE & LANGUAGE:
+   - Warm, refined, concise (2–4 sentences).
    - Reply in the exact language used by the user (Russian or English).
 
-OUTPUT FORMAT:
-Return a single JSON object strictly matching this schema:
+OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
-  "message": "Your conversational response in user language",
+  "message": "Your response strictly referencing only items in AL-WARDA REAL CATALOG ITEMS",
   "emotion": "greeting | happy | smiling | thinking | curious | surprised | concerned | speaking | neutral",
   "bookIds": ["id1", "id2", "id3"],
-  "action": { "type": "navigate", "url": "/cart" },
+  "action": null,
   "referToAdmin": false
 }
-Do NOT include markdown fences.
 `;
 
 export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
@@ -474,8 +480,8 @@ export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
           responseMimeType: "application/json",
-          maxOutputTokens: 2048,
-          temperature: 0.7,
+          maxOutputTokens: 1024,
+          temperature: 0.2,
         },
       };
       if (systemInstruction) {
@@ -503,38 +509,28 @@ export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
 }
 
 // ============================================================================
-// 6. MAIN CHAT HANDLER WITH FULL MEMORY & DATABASE SEARCH
+// 6. MAIN CHAT HANDLER WITH FULL MEMORY & LIVE CATALOG GROUNDING
 // ============================================================================
 export async function processLiteraChat({ messages = [], language = "ru", context = {}, onStatus } = {}) {
-  initCatalog();
+  await ensureCatalogLoaded(context?.catalog);
+
   const apiKey = getGeminiApiKey();
   const history = Array.isArray(messages) ? messages.slice(-12) : [];
   const latestMessage = history[history.length - 1]?.content || "";
 
-  // 1. Analyze multi-turn memory & user intent
   const memory = extractDialogueMemory(history.slice(0, -1), latestMessage);
   const cleanQ = latestMessage.trim().toLowerCase();
 
-  // 1. Check if user is asking purely for navigation/cart/admin
-  const isPureNavigationOrAdmin =
-    /^(привет|здравствуй|добрый (день|вечер|утро)|hello|hi|hey|как дела|кто ты|что ты умеешь)$/i.test(cleanQ) ||
-    /^(корзина|в корзину|открой корзину|перейти в корзину|моя корзина|оформить заказ|мой заказ|мои заказы|как оплатить|доставка|возврат|профиль|аккаунт|войти|связаться с администратором|позови менеджера)$/i.test(cleanQ);
+  const isPureGreeting =
+    /^(привет|здравствуй|здравствуйте|добрый (день|вечер|утро)|салам|ассаляму алейкум|hello|hi|hey|good (morning|afternoon|evening))[\s!?.]*$/i.test(
+      cleanQ
+    );
+  const isPureCartOrNav =
+    /^(корзина|в корзину|открой корзину|перейти в корзину|моя корзина|что в корзине|оформить заказ|мой заказ|мои заказы|профиль|аккаунт|войти|связаться с администратором|позови менеджера)[\s!?.]*$/i.test(
+      cleanQ
+    );
 
-  // 2. Test search candidates in database
-  const searchCandidates = searchPerfumesInDatabase(latestMessage, {
-    excludeIds: new Set(memory.isRejection ? memory.previouslyRecommendedIds : []),
-    preferredGender: memory.preferredGender,
-    priceOrder: memory.priceOrder,
-    limit: 6,
-  });
-
-  const isPerfumeSearch =
-    !isPureNavigationOrAdmin &&
-    (searchCandidates.length > 0 ||
-      /(посоветуй|порекомендуй|найди|подбери|выбери|покажи|какие|духи|аромат|парфюм|ноты|стойк|шлейф|запах|флакон|купить|цена|сколько стоит|recommend|suggest|perfume|fragrance|scent|notes|oud|parfum|edp|edt|cologne)/i.test(cleanQ) ||
-      BRAND_NAMES.some((b) => cleanQ.includes(b)) ||
-      memory.isRejection ||
-      memory.isSpecificInquiry);
+  const isPerfumeSearch = !isPureGreeting && !isPureCartOrNav;
 
   if (typeof onStatus === "function") {
     try {
@@ -544,32 +540,41 @@ export async function processLiteraChat({ messages = [], language = "ru", contex
     }
   }
 
-  // 2. Perform database search if needed
   let foundPerfumes = [];
   if (isPerfumeSearch) {
     if (memory.isSpecificInquiry && memory.targetPerfume) {
-      // User asks about a previously proposed perfume
-      const fullPerfume = PERFUME_BY_ID.get((memory.targetPerfume.id || "").toLowerCase()) || memory.targetPerfume;
-      foundPerfumes = [fullPerfume];
-    } else {
-      // Search database with memory context
+      const fullPerfume =
+        PERFUME_BY_ID.get(String(memory.targetPerfume.id || "").toLowerCase()) ||
+        PERFUME_BY_ID.get(String(memory.targetPerfume.name || memory.targetPerfume.title || "").toLowerCase());
+      if (fullPerfume) {
+        foundPerfumes = [fullPerfume];
+      }
+    }
+
+    if (foundPerfumes.length === 0) {
       const excludeSet = new Set(memory.isRejection ? memory.previouslyRecommendedIds : []);
-      foundPerfumes = searchCandidates.length > 0 ? searchCandidates : searchPerfumesInDatabase(latestMessage, {
+      foundPerfumes = searchPerfumesInDatabase(latestMessage, {
         excludeIds: excludeSet,
         preferredGender: memory.preferredGender,
         priceOrder: memory.priceOrder,
+        maxPrice: memory.maxPrice,
         limit: 6,
       });
     }
   }
 
-  // 3. Prepare Live User & Cart Context
   const cartInfo = context?.cart;
   const userInfo = context?.user;
   const pageInfo = context?.page;
 
+  const catalogBrandsSummary = Array.from(
+    new Set(ALL_PERFUMES.map((p) => p.brand).filter(Boolean))
+  ).join(", ");
+
   let siteContextText = `
 CURRENT USER & SITE CONTEXT:
+- Total real products in Al-Warda catalog: ${ALL_PERFUMES.length}
+- Brands currently in Al-Warda catalog: ${catalogBrandsSummary || "Afnan, Al Haramain, Risala, Lattafa, Armaf"}
 - User is logged in: ${userInfo?.isLoggedIn ? `Yes (${userInfo.name || "Guest"})` : "No (Guest)"}
 - Current route: ${pageInfo?.pathname || "/"}
 - Cart: ${
@@ -581,44 +586,39 @@ CURRENT USER & SITE CONTEXT:
   }
 `;
 
-  // 4. Build prompt for Gemini
   let promptText = `
 User latest message: "${latestMessage}"
 User language: "${language}"
 ${siteContextText}
 
-Conversation History (Multi-turn memory):
+Conversation History:
 ${JSON.stringify(
   history.slice(0, -1).map((m) => ({
     role: m.role,
     content: m.content,
-    recommendedCount: Array.isArray(m.books) ? m.books.length : 0,
+    recommendedIds: Array.isArray(m.books) ? m.books.map((b) => b.id) : [],
   }))
 )}
-
-Memory Insights:
-- Previously recommended perfume IDs: ${JSON.stringify(Array.from(memory.previouslyRecommendedIds))}
-- User expressed rejection of earlier picks: ${memory.isRejection ? "YES (Offer completely fresh alternatives!)" : "No"}
-- Active Gender preference: ${memory.preferredGender || "Any / Unisex"}
-- Active Price preference: ${memory.isLuxury ? "Luxury / Gift (Higher price)" : memory.isBudget ? "Budget friendly" : "Standard"}
 `;
 
   if (isPerfumeSearch && foundPerfumes.length > 0) {
     promptText += `
-AL-WARDA REAL DATABASE MATCHES:
+AL-WARDA REAL CATALOG ITEMS (YOU MUST ONLY USE THESE ITEMS):
 ${JSON.stringify(
   foundPerfumes.map((p) => ({
     id: p.id,
     title: p.title,
     brand: p.brand,
-    price: `${p.price} EUR`,
+    price: `${p.price.toFixed(2)} EUR`,
+    category: p.category,
+    gender: p.gender,
     notesSummary: p.notesSummary,
     topNotes: p.topNotes,
     heartNotes: p.heartNotes,
     baseNotes: p.baseNotes,
     longevity: p.longevity,
     sillage: p.sillage,
-    gender: p.gender,
+    volume: p.volume,
     description: p.description,
   })),
   null,
@@ -626,26 +626,18 @@ ${JSON.stringify(
 )}
 
 CRITICAL INSTRUCTIONS:
-- You must recommend from the AL-WARDA REAL DATABASE MATCHES above.
-- Return their IDs in "bookIds": ${JSON.stringify(foundPerfumes.map((p) => p.id))}.
-- ${
-      memory.isRejection
-        ? "The customer requested OTHER options or rejected previous suggestions. Acknowledge this with warmth and charm, and present this new selection!"
-        : memory.isSpecificInquiry
-        ? "The customer asked about a specific fragrance. Detail its olfactory pyramid (top, heart, base notes), longevity, and aura!"
-        : "Present these exquisite perfumes, highlighting why their notes and character suit the guest's taste."
-    }
+- Mention and recommend ONLY perfumes from AL-WARDA REAL CATALOG ITEMS above.
+- Do NOT mention any perfume or brand not in AL-WARDA REAL CATALOG ITEMS.
+- Return their exact IDs in "bookIds": ${JSON.stringify(foundPerfumes.map((p) => p.id))}.
 `;
-  } else if (!isPerfumeSearch) {
+  } else {
     promptText += `
 INSTRUCTION:
-Answer the customer's question directly, politely, and warmly as Yasmin.
-Set "bookIds": [].
-If they asked to view cart, navigate to cart, etc., include "action": { "type": "navigate", "url": "/cart" }.
+Answer the customer's greeting or site/cart question politely as Yasmin.
+Do NOT invent any perfume names or prices. Set "bookIds": [].
 `;
   }
 
-  // 5. Attempt Gemini Response
   let aiResult = null;
   if (apiKey) {
     try {
@@ -659,27 +651,32 @@ If they asked to view cart, navigate to cart, etc., include "action": { "type": 
     }
   }
 
-  // 6. Robust Heuristic Fallback if Gemini is unavailable
-  if (!aiResult || !aiResult.message) {
+  // Validate that Gemini did not hallucinate non-catalog bookIds
+  let resolvedAI = [];
+  if (aiResult && Array.isArray(aiResult.bookIds)) {
+    resolvedAI = aiResult.bookIds
+      .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
+      .filter(Boolean);
+  }
+
+  if (!aiResult || !aiResult.message || (isPerfumeSearch && foundPerfumes.length > 0 && resolvedAI.length === 0)) {
     aiResult = generateHeuristicResponse({
       latestMessage,
       foundPerfumes,
       memory,
       language,
       cartInfo,
-      userInfo,
+      isPureGreeting,
     });
+    resolvedAI = (aiResult.bookIds || [])
+      .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
+      .filter(Boolean);
   }
 
-  // 7. Resolve final perfume objects for frontend
-  let resolvedAI = Array.isArray(aiResult.bookIds) && aiResult.bookIds.length > 0
-    ? aiResult.bookIds
-        .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
-        .filter(Boolean)
-    : [];
-  if (resolvedAI.length === 0 && foundPerfumes.length > 0) {
+  if (isPerfumeSearch && resolvedAI.length === 0 && foundPerfumes.length > 0) {
     resolvedAI = foundPerfumes;
   }
+
   const finalPerfumes = resolvedAI.slice(0, 6);
 
   return {
@@ -687,15 +684,25 @@ If they asked to view cart, navigate to cart, etc., include "action": { "type": 
     emotion: aiResult.emotion || "happy",
     books: finalPerfumes.map((p) => ({
       id: p.id,
+      slug: p.slug,
+      gtin: p.gtin,
       title: p.title,
+      name: p.name,
       brand: p.brand,
-      author: p.author || `${p.brand} • ${p.notesSummary || "Восточный аромат"}`,
+      author: `${p.brand} • ${p.notesSummary || p.category || "Восточный аромат"}`,
       price: p.price,
       currency: p.currency || "EUR",
-      image: p.image || "/assets/img/perfumes/hero-perfume.png",
-      url: p.url || `/perfume/${p.slug || p.id}`,
-      store: p.store || "Al-Warda Dubai",
+      image: p.image,
+      fullCardImage: p.image,
+      url: p.url || getPerfumeUrl(p),
+      store: p.store || "Al-Warda Boutique",
       notesSummary: p.notesSummary,
+      topNotes: p.topNotes,
+      heartNotes: p.heartNotes,
+      baseNotes: p.baseNotes,
+      longevity: p.longevity,
+      sillage: p.sillage,
+      gender: p.gender,
     })),
     action: aiResult.action || null,
     referToAdmin: Boolean(aiResult.referToAdmin),
@@ -703,19 +710,25 @@ If they asked to view cart, navigate to cart, etc., include "action": { "type": 
 }
 
 // ============================================================================
-// 7. LOCAL HEURISTIC RESPONSE GENERATOR (ZERO-DOWNTIME FALLBACK)
+// 7. LOCAL HEURISTIC RESPONSE GENERATOR (100% GROUNDED IN REAL CATALOG)
 // ============================================================================
-function generateHeuristicResponse({ latestMessage, foundPerfumes, memory, language, cartInfo }) {
+function generateHeuristicResponse({
+  latestMessage,
+  foundPerfumes,
+  memory,
+  language,
+  cartInfo,
+  isPureGreeting,
+}) {
   const isRu = language === "ru";
   const q = (latestMessage || "").toLowerCase();
 
-  // Navigation / Cart questions
   if (/(корзин|в корзине|что в заказе|заказ)/i.test(q)) {
     if (!cartInfo?.isLoggedIn) {
       return {
         message: isRu
-          ? "Корзина привязана к вашему личному аккаунту Al-Warda. Войдите или зарегистрируйтесь, чтобы сохранять понравившиеся ароматы! ✨"
-          : "Your shopping bag is linked to your personal Al-Warda account. Sign in to view and save your fragrances! ✨",
+          ? "Корзина привязана к вашему личному аккаунту Al-Warda. Войдите или зарегистрируйтесь, чтобы сохранять выбранные ароматы из каталога! ✨"
+          : "Your shopping bag is linked to your personal Al-Warda account. Sign in to view and save fragrances from our catalog! ✨",
         emotion: "greeting",
         bookIds: [],
         action: { type: "navigate", url: "/cart" },
@@ -724,90 +737,93 @@ function generateHeuristicResponse({ latestMessage, foundPerfumes, memory, langu
     if (!cartInfo.items || cartInfo.items.length === 0) {
       return {
         message: isRu
-          ? "Ваша корзина в Al-Warda пока пуста. Хотите, я помогу подобрать для вас чарующий восточный аромат? ✨"
-          : "Your Al-Warda shopping bag is currently empty. Would you like me to curate an enchanting oriental fragrance for you? ✨",
+          ? "Ваша корзина пока пуста. Хотите, я подберу для вас аромат из актуального каталога Al-Warda? ✨"
+          : "Your shopping bag is currently empty. Would you like me to recommend a fragrance from Al-Warda's catalog? ✨",
         emotion: "happy",
         bookIds: [],
       };
     }
     return {
       message: isRu
-        ? `В вашей корзине ${cartInfo.itemCount} ароматов на сумму ${cartInfo.totalPrice} €. Вы можете оформить заказ в любое удобное время!`
-        : `Your bag contains ${cartInfo.itemCount} fragrances totaling ${cartInfo.totalPrice} €. You can proceed to checkout whenever you are ready!`,
+        ? `В вашей корзине ${cartInfo.itemCount} поз. на сумму ${cartInfo.totalPrice} €. Вы можете перейти к оформлению заказа!`
+        : `Your bag contains ${cartInfo.itemCount} items totaling ${cartInfo.totalPrice} €. You can proceed to checkout whenever you're ready!`,
       emotion: "happy",
       bookIds: [],
       action: { type: "navigate", url: "/cart" },
     };
   }
 
-  // Specific perfume inquiry from memory
-  if (memory.isSpecificInquiry && memory.targetPerfume) {
-    const p = memory.targetPerfume;
-    const top = p.topNotes?.length ? p.topNotes.join(", ") : "благородные цитрусы и пряности";
-    const heart = p.heartNotes?.length ? p.heartNotes.join(", ") : "роскошные восточные цветы";
-    const base = p.baseNotes?.length ? p.baseNotes.join(", ") : "драгоценный уд, амбра и мускус";
+  if (isPureGreeting) {
+    const brands = Array.from(new Set(ALL_PERFUMES.map((p) => p.brand).filter(Boolean))).slice(0, 5).join(", ");
+    return {
+      message: isRu
+        ? `Здравствуйте! Меня зовут Ясмин, я консультант бутика Al-Warda. В нашем актуальном каталоге представлено ${ALL_PERFUMES.length} оригинальных ароматов (${brands}). Какие ноты или направление вы ищете? ✨`
+        : `Welcome! I am Yasmin, your fragrance concierge at Al-Warda. Our live catalog features ${ALL_PERFUMES.length} authentic fragrances (${brands}). Which notes or style are you looking for today? ✨`,
+      emotion: "greeting",
+      bookIds: [],
+    };
+  }
+
+  if (memory.isSpecificInquiry && foundPerfumes.length > 0) {
+    const p = foundPerfumes[0];
+    const top = p.topNotes?.length ? p.topNotes.join(", ") : p.notesSummary;
+    const heart = p.heartNotes?.length ? p.heartNotes.join(", ") : p.category;
+    const base = p.baseNotes?.length ? p.baseNotes.join(", ") : "восточная амбра и мускус";
 
     return {
       message: isRu
-        ? `Аромат «${p.title}» от дома ${p.brand || "Al-Warda"} — это подлинный шедевр. ✨\n\nВерхние ноты раскрываются аккордами: ${top}. В сердце звучат ${heart}, а в шлейфе оставляет стойкую базу из: ${base}. Стойкость составляет ${p.longevity || "10-14 часов"}, а шлейф невероятно комплиментарен!`
-        : `The fragrance «${p.title}» by ${p.brand || "Al-Warda"} is a true oriental masterpiece. ✨\n\nTop notes open with: ${top}. The heart reveals ${heart}, drifting into a luxurious drydown of ${base}. Exceptional longevity of ${p.longevity || "10-14 hours"}!`,
+        ? `В нашем каталоге представлен аромат «${p.title}» от бренда ${p.brand} по цене €${p.price.toFixed(2)} (${p.volume}). ✨\n\nВерхние ноты: ${top}. Ноты сердца: ${heart}. База: ${base}. Стойкость: ${p.longevity}.`
+        : `From our catalog: «${p.title}» by ${p.brand}, priced at €${p.price.toFixed(2)} (${p.volume}). ✨\n\nTop notes: ${top}. Heart notes: ${heart}. Base: ${base}. Longevity: ${p.longevity}.`,
       emotion: "speaking",
       bookIds: [p.id],
     };
   }
 
-  // Rejection of previous options
   if (memory.isRejection && foundPerfumes.length > 0) {
+    const names = foundPerfumes
+      .slice(0, 3)
+      .map((p) => `«${p.title}» (€${p.price.toFixed(2)})`)
+      .join(", ");
     return {
       message: isRu
-        ? "Прекрасно вас понимаю! В мире арабской парфюмерии важна каждая нота. Я подобрала для вас совершенно другие, восхитительные композиции из нашей коллекции:"
-        : "I completely understand! Every note in oriental perfumery is deeply personal. I have selected entirely fresh, enchanting creations for you:",
+        ? `Прекрасно вас понимаю! Подобрала для вас другие позиции из нашего каталога: ${names}. ✨`
+        : `I completely understand! Here are alternative fragrances from our live catalog: ${names}. ✨`,
       emotion: "happy",
       bookIds: foundPerfumes.map((p) => p.id),
     };
   }
 
-  // General recommendations
   if (foundPerfumes.length > 0) {
-    const topItem = foundPerfumes[0];
-    const topNameLower = (topItem.name || "").toLowerCase();
-    const isBrandSearch = BRAND_NAMES.some((b) => q.includes(b));
-    const isDirectItemMatch = topNameLower.split(/\s+/).some((w) => w.length > 3 && q.includes(w));
-
-    let customMsg = "";
-    if (isDirectItemMatch) {
-      customMsg = isRu
-        ? `Я нашла для вас «${topItem.name}» от дома ${topItem.brand}! Это великолепный образец восточного мастерства. ✨`
-        : `I found «${topItem.name}» by ${topItem.brand} for you! An exquisite piece of Arabian perfumery. ✨`;
-    } else if (isBrandSearch) {
-      customMsg = isRu
-        ? `С радостью представляю вам коллекцию ароматов от известного дома ${topItem.brand} в бутике Al-Warda: ✨`
-        : `With pleasure, here are selected fragrances from ${topItem.brand} in Al-Warda's collection: ✨`;
-    } else {
-      customMsg = isRu
-        ? "С радостью представляю вам изысканные арабские парфюмы из коллекции Al-Warda, идеально подходящие под ваш запрос: ✨"
-        : "With great pleasure, I present exquisite Arabian fragrances from Al-Warda's royal collection curated for you: ✨";
-    }
+    const topThree = foundPerfumes.slice(0, 3);
+    const summaryList = topThree
+      .map(
+        (p) =>
+          `«${p.title}» (${p.brand}, €${p.price.toFixed(2)} — ${
+            p.topNotes?.length ? p.topNotes.slice(0, 2).join(", ") : p.notesSummary
+          })`
+      )
+      .join("; ");
 
     return {
-      message: customMsg,
+      message: isRu
+        ? `Вот актуальные ароматы из нашего каталога по вашему запросу: ${summaryList}. Нажмите на любую карточку ниже, чтобы открыть страницу товара! ✨`
+        : `Here are the matching fragrances from our live catalog: ${summaryList}. Click any card below to view the product page! ✨`,
       emotion: "happy",
       bookIds: foundPerfumes.map((p) => p.id),
     };
   }
 
-  // Default friendly conversation
   return {
     message: isRu
-      ? "Здравствуйте! Меня зовут Ясмин, и я ваш персональный парфюмерный консультант бутика Al-Warda. Расскажите, какие ноты вы предпочитаете — нежную ваниль, царственный уд, бархатную розу или свежие цитрусы? ✨"
-      : "Welcome! I am Yasmin, your fragrance concierge at Al-Warda. Which olfactory notes inspire you today — rich oud, bourbon vanilla, velvet rose, or crisp bergamot? ✨",
+      ? "Расскажите, какие ноты или бренд из каталога Al-Warda вам интересны, и я сразу покажу доступные товары в наличии! ✨"
+      : "Let me know which notes or brand from the Al-Warda catalog you prefer, and I will show you the available fragrances in stock! ✨",
     emotion: "greeting",
     bookIds: [],
   };
 }
 
 // ============================================================================
-// 8. SUPPORTING UTILITIES (MAINTAINING ROUTE COMPATIBILITY)
+// 8. SUPPORTING UTILITIES
 // ============================================================================
 export async function filterInquiryMessageWithAI({ text, language = "ru" }) {
   const clean = (text || "").trim();

@@ -219,7 +219,7 @@ export default function Header({ theme, isLight, onSearch }) {
         <div className="warda-nav__center">
           <Link to="/" className="warda-nav__crest-logo" aria-label="Al-Warda Parfumes Home">
             <img
-              src="/assets/img/al-warda-header-logo.png"
+              src="/assets/img/al-warda-header-logo.png?v=transparent-20261108"
               alt="Al-Warda Parfumes"
               className="warda-nav__crest-img"
             />

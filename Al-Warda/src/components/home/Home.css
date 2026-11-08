@@ -119,9 +119,25 @@
 .warda-hero__img-frame {
   position: relative;
   width: 100%;
-  border-radius: 4px 0 0 4px;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8);
+  background: transparent;
+  box-shadow: none;
+  -webkit-mask-image:
+    radial-gradient(ellipse 92% 90% at 52% 50%, #000 62%, rgba(0, 0, 0, 0.65) 78%, transparent 100%);
+  mask-image:
+    radial-gradient(ellipse 92% 90% at 52% 50%, #000 62%, rgba(0, 0, 0, 0.65) 78%, transparent 100%);
+}
+
+.warda-hero__img-frame::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(to right, var(--body-color, #080605) 0%, transparent 14%, transparent 86%, var(--body-color, #080605) 100%),
+    linear-gradient(to bottom, var(--body-color, #080605) 0%, transparent 12%, transparent 84%, var(--body-color, #080605) 100%);
 }
 
 .warda-hero__img {
@@ -129,6 +145,7 @@
   height: auto;
   display: block;
   object-fit: cover;
+  background: transparent;
   transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

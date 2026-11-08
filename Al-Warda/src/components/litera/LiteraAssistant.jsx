@@ -9,7 +9,7 @@ import { getPerfumeUrl } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./LiteraAssistant.css";
 
-const STORAGE_KEY = "litera_assistant_history_v2";
+const STORAGE_KEY = "litera_assistant_history_v4";
 const DIALOG_LANG_KEY = "litera_assistant_dialog_lang_v1";
 
 const isSearchQuery = (text) =>
@@ -584,7 +584,7 @@ export default function LiteraAssistant() {
   };
 
   const handleViewBook = (book) => {
-    const targetUrl = book ? getPerfumeUrl(book) : "/featured";
+    const targetUrl = book ? (book.url || getPerfumeUrl(book)) : "/featured";
     navigate(targetUrl, {
       state: { book },
     });
