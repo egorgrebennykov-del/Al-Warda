@@ -4,7 +4,6 @@ import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
-import ProductReflection from "../common/ProductReflection";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
 
@@ -311,7 +310,6 @@ export default function SearchResults() {
                         e.currentTarget.hidden = true;
                       }}
                     />
-                    <ProductReflection src={perfume.image} />
                     <div className="warda-perfume-card__sheen" />
                   </div>
 

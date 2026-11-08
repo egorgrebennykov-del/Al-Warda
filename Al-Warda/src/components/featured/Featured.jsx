@@ -4,7 +4,6 @@ import { getPerfumes, getCategories, getPerfumeUrl } from "../../../utils/perfum
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
-import ProductReflection from "../common/ProductReflection";
 import "./Featured.css";
 import "../common/ProductCardImages.css";
 
@@ -609,7 +608,6 @@ export default function Featured() {
                         e.currentTarget.hidden = true;
                       }}
                     />
-                    <ProductReflection src={perfume.image} />
                   </div>
 
                   <div className="warda-perfume-card__info">

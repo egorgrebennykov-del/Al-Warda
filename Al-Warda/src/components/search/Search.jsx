@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { useLanguage } from "../../context/languageContext";
 import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
-import ProductReflection from "../common/ProductReflection";
 import "./Search.css";
 import "../common/ProductCardImages.css";
 
@@ -243,7 +242,6 @@ export default function Search({ show, onClose }) {
                           e.currentTarget.hidden = true;
                         }}
                       />
-                      <ProductReflection src={p.image} />
                       <div className="search__card-sheen" />
                     </div>
 

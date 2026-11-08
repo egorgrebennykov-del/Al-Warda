@@ -4,7 +4,6 @@ import { getPerfumeById, ensurePerfumeEnrichment, getHarmoniousNotes } from "../
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
-import ProductReflection from "../common/ProductReflection";
 import "./BookDetails.css";
 
 export default function BookDetails() {
@@ -195,7 +194,6 @@ export default function BookDetails() {
                       e.currentTarget.hidden = true;
                     }}
                   />
-                  <ProductReflection src={perfume?.image} />
                 </div>
               </div>
             </div>

@@ -4,7 +4,6 @@ import { getBestSellerPerfumes, getCategories, getPerfumeUrl } from "../../../ut
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
-import ProductReflection from "../common/ProductReflection";
 import CategoryCinematicMotion from "./CategoryCinematicMotion";
 import "./Home.css";
 import "../common/ProductCardImages.css";
@@ -242,7 +241,6 @@ export default function Home() {
                       e.currentTarget.hidden = true;
                     }}
                   />
-                  <ProductReflection src={perfume.image} />
                 </div>
 
                 <div className="warda-perfume-card__info">
