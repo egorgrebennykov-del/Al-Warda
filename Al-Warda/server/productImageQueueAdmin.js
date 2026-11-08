@@ -2,9 +2,15 @@ const MAX_DAILY_IMAGES = 160;
 const DAILY_NEURON_BUDGET = 9_000;
 const ESTIMATED_NEURONS_PER_IMAGE = 38.4;
 
+class MissingServiceKeyError extends Error {
+  constructor() {
+    super("SUPABASE_SERVICE_ROLE_KEY is not configured on the server");
+  }
+}
+
 function getServiceKey(env) {
   const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured on the server");
+  if (!key) throw new MissingServiceKeyError();
   return key;
 }
 
@@ -167,6 +173,9 @@ export async function getProductImageQueueStatus(request, env) {
       utcDay: today,
     });
   } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
     return json({ error: error.message || "Could not load queue status" }, 500);
   }
 }

@@ -34,6 +34,26 @@ describe("product image queue admin API", () => {
     assert.equal(fetched, false);
   });
 
+  it("reports a missing server key without displaying empty queue statistics", async () => {
+    let fetched = false;
+    globalThis.fetch = async () => {
+      fetched = true;
+      throw new Error("unexpected request");
+    };
+
+    const response = await getProductImageQueueStatus(
+      request("/api/admin/product-images/status", userCookie()),
+      { SUPABASE_URL: "https://supabase.example" },
+    );
+
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), {
+      error: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server",
+      code: "SUPABASE_SERVICE_KEY_MISSING",
+    });
+    assert.equal(fetched, false);
+  });
+
   it("checks the database role and reports status counts and daily attempts", async () => {
     const today = new Date().toISOString().slice(0, 10);
     const calls = [];

@@ -23,6 +23,13 @@ Claude provenance are hidden. Images are published only after
      that the account is on the Free plan
 3. Add these Cloudflare Worker secrets:
    - `SUPABASE_SERVICE_ROLE_KEY`
+
+   GitHub Actions secrets are separate from Worker secrets. In the Cloudflare
+   dashboard, open the deployed `al-warda` Worker, then **Settings → Variables
+   and Secrets**, add `SUPABASE_SERVICE_ROLE_KEY` as a secret, and deploy the
+   updated configuration. Alternatively, from the repository root, run
+   `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY` and enter the key at
+   the prompt. `SUPABASE_SECRET_KEY` is also accepted as a server-side alias.
 4. Deploy the Worker and open **Admin → Product images** to view progress or
    open GitHub Actions to manually dispatch the queue. The scheduled job runs
    daily at 00:20 UTC.

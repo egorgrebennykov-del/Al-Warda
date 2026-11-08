@@ -1,21 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import "./ProductImageQueue.css";
 
-const EMPTY_STATUS = {
-  total: 0,
-  pending: 0,
-  processing: 0,
-  completed: 0,
-  failed: 0,
-  attemptedToday: 0,
-  dailyLimit: 160,
-  estimatedNeuronsToday: 0,
-  neuronSafetyBudget: 9000,
-};
-
 export default function ProductImageQueue({ language = "ru" }) {
   const isRussian = language === "ru";
-  const [status, setStatus] = useState(EMPTY_STATUS);
+  const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,11 +14,17 @@ export default function ProductImageQueue({ language = "ru" }) {
       });
       const payload = await response.json();
       if (!response.ok) {
+        if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
+          throw new Error(isRussian
+            ? "На сервере не настроен секрет SUPABASE_SERVICE_ROLE_KEY. Добавьте его в настройки Cloudflare Worker; секреты GitHub Actions на сервер не передаются."
+            : "SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Add it to the Cloudflare Worker secrets; GitHub Actions secrets are not shared with the server.");
+        }
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
-      setStatus({ ...EMPTY_STATUS, ...payload });
+      setStatus(payload);
       setError("");
     } catch (loadError) {
+      setStatus(null);
       setError(loadError.message || (isRussian ? "Не удалось загрузить очередь" : "Could not load queue"));
     } finally {
       setLoading(false);
@@ -46,11 +40,11 @@ export default function ProductImageQueue({ language = "ru" }) {
     };
   }, [loadStatus]);
 
-  const processed = status.completed + status.failed;
-  const progress = status.total
+  const processed = status ? status.completed + status.failed : 0;
+  const progress = status?.total
     ? Math.min(100, Math.round((processed / status.total) * 100))
     : 0;
-  const dailyLimitReached = status.attemptedToday >= status.dailyLimit;
+  const dailyLimitReached = status && status.attemptedToday >= status.dailyLimit;
 
   return (
     <section className="product-image-queue">
@@ -75,6 +69,7 @@ export default function ProductImageQueue({ language = "ru" }) {
       </header>
 
       {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{error}</div>}
+      {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
       {dailyLimitReached && (
         <div className="product-image-queue__message">
           {isRussian
@@ -83,6 +78,7 @@ export default function ProductImageQueue({ language = "ru" }) {
         </div>
       )}
 
+      {status && <>
       <div className="product-image-queue__progress-heading">
         <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
         <span>{status.completed.toLocaleString()} / {status.total.toLocaleString()} ({progress}%)</span>
@@ -99,7 +95,7 @@ export default function ProductImageQueue({ language = "ru" }) {
           <div className={`product-image-queue__card product-image-queue__card--${key}`} key={key}>
             <i className={icon} />
             <span>{label}</span>
-            <strong>{loading ? "—" : status[key].toLocaleString()}</strong>
+            <strong>{status[key].toLocaleString()}</strong>
           </div>
         ))}
       </div>
@@ -119,6 +115,7 @@ export default function ProductImageQueue({ language = "ru" }) {
           ? "Лимит приложения — 160 попыток в сутки и 9 000 расчётных Neurons. Платный тариф автоматически не подключается; для бюджета $0 аккаунт Cloudflare должен оставаться на Free."
           : "Application limit: 160 attempts per day and 9,000 estimated Neurons. No paid plan is enabled automatically; keep the Cloudflare account on Free for a $0 budget."}
       </p>
+      </>}
     </section>
   );
 }
