@@ -1,9 +1,9 @@
 # Product image generation
 
-The Qogita image queue is driven by GitHub Actions. Flux Schnell receives a text
-prompt for an empty background only; the original Qogita photo is segmented and
-composited in the action. The original bottle RGB pixels are retained and the
-source canvas is not cropped. Final PNG files are committed to the repository
+The Qogita image queue is driven by GitHub Actions. Flux 2 Klein edits the
+original Qogita photo into a studio product image, using the original as a
+reference. Generative editing can change labels or details; review the output
+against the original before relying on it. Final PNG files are committed to the repository
 under `public/assets/img/generated-products` and deployed as Cloudflare static
 assets; no Supabase Storage bucket is used for new images. Queue state is stored
 in the existing `stocks.info` JSON.
@@ -26,6 +26,8 @@ Supabase Storage remain supported.
      that the account is on the Free plan
 3. Add these Cloudflare Worker secrets:
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GITHUB_TOKEN` (Actions read/write on this repository)
+   - `QOGITA_EXPORT_ACCOUNT_EMAIL` (the Qogita owner allowed to operate the queue)
 
    GitHub Actions secrets are separate from Worker secrets. In the Cloudflare
    dashboard, open the deployed `al-warda` Worker, then **Settings → Variables
@@ -33,34 +35,52 @@ Supabase Storage remain supported.
    updated configuration. Alternatively, from the repository root, run
    `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY` and enter the key at
    the prompt. `SUPABASE_SECRET_KEY` is also accepted as a server-side alias.
+   The controls require both the site's privileged user cookie and an active
+   Qogita session for the configured owner, authenticated in Qogita connection
+   settings. No GitHub token is entered or stored in the browser. Account
+   credentials used by the workflow remain GitHub Actions secrets, separate
+   from Cloudflare Worker secrets.
+   For local development, set `GITHUB_TOKEN` (or `GH_TOKEN`),
+   `QOGITA_EXPORT_ACCOUNT_EMAIL`, `SUPABASE_URL`, and a server-only
+   `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`) in the local server
+   environment or `Al-Warda/.env`. Optionally set `QOGITA_SESSION_SECRET`;
+   otherwise the server uses the Supabase secret to protect the session.
+   Restart the server after changing these values and sign in to Qogita again
+   in the connection settings. Do not commit the local secrets file.
 4. Deploy the Worker and open **Admin → Product images** to view progress or
    open GitHub Actions to manually dispatch the queue. The scheduled job runs
-   daily at 00:20 UTC.
+   daily at 00:20 UTC. The manual dispatch accepts the maximum number of
+   products to attempt in that run and can select a secondary Cloudflare
+   account. To enable the secondary account, set GitHub Actions secrets
+   `CLOUDFLARE_SECONDARY_ACCOUNT_ID`, `CLOUDFLARE_SECONDARY_API_TOKEN`, and
+   `CLOUDFLARE_SECONDARY_FREE_PLAN_CONFIRMED` (set to `true` only after
+   confirming its Free plan).
+   To replace previously completed images made by an older model, enable
+   **Regenerate completed images from older models** on the generation page
+   (or `regenerate_completed` when dispatching in GitHub). This mode processes
+   those images instead of the pending queue. The original published image stays
+   available until the replacement is deployed and its bytes are verified.
 
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.
 
-The action caches the U2Net segmentation model between runs. On a cache miss it
-tries the upstream release and a mirror, with retries and SHA-256 verification.
-If neither source is available, the job reports the failure before marking or
-attempting any products. Cache retention depends on GitHub Actions policies.
-
 If publication times out, records remain in `publishing` and the next workflow
 run verifies them again before generating new images. If a generated file was
-never committed, its record is marked failed and can be retried after the UTC
-daily reset. Failed attempts still count against the daily quota.
+never committed, its record is marked failed and can be retried on a later run.
+Stopping a run requests GitHub cancellation; the workflow attempts to commit and
+publish completed files during cancellation. If cancellation is forced or the
+runner is interrupted, uncommitted outputs may need regeneration.
 
 ## Daily quota and billing
 
-The application attempts at most 160 backgrounds per UTC day, reserves an
-estimated 38.4 Neurons per background (two Flux steps and a conservative
-1024×1024 tile estimate), and stops at an estimated 9,000 Neurons. Failed
-requests count as attempts and are eligible for retry after the next UTC reset.
-Interrupted `processing` records can be resumed on a later run.
+The application does not impose a daily image or Neuron quota. Each run attempts
+up to the selected batch size, stopping when Cloudflare reports a quota or rate
+limit. The scheduled run defaults to 160 attempts. A failed or interrupted item
+can be retried in a later run; an active processing item is not retried until
+it becomes stale.
 
 The application refuses to call Workers AI until the Free-plan confirmation
 secret is set. It never enables or upgrades a Cloudflare plan. To maintain a $0
 budget, keep the account on the Workers AI Free plan and account for other AI
-workloads sharing the account quota; the application can enforce its own
-estimate, but cannot inspect or control account billing or usage from other
-projects.
+workloads sharing the account quota. The application cannot verify the account's
+actual plan, inspect billing, or guarantee that paid usage is disabled.

@@ -1,7 +1,3 @@
-const MAX_DAILY_IMAGES = 160;
-const DAILY_NEURON_BUDGET = 9_000;
-const ESTIMATED_NEURONS_PER_IMAGE = 38.4;
-
 class MissingServiceKeyError extends Error {
   constructor() {
     super("SUPABASE_SERVICE_ROLE_KEY is not configured on the server");
@@ -60,7 +56,7 @@ function isPrivilegedDatabaseRow(user) {
   );
 }
 
-async function requirePrivilegedUser(request, env) {
+export async function requirePrivilegedUser(request, env) {
   const cookieHeader =
     request.headers?.get?.("cookie") || request.headers?.cookie || "";
   const cookieUser = parseCookieUser(cookieHeader);
@@ -160,18 +156,15 @@ export async function getProductImageQueueStatus(request, env) {
         ? "processing"
         : counts[job.status] === undefined ? "pending" : job.status;
       counts[status]++;
-      if (job.attemptedOn === today) attemptedToday++;
+      if (job.attemptedOn === today) {
+        attemptedToday++;
+      }
     }
 
     return json({
       total: eligible,
       ...counts,
       attemptedToday,
-      dailyLimit: MAX_DAILY_IMAGES,
-      estimatedNeuronsToday: Math.round(
-        attemptedToday * ESTIMATED_NEURONS_PER_IMAGE * 10,
-      ) / 10,
-      neuronSafetyBudget: DAILY_NEURON_BUDGET,
       utcDay: today,
     });
   } catch (error) {

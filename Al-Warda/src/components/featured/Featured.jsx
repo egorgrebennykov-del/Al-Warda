@@ -5,6 +5,7 @@ import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
 import "./Featured.css";
+import "../common/ProductCardImages.css";
 
 const POPULAR_ARABIAN_BRANDS = [
   "Lattafa",

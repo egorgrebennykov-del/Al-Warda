@@ -33,7 +33,13 @@ async function createSession(env, payload) {
   return `${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(encrypted))}`;
 }
 
-async function readSession(request, env) {
+export async function createQogitaSessionCookie(env, { token, expires, email }) {
+  const session = await createSession(env, { token, expires, email: null, accountEmail: email.trim().toLowerCase() });
+  const maxAge = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+  return `${COOKIE_NAME}=${session}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
+}
+
+export async function readQogitaSession(request, env) {
   const cookie = (request.headers.get("cookie") || "").split(";").map(item => item.trim())
     .find(item => item.startsWith(`${COOKIE_NAME}=`))?.slice(COOKIE_NAME.length + 1);
   if (!cookie) return null;
@@ -76,7 +82,7 @@ export async function handleQogitaWorker(request, env) {
       });
     }
 
-    const session = await readSession(request, env);
+    const session = await readQogitaSession(request, env);
     if (method === "GET" && path === "/api/qogita/status") {
       return json({ apiUrl: "https://api.qogita.com", isConfigured: Boolean(session), isAuthenticated: Boolean(session), email: session?.email || null });
     }

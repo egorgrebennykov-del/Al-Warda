@@ -6,12 +6,64 @@ export default function ProductImageQueue({ language = "ru" }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [count, setCount] = useState(50);
+  const [account, setAccount] = useState("primary");
+  const [regenerateCompleted, setRegenerateCompleted] = useState(false);
+  const [runs, setRuns] = useState([]);
+  const [actionError, setActionError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const loadRuns = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin" });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
+      }
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+      setRuns(payload.runs);
+      setActionError("");
+    } catch (err) {
+      setActionError(err.message);
+    }
+  }, []);
+
+  const runAction = async (action) => {
+    setBusy(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch("/api/admin/product-images/actions", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, count: Number(count), account, regenerateCompleted }),
+      });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
+      }
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+      setActionMessage(action === "start"
+        ? (isRussian ? "Запуск отправлен в GitHub Actions." : "Workflow dispatch accepted.")
+        : (isRussian ? "Запрошена остановка. Уже созданные, но не опубликованные файлы могут потребовать повторной обработки." : "Cancellation requested. Unpublished files may need to be regenerated."));
+      await loadRuns();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const loadStatus = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/product-images/status", {
         credentials: "same-origin",
       });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
+      }
       const payload = await response.json();
       if (!response.ok) {
         if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
@@ -34,17 +86,19 @@ export default function ProductImageQueue({ language = "ru" }) {
   useEffect(() => {
     const initialLoad = window.setTimeout(loadStatus, 0);
     const timer = window.setInterval(loadStatus, 15000);
+    const actionsLoad = window.setTimeout(loadRuns, 0);
+    const actionsTimer = window.setInterval(loadRuns, 15000);
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(timer);
+      window.clearTimeout(actionsLoad);
+      window.clearInterval(actionsTimer);
     };
-  }, [loadStatus]);
+  }, [loadStatus, loadRuns]);
 
-  const processed = status ? status.completed + status.failed : 0;
   const progress = status?.total
-    ? Math.min(100, Math.round((processed / status.total) * 100))
+    ? Math.min(100, Math.round((status.completed / status.total) * 100))
     : 0;
-  const dailyLimitReached = status && status.attemptedToday >= status.dailyLimit;
 
   return (
     <section className="product-image-queue">
@@ -53,8 +107,8 @@ export default function ProductImageQueue({ language = "ru" }) {
           <h2>{isRussian ? "Генерация изображений товаров" : "Product image generation"}</h2>
           <p>
             {isRussian
-              ? "Flux создаёт только фон; исходный флакон компонуется программно."
-              : "Flux generates the background only; the original bottle is composited programmatically."}
+              ? "Flux редактирует исходное фото товара для студийного изображения; результат может требовать проверки деталей."
+              : "Flux edits the original product photo into a studio image; product details may need review."}
           </p>
         </div>
         <a
@@ -68,15 +122,34 @@ export default function ProductImageQueue({ language = "ru" }) {
         </a>
       </header>
 
+      <div className="product-image-queue__controls">
+        <label>
+          {isRussian ? "Количество фото" : "Number of photos"}
+          <input type="number" min="1" max="100000" step="1" value={count} onChange={(e) => setCount(e.target.value)} />
+        </label>
+        <label className="product-image-queue__regenerate">
+          <input type="checkbox" checked={regenerateCompleted} onChange={(e) => setRegenerateCompleted(e.target.checked)} />
+          {isRussian ? "Пересоздать готовые фото старой модели" : "Regenerate completed images from older models"}
+        </label>
+        <label>
+          {isRussian ? "Аккаунт Cloudflare" : "Cloudflare account"}
+          <select value={account} onChange={(e) => setAccount(e.target.value)}>
+            <option value="primary">{isRussian ? "Основной" : "Primary"}</option>
+            <option value="secondary">{isRussian ? "Второй" : "Secondary"}</option>
+          </select>
+        </label>
+        <button type="button" className="product-image-queue__start" disabled={busy || runs.length > 0 || !Number.isInteger(Number(count)) || Number(count) < 1 || Number(count) > 100000} onClick={() => runAction("start")}>
+          {isRussian ? "Запустить" : "Start"}
+        </button>
+        <button type="button" className="product-image-queue__start" disabled={busy || !runs.length} onClick={() => runAction("stop")}>
+          {isRussian ? "Остановить" : "Stop"}
+        </button>
+      </div>
+      {actionError && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{actionError}</div>}
+      {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
+      {runs.map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">GitHub Actions: {run.status}</a>)}
       {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{error}</div>}
       {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
-      {dailyLimitReached && (
-        <div className="product-image-queue__message">
-          {isRussian
-            ? "Дневной лимит достигнут. Очередь продолжится после сброса квоты в 00:00 UTC."
-            : "Daily limit reached. The queue resumes after the quota resets at 00:00 UTC."}
-        </div>
-      )}
 
       {status && <>
       <div className="product-image-queue__progress-heading">
@@ -103,17 +176,13 @@ export default function ProductImageQueue({ language = "ru" }) {
       <div className="product-image-queue__quota">
         <span>
           {isRussian ? "Попытки сегодня (UTC)" : "Attempts today (UTC)"}:
-          {" "}<strong>{status.attemptedToday} / {status.dailyLimit}</strong>
-        </span>
-        <span>
-          {isRussian ? "Оценка Neurons" : "Estimated Neurons"}:
-          {" "}<strong>{status.estimatedNeuronsToday.toLocaleString()} / {status.neuronSafetyBudget.toLocaleString()}</strong>
+          {" "}<strong>{status.attemptedToday}</strong>
         </span>
       </div>
       <p className="product-image-queue__footnote">
         {isRussian
-          ? "Лимит приложения — 160 попыток в сутки и 9 000 расчётных Neurons. Платный тариф автоматически не подключается; для бюджета $0 аккаунт Cloudflare должен оставаться на Free."
-          : "Application limit: 160 attempts per day and 9,000 estimated Neurons. No paid plan is enabled automatically; keep the Cloudflare account on Free for a $0 budget."}
+          ? "Обработка остановится, если Cloudflare сообщит о превышении квоты или ограничении запросов. Аккаунт должен оставаться на Free."
+          : "Processing stops when Cloudflare reports a quota or rate limit. Keep the account on the Free plan."}
       </p>
       </>}
     </section>

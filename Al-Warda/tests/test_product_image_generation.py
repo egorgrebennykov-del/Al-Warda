@@ -119,7 +119,7 @@ class ProductImageGenerationTests(unittest.TestCase):
             self.assertEqual(result.getpixel((1, 1)), (12, 180, 90, 255))
             self.assertEqual(result.getpixel((0, 0)), (25, 45, 205, 255))
 
-    def test_candidate_selection_excludes_completed_and_already_attempted_items(self):
+    def test_candidate_selection_excludes_completed_and_active_items(self):
         today = datetime(2026, 1, 2, 12, 0, tzinfo=timezone.utc)
         old = (today - timedelta(days=1)).isoformat()
         recent = today.isoformat()
@@ -134,10 +134,10 @@ class ProductImageGenerationTests(unittest.TestCase):
 
         candidates, attempted_today = queue.select_candidates(rows, today)
 
-        self.assertEqual([row["id"] for row in candidates], [1, 4, 6])
+        self.assertEqual([row["id"] for row in candidates], [1, 3, 4, 6])
         self.assertEqual(attempted_today, 1)
 
-    def test_cloudflare_request_uses_flux_rest_endpoint_and_steps(self):
+    def test_cloudflare_request_uses_reference_and_flux_edit_endpoint(self):
         class FakeResponse:
             status_code = 200
             ok = True
@@ -152,14 +152,21 @@ class ProductImageGenerationTests(unittest.TestCase):
                 return FakeResponse()
 
         session = FakeSession()
-        result = queue.generate_background(session, "account-123", "test-token", "empty backdrop")
+        result = queue.generate_product_edit(
+            session, "account-123", "test-token", image_bytes(Image.new("RGB", (800, 600)))
+        )
 
         self.assertEqual(result, b"generated-background")
         self.assertEqual(
             session.url,
-            "https://api.cloudflare.com/client/v4/accounts/account-123/ai/run/@cf/black-forest-labs/flux-1-schnell",
+            "https://api.cloudflare.com/client/v4/accounts/account-123/ai/run/@cf/black-forest-labs/flux-2-klein-4b",
         )
-        self.assertEqual(session.kwargs["json"], {"prompt": "empty backdrop", "steps": 2})
+        self.assertEqual(session.kwargs["data"]["width"], "1024")
+        self.assertIn("product reference", session.kwargs["data"]["prompt"])
+        reference = session.kwargs["files"]["input_image_0"]
+        with Image.open(io.BytesIO(reference[1])) as image:
+            self.assertLess(image.width, 512)
+            self.assertLess(image.height, 512)
 
     def test_cloudflare_daily_quota_stops_generation(self):
         class FakeResponse:
@@ -172,7 +179,98 @@ class ProductImageGenerationTests(unittest.TestCase):
                 return FakeResponse()
 
         with self.assertRaises(queue.WorkersDailyQuotaExceeded):
-            queue.generate_background(FakeSession(), "account-123", "test-token", "empty backdrop")
+            queue.generate_product_edit(
+                FakeSession(), "account-123", "test-token", image_bytes(Image.new("RGB", (20, 20)))
+            )
+
+    def test_cloudflare_authorization_error_stops_batch(self):
+        response = types.SimpleNamespace(status_code=401, ok=False, text="Unauthorized")
+        session = types.SimpleNamespace(post=lambda *_args, **_kwargs: response)
+        with self.assertRaises(queue.WorkersConfigurationError):
+            queue.generate_product_edit(
+                session, "account-123", "test-token", image_bytes(Image.new("RGB", (20, 20)))
+            )
+
+    def test_product_edit_is_saved_as_1024_png_and_awaits_publication(self):
+        source = image_bytes(Image.new("RGB", (100, 100), "red"))
+        result = image_bytes(Image.new("RGB", (1024, 1024), "blue"), "JPEG")
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        now = datetime(2026, 1, 2, tzinfo=timezone.utc)
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", return_value=result) as edit, \
+             patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/result.png") as save, \
+             patch.object(queue, "patch_stock") as update:
+            queue.process_product(object(), row, "https://db.example", "account", "token", None, now)
+        self.assertEqual(edit.call_args.args[-1], source)
+        with Image.open(io.BytesIO(save.call_args.args[0])) as saved:
+            self.assertEqual(saved.format, "PNG")
+            self.assertEqual(saved.size, (1024, 1024))
+        job = update.call_args.args[3]["imageGeneration"]
+        self.assertEqual(job["status"], "publishing")
+        self.assertEqual(job["model"], queue.MODEL_ID)
+        self.assertEqual(job["steps"], 4)
+
+    def test_rejects_unexpected_edit_dimensions(self):
+        source = image_bytes(Image.new("RGB", (20, 20)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", return_value=source), \
+             patch.object(queue, "patch_stock") as update, \
+             patch.object(queue, "save_generated_image") as save:
+            with self.assertRaisesRegex(ValueError, "Unexpected generated image dimensions"):
+                queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
+        save.assert_not_called()
+        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
+
+    def test_regeneration_preserves_completed_image_on_failure(self):
+        source = image_bytes(Image.new("RGB", (20, 20)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        old_job = {"status": "completed", "model": "old", "imageUrl": "/old.png"}
+        row = {"id": 8, "image": "/old.png", "info": {
+            "rawImage": "https://img.qogita.com/photo.jpg", "imageGeneration": old_job,
+        }}
+        now = datetime.now(timezone.utc)
+        candidates, _ = queue.select_candidates([row], now, regenerate_completed=True)
+        self.assertEqual(candidates, [row])
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", side_effect=RuntimeError("provider failed")), \
+             patch.object(queue, "patch_stock") as update:
+            with self.assertRaisesRegex(RuntimeError, "provider failed"):
+                queue.process_product(object(), row, "https://db.example", "account", "token", None, now, True)
+        updated = update.call_args.args[3]
+        self.assertEqual(updated["imageGeneration"], old_job)
+        self.assertEqual(updated["imageGenerationReplacement"]["status"], "failed")
+        self.assertNotIn("image", update.call_args.kwargs)
+
+    def test_replacement_is_swapped_only_after_verified_deployment(self):
+        image = b"replacement"
+        digest = hashlib.sha256(image).hexdigest()
+        image_url = f"/assets/img/generated-products/{digest}.png"
+        old_job = {"status": "completed", "model": "old", "imageUrl": "/old.png"}
+        row = {"id": 12, "image": "/old.png", "info": {
+            "imageGeneration": old_job,
+            "imageGenerationReplacement": {"status": "publishing", "imageUrl": image_url, "model": queue.MODEL_ID},
+        }}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue, "patch_stock") as update:
+                queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+                self.assertEqual(update.call_args.args[3]["imageGeneration"], old_job)
+                self.assertEqual(update.call_args.args[3]["imageGenerationReplacement"]["status"], "failed")
+                self.assertNotIn("image", update.call_args.kwargs)
+            (path / f"{digest}.png").write_bytes(image)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue.requests, "get", return_value=types.SimpleNamespace(ok=True, content=image)), \
+                 patch.object(queue, "patch_stock") as update:
+                queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+                self.assertEqual(update.call_args.args[3]["imageGeneration"]["imageUrl"], image_url)
+                self.assertNotIn("imageGenerationReplacement", update.call_args.args[3])
+                self.assertEqual(update.call_args.kwargs["image"], image_url)
 
     def test_invalid_non_qogita_sources_are_not_queued(self):
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://example.com/image.jpg"}}))

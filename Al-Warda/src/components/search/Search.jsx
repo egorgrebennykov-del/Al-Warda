@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/languageContext";
 import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import "./Search.css";
+import "../common/ProductCardImages.css";
 
 const QUICK_TAGS = [
   { label: "Lattafa", query: "Lattafa" },

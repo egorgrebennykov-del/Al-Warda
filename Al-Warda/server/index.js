@@ -20,12 +20,15 @@ import {
 import { sendGuestInquiryEmail } from "./emailService.js";
 import { syncPerfumeCatalog, executeCatalogActionById } from "./catalogActionsService.js";
 import { setHttpAdapter } from "./httpClient.js";
-import qogitaClient from "./qogitaClient.js";
+import qogitaClient, { QogitaClient } from "./qogitaClient.js";
 import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getArabianDropshipPerfumes, getTransparentImageBuffer } from "./qogitaService.js";
 import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
 import {
   getProductImageQueueStatus,
 } from "./productImageQueueAdmin.js";
+import { handleProductImageActions } from "./productImageActions.js";
+import { createQogitaSessionCookie } from "./qogitaWorker.js";
+import { localRequestUrl, localWebRequest } from "./localRequest.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -171,6 +174,17 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === "/api/admin/product-images/actions") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await handleProductImageActions(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
   // Perfume catalog API
   if (req.method === "GET" && pathname === "/api/perfumes") {
     const category = urlObj.searchParams.get("category");
@@ -306,15 +320,40 @@ const server = createServer(async (req, res) => {
   // Update credentials & test login
   if (req.method === "POST" && pathname === "/api/qogita/configure") {
     try {
+      const localUrl = localRequestUrl(req);
+      if (req.headers.origin !== localUrl.origin) {
+        respond(res, 403, { error: "Invalid request origin" }, req);
+        return;
+      }
       const body = await readJson(req);
-      if (body.email && body.password) {
+      const officialLogin = body.email && body.password &&
+        (!body.apiUrl || body.apiUrl.replace(/\/+$/, "") === "https://api.qogita.com");
+      let verifiedClient;
+      if (officialLogin) {
+        verifiedClient = new QogitaClient({ email: body.email.trim(), password: body.password, apiUrl: "https://api.qogita.com", useEnvironmentCredentials: false });
+        await verifiedClient.login(true);
+        qogitaClient.setCredentials(body.email.trim(), body.password, "https://api.qogita.com");
+        qogitaClient.accessToken = verifiedClient.accessToken;
+        qogitaClient.tokenExpiresAt = verifiedClient.tokenExpiresAt;
+      } else if (body.email && body.password) {
         qogitaClient.setCredentials(body.email, body.password, body.apiUrl);
       }
       if (body.webhookSecret !== undefined) {
         qogitaClient.webhookSecret = body.webhookSecret;
       }
       // Attempt login to test credentials
-      await qogitaClient.login(true);
+      if (!verifiedClient) await qogitaClient.login(true);
+      if (verifiedClient &&
+          (process.env.QOGITA_SESSION_SECRET || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+        const cookie = await createQogitaSessionCookie(process.env, {
+          token: verifiedClient.accessToken,
+          expires: verifiedClient.tokenExpiresAt,
+          email: verifiedClient.email,
+        });
+        res.setHeader("Set-Cookie", cookie);
+      } else {
+        console.warn("Qogita image-control session not created: official API URL and server session secret are required.");
+      }
       respond(res, 200, {
         success: true,
         message: "Qogita credentials configured and verified successfully!",

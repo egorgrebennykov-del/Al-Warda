@@ -11,6 +11,7 @@ import {
   getProductImageQueueStatus,
 } from "./productImageQueueAdmin.js";
 import { handleQogitaWorker } from "./qogitaWorker.js";
+import { handleProductImageActions } from "./productImageActions.js";
 
 const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
@@ -138,6 +139,9 @@ export default {
 
     if (method === "GET" && pathname === "/api/admin/product-images/status") {
       return getProductImageQueueStatus(request, env);
+    }
+    if (pathname === "/api/admin/product-images/actions") {
+      return handleProductImageActions(request, env);
     }
 
     if (pathname.startsWith("/api/qogita/") && pathname !== "/api/qogita/arabian-perfumes") {

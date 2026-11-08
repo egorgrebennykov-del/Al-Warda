@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Generate free-quota product backgrounds and composite them with original bottles."""
+"""Generate product images with a reference-guided studio edit."""
 
 import argparse
 import base64
 import hashlib
 import io
 import json
-import math
 import os
 import re
 import sys
@@ -20,24 +19,17 @@ import requests
 from PIL import Image, ImageOps
 from rembg import new_session, remove
 
-MODEL_ID = "@cf/black-forest-labs/flux-1-schnell"
+MODEL_ID = "@cf/black-forest-labs/flux-2-klein-4b"
 IMAGE_ENDPOINT = (
     "https://api.cloudflare.com/client/v4/accounts/"
-    "{account_id}/ai/run/@cf/black-forest-labs/flux-1-schnell"
+    "{account_id}/ai/run/@cf/black-forest-labs/flux-2-klein-4b"
 )
 GENERATED_DIR = Path(__file__).resolve().parents[1] / "public" / "assets" / "img" / "generated-products"
 GENERATED_URL = "/assets/img/generated-products/"
 MAX_STATIC_IMAGE_BYTES = 25 * 1024 * 1024
-MAX_DAILY_IMAGES = 160
-FREE_DAILY_NEURONS = 10_000
-NEURON_SAFETY_BUDGET = 9_000
-MODEL_STEPS = 2
-OUTPUT_TILE_COUNT = 4
-NEURONS_PER_TILE = 4.8
-NEURONS_PER_STEP = 9.6
-ESTIMATED_NEURONS_PER_IMAGE = (
-    OUTPUT_TILE_COUNT * NEURONS_PER_TILE + MODEL_STEPS * NEURONS_PER_STEP
-)
+DEFAULT_BATCH_SIZE = 160
+MAX_BATCH_SIZE = 100000
+MODEL_STEPS = 4
 PAGE_SIZE = 500
 MAX_SOURCE_BYTES = 20 * 1024 * 1024
 MAX_SOURCE_PIXELS = 24_000_000
@@ -51,6 +43,10 @@ U2NET_MAX_BYTES = 200 * 1024 * 1024
 
 
 class WorkersDailyQuotaExceeded(RuntimeError):
+    pass
+
+
+class WorkersConfigurationError(RuntimeError):
     pass
 
 
@@ -182,11 +178,16 @@ def patch_stock(session, supabase_url, row, info, image=None):
         )
 
 
-def generate_background(session, account_id, api_token, prompt):
+def generate_product_edit(session, account_id, api_token, source_bytes):
+    source = decode_source(source_bytes)
+    source.thumbnail((511, 511), Image.Resampling.LANCZOS)
+    reference = io.BytesIO()
+    source.save(reference, format="PNG")
     response = session.post(
         IMAGE_ENDPOINT.format(account_id=quote(account_id, safe="")),
         headers={"Authorization": f"Bearer {api_token}"},
-        json={"prompt": prompt, "steps": MODEL_STEPS},
+        data={"prompt": build_edit_prompt(), "width": "1024", "height": "1024"},
+        files={"input_image_0": ("reference.png", reference.getvalue(), "image/png")},
         timeout=(15, 180),
     )
     error_details = response.text[:400] if not response.ok else ""
@@ -201,7 +202,11 @@ def generate_background(session, account_id, api_token, prompt):
         )
     ) or quota_error:
         raise WorkersDailyQuotaExceeded(
-            "Cloudflare Workers AI daily quota is exhausted; stopping until the UTC daily reset"
+            "Cloudflare Workers AI reported a quota or rate limit; stopping the batch"
+        )
+    if response.status_code in (401, 403):
+        raise WorkersConfigurationError(
+            f"Workers AI account or model authorization failed ({response.status_code}): {error_details}"
         )
     if not response.ok:
         raise RuntimeError(
@@ -218,15 +223,16 @@ def generate_background(session, account_id, api_token, prompt):
     return image_bytes
 
 
-def build_background_prompt():
+def build_edit_prompt():
     return (
-        "A premium luxury perfume product photography background only, no product "
-        "and no bottle. Deep warm charcoal and dark espresso studio backdrop with "
-        "subtle soft amber light gradients, refined understated gold highlights "
-        "near the distant edges, elegant matte stone surface, natural soft shadows, "
-        "photorealistic commercial studio lighting, clean uncluttered composition, "
-        "large completely empty central area reserved for placing a real product, "
-        "no text, no letters, no logos, no packaging, no objects."
+        "Use image 0 as the exact product reference. Create a premium photorealistic "
+        "three-dimensional studio product photograph, with refined warm light, "
+        "natural contact shadows, realistic glass reflections and a dark elegant "
+        "background. Improve sharpness and material detail gently. Preserve the exact "
+        "product identity, bottle and cap shape, proportions, colors, liquid, packaging, "
+        "logo, typography and every visible label detail. Do not invent, remove or "
+        "replace product markings or add products. Keep the entire product visible "
+        "and centered. No unrelated text or decorative objects."
     )
 
 
@@ -298,7 +304,7 @@ def is_stale_processing(job, now):
     return (now - started).total_seconds() >= STALE_PROCESSING_MINUTES * 60
 
 
-def select_candidates(rows, now):
+def select_candidates(rows, now, regenerate_completed=False):
     utc_day = now.date().isoformat()
     eligible = []
     attempts_today = 0
@@ -309,13 +315,21 @@ def select_candidates(rows, now):
         job = image_generation(info)
         if job.get("attemptedOn") == utc_day:
             attempts_today += 1
+        if regenerate_completed:
+            if job.get("status") != "completed" or job.get("model") == MODEL_ID:
+                continue
+            replacement = info.get("imageGenerationReplacement") or {}
+            if replacement.get("status") == "publishing":
+                continue
+            if replacement.get("status") == "processing" and not is_stale_processing(replacement, now):
+                continue
+            eligible.append(row)
+            continue
         if job.get("status") == "completed":
             continue
         if job.get("status") == "publishing":
             continue
         if job.get("status") == "processing" and not is_stale_processing(job, now):
-            continue
-        if job.get("attemptedOn") == utc_day:
             continue
         eligible.append(row)
     return eligible, attempts_today
@@ -329,19 +343,20 @@ def process_product(
     api_token,
     segmentation_session,
     now,
+    regenerate_completed=False,
 ):
     info = dict(row.get("info") or {})
-    job = dict(image_generation(info))
+    job_key = "imageGenerationReplacement" if regenerate_completed else "imageGeneration"
+    job = dict(info.get(job_key) or {})
     job.update({
         "status": "processing",
         "attemptedOn": now.date().isoformat(),
         "startedAt": now.isoformat(),
         "model": MODEL_ID,
-        "estimatedNeurons": ESTIMATED_NEURONS_PER_IMAGE,
         "steps": MODEL_STEPS,
     })
     job.pop("error", None)
-    info["imageGeneration"] = job
+    info[job_key] = job
     patch_stock(session, supabase_url, row, info)
 
     try:
@@ -361,14 +376,16 @@ def process_product(
             if source_buffer.tell() > MAX_SOURCE_BYTES:
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
-        background_bytes = generate_background(
-            requests, account_id, api_token, build_background_prompt()
-        )
-        composite_bytes, original_size = composite_original_product(
-            source_bytes, background_bytes, segmentation_session
-        )
+        edited_bytes = generate_product_edit(requests, account_id, api_token, source_bytes)
+        with Image.open(io.BytesIO(edited_bytes)) as edited:
+            edited.load()
+            if edited.size != (1024, 1024):
+                raise ValueError(f"Unexpected generated image dimensions: {edited.size}")
+            output = io.BytesIO()
+            edited.convert("RGB").save(output, format="PNG", optimize=True)
+            original_size = edited.size
 
-        image_url = save_generated_image(composite_bytes)
+        image_url = save_generated_image(output.getvalue())
 
         job.update({
             "status": "publishing",
@@ -376,12 +393,12 @@ def process_product(
             "width": original_size[0],
             "height": original_size[1],
         })
-        info["imageGeneration"] = job
+        info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         return image_url
     except WorkersDailyQuotaExceeded as error:
         job.update({"status": "failed", "error": str(error), "failedAt": utc_now().isoformat()})
-        info["imageGeneration"] = job
+        info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         raise
     except Exception as error:
@@ -390,7 +407,7 @@ def process_product(
             "error": str(error)[:500],
             "failedAt": utc_now().isoformat(),
         })
-        info["imageGeneration"] = job
+        info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         raise
 
@@ -400,9 +417,13 @@ def publish_generated_images(session, supabase_url, site_url):
     pending = []
     for row in rows:
         info = row.get("info") or {}
+        job_key = "imageGeneration"
         job = image_generation(info)
         if job.get("status") != "publishing":
-            continue
+            job_key = "imageGenerationReplacement"
+            job = info.get(job_key) or {}
+            if job.get("status") != "publishing":
+                continue
         image_url = job.get("imageUrl", "")
         match = re.fullmatch(r"/assets/img/generated-products/([a-f0-9]{64})\.png", image_url)
         if not match:
@@ -416,18 +437,18 @@ def publish_generated_images(session, supabase_url, site_url):
                 "error": "Generated image was not committed; generation must be retried",
                 "failedAt": utc_now().isoformat(),
             })
-            updated_info["imageGeneration"] = updated_job
+            updated_info[job_key] = updated_job
             patch_stock(session, supabase_url, row, updated_info)
             print(f"FAILED {row['id']}: generated image was not committed", flush=True)
             continue
         if hashlib.sha256(local_path.read_bytes()).hexdigest() != match.group(1):
             raise RuntimeError(f"Generated image checksum mismatch for stock {row['id']}")
-        pending.append((row, image_url, match.group(1)))
+        pending.append((row, image_url, match.group(1), job_key))
 
     deadline = time.monotonic() + 900
     while pending:
         remaining = []
-        for row, image_url, digest in pending:
+        for row, image_url, digest, job_key in pending:
             try:
                 response = requests.get(site_url + image_url, timeout=(15, 60), allow_redirects=False)
                 ready = response.ok and hashlib.sha256(response.content).hexdigest() == digest
@@ -435,12 +456,14 @@ def publish_generated_images(session, supabase_url, site_url):
                 print(f"Waiting for deployment of stock {row['id']}: {error}", flush=True)
                 ready = False
             if not ready:
-                remaining.append((row, image_url, digest))
+                remaining.append((row, image_url, digest, job_key))
                 continue
             info = dict(row["info"])
-            job = dict(image_generation(info))
+            job = dict(info[job_key])
             job.update({"status": "completed", "completedAt": utc_now().isoformat()})
             info["imageGeneration"] = job
+            if job_key == "imageGenerationReplacement":
+                del info[job_key]
             patch_stock(session, supabase_url, row, info, image=image_url)
             print(f"PUBLISHED {row['id']}: {image_url}", flush=True)
         pending = remaining
@@ -453,8 +476,13 @@ def publish_generated_images(session, supabase_url, site_url):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--max-images", type=int, default=MAX_DAILY_IMAGES)
+    parser.add_argument(
+        "--max-images", type=int, default=DEFAULT_BATCH_SIZE,
+        help="Maximum number of products to attempt in this run",
+    )
     parser.add_argument("--publish-only", action="store_true")
+    parser.add_argument("--regenerate-completed", action="store_true",
+                        help="Replace completed images made with an older model")
     args = parser.parse_args()
     if args.publish_only:
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
@@ -469,13 +497,8 @@ def main():
             "Set CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED=true only after confirming "
             "that the Cloudflare account is on the Free plan"
         )
-    if NEURON_SAFETY_BUDGET > FREE_DAILY_NEURONS:
-        raise RuntimeError("The configured Neurons safety budget exceeds the Workers AI free quota")
-    if not 1 <= args.max_images <= MAX_DAILY_IMAGES:
-        parser.error(f"--max-images must be between 1 and {MAX_DAILY_IMAGES}")
-    if ESTIMATED_NEURONS_PER_IMAGE * args.max_images > NEURON_SAFETY_BUDGET:
-        raise RuntimeError("Configured image limit exceeds the free Neurons safety budget")
-
+    if not 1 <= args.max_images <= MAX_BATCH_SIZE:
+        parser.error(f"--max-images must be between 1 and {MAX_BATCH_SIZE}")
     supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
     service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
@@ -494,33 +517,20 @@ def main():
     session = make_session()
     rows = fetch_stock_rows(session, supabase_url)
     now = utc_now()
-    candidates, attempts_today = select_candidates(rows, now)
-    used_neurons = attempts_today * ESTIMATED_NEURONS_PER_IMAGE
-    remaining_images = min(
-        args.max_images - attempts_today,
-        math.floor((NEURON_SAFETY_BUDGET - used_neurons) / ESTIMATED_NEURONS_PER_IMAGE),
-    )
-    if remaining_images <= 0:
-        print(
-            f"Daily free quota reached: {attempts_today}/{args.max_images} images, "
-            f"approximately {used_neurons:.1f}/{NEURON_SAFETY_BUDGET} Neurons used. "
-            "The queue will resume after 00:00 UTC."
-        )
-        return
+    candidates, attempts_today = select_candidates(rows, now, args.regenerate_completed)
     if not candidates:
         print("No products are currently eligible for image generation.")
         return
 
     print(
-        f"Queue: {len(candidates)} eligible; today's attempts {attempts_today}/"
-        f"{args.max_images}; estimated Neurons {used_neurons:.1f}/"
-        f"{NEURON_SAFETY_BUDGET}; processing up to {min(len(candidates), remaining_images)}."
+        f"Queue: {len(candidates)} eligible; today's attempts {attempts_today}; "
+        f"processing up to {min(len(candidates), args.max_images)}."
     )
-    prepare_segmentation_model()
-    segmentation_session = new_session("u2net")
+    segmentation_session = None
     completed = 0
     failed = 0
-    for row in candidates[:remaining_images]:
+    configuration_failure = False
+    for row in candidates[:args.max_images]:
         try:
             url = process_product(
                 session,
@@ -530,12 +540,18 @@ def main():
                 api_token,
                 segmentation_session,
                 utc_now(),
+                args.regenerate_completed,
             )
             completed += 1
             print(f"AWAITING DEPLOYMENT {row['id']}: {url}")
         except WorkersDailyQuotaExceeded as error:
             failed += 1
-            print(f"DAILY QUOTA: {error}. Stopping until 00:00 UTC.")
+            print(f"PROVIDER LIMIT: {error}. Batch stopped.")
+            break
+        except WorkersConfigurationError as error:
+            failed += 1
+            configuration_failure = True
+            print(f"CONFIGURATION ERROR: {error}. Stopping the batch.", file=sys.stderr)
             break
         except Exception as error:
             failed += 1
@@ -547,8 +563,10 @@ def main():
 
     print(
         f"Batch finished: awaiting deployment={completed}, failed={failed}, "
-        f"attempted_today<={attempts_today + completed + failed}/{args.max_images}."
+        f"attempts this run={completed + failed}."
     )
+    if configuration_failure:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

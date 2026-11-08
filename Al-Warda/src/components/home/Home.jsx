@@ -6,6 +6,7 @@ import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import CategoryCinematicMotion from "./CategoryCinematicMotion";
 import "./Home.css";
+import "../common/ProductCardImages.css";
 
 export default function Home() {
   const navigate = useNavigate();

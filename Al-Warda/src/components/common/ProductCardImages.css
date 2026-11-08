@@ -1,0 +1,78 @@
+.warda-perfume-card.ornate-card {
+  padding: 0 0 1.25rem !important;
+}
+
+.warda-perfume-card .warda-perfume-card__media {
+  display: block;
+  width: 100%;
+  height: auto !important;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: #090604 !important;
+  -webkit-mask-image: none;
+  mask-image: none;
+  transform: none;
+}
+
+.warda-perfume-card .warda-perfume-card__media::before,
+.warda-perfume-card .warda-perfume-card__media::after,
+.warda-perfume-card .warda-perfume-card__aura {
+  display: none;
+}
+
+.warda-perfume-card .warda-perfume-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100% !important;
+  max-width: none;
+  max-height: none !important;
+  object-fit: cover !important;
+  transform: none !important;
+  filter: none;
+}
+
+.warda-perfume-card .warda-perfume-card__info,
+.warda-perfume-card .warda-perfume-card__action {
+  box-sizing: border-box;
+  padding-inline: 1rem;
+}
+
+.search__card.search__card {
+  padding: 0 0 1rem;
+}
+
+.search__card .search__card-img-wrap {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 13px 13px 0 0;
+  transform: none;
+}
+
+.search__card .search__card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  filter: none;
+}
+
+.search__card:hover .search__card-img {
+  animation: none;
+  filter: none;
+}
+
+.search__card .search__card-body {
+  box-sizing: border-box;
+  padding-inline: 0.75rem;
+}

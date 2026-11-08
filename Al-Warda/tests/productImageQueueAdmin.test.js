@@ -65,7 +65,7 @@ describe("product image queue admin API", () => {
       }
       return Response.json([
         { id: 1, info: { rawImage: "https://img.qogita.com/1.jpg", imageGeneration: { status: "completed" } } },
-        { id: 2, info: { rawImage: "https://img.qogita.com/2.jpg", imageGeneration: { status: "failed", attemptedOn: today } } },
+        { id: 2, info: { rawImage: "https://img.qogita.com/2.jpg", imageGeneration: { status: "failed", attemptedOn: today, estimatedNeurons: 110 } } },
         { id: 3, info: { rawImage: "https://img.qogita.com/3.jpg" } },
       ]);
     };
