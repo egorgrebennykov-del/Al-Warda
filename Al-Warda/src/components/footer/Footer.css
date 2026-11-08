@@ -16,7 +16,7 @@
 }
 .warda-footer .footer__brand { width: auto; height: auto; overflow: visible; }
 .warda-footer__col--brand { display: flex; align-items: flex-start; flex-direction: column; gap: 1.25rem; }
-.warda-footer .footer__logo-image { width: 94px; height: 94px; object-fit: contain; }
+.warda-footer .footer__logo-image { width: 94px; height: 94px; object-fit: contain; mix-blend-mode: screen; }
 .warda-footer__desc { max-width: 310px; margin: 0; color: #b5a99b; font-size: 0.86rem; line-height: 1.8; }
 .warda-footer__heading {
   margin: 0 0 1.5rem;

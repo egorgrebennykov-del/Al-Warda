@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="warda-footer__col warda-footer__col--brand">
           <Link to="/" className="footer__brand" aria-label="Al-Warda Parfumes home">
             <img
-              src="/assets/img/logo.png"
+              src="/assets/img/al-warda-header-logo.png"
               alt="Al-Warda Parfumes"
               className="footer__logo-image"
             />
