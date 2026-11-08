@@ -24,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         id: checkout
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
@@ -46,5 +48,5 @@ jobs:
             git config user.name "GitHub Actions"
             git config user.email "action@github.com"
             git commit -m "Remove selected product images"
-            git push origin HEAD:main
+            bash .github/scripts/push-main-with-retry.sh
           fi

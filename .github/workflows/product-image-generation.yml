@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
       SUPABASE_URL: https://mfvenfrmlkxqgvdtedet.supabase.co
@@ -64,9 +64,11 @@ jobs:
         run: |
           test "${{ github.ref }}" = "refs/heads/main" || { echo "::error::Run this workflow on main"; exit 1; }
           test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo "::error::SUPABASE_SERVICE_ROLE_KEY is missing"; exit 1; }
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         id: checkout
-      - uses: actions/setup-python@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -93,6 +95,7 @@ jobs:
             python Al-Warda/scripts/generate_product_images.py --max-images "$MAX_IMAGES"
           fi
       - name: Commit and publish generated images
+        id: publish
         if: ${{ always() && steps.checkout.outcome == 'success' }}
         run: |
           git config user.name "GitHub Actions"
@@ -102,11 +105,21 @@ jobs:
           fi
           if ! git diff --cached --quiet; then
             git commit -m "Publish generated product images"
-            git push origin HEAD:main
+            git bundle create "$RUNNER_TEMP/generated-images.bundle" HEAD ^HEAD^
+            echo "backup_created=true" >> "$GITHUB_OUTPUT"
+            bash .github/scripts/push-main-with-retry.sh
           fi
+      - name: Preserve generated images if publishing failed
+        if: ${{ always() && steps.publish.outcome == 'failure' && steps.publish.outputs.backup_created == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: unpublished-generated-images
+          path: ${{ runner.temp }}/generated-images.bundle
+          if-no-files-found: error
+          retention-days: 30
       - name: Verify deployment and complete queue items
         id: verify
-        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        if: ${{ always() && steps.publish.outcome == 'success' }}
         run: python Al-Warda/scripts/generate_product_images.py --publish-only
       - name: Remove replaced generated images
         if: ${{ always() && steps.verify.outcome == 'success' }}
@@ -119,5 +132,5 @@ jobs:
             git config user.name "GitHub Actions"
             git config user.email "action@github.com"
             git commit -m "Remove replaced product images"
-            git push origin HEAD:main
+            bash .github/scripts/push-main-with-retry.sh
           fi

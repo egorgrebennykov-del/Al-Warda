@@ -67,6 +67,27 @@ npm run build
 npm run preview
 ```
 
+### Generated image publication failures
+
+The image workflow rebases its image commit onto the latest `main` and retries
+rejected pushes. If publication still fails after the commit is created, it
+uploads `unpublished-generated-images`, a Git bundle retained for 30 days.
+Before starting another image workflow, an operator can download and extract
+the bundle, then recover the commit from a clean clone of the repository:
+
+```bash
+git fetch origin main
+git fetch /path/to/generated-images.bundle HEAD
+git switch -c recover-generated-images origin/main
+git cherry-pick FETCH_HEAD
+git push origin HEAD:main
+```
+
+Resolve any cherry-pick conflicts manually; do not force-push. After deployment,
+start a new image workflow to finalize the pending images. If another workflow
+has already marked the missing images as failed, they must instead be generated
+again. The bundle contains only the generated-image commit, not workflow secrets.
+
 ---
 
 ## 🏗️ Project Architecture & Folder Structure
