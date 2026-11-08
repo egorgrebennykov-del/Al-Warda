@@ -1,5 +1,6 @@
 import { QogitaClient } from "./qogitaClient.js";
 import { qogitaProductExport } from "./qogitaExports.js";
+import { isSameOrigin } from "./sameOrigin.js";
 
 const COOKIE_NAME = "__Host-qogita_session";
 const encoder = new TextEncoder();
@@ -76,16 +77,11 @@ async function sessionCookie(env, payload) {
   return `${COOKIE_NAME}=${session}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
 }
 
-function checkOrigin(request) {
-  const origin = request.headers.get("origin");
-  return origin && origin === new URL(request.url).origin;
-}
-
 export async function handleQogitaWorker(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method.toUpperCase();
-  if (method !== "GET" && !checkOrigin(request)) return json({ error: "Invalid request origin" }, 403);
+  if (method !== "GET" && !isSameOrigin(request)) return json({ error: "Invalid request origin" }, 403);
 
   try {
     if (method === "POST" && path === "/api/qogita/configure") {

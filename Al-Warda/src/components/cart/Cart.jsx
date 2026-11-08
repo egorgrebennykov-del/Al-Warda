@@ -140,9 +140,6 @@ export default function Cart({ onSearch }) {
                     <strong style={{ fontFamily: "var(--second-font)", color: "#f7ede2" }}>
                       {item.title}
                     </strong>
-                    <small style={{ color: "#c5a059", fontWeight: 500 }}>
-                      {language === "ru" ? "✓ В наличии на складе" : "✓ In Stock"}
-                    </small>
                   </span>
                 </Link>
 

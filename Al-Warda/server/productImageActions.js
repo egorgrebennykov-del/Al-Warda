@@ -1,5 +1,6 @@
 import { readQogitaSession } from "./qogitaWorker.js";
 import { requirePrivilegedUser } from "./productImageQueueAdmin.js";
+import { isSameOrigin } from "./sameOrigin.js";
 
 const API = "https://api.github.com/repos/egorgrebennykov-del/Al-Warda";
 const WORKFLOW = "product-image-generation.yml";
@@ -51,8 +52,7 @@ async function deletionRuns(env) {
 }
 
 export async function handleProductImageActions(request, env) {
-  const url = new URL(request.url);
-  if (request.method !== "GET" && request.headers.get("origin") !== url.origin) {
+  if (request.method !== "GET" && !isSameOrigin(request)) {
     return json({ error: "Invalid request origin" }, 403);
   }
   try {
@@ -106,11 +106,11 @@ export async function handleProductImageActions(request, env) {
       return json({ message: "Cancellation requested", count: runs.length }, 202);
     }
     if (body.action === "delete") {
-      if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 100 ||
-          body.images.some((item) => !item || !/^\d+$/.test(String(item.id)) ||
+      if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 400 ||
+          body.images.some((item) => !item || !/^\d{1,20}$/.test(String(item.id)) ||
             typeof item.imageUrl !== "string" ||
             !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(item.imageUrl))) {
-        return json({ error: "Select between 1 and 100 repository-generated images" }, 400);
+        return json({ error: "Select between 1 and 400 repository-generated images" }, 400);
       }
       if (new Set(body.images.map((item) => String(item.id))).size !== body.images.length) {
         return json({ error: "Duplicate product IDs are not allowed" }, 400);

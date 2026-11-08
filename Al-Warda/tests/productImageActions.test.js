@@ -49,6 +49,10 @@ test("start and stop require authenticated owner and send scoped GitHub requests
   const deletion = calls.find((call) => call.url.includes("/product-image-delete.yml/dispatches"));
   assert.deepEqual(JSON.parse(JSON.parse(deletion.options.body).inputs.images), selected);
   assert.equal((await handleProductImageActions(action({ action: "delete", images: [{ id: "7", imageUrl: "/bad" }] }), env)).status, 400);
+  const many = Array.from({ length: 141 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
+  assert.equal((await handleProductImageActions(action({ action: "delete", images: many }), env)).status, 202);
+  const tooMany = Array.from({ length: 401 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
+  assert.equal((await handleProductImageActions(action({ action: "delete", images: tooMany }), env)).status, 400);
   running = true;
   assert.equal((await handleProductImageActions(action({ action: "start", count: 2, account: "primary", regenerateCompleted: false }), env)).status, 409);
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 409);

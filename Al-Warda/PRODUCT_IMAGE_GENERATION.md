@@ -70,7 +70,8 @@ Supabase Storage remain supported.
    The page also lists completed images, newest publication completion first.
    Times are displayed in the browser's local time zone; older records without a
    valid completion timestamp appear last with their time marked unavailable.
-   Select up to 100 repository-hosted images to delete them. The deletion
+   Select repository-hosted images individually or all at once; delete up to
+   400 in each run. The deletion
    workflow checks that each selected image is still current, hides the product
    until regeneration, and returns it to the queue. It removes unreferenced
    generated files in a separate commit. Other storage locations cannot be

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useLanguage } from "../../context/languageContext";
 import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import ProductReflection from "../common/ProductReflection";
 import "./Search.css";
 import "../common/ProductCardImages.css";
 
@@ -230,11 +231,6 @@ export default function Search({ show, onClose }) {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p)}
                   >
-                    {/* In Stock Badge */}
-                    <span className="search__card-badge">
-                      ✓ {isRu ? "В наличии" : "In Stock"}
-                    </span>
-
                     {/* Perfume Bottle Image (Без фона + эффект как у категорий) */}
                     <div className="search__card-img-wrap">
                       <div className="search__card-aura" />
@@ -247,6 +243,7 @@ export default function Search({ show, onClose }) {
                           e.currentTarget.hidden = true;
                         }}
                       />
+                      <ProductReflection src={p.image} />
                       <div className="search__card-sheen" />
                     </div>
 

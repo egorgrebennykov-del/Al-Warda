@@ -4,6 +4,7 @@ import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
+import ProductReflection from "../common/ProductReflection";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
 
@@ -234,13 +235,6 @@ export default function SearchResults() {
             >
               {isRu ? "Все арабские духи" : "All Arabian Perfumes"}
             </button>
-            <button
-              type="button"
-              className={`warda-filter-pill ${filterType === "stock" ? "active" : ""}`}
-              onClick={() => setFilterType("stock")}
-            >
-              {isRu ? "✓ В наличии на складе" : "✓ In Stock"}
-            </button>
           </div>
 
           {/* Brand chips */}
@@ -307,9 +301,6 @@ export default function SearchResults() {
                 >
                   <div className="warda-perfume-card__media">
                     <div className="warda-perfume-card__aura" />
-                    <span className="warda-dropship-card-badge">
-                      ✓ {isRu ? "В наличии" : "In Stock"}
-                    </span>
                     <img
                       src={perfume.image}
                       alt={perfume.name}
@@ -320,6 +311,7 @@ export default function SearchResults() {
                         e.currentTarget.hidden = true;
                       }}
                     />
+                    <ProductReflection src={perfume.image} />
                     <div className="warda-perfume-card__sheen" />
                   </div>
 

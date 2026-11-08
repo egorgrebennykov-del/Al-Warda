@@ -545,8 +545,8 @@ def cleanup_replaced_images(session, supabase_url):
 
 
 def delete_selected_images(session, supabase_url, selected):
-    if not isinstance(selected, list) or not 1 <= len(selected) <= 100:
-        raise ValueError("Select between 1 and 100 images")
+    if not isinstance(selected, list) or not 1 <= len(selected) <= 400:
+        raise ValueError("Select between 1 and 400 images")
     seen = set()
     for item in selected:
         if not isinstance(item, dict):

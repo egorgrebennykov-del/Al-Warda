@@ -26,6 +26,22 @@ test("Qogita session requires login and rejects cross-origin changes", async () 
     headers: { origin: "https://attacker.test" },
   }), env);
   assert.equal(crossOrigin.status, 403);
+  const missingOrigin = await handleQogitaWorker(new Request(`${origin}/api/qogita/refresh`, {
+    method: "POST", headers: { "sec-fetch-site": "same-origin", referer: `${origin}/privileged` },
+  }), env);
+  assert.equal(missingOrigin.status, 401);
+  const noReferer = await handleQogitaWorker(new Request(`${origin}/api/qogita/refresh`, {
+    method: "POST", headers: { "sec-fetch-site": "same-origin" },
+  }), env);
+  assert.equal(noReferer.status, 401);
+  const forgedReferer = await handleQogitaWorker(new Request(`${origin}/api/qogita/refresh`, {
+    method: "POST", headers: { "sec-fetch-site": "cross-site", referer: `${origin}/privileged` },
+  }), env);
+  assert.equal(forgedReferer.status, 403);
+  const otherOrigin = await handleQogitaWorker(new Request(`${origin}/api/qogita/refresh`, {
+    method: "POST", headers: { origin: "https://attacker.test", "sec-fetch-site": "same-origin", referer: `${origin}/privileged` },
+  }), env);
+  assert.equal(otherOrigin.status, 403);
 });
 
 test("Qogita login encrypts session and forwards authorized cart requests", async () => {

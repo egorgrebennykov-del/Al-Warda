@@ -4,6 +4,7 @@ import { getPerfumeById, getPerfumes, ensurePerfumeEnrichment, getHarmoniousNote
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
+import ProductReflection from "../common/ProductReflection";
 import "./BookDetails.css";
 
 export default function BookDetails() {
@@ -179,17 +180,20 @@ export default function BookDetails() {
                 title={language === "ru" ? "Нажмите для полноэкранного осмотра флакона" : "Click to view full size bottle"}
               >
                 <div className="warda-details-aura" />
-                <img
-                  src={perfume?.image}
-                  alt={perfume.name}
-                  className="warda-details-img"
-                  style={{ transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%` }}
-                  loading="eager"
-                  decoding="async"
-                  onError={(e) => {
-                    e.currentTarget.hidden = true;
-                  }}
-                />
+                <div className="warda-details-photo">
+                  <img
+                    src={perfume?.image}
+                    alt={perfume.name}
+                    className="warda-details-img"
+                    style={{ transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%` }}
+                    loading="eager"
+                    decoding="async"
+                    onError={(e) => {
+                      e.currentTarget.hidden = true;
+                    }}
+                  />
+                  <ProductReflection src={perfume?.image} />
+                </div>
               </div>
             </div>
           </div>
@@ -214,11 +218,7 @@ export default function BookDetails() {
 
             <div className="warda-details-price-row">
               <span className="warda-details-price">€{Number(perfume.price).toFixed(2)}</span>
-              <span className="warda-stock-status">
-                {perfume.inStock !== false
-                  ? (language === "ru" ? "✓ В наличии на складе (доставка 3–5 дней)" : "✓ In Stock • Express Delivery (3–5 days)")
-                  : (language === "ru" ? "Под заказ" : "Pre-order")}
-              </span>
+              {perfume.inStock === false && <span className="warda-stock-status">{language === "ru" ? "Под заказ" : "Pre-order"}</span>}
             </div>
 
             <p className="warda-details-desc">

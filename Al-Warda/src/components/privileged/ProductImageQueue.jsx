@@ -148,7 +148,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
 
   const deleteImages = async () => {
     const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({ id, imageUrl }));
-    if (!images.length || images.length > 100) return;
+    if (!images.length) return;
+    if (images.length > 400) {
+      setActionError(isRussian ? "За один раз можно удалить до 400 фото. Снимите часть отметок." : "You can delete up to 400 images at a time. Deselect some images.");
+      return;
+    }
     const approved = await confirm({
       title: isRussian ? "Удалить изображения" : "Delete images",
       message: isRussian
@@ -197,6 +201,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   }, [loadStatus, loadRuns]);
 
   const deleting = deletionPending || deletions.some((run) => run.status !== "completed");
+  const selectableImages = (status?.images || []).filter(
+    (image) => /^\d{1,20}$/.test(String(image.id)) && /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl),
+  );
+  const allSelected = selectableImages.length > 0 &&
+    selectableImages.every((image) => selectedImages[image.id] === image.imageUrl);
   const progress = status?.total
     ? Math.min(100, Math.round((status.completed / status.total) * 100))
     : 0;
@@ -299,6 +308,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         <p>{isRussian ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе." : "Newest first. Publication completion time is shown in your time zone."}</p>
         {status.images.length === 0 ? <p>{isRussian ? "Готовых изображений пока нет." : "No completed images yet."}</p> : <>
           <div className="product-image-queue__gallery-actions">
+            <button type="button" className="product-image-queue__start" disabled={!selectableImages.length} onClick={() => {
+              setSelectedImages(allSelected ? {} : Object.fromEntries(selectableImages.map((image) => [image.id, image.imageUrl])));
+            }}>
+              {allSelected ? (isRussian ? "Снять выделение" : "Deselect all") : (isRussian ? "Выбрать все фото" : "Select all images")}
+            </button>
             <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || Object.keys(selectedImages).length === 0} onClick={deleteImages}>
               {isRussian ? "Удалить выбранные" : "Delete selected"} ({Object.keys(selectedImages).length})
             </button>
@@ -306,13 +320,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
               {isRussian ? "Статус удаления" : "Deletion status"}
             </a>
           </div>
-          <p>{isRussian ? "Можно удалить до 100 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления." : "Delete up to 100 site-hosted images at a time. Wait for generation or the previous deletion to finish."}</p>
+          <p>{isRussian ? "Можно удалить до 400 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления." : "Delete up to 400 site-hosted images at a time. Wait for generation or the previous deletion to finish."}</p>
           <div className="product-image-queue__gallery-grid">
             {status.images.slice(0, visibleImages).map((image) => (
               <article className="product-image-queue__gallery-item" key={image.id}>
                 <label>
                   <input type="checkbox" checked={selectedImages[image.id] === image.imageUrl}
-                    disabled={!/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl) || (!selectedImages[image.id] && Object.keys(selectedImages).length >= 100)}
+                    disabled={!/^\d{1,20}$/.test(String(image.id)) || !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl)}
                     onChange={(e) => {
                       const checked = e.target.checked;
                       setSelectedImages((current) => {

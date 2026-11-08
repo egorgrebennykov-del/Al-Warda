@@ -29,6 +29,7 @@ import {
 import { handleProductImageActions } from "./productImageActions.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
+import { isSameOrigin } from "./sameOrigin.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -333,8 +334,8 @@ const server = createServer(async (req, res) => {
   // Update credentials & test login
   if (req.method === "POST" && pathname === "/api/qogita/configure") {
     try {
-      const localUrl = localRequestUrl(req);
-      if (req.headers.origin !== localUrl.origin) {
+      const request = new Request(localRequestUrl(req), { method: req.method, headers: req.headers });
+      if (!isSameOrigin(request)) {
         respond(res, 403, { error: "Invalid request origin" }, req);
         return;
       }
