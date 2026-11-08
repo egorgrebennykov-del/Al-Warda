@@ -1,4 +1,5 @@
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
+import { isClaudeGenerated } from "./perfumeProvenance.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -271,6 +272,7 @@ export async function fetchPerfumesFromSupabase() {
       // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders)
       const validRows = allRows.filter((r) => {
         const img = ((r.image || "") + (r.raw_image || "") + (r.info?.rawImage || "")).toLowerCase();
+        if (!isClaudeGenerated(r)) return false;
         if (
           img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
           img.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
@@ -388,6 +390,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       const items = rawList
         .filter(
           (p) =>
+            isClaudeGenerated(p) &&
             hasCompletedGeneratedImage(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
@@ -407,7 +410,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
         const fallbackData = await fallbackRes.json();
         const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
         const items = rawList
-          .filter((p) => hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+          .filter((p) => isClaudeGenerated(p) && hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
           .map(ensurePerfumeEnrichment);
         if (!query) memoryDropshipCache = items;
         return items;

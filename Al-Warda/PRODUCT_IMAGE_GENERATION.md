@@ -4,8 +4,11 @@ The Qogita image queue is driven by GitHub Actions. Flux Schnell receives a text
 prompt for an empty background only; the original Qogita photo is segmented and
 composited locally in the action. The original bottle RGB pixels are retained,
 the source canvas is not cropped, and the final lossless PNG is stored in
-Supabase Storage. Queue state is stored in the existing `stocks.info` JSON;
-products are published only after `imageGeneration.status` becomes `completed`.
+Supabase Storage. Queue state is stored in the existing `stocks.info` JSON.
+Public catalog products must also have
+`info.contentGeneration.provider = "claude"`; products without that explicit
+Claude provenance are hidden. Images are published only after
+`imageGeneration.status` becomes `completed`.
 
 ## One-time setup
 

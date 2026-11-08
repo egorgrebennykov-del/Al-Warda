@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { getPerfumes } from "../utils/perfumes.js";
+import { isReadyProduct } from "../server/worker.js";
 
 const originalFetch = globalThis.fetch;
 
@@ -24,6 +25,7 @@ describe("perfume image readiness", () => {
           name: "AI-ready perfume",
           image: "https://img.qogita.com/original.jpg",
           info: {
+            contentGeneration: { provider: "claude" },
             imageGeneration: { status: "completed", imageUrl: generatedImage },
           },
         },
@@ -38,9 +40,10 @@ describe("perfume image readiness", () => {
           name: "Invalid generated path",
           image: "https://img.qogita.com/original-invalid.jpg",
           info: {
+            contentGeneration: { provider: "template" },
             imageGeneration: {
               status: "completed",
-              imageUrl: "https://img.qogita.com/not-generated.jpg",
+              imageUrl: generatedImage,
             },
           },
         },
@@ -53,5 +56,32 @@ describe("perfume image readiness", () => {
     assert.equal(perfumes[0].name, "AI-ready perfume");
     assert.equal(perfumes[0].image, generatedImage);
     assert.equal(perfumes[0].fullCardImage, generatedImage);
+  });
+
+  it("requires Claude provenance for Worker catalog readiness", () => {
+    const imageGeneration = {
+      status: "completed",
+      imageUrl:
+        "https://mfvenfrmlkxqgvdtedet.supabase.co/storage/v1/object/public/product-images/ready.png",
+    };
+
+    assert.equal(
+      isReadyProduct({
+        info: {
+          contentGeneration: { provider: "claude" },
+          imageGeneration,
+        },
+      }),
+      true,
+    );
+    assert.equal(
+      isReadyProduct({
+        info: {
+          contentGeneration: { provider: "template" },
+          imageGeneration,
+        },
+      }),
+      false,
+    );
   });
 });

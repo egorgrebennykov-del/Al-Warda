@@ -6,6 +6,7 @@ import sharp from "sharp";
 import axios from "axios";
 import https from "node:https";
 import qogitaClient from "./qogitaClient.js";
+import { isClaudeGenerated } from "../utils/perfumeProvenance.js";
 
 const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -368,6 +369,7 @@ export async function getArabianDropshipPerfumes(params = {}) {
     const generation = product?.info?.imageGeneration;
     const image = generation?.imageUrl || product?.image;
     return (
+      isClaudeGenerated(product) &&
       generation?.status === "completed" &&
       /^https:\/\/[^/]+\/storage\/v1\/object\/public\/product-images\//i.test(image || "")
     );
