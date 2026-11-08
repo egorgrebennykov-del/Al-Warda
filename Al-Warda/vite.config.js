@@ -7,6 +7,6 @@ export default defineConfig({
     emptyOutDir: false,
   },
   server: {
-    proxy: { "/api": "http://localhost:3001" },
+    proxy: { "/api": { target: "http://localhost:3001", changeOrigin: false } },
   },
 });
