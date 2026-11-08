@@ -247,7 +247,7 @@ export async function fetchPerfumesFromSupabase() {
     while (hasMore) {
       const from = page * pageSize;
       const to = from + pageSize - 1;
-      const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc`, {
+      const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc&info->imageGeneration->>status=eq.completed`, {
         headers: {
           apikey: SUPABASE_KEY,
           Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -421,34 +421,24 @@ export async function fetchDropshipArabianPerfumes(query = "") {
 
 export async function getPerfumes(options = {}) {
   const { includeDropship = true, refresh = false } = options;
+  let base = memoryPerfumesCache || [];
+  let dropship = memoryDropshipCache || [];
 
-  if (refresh) {
+  if (refresh || !memoryPerfumesCache || !memoryDropshipCache) {
     if (!catalogRefresh) {
-      catalogRefresh = Promise.all([fetchPerfumesFromSupabase(), fetchDropshipArabianPerfumes()])
+      catalogRefresh = Promise.allSettled([fetchPerfumesFromSupabase(), fetchDropshipArabianPerfumes()])
         .finally(() => { catalogRefresh = null; });
     }
-    await catalogRefresh;
+    const results = await catalogRefresh;
+    for (const result of results) {
+      if (result.status === "rejected") {
+        if (refresh) throw result.reason;
+        console.warn("Could not refresh perfume catalog:", result.reason);
+      }
+    }
+    base = results[0].status === "fulfilled" ? results[0].value : (memoryPerfumesCache || []);
+    dropship = results[1].status === "fulfilled" ? results[1].value : (memoryDropshipCache || []);
   }
-
-  // 1. In-memory hot cache
-  if (memoryPerfumesCache && memoryDropshipCache) {
-    if (!includeDropship) return memoryPerfumesCache;
-    const existingGtins = new Set(memoryPerfumesCache.map((b) => b.gtin || b.info?.gtin).filter(Boolean));
-    const existingNames = new Set(memoryPerfumesCache.map((b) => (b.name || "").toLowerCase().trim()).filter(Boolean));
-    const uniqueDropship = memoryDropshipCache.filter(
-      (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
-    );
-    return [...memoryPerfumesCache, ...uniqueDropship];
-  }
-
-  // 2. Parallel fetch of Supabase & Dropship catalogs
-  const [supabaseResult, dropshipResult] = await Promise.allSettled([
-    memoryPerfumesCache ? Promise.resolve(memoryPerfumesCache) : fetchPerfumesFromSupabase(),
-    memoryDropshipCache ? Promise.resolve(memoryDropshipCache) : fetchDropshipArabianPerfumes(),
-  ]);
-
-  const base = supabaseResult.status === "fulfilled" ? supabaseResult.value : (memoryPerfumesCache || []);
-  const dropship = dropshipResult.status === "fulfilled" ? dropshipResult.value : (memoryDropshipCache || []);
 
   if (base.length > 0) {
     const existingGtins = new Set(base.map((b) => b.gtin || b.info?.gtin).filter(Boolean));

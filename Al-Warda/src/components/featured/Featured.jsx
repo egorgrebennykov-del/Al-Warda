@@ -146,14 +146,15 @@ export default function Featured() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getPerfumes({ refresh: true })
+    getPerfumes()
       .then((items) => {
         if (!cancelled) {
           setPerfumes(items);
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.warn("Could not load catalog:", error);
         if (!cancelled) setLoading(false);
       });
 

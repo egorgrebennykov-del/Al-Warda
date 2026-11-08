@@ -5,6 +5,54 @@
   padding: 2.5rem 0 4rem;
 }
 
+.warda-details-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.warda-details-skeleton-nav,
+.warda-details-skeleton-image,
+.warda-details-skeleton-info span {
+  display: block;
+  border-radius: 0.6rem;
+  background: linear-gradient(110deg, #17120e 20%, #282018 40%, #17120e 60%);
+  background-size: 220% 100%;
+  animation: warda-details-shimmer 1.8s ease-in-out infinite;
+}
+
+.warda-details-skeleton-nav {
+  width: 11rem;
+  height: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.warda-details-skeleton-image {
+  height: 500px;
+}
+
+.warda-details-skeleton-info {
+  display: grid;
+  gap: 1.3rem;
+  padding-top: 1.5rem;
+}
+
+.warda-details-skeleton-info span { height: 1rem; width: 70%; }
+.warda-details-skeleton-info span:nth-child(2) { height: 3rem; width: 95%; }
+.warda-details-skeleton-info span:nth-child(4) { height: 2.5rem; width: 32%; }
+
+@keyframes warda-details-shimmer {
+  to { background-position: -220% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .warda-details-skeleton-nav,
+  .warda-details-skeleton-image,
+  .warda-details-skeleton-info span { animation: none; }
+}
+
 .warda-details-top-nav {
   display: flex;
   align-items: center;
@@ -98,13 +146,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 500px;
-  height: 500px;
+  min-height: 550px;
+  height: 550px;
   position: relative;
   padding: 1.5rem;
-  background:
-    radial-gradient(circle 320px at 50% 48%, rgba(255, 245, 230, 0.08) 0%, rgba(212, 175, 55, 0.04) 38%, transparent 75%),
-    radial-gradient(ellipse 85% 32% at 50% 86%, rgba(212, 175, 55, 0.12) 0%, rgba(26, 20, 14, 0.2) 45%, transparent 80%);
+  background: transparent;
   border-radius: 6px;
   border: none !important;
   overflow: hidden;
@@ -144,6 +190,7 @@
 
 /* Volumetric Golden Ambient Aura behind the flacon */
 .warda-details-aura {
+  display: none;
   position: absolute;
   top: 48%;
   left: 50%;
@@ -164,21 +211,6 @@
 }
 
 /* Glowing luxury podium disc beneath floating bottle */
-.warda-details-img-wrap::before {
-  content: "";
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 58%;
-  height: 16px;
-  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.45) 0%, rgba(212, 175, 55, 0.2) 45%, rgba(180, 130, 40, 0.04) 68%, transparent 78%);
-  border-radius: 50%;
-  filter: blur(5px);
-  pointer-events: none;
-  z-index: 1;
-}
-
 .warda-details-photo {
   position: relative;
   max-width: 88%;
@@ -186,7 +218,7 @@
   height: auto;
   width: auto;
   z-index: 2;
-  margin-bottom: 65px;
+  margin-bottom: 115px;
 }
 
 .warda-details-img {
@@ -209,15 +241,15 @@
 .warda-details-photo .product-reflection {
   display: block;
   position: absolute;
-  top: 90%;
+  top: 100%;
   left: 0;
   width: 100%;
   max-height: 390px;
   object-fit: contain;
   transform: scaleY(-1);
-  opacity: 0.65;
-  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 25%);
-  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 25%);
+  opacity: 0.78;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 55%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 55%);
   pointer-events: none;
 }
 

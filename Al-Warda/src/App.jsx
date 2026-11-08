@@ -125,9 +125,6 @@ function App() {
     // so it never competes with homepage critical resources on first load
     const runIdlePrefetch = () => {
       fetch("/api/warmup", { method: "POST" }).catch(() => {});
-      getBookPicks().catch(() => {});
-      getDiscountSnapshot().catch(() => {});
-      getNewBooks().catch(() => {});
       loadFeatured();
       loadDiscount();
       loadNewBooks();

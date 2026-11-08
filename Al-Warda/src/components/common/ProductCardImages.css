@@ -13,7 +13,7 @@
   height: auto !important;
   min-height: 0;
   max-height: none;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1.2;
   padding: 0;
   overflow: hidden;
   border-radius: 12px 12px 0 0;
@@ -34,7 +34,7 @@
   z-index: 2;
   inset: 0;
   width: 100%;
-  height: 85% !important;
+  height: 83.333% !important;
   max-width: none;
   max-height: none !important;
   object-fit: contain !important;
@@ -46,18 +46,18 @@
 .search__card .search__card-img-wrap .product-reflection {
   position: absolute;
   left: 0;
-  top: 77%;
+  top: 83.333%;
   width: 100%;
-  height: 85%;
+  height: 83.333%;
   max-width: none;
   max-height: none;
   object-fit: contain;
   transform: scaleY(-1);
   transform-origin: center;
   z-index: 1;
-  opacity: 0.65;
-  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 24%);
-  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 24%);
+  opacity: 0.78;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 55%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 55%);
   pointer-events: none;
 }
 
@@ -76,7 +76,7 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1.2;
   overflow: hidden;
   border-radius: 13px 13px 0 0;
   transform: none;
@@ -87,7 +87,7 @@
   z-index: 2;
   inset: 0;
   width: 100%;
-  height: 85%;
+  height: 83.333%;
   max-width: none;
   max-height: none;
   object-fit: contain;

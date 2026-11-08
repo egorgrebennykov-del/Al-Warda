@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
-import { getPerfumeById, getPerfumes, ensurePerfumeEnrichment, getHarmoniousNotes } from "../../../utils/perfumes";
+import { getPerfumeById, ensurePerfumeEnrichment, getHarmoniousNotes } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
@@ -39,22 +39,17 @@ export default function BookDetails() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setPerfume(null);
 
-    getPerfumeById(targetId, { refresh: true })
+    getPerfumeById(targetId)
       .then((p) => {
         if (!cancelled) {
-          if (p) {
-            setPerfume(p);
-          } else {
-            // fallback to first perfume
-            getPerfumes().then((all) => {
-              if (!cancelled && all.length > 0) setPerfume(all[0]);
-            });
-          }
+          setPerfume(p);
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.warn("Could not load product:", error);
         if (!cancelled) setLoading(false);
       });
 
@@ -84,9 +79,17 @@ export default function BookDetails() {
 
   if (loading) {
     return (
-      <div className="warda-details-loader">
-        <div className="app-route-loader__spinner" />
-        <p>{language === "ru" ? "Загрузка парфюма..." : "Loading fragrance..."}</p>
+      <div className="warda-details-page warda-details-loading" role="status" aria-live="polite">
+        <div className="container">
+          <span className="warda-details-sr-only">{language === "ru" ? "Загрузка парфюма" : "Loading fragrance"}</span>
+          <div className="warda-details-skeleton-nav" />
+          <div className="warda-details-grid" aria-hidden="true">
+            <div className="warda-details-skeleton-image" />
+            <div className="warda-details-skeleton-info">
+              <span /><span /><span /><span /><span />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
