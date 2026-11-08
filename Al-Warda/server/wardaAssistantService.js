@@ -1,6 +1,7 @@
 import {
   fetchPerfumesFromSupabase,
   getPerfumes,
+  getCachedPerfumes,
   getPerfumeUrl,
   ensurePerfumeEnrichment,
 } from "../utils/perfumes.js";
@@ -16,12 +17,8 @@ export function getGeminiApiKey() {
   );
 }
 
-const GEMINI_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-flash-latest",
-  "gemini-flash-lite-latest",
-];
+const GEMINI_FAST_MODEL = "gemini-2.0-flash";
+const GEMINI_TIMEOUT_MS = 1600;
 
 // ============================================================================
 // 1. LIVE CATALOG LOADER (STRICTLY REAL ITEMS FROM SITE CATALOG)
@@ -29,11 +26,15 @@ const GEMINI_MODELS = [
 let ALL_PERFUMES = [];
 let PERFUME_BY_ID = new Map();
 let lastCatalogFetchAt = 0;
-const CATALOG_TTL_MS = 60 * 1000;
+let catalogRefreshPromise = null;
+const CATALOG_TTL_MS = 15 * 60 * 1000;
 
 function normalizeCatalogItem(raw) {
   if (!raw || !(raw.name || raw.title)) return null;
-  const item = ensurePerfumeEnrichment(raw);
+  const item =
+    Array.isArray(raw.topNotesRu) && raw.topNotesRu.length > 0 && raw.descriptionRu
+      ? raw
+      : ensurePerfumeEnrichment(raw);
   const id = String(item.id || item.slug || "").trim();
   if (!id) return null;
 
@@ -54,22 +55,36 @@ function normalizeCatalogItem(raw) {
     item.notesSummary ||
     (heartNotes.length > 0 ? heartNotes.join(" · ") : category);
 
+  const nameStr = item.name || item.title;
+  const genderStr = item.genderRu || item.gender || "Унисекс";
+  const nameLower = nameStr.toLowerCase();
+  const brandLower = brand.toLowerCase();
+  const notesSummaryLower = notesSummary.toLowerCase();
+  const categoryLower = category.toLowerCase();
+  const genderLower = genderStr.toLowerCase();
+  const topStr = topNotes.join(" ").toLowerCase();
+  const heartStr = heartNotes.join(" ").toLowerCase();
+  const baseStr = baseNotes.join(" ").toLowerCase();
+  const isWomen = genderLower.includes("жен") || genderLower.includes("women") || genderLower.includes("femme");
+  const isMen = (genderLower.includes("муж") || genderLower.includes("men") || genderLower.includes("homme")) && !isWomen;
+  const isUnisex = genderLower.includes("уни") || genderLower.includes("uni") || (!isWomen && !isMen);
+
   const p = {
     id,
     key: id,
     slug: item.slug || `stock-${id}`,
     gtin: item.gtin || item.info?.gtin || "",
-    title: item.name || item.title,
-    name: item.name || item.title,
+    title: nameStr,
+    name: nameStr,
     brand,
     author: `${brand} • ${notesSummary || category}`,
     price: Number(item.price) || 29.99,
     currency: item.currency || "EUR",
     image: item.image || item.fullCardImage || "",
-    url: item.url || getPerfumeUrl({ id, name: item.name || item.title }),
+    url: item.url || getPerfumeUrl({ id, name: nameStr }),
     category,
     categorySlug: item.category || item.info?.categorySlug || "oud",
-    gender: item.genderRu || item.gender || "Унисекс",
+    gender: genderStr,
     notesSummary,
     topNotes,
     heartNotes,
@@ -81,6 +96,14 @@ function normalizeCatalogItem(raw) {
     description: item.descriptionRu || item.description || "",
     descriptionEn: item.descriptionEn || "",
     store: "Al-Warda Boutique",
+    _nameLower: nameLower,
+    _brandLower: brandLower,
+    _notesSummaryLower: notesSummaryLower,
+    _topStr: topStr,
+    _heartStr: heartStr,
+    _baseStr: baseStr,
+    _allText: `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummaryLower} ${topStr} ${heartStr} ${baseStr}`,
+    _genderFlags: { isWomen, isMen, isUnisex },
   };
 
   return p;
@@ -113,36 +136,60 @@ function indexCatalogItems(rawItems) {
   }
 }
 
+async function refreshCatalogInBackground() {
+  if (catalogRefreshPromise) return catalogRefreshPromise;
+  catalogRefreshPromise = (async () => {
+    try {
+      const cached = getCachedPerfumes();
+      if (Array.isArray(cached) && cached.length > 0) {
+        indexCatalogItems(cached);
+        return ALL_PERFUMES;
+      }
+      const supaItems = await fetchPerfumesFromSupabase();
+      if (Array.isArray(supaItems) && supaItems.length > 0) {
+        indexCatalogItems(supaItems);
+        return ALL_PERFUMES;
+      }
+    } catch {
+      // ignore and try fallback
+    }
+    try {
+      const items = await getPerfumes();
+      if (Array.isArray(items) && items.length > 0) {
+        indexCatalogItems(items);
+      }
+    } catch {
+      // ignore
+    }
+    return ALL_PERFUMES;
+  })().finally(() => {
+    catalogRefreshPromise = null;
+  });
+  return catalogRefreshPromise;
+}
+
 export async function ensureCatalogLoaded(contextCatalog = null) {
   if (Array.isArray(contextCatalog) && contextCatalog.length > 0) {
     indexCatalogItems(contextCatalog);
     return ALL_PERFUMES;
   }
 
-  if (ALL_PERFUMES.length > 0 && Date.now() - lastCatalogFetchAt < CATALOG_TTL_MS) {
+  // Instant 0ms return if catalog is already in memory
+  if (ALL_PERFUMES.length > 0) {
+    if (Date.now() - lastCatalogFetchAt >= CATALOG_TTL_MS) {
+      refreshCatalogInBackground().catch(() => {});
+    }
     return ALL_PERFUMES;
   }
 
-  try {
-    const supaItems = await fetchPerfumesFromSupabase();
-    if (Array.isArray(supaItems) && supaItems.length > 0) {
-      indexCatalogItems(supaItems);
-      return ALL_PERFUMES;
-    }
-  } catch (err) {
-    console.warn("[WardaAssistant] fetchPerfumesFromSupabase warning:", err?.message || err);
+  // Check if utils/perfumes.js already warmed its in-memory cache
+  const alreadyCached = getCachedPerfumes();
+  if (Array.isArray(alreadyCached) && alreadyCached.length > 0) {
+    indexCatalogItems(alreadyCached);
+    return ALL_PERFUMES;
   }
 
-  try {
-    const items = await getPerfumes();
-    if (Array.isArray(items) && items.length > 0) {
-      indexCatalogItems(items);
-    }
-  } catch (err) {
-    console.warn("[WardaAssistant] getPerfumes fallback warning:", err?.message || err);
-  }
-
-  return ALL_PERFUMES;
+  return refreshCatalogInBackground();
 }
 
 // ============================================================================
@@ -178,6 +225,7 @@ const STOP_WORDS = new Set([
 // 3. INTELLIGENT PERFUME DATABASE SEARCH (STRICTLY CATALOG ITEMS & GENDER-AWARE)
 // ============================================================================
 function getPerfumeGenderFlags(p) {
+  if (p?._genderFlags) return p._genderFlags;
   const g = (p?.gender || "").toLowerCase();
   const isWomen = g.includes("жен") || g.includes("women") || g.includes("femme");
   const isMen = (g.includes("муж") || g.includes("men") || g.includes("homme")) && !isWomen;
@@ -247,16 +295,13 @@ export function searchPerfumesInDatabase(query, options = {}) {
     }
 
     let score = 0;
-    const nameLower = (p.name || "").toLowerCase();
-    const brandLower = (p.brand || "").toLowerCase();
-    const notesSummary = (p.notesSummary || "").toLowerCase();
-    const descLower = (p.description || "").toLowerCase();
-    const categoryLower = (p.category || "").toLowerCase();
-    const genderLower = (p.gender || "").toLowerCase();
-    const topStr = p.topNotes.join(" ").toLowerCase();
-    const heartStr = p.heartNotes.join(" ").toLowerCase();
-    const baseStr = p.baseNotes.join(" ").toLowerCase();
-    const allText = `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descLower}`;
+    const nameLower = p._nameLower || (p.name || "").toLowerCase();
+    const brandLower = p._brandLower || (p.brand || "").toLowerCase();
+    const notesSummary = p._notesSummaryLower || (p.notesSummary || "").toLowerCase();
+    const topStr = p._topStr ?? p.topNotes.join(" ").toLowerCase();
+    const heartStr = p._heartStr ?? p.heartNotes.join(" ").toLowerCase();
+    const baseStr = p._baseStr ?? p.baseNotes.join(" ").toLowerCase();
+    const allText = p._allText || `${nameLower} ${brandLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr}`;
 
     if (meaningfulTokens.length > 0 && nameLower.includes(q) && q.length > 2) score += 100;
     if (meaningfulTokens.length > 0 && q.includes(nameLower) && nameLower.length > 3) score += 100;
@@ -582,39 +627,41 @@ OUTPUT FORMAT (valid JSON only, no markdown fences):
 export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
   if (!apiKey) return null;
 
-  for (const model of GEMINI_MODELS) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          maxOutputTokens: 1024,
-          temperature: 0.2,
-        },
-      };
-      if (systemInstruction) {
-        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-      }
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) continue;
-      const data = await res.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) continue;
-
-      const cleanJson = rawText.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}");
-      return JSON.parse(cleanJson);
-    } catch {
-      // try next model
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_FAST_MODEL}:generateContent?key=${apiKey}`;
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 320,
+        temperature: 0.2,
+      },
+    };
+    if (systemInstruction) {
+      payload.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) return null;
+
+    const cleanJson = rawText.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}");
+    return JSON.parse(cleanJson);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
-  return null;
 }
 
 // ============================================================================
@@ -727,12 +774,7 @@ ${JSON.stringify(
     heartNotes: p.heartNotes,
     baseNotes: p.baseNotes,
     longevity: p.longevity,
-    sillage: p.sillage,
-    volume: p.volume,
-    description: p.description,
-  })),
-  null,
-  2
+  }))
 )}
 
 CRITICAL INSTRUCTIONS:

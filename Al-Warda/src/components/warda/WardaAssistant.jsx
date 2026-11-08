@@ -240,6 +240,11 @@ export default function WardaAssistant() {
 
   // Global listeners to trigger assistant from other components (404 page, admin messenger redirect)
   useEffect(() => {
+    // Pre-warm catalog index in memory so the assistant responds instantaneously
+    import("../../../server/wardaAssistantService")
+      .then((mod) => mod.ensureCatalogLoaded?.())
+      .catch(() => {});
+
     const handleTrigger = (e) => {
       const query = e?.detail?.query || e?.detail?.text || null;
       handleOpen(query);
@@ -360,7 +365,8 @@ export default function WardaAssistant() {
         items: [],
       };
 
-      if (isLoggedIn()) {
+      const isCartQuery = /(корзин|заказ|cart|bag|order|checkout|оформ)/i.test(queryText);
+      if (isLoggedIn() && isCartQuery) {
         try {
           const cartRows = await getCart();
           const items = (cartRows || []).map((row) => ({
@@ -427,70 +433,16 @@ export default function WardaAssistant() {
       };
 
       let data = null;
-      try {
-        const response = await fetch("/api/warda-chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            Accept: "text/event-stream, application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-
-        const contentType = response.headers.get("content-type") || "";
-
-        if (contentType.includes("text/event-stream") && response.body) {
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-
-            const chunks = buffer.split("\n\n");
-            buffer = chunks.pop() || "";
-
-            for (const chunk of chunks) {
-              const trimmed = chunk.trim();
-              if (!trimmed.startsWith("data:")) continue;
-              try {
-                const eventData = JSON.parse(trimmed.replace(/^data:\s*/, ""));
-                if (eventData.type === "status") {
-                  setLoadingStatus(eventData.status);
-                  setEmotion(
-                    eventData.status === "searching" ? "thinking" : "speaking",
-                  );
-                } else if (eventData.type === "result") {
-                  data = eventData;
-                }
-              } catch {
-                // Ignore malformed chunk
-              }
-            }
-          }
-        } else if (contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          throw new Error("Unexpected response content-type");
-        }
-      } catch {
-        const { processWardaChat } = await import(
-          "../../../server/wardaAssistantService"
-        );
-        data = await processWardaChat({
-          ...payload,
-          onStatus: (status) => {
-            setLoadingStatus(status);
-            setEmotion(status === "searching" ? "thinking" : "speaking");
-          },
-        });
-      }
+      const { processWardaChat } = await import(
+        "../../../server/wardaAssistantService"
+      );
+      data = await processWardaChat({
+        ...payload,
+        onStatus: (status) => {
+          setLoadingStatus(status);
+          setEmotion(status === "searching" ? "thinking" : "speaking");
+        },
+      });
 
       // Handle navigation action if requested
       if (data?.action?.type === "navigate" && data.action.url) {
