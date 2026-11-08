@@ -15,6 +15,7 @@ import os
 import sys
 import json
 import hashlib
+import re
 import time
 import argparse
 import requests
@@ -265,8 +266,14 @@ def sync_to_supabase(perfumes_list):
             same_source
             and generation.get("status") == "completed"
             and isinstance((previous or {}).get("image"), str)
-            and (previous or {}).get("image", "").startswith(
-                f"{SUPABASE_URL}/storage/v1/object/public/product-images/"
+            and (
+                (previous or {}).get("image", "").startswith(
+                    f"{SUPABASE_URL}/storage/v1/object/public/product-images/"
+                )
+                or re.fullmatch(
+                    r"/assets/img/generated-products/[a-f0-9]{64}\.png",
+                    (previous or {}).get("image", ""),
+                )
             )
         ):
             image = previous["image"]

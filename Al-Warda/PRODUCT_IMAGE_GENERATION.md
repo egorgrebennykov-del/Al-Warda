@@ -2,19 +2,23 @@
 
 The Qogita image queue is driven by GitHub Actions. Flux Schnell receives a text
 prompt for an empty background only; the original Qogita photo is segmented and
-composited locally in the action. The original bottle RGB pixels are retained,
-the source canvas is not cropped, and the final lossless PNG is stored in
-Supabase Storage. Queue state is stored in the existing `stocks.info` JSON.
+composited in the action. The original bottle RGB pixels are retained and the
+source canvas is not cropped. Final PNG files are committed to the repository
+under `public/assets/img/generated-products` and deployed as Cloudflare static
+assets; no Supabase Storage bucket is used for new images. Queue state is stored
+in the existing `stocks.info` JSON.
 Public catalog products must also have
 `info.contentGeneration.provider = "claude"`; products without that explicit
-Claude provenance are hidden. Images are published only after
-`imageGeneration.status` becomes `completed`.
+Claude provenance are hidden. Images are marked `completed` only after their
+deployed bytes match the locally generated file. Existing completed images in
+Supabase Storage remain supported.
 
 ## One-time setup
 
-1. Run [`supabase_product_image_queue.sql`](./supabase_product_image_queue.sql)
-   in the Supabase SQL editor. It creates the public-read `product-images`
-   bucket and marks existing rows with an original Qogita image as pending.
+1. Make sure Cloudflare automatically deploys the `main` branch after a GitHub
+   push, and GitHub Actions has permission to push to that branch. Generated
+   files increase repository size; Cloudflare Free supports up to 20,000 static
+   files per deployment and 25 MiB per file.
 2. Add these GitHub Actions secrets:
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `CLOUDFLARE_ACCOUNT_ID`
@@ -36,6 +40,11 @@ Claude provenance are hidden. Images are published only after
 
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.
+
+If publication times out, records remain in `publishing` and the next workflow
+run verifies them again before generating new images. If a generated file was
+never committed, its record is marked failed and can be retried after the UTC
+daily reset. Failed attempts still count against the daily quota.
 
 ## Daily quota and billing
 

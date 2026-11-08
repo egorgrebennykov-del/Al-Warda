@@ -3,6 +3,7 @@
 
 import argparse
 import base64
+import hashlib
 import io
 import json
 import math
@@ -11,6 +12,7 @@ import re
 import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import quote, urlparse
 
 import requests
@@ -22,7 +24,9 @@ IMAGE_ENDPOINT = (
     "https://api.cloudflare.com/client/v4/accounts/"
     "{account_id}/ai/run/@cf/black-forest-labs/flux-1-schnell"
 )
-IMAGE_BUCKET = "product-images"
+GENERATED_DIR = Path(__file__).resolve().parents[1] / "public" / "assets" / "img" / "generated-products"
+GENERATED_URL = "/assets/img/generated-products/"
+MAX_STATIC_IMAGE_BYTES = 25 * 1024 * 1024
 MAX_DAILY_IMAGES = 160
 FREE_DAILY_NEURONS = 10_000
 NEURON_SAFETY_BUDGET = 9_000
@@ -210,23 +214,14 @@ def composite_original_product(source_bytes, background_bytes, segmentation_sess
     return output.getvalue(), original_size
 
 
-def upload_to_storage(session, supabase_url, bucket, object_path, image_bytes):
-    encoded_path = "/".join(quote(part, safe="") for part in object_path.split("/"))
-    response = session.post(
-        f"{supabase_url}/storage/v1/object/{quote(bucket, safe='')}/{encoded_path}",
-        headers={
-            "Content-Type": "image/png",
-            "x-upsert": "true",
-        },
-        data=image_bytes,
-        timeout=60,
-    )
-    if not response.ok:
-        raise RuntimeError(
-            f"Supabase Storage upload failed ({response.status_code}): "
-            f"{response.text[:400]}"
-        )
-    return f"{supabase_url}/storage/v1/object/public/{quote(bucket, safe='')}/{encoded_path}"
+def save_generated_image(image_bytes):
+    if len(image_bytes) > MAX_STATIC_IMAGE_BYTES:
+        raise ValueError("Generated image exceeds the Cloudflare static asset size limit")
+    digest = hashlib.sha256(image_bytes).hexdigest()
+    GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+    path = GENERATED_DIR / f"{digest}.png"
+    path.write_bytes(image_bytes)
+    return f"{GENERATED_URL}{digest}.png"
 
 
 def is_stale_processing(job, now):
@@ -254,6 +249,8 @@ def select_candidates(rows, now):
         if job.get("attemptedOn") == utc_day:
             attempts_today += 1
         if job.get("status") == "completed":
+            continue
+        if job.get("status") == "publishing":
             continue
         if job.get("status") == "processing" and not is_stale_processing(job, now):
             continue
@@ -287,7 +284,7 @@ def process_product(
     patch_stock(session, supabase_url, row, info)
 
     try:
-        source_response = session.get(
+        source_response = requests.get(
             product_source(row),
             headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
             timeout=(15, 60),
@@ -304,32 +301,22 @@ def process_product(
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
         background_bytes = generate_background(
-            session, account_id, api_token, build_background_prompt()
+            requests, account_id, api_token, build_background_prompt()
         )
         composite_bytes, original_size = composite_original_product(
             source_bytes, background_bytes, segmentation_session
         )
 
-        product_key = str(
-            (row.get("info") or {}).get("gtin")
-            or row["id"]
-        )
-        safe_product_key = re.sub(r"[^A-Za-z0-9_-]", "_", product_key)
-        object_path = f"products/{safe_product_key}.png"
-        image_url = upload_to_storage(
-            session, supabase_url, IMAGE_BUCKET, object_path, composite_bytes
-        )
+        image_url = save_generated_image(composite_bytes)
 
         job.update({
-            "status": "completed",
+            "status": "publishing",
             "imageUrl": image_url,
-            "storagePath": object_path,
-            "completedAt": utc_now().isoformat(),
             "width": original_size[0],
             "height": original_size[1],
         })
         info["imageGeneration"] = job
-        patch_stock(session, supabase_url, row, info, image=image_url)
+        patch_stock(session, supabase_url, row, info)
         return image_url
     except WorkersDailyQuotaExceeded as error:
         job.update({"status": "failed", "error": str(error), "failedAt": utc_now().isoformat()})
@@ -347,10 +334,75 @@ def process_product(
         raise
 
 
+def publish_generated_images(session, supabase_url, site_url):
+    rows = fetch_stock_rows(session, supabase_url)
+    pending = []
+    for row in rows:
+        info = row.get("info") or {}
+        job = image_generation(info)
+        if job.get("status") != "publishing":
+            continue
+        image_url = job.get("imageUrl", "")
+        match = re.fullmatch(r"/assets/img/generated-products/([a-f0-9]{64})\.png", image_url)
+        if not match:
+            raise RuntimeError(f"Invalid generated image path for stock {row['id']}")
+        local_path = GENERATED_DIR / f"{match.group(1)}.png"
+        if not local_path.is_file():
+            updated_info = dict(info)
+            updated_job = dict(job)
+            updated_job.update({
+                "status": "failed",
+                "error": "Generated image was not committed; generation must be retried",
+                "failedAt": utc_now().isoformat(),
+            })
+            updated_info["imageGeneration"] = updated_job
+            patch_stock(session, supabase_url, row, updated_info)
+            print(f"FAILED {row['id']}: generated image was not committed", flush=True)
+            continue
+        if hashlib.sha256(local_path.read_bytes()).hexdigest() != match.group(1):
+            raise RuntimeError(f"Generated image checksum mismatch for stock {row['id']}")
+        pending.append((row, image_url, match.group(1)))
+
+    deadline = time.monotonic() + 900
+    while pending:
+        remaining = []
+        for row, image_url, digest in pending:
+            try:
+                response = requests.get(site_url + image_url, timeout=(15, 60), allow_redirects=False)
+                ready = response.ok and hashlib.sha256(response.content).hexdigest() == digest
+            except requests.RequestException as error:
+                print(f"Waiting for deployment of stock {row['id']}: {error}", flush=True)
+                ready = False
+            if not ready:
+                remaining.append((row, image_url, digest))
+                continue
+            info = dict(row["info"])
+            job = dict(image_generation(info))
+            job.update({"status": "completed", "completedAt": utc_now().isoformat()})
+            info["imageGeneration"] = job
+            patch_stock(session, supabase_url, row, info, image=image_url)
+            print(f"PUBLISHED {row['id']}: {image_url}", flush=True)
+        pending = remaining
+        if pending:
+            if time.monotonic() >= deadline:
+                raise RuntimeError(f"Deployment did not publish {len(pending)} images within 15 minutes")
+            print(f"Waiting for deployment of {len(pending)} images", flush=True)
+            time.sleep(15)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-images", type=int, default=MAX_DAILY_IMAGES)
+    parser.add_argument("--publish-only", action="store_true")
     args = parser.parse_args()
+    if args.publish_only:
+        supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+        if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
+            raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+        publish_generated_images(
+            make_session(), supabase_url, "https://al-warda.egor-grebennykov.workers.dev"
+        )
+        return
     if os.environ.get("CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED") != "true":
         raise RuntimeError(
             "Set CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED=true only after confirming "
@@ -418,7 +470,7 @@ def main():
                 utc_now(),
             )
             completed += 1
-            print(f"COMPLETED {row['id']}: {url}")
+            print(f"AWAITING DEPLOYMENT {row['id']}: {url}")
         except WorkersDailyQuotaExceeded as error:
             failed += 1
             print(f"DAILY QUOTA: {error}. Stopping until 00:00 UTC.")
@@ -432,7 +484,7 @@ def main():
         time.sleep(0.25)
 
     print(
-        f"Batch finished: completed={completed}, failed={failed}, "
+        f"Batch finished: awaiting deployment={completed}, failed={failed}, "
         f"attempted_today<={attempts_today + completed + failed}/{args.max_images}."
     )
 

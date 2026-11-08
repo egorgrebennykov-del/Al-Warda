@@ -83,5 +83,23 @@ describe("perfume image readiness", () => {
       }),
       false,
     );
+    assert.equal(isReadyProduct({
+      info: {
+        contentGeneration: { provider: "claude" },
+        imageGeneration: {
+          status: "completed",
+          imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+        },
+      },
+    }), true);
+    assert.equal(isReadyProduct({
+      info: {
+        contentGeneration: { provider: "claude" },
+        imageGeneration: {
+          status: "publishing",
+          imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+        },
+      },
+    }), false);
   });
 });

@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -528,7 +529,7 @@ async function main() {
       if (
         existingGeneration.status === "completed" &&
         typeof existing.image === "string" &&
-        existing.image.startsWith(`${SUPABASE_URL}/storage/v1/object/public/product-images/`)
+        isGeneratedProductImage(existing.image)
       ) {
         item.image = existing.image;
       } else {

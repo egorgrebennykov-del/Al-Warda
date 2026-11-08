@@ -1,11 +1,14 @@
 import base64
 import importlib.util
 import io
+import hashlib
 import sys
+import tempfile
 import types
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -108,6 +111,64 @@ class ProductImageGenerationTests(unittest.TestCase):
     def test_invalid_non_qogita_sources_are_not_queued(self):
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://example.com/image.jpg"}}))
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://img.qogita.com/no-image.jpg"}}))
+
+    def test_publishing_requires_matching_deployed_content(self):
+        image = b"generated-image"
+        digest = hashlib.sha256(image).hexdigest()
+        image_url = f"/assets/img/generated-products/{digest}.png"
+        row = {
+            "id": 9,
+            "info": {"imageGeneration": {"status": "publishing", "imageUrl": image_url}},
+        }
+        response = types.SimpleNamespace(ok=True, content=image)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            (path / f"{digest}.png").write_bytes(image)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue.requests, "get", return_value=response), \
+                 patch.object(queue, "patch_stock") as update:
+                queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+            self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "completed")
+            self.assertEqual(update.call_args.kwargs["image"], image_url)
+
+    def test_publishing_missing_image_marks_failed(self):
+        digest = "a" * 64
+        row = {
+            "id": 10,
+            "info": {"imageGeneration": {
+                "status": "publishing",
+                "imageUrl": f"/assets/img/generated-products/{digest}.png",
+            }},
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch.object(queue, "GENERATED_DIR", Path(temp_dir)), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue, "patch_stock") as update:
+                queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+            self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
+
+    def test_publishing_does_not_complete_if_deployed_bytes_differ(self):
+        image = b"expected"
+        digest = hashlib.sha256(image).hexdigest()
+        row = {
+            "id": 11,
+            "info": {"imageGeneration": {
+                "status": "publishing",
+                "imageUrl": f"/assets/img/generated-products/{digest}.png",
+            }},
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            (path / f"{digest}.png").write_bytes(image)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+                 patch.object(queue.requests, "get", return_value=types.SimpleNamespace(ok=True, content=b"wrong")), \
+                 patch.object(queue.time, "monotonic", side_effect=[0, 901]), \
+                 patch.object(queue, "patch_stock") as update:
+                with self.assertRaisesRegex(RuntimeError, "Deployment did not publish"):
+                    queue.publish_generated_images(object(), "https://db.example", "https://site.example")
+            update.assert_not_called()
 
 
 if __name__ == "__main__":

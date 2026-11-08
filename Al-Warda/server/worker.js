@@ -1,5 +1,6 @@
 import workerEnv from "./workerEnv.js";
 import { isClaudeGenerated } from "../utils/perfumeProvenance.js";
+import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import {
   processLiteraChat,
@@ -89,7 +90,7 @@ function completedProductPhoto(perfume) {
   const image = generation?.imageUrl || perfume?.image;
   if (
     generation?.status !== "completed" ||
-    !/^https:\/\/[^/]+\/storage\/v1\/object\/public\/product-images\//i.test(image || "")
+    !isGeneratedProductImage(image)
   ) {
     return null;
   }

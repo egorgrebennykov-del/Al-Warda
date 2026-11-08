@@ -1,5 +1,6 @@
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
 import { isClaudeGenerated } from "./perfumeProvenance.js";
+import { isGeneratedProductImage } from "./generatedProductImage.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -10,9 +11,6 @@ const SUPABASE_KEY =
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
-const PRODUCT_IMAGE_STORAGE_PREFIX =
-  `${SUPABASE_URL}/storage/v1/object/public/product-images/`;
-
 let memoryPerfumesCache = null;
 const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v3";
 
@@ -33,8 +31,8 @@ function hasCompletedGeneratedImage(product) {
   const image = generation?.imageUrl || product?.image;
   return (
     generation?.status === "completed" &&
-    typeof image === "string" &&
-    image.startsWith(PRODUCT_IMAGE_STORAGE_PREFIX)
+    isGeneratedProductImage(image) &&
+    (image.startsWith("/") || image.startsWith(`${SUPABASE_URL}/storage/v1/object/public/product-images/`))
   );
 }
 

@@ -156,7 +156,9 @@ export async function getProductImageQueueStatus(request, env) {
       if (!hasRawImage(info)) continue;
       eligible++;
       const job = info.imageGeneration || {};
-      const status = counts[job.status] === undefined ? "pending" : job.status;
+      const status = job.status === "publishing"
+        ? "processing"
+        : counts[job.status] === undefined ? "pending" : job.status;
       counts[status]++;
       if (job.attemptedOn === today) attemptedToday++;
     }
