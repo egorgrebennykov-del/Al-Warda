@@ -145,7 +145,7 @@ export default function Featured() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getPerfumes()
+    getPerfumes({ refresh: true })
       .then((items) => {
         if (!cancelled) {
           setPerfumes(items);
@@ -156,8 +156,14 @@ export default function Featured() {
         if (!cancelled) setLoading(false);
       });
 
+    const timer = window.setInterval(() => {
+      getPerfumes({ refresh: true })
+        .then((items) => { if (!cancelled) setPerfumes(items); })
+        .catch((err) => console.warn("Could not refresh catalog:", err));
+    }, 30000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 

@@ -294,6 +294,27 @@ class ProductImageGenerationTests(unittest.TestCase):
                 self.assertEqual(update.call_args.args[3]["imageGeneration"]["imageUrl"], image_url)
                 self.assertNotIn("imageGenerationReplacement", update.call_args.args[3])
                 self.assertEqual(update.call_args.kwargs["image"], image_url)
+                self.assertEqual(update.call_args.args[3]["retiredGeneratedImages"], ["/old.png"])
+
+    def test_cleanup_removes_only_unreferenced_retired_generated_files(self):
+        old = "/assets/img/generated-products/" + "a" * 64 + ".png"
+        shared = "/assets/img/generated-products/" + "b" * 64 + ".png"
+        rows = [
+            {"id": 1, "image": "/new.png", "info": {
+                "retiredGeneratedImages": [old, shared, "/assets/img/generated-products/../../other"],
+                "imageGeneration": {"status": "completed", "imageUrl": "/new.png"},
+            }},
+            {"id": 2, "image": shared, "info": {"imageGeneration": {"imageUrl": shared}}},
+        ]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            (path / ("a" * 64 + ".png")).write_bytes(b"old")
+            (path / ("b" * 64 + ".png")).write_bytes(b"shared")
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=rows):
+                queue.cleanup_replaced_images(object(), "https://db.example")
+            self.assertFalse((path / ("a" * 64 + ".png")).exists())
+            self.assertTrue((path / ("b" * 64 + ".png")).exists())
 
     def test_invalid_non_qogita_sources_are_not_queued(self):
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://example.com/image.jpg"}}))

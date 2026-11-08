@@ -116,7 +116,7 @@ export default function SearchResults() {
     let cancelled = false;
     setLoading(true);
 
-    getPerfumes()
+    getPerfumes({ refresh: true })
       .then((all) => {
         if (cancelled) return;
         setAllPerfumes(all);
@@ -126,8 +126,14 @@ export default function SearchResults() {
         if (!cancelled) setLoading(false);
       });
 
+    const timer = window.setInterval(() => {
+      getPerfumes({ refresh: true })
+        .then((all) => { if (!cancelled) setAllPerfumes(all); })
+        .catch((err) => console.warn("Could not refresh search results:", err));
+    }, 30000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 

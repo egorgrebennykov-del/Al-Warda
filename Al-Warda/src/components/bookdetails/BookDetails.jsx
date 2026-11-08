@@ -38,7 +38,7 @@ export default function BookDetails() {
     let cancelled = false;
     setLoading(true);
 
-    getPerfumeById(targetId)
+    getPerfumeById(targetId, { refresh: true })
       .then((p) => {
         if (!cancelled) {
           if (p) {
@@ -56,8 +56,14 @@ export default function BookDetails() {
         if (!cancelled) setLoading(false);
       });
 
+    const timer = window.setInterval(() => {
+      getPerfumeById(targetId, { refresh: true })
+        .then((item) => { if (!cancelled && item) setPerfume(item); })
+        .catch((err) => console.warn("Could not refresh product:", err));
+    }, 30000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, [targetId]);
 

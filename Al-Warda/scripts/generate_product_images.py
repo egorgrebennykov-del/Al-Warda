@@ -488,6 +488,15 @@ def publish_generated_images(session, supabase_url, site_url):
             info = dict(row["info"])
             job = dict(info[job_key])
             job.update({"status": "completed", "completedAt": utc_now().isoformat()})
+            previous = info.get("imageGeneration") or {}
+            old_url = previous.get("imageUrl") or row.get("image")
+            retired = info.get("retiredGeneratedImages")
+            retired = list(retired) if isinstance(retired, list) else []
+            if job_key == "imageGenerationReplacement" and old_url and old_url != image_url:
+                if old_url not in retired:
+                    retired.append(old_url)
+            if retired:
+                info["retiredGeneratedImages"] = retired
             info["imageGeneration"] = job
             if job_key == "imageGenerationReplacement":
                 del info[job_key]
@@ -501,6 +510,32 @@ def publish_generated_images(session, supabase_url, site_url):
             time.sleep(15)
 
 
+def cleanup_replaced_images(session, supabase_url):
+    rows = fetch_stock_rows(session, supabase_url)
+    referenced = set()
+    retired = set()
+    for row in rows:
+        info = row.get("info") or {}
+        for value in (row.get("image"), (info.get("imageGeneration") or {}).get("imageUrl"),
+                      (info.get("imageGenerationReplacement") or {}).get("imageUrl")):
+            if isinstance(value, str):
+                referenced.add(value)
+        candidates = info.get("retiredGeneratedImages")
+        if isinstance(candidates, list):
+            retired.update(value for value in candidates if isinstance(value, str))
+    for image_url in sorted(retired - referenced):
+        match = re.fullmatch(r"/assets/img/generated-products/([a-f0-9]{64})\.png", image_url)
+        if not match:
+            print(f"Retired image requires manual cleanup (unsupported storage): {image_url}", file=sys.stderr)
+            continue
+        path = GENERATED_DIR / f"{match.group(1)}.png"
+        if path.is_symlink():
+            raise RuntimeError(f"Refusing to delete symlink: {path}")
+        if path.is_file():
+            path.unlink()
+            print(f"REMOVED retired image: {image_url}", flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -508,16 +543,20 @@ def main():
         help="Maximum number of products to attempt in this run",
     )
     parser.add_argument("--publish-only", action="store_true")
+    parser.add_argument("--cleanup-replaced", action="store_true")
     parser.add_argument("--regenerate-completed", action="store_true",
                         help="Replace completed images made with an older model")
     args = parser.parse_args()
-    if args.publish_only:
+    if args.publish_only or args.cleanup_replaced:
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
         if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
             raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
-        publish_generated_images(
-            make_session(), supabase_url, "https://al-warda.egor-grebennykov.workers.dev"
-        )
+        if args.cleanup_replaced:
+            cleanup_replaced_images(make_session(), supabase_url)
+        else:
+            publish_generated_images(
+                make_session(), supabase_url, "https://al-warda.egor-grebennykov.workers.dev"
+            )
         return
     if os.environ.get("CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED") != "true":
         raise RuntimeError(

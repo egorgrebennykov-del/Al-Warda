@@ -11,6 +11,7 @@ const SUPABASE_KEY =
 
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 let memoryPerfumesCache = null;
+let catalogRefresh = null;
 const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v3";
 
 function resolveCardImage(img, gtin, rawImage) {
@@ -254,9 +255,10 @@ export async function fetchPerfumesFromSupabase() {
         },
       });
 
-      if (!res.ok) break;
+      if (!res.ok) throw new Error(`Could not load catalog (HTTP ${res.status})`);
       const rows = await res.json();
-      if (!Array.isArray(rows) || rows.length === 0) break;
+      if (!Array.isArray(rows)) throw new Error("Catalog response is not a list");
+      if (rows.length === 0) break;
       allRows.push(...rows);
       if (rows.length < pageSize) {
         hasMore = false;
@@ -367,6 +369,7 @@ export async function fetchPerfumesFromSupabase() {
       }
   } catch (err) {
     console.warn("fetchPerfumesFromSupabase error:", err);
+    throw err;
   }
   memoryPerfumesCache = [];
   return [];
@@ -417,7 +420,15 @@ export async function fetchDropshipArabianPerfumes(query = "") {
 }
 
 export async function getPerfumes(options = {}) {
-  const { includeDropship = true } = options;
+  const { includeDropship = true, refresh = false } = options;
+
+  if (refresh) {
+    if (!catalogRefresh) {
+      catalogRefresh = Promise.all([fetchPerfumesFromSupabase(), fetchDropshipArabianPerfumes()])
+        .finally(() => { catalogRefresh = null; });
+    }
+    await catalogRefresh;
+  }
 
   // 1. In-memory hot cache
   if (memoryPerfumesCache && memoryDropshipCache) {
@@ -455,10 +466,10 @@ export function getCachedPerfumes() {
   return [...(memoryPerfumesCache || []), ...(memoryDropshipCache || [])];
 }
 
-export async function getPerfumeById(id) {
+export async function getPerfumeById(id, options = {}) {
   if (!id) return null;
   const clean = String(id).toLowerCase().trim();
-  const all = await getPerfumes();
+  const all = await getPerfumes(options);
 
   // 1. Direct ID, slug, dropshipId, or GTIN match
   let found = all.find(
@@ -522,8 +533,8 @@ export async function getPerfumeById(id) {
   return null;
 }
 
-export async function getBestSellerPerfumes() {
-  const all = await getPerfumes();
+export async function getBestSellerPerfumes(options = {}) {
+  const all = await getPerfumes(options);
   const best = all.filter((p) => p.isBestSeller);
   return best.length > 0 ? best.slice(0, 3) : all.slice(0, 3);
 }

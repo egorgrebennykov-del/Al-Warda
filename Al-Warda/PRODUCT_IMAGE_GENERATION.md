@@ -62,6 +62,11 @@ Supabase Storage remain supported.
    (or `regenerate_completed` when dispatching in GitHub). This mode processes
    those images instead of the pending queue. The original published image stays
    available until the replacement is deployed and its bytes are verified.
+   After the stock record is updated, the workflow removes the replaced
+   repository PNG if no stock references it, commits that deletion and deploys
+   again. Shared images remain until no product references them. Older images
+   in other storage locations require manual cleanup; they are not deleted by
+   the workflow. Open search refreshes its product data every 30 seconds.
    The page also lists completed images, newest publication completion first.
    Times are displayed in the browser's local time zone; older records without a
    valid completion timestamp appear last with their time marked unavailable.

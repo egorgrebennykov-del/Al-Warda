@@ -37,21 +37,22 @@ export default function Search({ show, onClose }) {
   const isRu = language !== "en";
 
   useEffect(() => {
+    if (!show) return;
     let active = true;
-    getPerfumes()
-      .then((data) => {
-        if (active && Array.isArray(data)) {
-          setAllPerfumes(data);
-        }
-      })
-      .catch((err) => {
-        console.warn("Could not prefetch perfumes for search:", err);
-      });
-
+    const refresh = () => {
+      getPerfumes({ refresh: true })
+        .then((data) => {
+          if (active && Array.isArray(data)) setAllPerfumes(data);
+        })
+        .catch((err) => console.warn("Could not refresh perfumes for search:", err));
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 30000);
     return () => {
       active = false;
+      window.clearInterval(timer);
     };
-  }, []);
+  }, [show]);
 
   useEffect(() => {
     if (show) {

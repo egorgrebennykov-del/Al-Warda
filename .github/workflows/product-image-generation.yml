@@ -110,5 +110,19 @@ jobs:
             git push origin HEAD:main
           fi
       - name: Verify deployment and complete queue items
+        id: verify
         if: ${{ always() && steps.checkout.outcome == 'success' }}
         run: python Al-Warda/scripts/generate_product_images.py --publish-only
+      - name: Remove replaced generated images
+        if: ${{ always() && steps.verify.outcome == 'success' }}
+        run: |
+          python Al-Warda/scripts/generate_product_images.py --cleanup-replaced
+          if [ -d Al-Warda/public/assets/img/generated-products ]; then
+            git add -u Al-Warda/public/assets/img/generated-products/
+          fi
+          if ! git diff --cached --quiet; then
+            git config user.name "GitHub Actions"
+            git config user.email "action@github.com"
+            git commit -m "Remove replaced product images"
+            git push origin HEAD:main
+          fi
