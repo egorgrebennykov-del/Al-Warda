@@ -110,16 +110,16 @@
 /* Hero Visual */
 .warda-hero__visual {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   position: relative;
+  margin-right: -1.5rem;
 }
 
 .warda-hero__img-frame {
   position: relative;
-  max-width: 680px;
   width: 100%;
-  border-radius: 4px;
+  border-radius: 4px 0 0 4px;
   overflow: hidden;
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8);
 }
@@ -520,13 +520,20 @@
   .warda-hero__content {
     align-items: center;
   }
-  .warda-hero__img-frame {
-    max-width: 680px;
-    margin: 0 auto;
-  }
-
   .warda-bestsellers__grid {
     gap: 1.25rem;
+  }
+}
+
+@media screen and (min-width: 1220px) {
+  .warda-hero__visual {
+    margin-right: calc((1220px - 100vw) / 2);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .warda-hero__visual {
+    margin-right: -1rem;
   }
 }
 
