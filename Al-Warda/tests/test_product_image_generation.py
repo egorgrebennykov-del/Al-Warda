@@ -316,6 +316,46 @@ class ProductImageGenerationTests(unittest.TestCase):
             self.assertFalse((path / ("a" * 64 + ".png")).exists())
             self.assertTrue((path / ("b" * 64 + ".png")).exists())
 
+    def test_selected_delete_requeues_only_matching_image(self):
+        image = "/assets/img/generated-products/" + "a" * 64 + ".png"
+        row = {"id": 7, "image": image, "info": {
+            "rawImage": "https://img.qogita.com/source.jpg",
+            "imageGeneration": {"status": "completed", "imageUrl": image},
+        }}
+        with patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+             patch.object(queue, "patch_stock") as update:
+            queue.delete_selected_images(object(), "https://db.example", [{"id": "7", "imageUrl": image}])
+            info = update.call_args.args[3]
+            self.assertEqual(info["imageGeneration"], {"status": "pending"})
+            self.assertEqual(info["retiredGeneratedImages"], [image])
+            self.assertEqual(update.call_args.kwargs["image"], "")
+            update.reset_mock()
+            with self.assertRaisesRegex(RuntimeError, "image has changed"):
+                queue.delete_selected_images(object(), "https://db.example", [{"id": 7, "imageUrl": "/assets/img/generated-products/" + "b" * 64 + ".png"}])
+            update.assert_not_called()
+
+    def test_selected_delete_validates_every_item_before_writing(self):
+        image = "/assets/img/generated-products/" + "a" * 64 + ".png"
+        row = {"id": 7, "image": image, "info": {"imageGeneration": {"status": "completed", "imageUrl": image}}}
+        with patch.object(queue, "fetch_stock_rows", return_value=[row]), \
+             patch.object(queue, "patch_stock") as update:
+            with self.assertRaises(ValueError):
+                queue.delete_selected_images(object(), "https://db.example", [
+                    {"id": 7, "imageUrl": image}, {"id": 8, "imageUrl": "/invalid"},
+                ])
+            update.assert_not_called()
+
+    def test_conditional_delete_detects_concurrent_changes(self):
+        row = {"id": 7, "image": "/old.png", "info": {"a": 1}}
+        response = unittest.mock.Mock(ok=True)
+        response.json.return_value = []
+        session = unittest.mock.Mock()
+        session.patch.return_value = response
+        with self.assertRaisesRegex(RuntimeError, "changed during deletion"):
+            queue.patch_stock(session, "https://db.example", row, {}, image="", only_if_unchanged=True)
+        self.assertEqual(session.patch.call_args.kwargs["params"]["info"], 'eq.{"a":1}')
+        self.assertEqual(session.patch.call_args.kwargs["params"]["image"], "eq./old.png")
+
     def test_invalid_non_qogita_sources_are_not_queued(self):
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://example.com/image.jpg"}}))
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://img.qogita.com/no-image.jpg"}}))

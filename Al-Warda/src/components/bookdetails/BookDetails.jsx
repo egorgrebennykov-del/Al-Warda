@@ -21,6 +21,7 @@ export default function BookDetails() {
   const [isAdded, setIsAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxScale, setLightboxScale] = useState(1.5);
+  const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -158,25 +159,31 @@ export default function BookDetails() {
         <div className="warda-details-grid">
           {/* MEDIA COLUMN */}
           <div className="warda-details-media">
-            <OrnateCard className="warda-details-card">
+            <div className="warda-details-card">
               <div
                 className="warda-details-img-wrap"
                 onClick={() => setIsLightboxOpen(true)}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setZoomPoint({ x: (e.clientX - rect.left) / rect.width * 100, y: (e.clientY - rect.top) / rect.height * 100 });
+                }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && setIsLightboxOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setIsLightboxOpen(true);
+                  }
+                }}
                 aria-label="Inspect perfume flacon details"
                 title={language === "ru" ? "Нажмите для полноэкранного осмотра флакона" : "Click to view full size bottle"}
               >
                 <div className="warda-details-aura" />
-                <span className="warda-details-zoom-pill">
-                  <i className="ri-fullscreen-line" />
-                  <span>{language === "ru" ? "Увеличить" : "Full View"}</span>
-                </span>
                 <img
                   src={perfume?.image}
                   alt={perfume.name}
                   className="warda-details-img"
+                  style={{ transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%` }}
                   loading="eager"
                   decoding="async"
                   onError={(e) => {
@@ -184,7 +191,7 @@ export default function BookDetails() {
                   }}
                 />
               </div>
-            </OrnateCard>
+            </div>
           </div>
 
           {/* INFO COLUMN */}

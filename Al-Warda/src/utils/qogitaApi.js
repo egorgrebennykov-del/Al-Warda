@@ -2,7 +2,25 @@
  * Frontend client for Qogita B2B wholesale API through Al-Warda backend proxy
  */
 
-async function fetchJson(url, options = {}) {
+let refreshInFlight;
+
+export async function refreshQogitaSession() {
+  if (!refreshInFlight) {
+    refreshInFlight = fetch("/api/qogita/refresh", { method: "POST", credentials: "same-origin" })
+      .then(async (response) => {
+        if (!response.ok) {
+          const data = await response.json();
+          const error = new Error(data.error || `Qogita refresh failed (${response.status})`);
+          error.status = response.status;
+          throw error;
+        }
+      })
+      .finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
+async function fetchJson(url, options = {}, retried = false) {
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -12,7 +30,7 @@ async function fetchJson(url, options = {}) {
   });
 
   const text = await res.text();
-  let data = null;
+  let data;
   try {
     data = JSON.parse(text);
   } catch {
@@ -20,6 +38,10 @@ async function fetchJson(url, options = {}) {
   }
 
   if (!res.ok) {
+    if (res.status === 401 && !retried && url !== "/api/qogita/configure") {
+      await refreshQogitaSession();
+      return fetchJson(url, options, true);
+    }
     const errorMsg = data?.error || data?.detail || data?.message || `Request failed with status ${res.status}`;
     const error = new Error(errorMsg);
     error.status = res.status;
@@ -31,7 +53,16 @@ async function fetchJson(url, options = {}) {
 }
 
 export async function getQogitaStatus() {
-  return fetchJson("/api/qogita/status");
+  const status = await fetchJson("/api/qogita/status");
+  if (!status.isAuthenticated) {
+    try {
+      await refreshQogitaSession();
+      return fetchJson("/api/qogita/status");
+    } catch (error) {
+      console.warn("Could not renew Qogita session:", error);
+    }
+  }
+  return status;
 }
 
 export async function configureQogita({ email, password, apiUrl, webhookSecret }) {

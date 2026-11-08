@@ -33,13 +33,17 @@ async function createSession(env, payload) {
   return `${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(encrypted))}`;
 }
 
-export async function createQogitaSessionCookie(env, { token, expires, email }) {
-  const session = await createSession(env, { token, expires, email: null, accountEmail: email.trim().toLowerCase() });
-  const maxAge = Math.max(0, Math.floor((expires - Date.now()) / 1000));
-  return `${COOKIE_NAME}=${session}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
+export async function createQogitaSessionCookie(env, { token, expires, email, refreshCookie }) {
+  const payload = { token, expires, email: null, accountEmail: email.trim().toLowerCase() };
+  const refresh = refreshCookieInfo(refreshCookie);
+  if (refresh) {
+    payload.refreshToken = refresh.token;
+    payload.refreshExpires = refresh.expires;
+  }
+  return sessionCookie(env, payload);
 }
 
-export async function readQogitaSession(request, env) {
+export async function readQogitaSession(request, env, { allowExpired = false } = {}) {
   const cookie = (request.headers.get("cookie") || "").split(";").map(item => item.trim())
     .find(item => item.startsWith(`${COOKIE_NAME}=`))?.slice(COOKIE_NAME.length + 1);
   if (!cookie) return null;
@@ -49,11 +53,27 @@ export async function readQogitaSession(request, env) {
     if (!iv || !encrypted || extra) return null;
     const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(iv) }, key, base64ToBytes(encrypted));
     const session = JSON.parse(decoder.decode(plaintext));
-    if (typeof session.token !== "string" || typeof session.expires !== "number" || session.expires <= Date.now()) return null;
+    if (typeof session.token !== "string" || typeof session.expires !== "number" ||
+        (!allowExpired && session.expires <= Date.now())) return null;
     return session;
   } catch {
     return null;
   }
+}
+
+function refreshCookieInfo(cookie) {
+  if (typeof cookie !== "string") return null;
+  const token = cookie.match(/^Refresh-Token=([^;]+)/)?.[1];
+  const maxAge = Number(cookie.match(/(?:^|;)\s*Max-Age=(\d+)/i)?.[1]);
+  if (!token || !Number.isSafeInteger(maxAge) || maxAge <= 0) return null;
+  return { token, expires: Date.now() + maxAge * 1000 };
+}
+
+async function sessionCookie(env, payload) {
+  const session = await createSession(env, payload);
+  const expires = payload.refreshExpires || payload.expires;
+  const maxAge = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+  return `${COOKIE_NAME}=${session}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
 }
 
 function checkOrigin(request) {
@@ -75,11 +95,43 @@ export async function handleQogitaWorker(request, env) {
       }
       const client = new QogitaClient({ apiUrl: "https://api.qogita.com", email: body.email.trim(), password: body.password, useEnvironmentCredentials: false });
       await client.login();
-      const session = await createSession(env, { token: client.accessToken, expires: client.tokenExpiresAt, email: client.getStatus().email, accountEmail: body.email.trim().toLowerCase() });
-      const maxAge = Math.max(0, Math.floor((client.tokenExpiresAt - Date.now()) / 1000));
+      const refresh = refreshCookieInfo(client.refreshCookie);
+      const session = { token: client.accessToken, expires: client.tokenExpiresAt, email: client.getStatus().email, accountEmail: body.email.trim().toLowerCase() };
+      if (refresh) {
+        session.refreshToken = refresh.token;
+        session.refreshExpires = refresh.expires;
+      }
       return json({ success: true, status: { ...client.getStatus(), isConfigured: true } }, 200, {
-        "Set-Cookie": `${COOKIE_NAME}=${session}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`,
+        "Set-Cookie": await sessionCookie(env, session),
       });
+    }
+
+    if (method === "POST" && path === "/api/qogita/refresh") {
+      const previous = await readQogitaSession(request, env, { allowExpired: true });
+      if (!previous || typeof previous.refreshToken !== "string" || !previous.refreshToken ||
+          !Number.isFinite(previous.refreshExpires) || previous.refreshExpires <= Date.now()) {
+        return json({ error: "Sign in to Qogita in the connection settings" }, 401);
+      }
+      if (previous.expires > Date.now() + 60000) return json({ success: true });
+      const response = await fetch("https://api.qogita.com/auth/refresh/?rotate=false", {
+        method: "POST",
+        headers: { Cookie: `Refresh-Token=${previous.refreshToken}` },
+      });
+      if (!response.ok) return json({ error: `Qogita session refresh failed (${response.status}); sign in again` }, response.status === 401 || response.status === 403 ? 401 : 502);
+      const data = await response.json();
+      const expires = Number(data.accessExp || data.access_exp);
+      if (typeof data.accessToken !== "string" || !Number.isFinite(expires) || expires <= Date.now() + 60000) {
+        throw new Error("Qogita returned an invalid refreshed session");
+      }
+      const renewed = { ...previous, token: data.accessToken, expires: expires - 60000 };
+      const cookies = typeof response.headers.getSetCookie === "function"
+        ? response.headers.getSetCookie() : [response.headers.get("set-cookie") || ""];
+      const refresh = refreshCookieInfo(cookies.find((cookie) => cookie.startsWith("Refresh-Token=")));
+      if (refresh) {
+        renewed.refreshToken = refresh.token;
+        renewed.refreshExpires = refresh.expires;
+      }
+      return json({ success: true }, 200, { "Set-Cookie": await sessionCookie(env, renewed) });
     }
 
     const session = await readQogitaSession(request, env);

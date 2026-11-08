@@ -160,14 +160,20 @@ def fetch_stock_rows(session, supabase_url):
     return rows
 
 
-def patch_stock(session, supabase_url, row, info, image=None):
+def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=False):
     fields = {"info": info}
     if image is not None:
         fields["image"] = image
+    params = {"id": f"eq.{row['id']}"}
+    if only_if_unchanged:
+        original_info = row.get("info")
+        original_image = row.get("image")
+        params["info"] = "is.null" if original_info is None else "eq." + json.dumps(original_info, separators=(",", ":"), ensure_ascii=False)
+        params["image"] = "is.null" if original_image is None else f"eq.{original_image}"
     response = session.patch(
         f"{supabase_url}/rest/v1/stocks",
-        params={"id": f"eq.{row['id']}"},
-        headers={"Prefer": "return=minimal"},
+        params=params,
+        headers={"Prefer": "return=representation" if only_if_unchanged else "return=minimal"},
         json=fields,
         timeout=30,
     )
@@ -176,6 +182,8 @@ def patch_stock(session, supabase_url, row, info, image=None):
             f"Could not update stock {row['id']} ({response.status_code}): "
             f"{response.text[:400]}"
         )
+    if only_if_unchanged and not response.json():
+        raise RuntimeError(f"Stock {row['id']} changed during deletion; refresh the list")
 
 
 def generate_product_edit(session, account_id, api_token, source_bytes):
@@ -536,6 +544,49 @@ def cleanup_replaced_images(session, supabase_url):
             print(f"REMOVED retired image: {image_url}", flush=True)
 
 
+def delete_selected_images(session, supabase_url, selected):
+    if not isinstance(selected, list) or not 1 <= len(selected) <= 100:
+        raise ValueError("Select between 1 and 100 images")
+    seen = set()
+    for item in selected:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid selected image")
+        identifier, image_url = str(item.get("id", "")), item.get("imageUrl")
+        if not identifier.isdigit() or identifier in seen or not isinstance(image_url, str) or not re.fullmatch(
+            r"/assets/img/generated-products/[a-f0-9]{64}\.png", image_url
+        ):
+            raise ValueError("Invalid selected product or image URL")
+        seen.add(identifier)
+    rows = {str(row["id"]): row for row in fetch_stock_rows(session, supabase_url)}
+    errors = []
+    for item in selected:
+        identifier, image_url = str(item["id"]), item["imageUrl"]
+        row = rows.get(identifier)
+        if not row:
+            errors.append(f"{identifier}: product no longer exists")
+            continue
+        info = dict(row.get("info") or {})
+        job = info.get("imageGeneration") or {}
+        if job.get("status") != "completed" or (job.get("imageUrl") or row.get("image")) != image_url:
+            errors.append(f"{identifier}: image has changed; refresh the list")
+            continue
+        retired = info.get("retiredGeneratedImages")
+        retired = list(retired) if isinstance(retired, list) else []
+        if image_url not in retired:
+            retired.append(image_url)
+        info["retiredGeneratedImages"] = retired
+        info["imageGeneration"] = {"status": "pending"}
+        info.pop("imageGenerationReplacement", None)
+        try:
+            patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=True)
+        except RuntimeError as error:
+            errors.append(f"{identifier}: {error}")
+            continue
+        print(f"QUEUED {identifier}: image removed", flush=True)
+    if errors:
+        raise RuntimeError("Some images were not deleted: " + "; ".join(errors))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -544,14 +595,17 @@ def main():
     )
     parser.add_argument("--publish-only", action="store_true")
     parser.add_argument("--cleanup-replaced", action="store_true")
+    parser.add_argument("--delete-selected", action="store_true")
     parser.add_argument("--regenerate-completed", action="store_true",
                         help="Replace completed images made with an older model")
     args = parser.parse_args()
-    if args.publish_only or args.cleanup_replaced:
+    if args.publish_only or args.cleanup_replaced or args.delete_selected:
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
         if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
             raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
-        if args.cleanup_replaced:
+        if args.delete_selected:
+            delete_selected_images(make_session(), supabase_url, json.loads(os.environ["SELECTED_IMAGES"]))
+        elif args.cleanup_replaced:
             cleanup_replaced_images(make_session(), supabase_url)
         else:
             publish_generated_images(

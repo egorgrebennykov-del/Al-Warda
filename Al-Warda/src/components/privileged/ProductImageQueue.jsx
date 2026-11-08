@@ -1,5 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { refreshQogitaSession } from "../../utils/qogitaApi";
+import { useConfirm } from "../../context/ConfirmContext";
 import "./ProductImageQueue.css";
+
+async function fetchActions(options = {}) {
+  let response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
+  if (response.status === 401 && response.headers.get("content-type")?.includes("application/json")) {
+    const first = await response.clone().json();
+    if (first.code === "QOGITA_OWNER_SESSION_REQUIRED") {
+      try {
+        await refreshQogitaSession();
+      } catch (error) {
+        if (error.status !== 401) throw error;
+        return response;
+      }
+      response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
+    }
+  }
+  return response;
+}
 
 export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const isRussian = language === "ru";
@@ -10,12 +29,17 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [account, setAccount] = useState("primary");
   const [regenerateCompleted, setRegenerateCompleted] = useState(false);
   const [runs, setRuns] = useState([]);
+  const [deletions, setDeletions] = useState([]);
+  const deletionRequestedAt = useRef(null);
+  const [deletionPending, setDeletionPending] = useState(false);
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [runsLoaded, setRunsLoaded] = useState(false);
   const [needsQogita, setNeedsQogita] = useState(false);
   const [visibleImages, setVisibleImages] = useState(24);
+  const [selectedImages, setSelectedImages] = useState({});
+  const confirm = useConfirm();
 
   const actionErrorMessage = useCallback((payload, response) => {
     if (payload.code === "QOGITA_OWNER_SESSION_REQUIRED" ||
@@ -31,29 +55,44 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
 
   const loadRuns = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin" });
+      const response = await fetchActions();
       if (!response.headers.get("content-type")?.includes("application/json")) {
         throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
       }
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
       setRuns(payload.runs);
+      setDeletions(payload.deletions);
       setActionError("");
       setNeedsQogita(false);
       setRunsLoaded(true);
+      const requested = deletionRequestedAt.current && payload.deletions.find(
+        (run) => Date.parse(run.createdAt) >= deletionRequestedAt.current - 5000,
+      );
+      if (requested?.status === "completed") {
+        deletionRequestedAt.current = null;
+        setDeletionPending(false);
+        if (requested.conclusion !== "success") {
+          setActionError(isRussian
+            ? "Удаление завершилось с ошибкой. Откройте журнал GitHub Actions; часть изображений могла быть удалена."
+            : "Deletion failed. Check the GitHub Actions log; some images may have been deleted.");
+        } else {
+          setActionMessage(isRussian ? "Удаление изображений завершено." : "Image deletion completed.");
+        }
+      }
     } catch (err) {
       setRuns([]);
       setRunsLoaded(false);
       setActionError(err.message);
     }
-  }, [actionErrorMessage]);
+  }, [actionErrorMessage, isRussian]);
 
   const runAction = async (action) => {
     setBusy(true);
     setActionError("");
     setActionMessage("");
     try {
-      const response = await fetch("/api/admin/product-images/actions", {
+      const response = await fetchActions({
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -94,6 +133,10 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
       setStatus(payload);
+      setSelectedImages((current) => Object.fromEntries(
+        Object.entries(current).filter(([id, imageUrl]) =>
+          payload.images.some((image) => String(image.id) === id && image.imageUrl === imageUrl)),
+      ));
       setError("");
     } catch (loadError) {
       setStatus(null);
@@ -102,6 +145,43 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       setLoading(false);
     }
   }, [isRussian]);
+
+  const deleteImages = async () => {
+    const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({ id, imageUrl }));
+    if (!images.length || images.length > 100) return;
+    const approved = await confirm({
+      title: isRussian ? "Удалить изображения" : "Delete images",
+      message: isRussian
+        ? `Удалить ${images.length} фото? Товары исчезнут из каталога и вернутся в очередь генерации.`
+        : `Delete ${images.length} images? The products will leave the catalog and return to the generation queue.`,
+    });
+    if (!approved) return;
+    setBusy(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetchActions({
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", images }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(actionErrorMessage(payload, response));
+      deletionRequestedAt.current = Date.now();
+      setDeletionPending(true);
+      setSelectedImages({});
+      setActionMessage(isRussian
+        ? "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
+        : "Deletion queued in GitHub Actions. The list will update after it runs.");
+      await loadStatus();
+      await loadRuns();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     const initialLoad = window.setTimeout(loadStatus, 0);
@@ -116,6 +196,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     };
   }, [loadStatus, loadRuns]);
 
+  const deleting = deletionPending || deletions.some((run) => run.status !== "completed");
   const progress = status?.total
     ? Math.min(100, Math.round((status.completed / status.total) * 100))
     : 0;
@@ -158,7 +239,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
             <option value="secondary">{isRussian ? "Второй" : "Secondary"}</option>
           </select>
         </label>
-        <button type="button" className="product-image-queue__start" disabled={busy || !runsLoaded || runs.length > 0 || !Number.isInteger(Number(count)) || Number(count) < 1 || Number(count) > 100000} onClick={() => runAction("start")}>
+        <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || !Number.isInteger(Number(count)) || Number(count) < 1 || Number(count) > 100000} onClick={() => runAction("start")}>
           {isRussian ? "Запустить" : "Start"}
         </button>
         <button type="button" className="product-image-queue__start" disabled={busy || !runsLoaded || !runs.length} onClick={() => runAction("stop")}>
@@ -171,6 +252,12 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       </div>}
       {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
       {runs.map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">GitHub Actions: {run.status}</a>)}
+      {deletions.slice(0, 1).map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">
+        {isRussian ? "Удаление фото" : "Image deletion"}: {run.status === "completed" ? run.conclusion : run.status}
+        {run.status === "completed" && run.conclusion !== "success"
+          ? (isRussian ? " — возможен частичный результат, проверьте журнал" : " — partial results possible, check the log")
+          : ""}
+      </a>)}
       {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{error}</div>}
       {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
 
@@ -211,9 +298,32 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         <h3 id="generated-images-heading">{isRussian ? "Готовые изображения" : "Generated images"}</h3>
         <p>{isRussian ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе." : "Newest first. Publication completion time is shown in your time zone."}</p>
         {status.images.length === 0 ? <p>{isRussian ? "Готовых изображений пока нет." : "No completed images yet."}</p> : <>
+          <div className="product-image-queue__gallery-actions">
+            <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || Object.keys(selectedImages).length === 0} onClick={deleteImages}>
+              {isRussian ? "Удалить выбранные" : "Delete selected"} ({Object.keys(selectedImages).length})
+            </button>
+            <a href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-delete.yml" target="_blank" rel="noopener noreferrer">
+              {isRussian ? "Статус удаления" : "Deletion status"}
+            </a>
+          </div>
+          <p>{isRussian ? "Можно удалить до 100 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления." : "Delete up to 100 site-hosted images at a time. Wait for generation or the previous deletion to finish."}</p>
           <div className="product-image-queue__gallery-grid">
             {status.images.slice(0, visibleImages).map((image) => (
               <article className="product-image-queue__gallery-item" key={image.id}>
+                <label>
+                  <input type="checkbox" checked={selectedImages[image.id] === image.imageUrl}
+                    disabled={!/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl) || (!selectedImages[image.id] && Object.keys(selectedImages).length >= 100)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSelectedImages((current) => {
+                        const next = { ...current };
+                        if (checked) next[image.id] = image.imageUrl;
+                        else delete next[image.id];
+                        return next;
+                      });
+                    }} />
+                  {isRussian ? "Выбрать" : "Select"}
+                </label>
                 <a href={image.imageUrl} target="_blank" rel="noopener noreferrer">
                   <img src={image.imageUrl} alt={image.name || (isRussian ? "Изображение товара" : "Product image")} loading="lazy" />
                 </a>

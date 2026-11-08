@@ -70,6 +70,19 @@ Supabase Storage remain supported.
    The page also lists completed images, newest publication completion first.
    Times are displayed in the browser's local time zone; older records without a
    valid completion timestamp appear last with their time marked unavailable.
+   Select up to 100 repository-hosted images to delete them. The deletion
+   workflow checks that each selected image is still current, hides the product
+   until regeneration, and returns it to the queue. It removes unreferenced
+   generated files in a separate commit. Other storage locations cannot be
+   selected for deletion in the page. Wait for generation or another deletion
+   to finish before submitting a deletion. If a batch fails, inspect its Actions
+   log: unchanged selections may already have been deleted, while changed
+   products are left untouched.
+
+Qogita sessions use the provider's refresh cookie, encrypted in an HttpOnly
+site cookie. Refresh is attempted when needed; Qogita can expire or revoke the
+refresh token, in which case the owner must sign in again. Existing sessions
+created before this feature must sign in once to receive a refresh token.
 
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.

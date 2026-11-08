@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { handleQogitaWorker } from "../server/qogitaWorker.js";
+import { createQogitaSessionCookie, handleQogitaWorker } from "../server/qogitaWorker.js";
 import worker from "../server/worker.js";
 
 const originalFetch = globalThis.fetch;
@@ -54,6 +54,65 @@ test("Qogita login encrypts session and forwards authorized cart requests", asyn
   assert.equal(cart.status, 200);
   assert.deepEqual(await cart.json(), { cart: { itemsCount: 0 }, allocations: [], totalAllocations: 0 });
   assert.equal(upstreamCalls, 3);
+});
+
+test("Qogita refresh renews an expired access token using an encrypted refresh cookie", async () => {
+  let now = Date.now();
+  const originalNow = Date.now;
+  Date.now = () => now;
+  try {
+    globalThis.fetch = async (url, options) => {
+      if (url.endsWith("/auth/login/")) {
+        return Response.json({ accessToken: "access-one", accessExp: now + 180000 }, {
+          headers: { "Set-Cookie": "Refresh-Token=secret-refresh; Max-Age=604800; Path=/; HttpOnly" },
+        });
+      }
+      assert.equal(url, "https://api.qogita.com/auth/refresh/?rotate=false");
+      assert.equal(options.headers.Cookie, "Refresh-Token=secret-refresh");
+      return Response.json({ accessToken: "access-two", accessExp: now + 300000 }, {
+        headers: { "Set-Cookie": "Refresh-Token=secret-refresh; Max-Age=604800; Path=/; HttpOnly" },
+      });
+    };
+    const login = await handleQogitaWorker(new Request(`${origin}/api/qogita/configure`, {
+      method: "POST", headers: { origin, "content-type": "application/json" },
+      body: JSON.stringify({ email: "buyer@example.test", password: "example" }),
+    }), env);
+    const cookie = login.headers.get("set-cookie");
+    assert.ok(!cookie.includes("secret-refresh"));
+    now += 121000;
+    const refreshed = await handleQogitaWorker(new Request(`${origin}/api/qogita/refresh`, {
+      method: "POST", headers: { origin, cookie },
+    }), env);
+    assert.equal(refreshed.status, 200);
+    const newCookie = refreshed.headers.get("set-cookie");
+    assert.ok(!newCookie.includes("secret-refresh"));
+    const status = await handleQogitaWorker(new Request(`${origin}/api/qogita/status`, { headers: { cookie: newCookie } }), env);
+    assert.equal((await status.json()).isAuthenticated, true);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
+test("local session cookies refresh and reject revoked or unavailable refresh tokens", async () => {
+  const cookie = await createQogitaSessionCookie(env, {
+    token: "expired", expires: Date.now() - 1000, email: "buyer@example.test",
+    refreshCookie: "Refresh-Token=revoked; Max-Age=100; Path=/; HttpOnly",
+  });
+  let requests = 0;
+  globalThis.fetch = async () => {
+    requests++;
+    return Response.json({ error: "revoked" }, { status: 401 });
+  };
+  const request = (value) => new Request(`${origin}/api/qogita/refresh`, {
+    method: "POST", headers: { origin, cookie: value },
+  });
+  assert.equal((await handleQogitaWorker(request(cookie), env)).status, 401);
+  assert.equal(requests, 1);
+  const missing = await createQogitaSessionCookie(env, {
+    token: "expired", expires: Date.now() - 1000, email: "buyer@example.test",
+  });
+  assert.equal((await handleQogitaWorker(request(missing), env)).status, 401);
+  assert.equal(requests, 1);
 });
 
 test("catalog export is restricted to the configured Qogita account", async () => {

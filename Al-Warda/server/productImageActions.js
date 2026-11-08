@@ -3,6 +3,8 @@ import { requirePrivilegedUser } from "./productImageQueueAdmin.js";
 
 const API = "https://api.github.com/repos/egorgrebennykov-del/Al-Warda";
 const WORKFLOW = "product-image-generation.yml";
+const DELETE_WORKFLOW = "product-image-delete.yml";
+const ACTIVE_STATUSES = new Set(["queued", "in_progress", "requested", "waiting", "pending"]);
 
 function json(body, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -42,6 +44,12 @@ async function activeRuns(env) {
   return runs;
 }
 
+async function deletionRuns(env) {
+  const data = await github(env, `/actions/workflows/${DELETE_WORKFLOW}/runs?branch=main&per_page=10`);
+  if (!Array.isArray(data?.workflow_runs)) throw new Error("Invalid GitHub Actions deletion response");
+  return data.workflow_runs;
+}
+
 export async function handleProductImageActions(request, env) {
   const url = new URL(request.url);
   if (request.method !== "GET" && request.headers.get("origin") !== url.origin) {
@@ -58,8 +66,12 @@ export async function handleProductImageActions(request, env) {
     }
 
     if (request.method === "GET") {
-      const runs = await activeRuns(env);
-      return json({ runs: runs.map(({ id, status, html_url }) => ({ id, status, url: html_url })) });
+      const [runs, deletions] = await Promise.all([activeRuns(env), deletionRuns(env)]);
+      return json({
+        runs: runs.map(({ id, status, html_url }) => ({ id, status, url: html_url })),
+        deletions: deletions.map(({ id, status, conclusion, html_url, created_at }) =>
+          ({ id, status, conclusion, url: html_url, createdAt: created_at })),
+      });
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
     let body;
@@ -78,6 +90,9 @@ export async function handleProductImageActions(request, env) {
       if (!["primary", "secondary"].includes(body.account)) return json({ error: "Invalid Cloudflare account" }, 400);
       if (typeof body.regenerateCompleted !== "boolean") return json({ error: "Invalid regeneration option" }, 400);
       if ((await activeRuns(env)).length) return json({ error: "An image generation run is already active" }, 409);
+      if ((await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
+        return json({ error: "Image deletion is already running; wait for it to finish" }, 409);
+      }
       await github(env, `/actions/workflows/${WORKFLOW}/dispatches`, {
         method: "POST",
         body: JSON.stringify({ ref: "main", inputs: { max_images: String(count), cloudflare_account: body.account, regenerate_completed: String(body.regenerateCompleted) } }),
@@ -89,6 +104,25 @@ export async function handleProductImageActions(request, env) {
       if (!runs.length) return json({ error: "No active image generation run" }, 409);
       for (const run of runs) await github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" });
       return json({ message: "Cancellation requested", count: runs.length }, 202);
+    }
+    if (body.action === "delete") {
+      if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 100 ||
+          body.images.some((item) => !item || !/^\d+$/.test(String(item.id)) ||
+            typeof item.imageUrl !== "string" ||
+            !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(item.imageUrl))) {
+        return json({ error: "Select between 1 and 100 repository-generated images" }, 400);
+      }
+      if (new Set(body.images.map((item) => String(item.id))).size !== body.images.length) {
+        return json({ error: "Duplicate product IDs are not allowed" }, 400);
+      }
+      if ((await activeRuns(env)).length || (await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
+        return json({ error: "Image generation or deletion is already running; wait for it to finish" }, 409);
+      }
+      await github(env, `/actions/workflows/${DELETE_WORKFLOW}/dispatches`, {
+        method: "POST",
+        body: JSON.stringify({ ref: "main", inputs: { images: JSON.stringify(body.images) } }),
+      });
+      return json({ message: "Image deletion queued" }, 202);
     }
     return json({ error: "Unknown action" }, 400);
   } catch (error) {

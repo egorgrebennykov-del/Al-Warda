@@ -27,7 +27,7 @@ import {
   getProductImageQueueStatus,
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
-import { createQogitaSessionCookie } from "./qogitaWorker.js";
+import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -238,6 +238,19 @@ const server = createServer(async (req, res) => {
   // Qogita B2B Wholesale API
   // -------------------------------------------------------------
 
+  if (req.method === "POST" && pathname === "/api/qogita/refresh") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await handleQogitaWorker(request, process.env);
+      const cookie = response.headers.get("set-cookie");
+      if (cookie) res.setHeader("Set-Cookie", cookie);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
   // Status & credentials check
   if (req.method === "GET" && pathname === "/api/qogita/status") {
     try {
@@ -349,6 +362,7 @@ const server = createServer(async (req, res) => {
           token: verifiedClient.accessToken,
           expires: verifiedClient.tokenExpiresAt,
           email: verifiedClient.email,
+          refreshCookie: verifiedClient.refreshCookie,
         });
         res.setHeader("Set-Cookie", cookie);
       } else {

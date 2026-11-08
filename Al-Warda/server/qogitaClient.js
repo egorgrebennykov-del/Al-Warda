@@ -14,6 +14,7 @@ export class QogitaClient {
     this.webhookSecret = options.webhookSecret || process.env.QOGITA_WEBHOOK_SECRET || "";
     this.accessToken = options.accessToken || null;
     this.tokenExpiresAt = options.tokenExpiresAt || 0;
+    this.refreshCookie = null;
   }
 
   setCredentials(email, password, apiUrl = null) {
@@ -81,6 +82,9 @@ export class QogitaClient {
     }
 
     const data = await res.json();
+    const cookies = typeof res.headers.getSetCookie === "function"
+      ? res.headers.getSetCookie() : [res.headers.get("set-cookie") || ""];
+    this.refreshCookie = cookies.find((cookie) => cookie.startsWith("Refresh-Token=")) || null;
     this.accessToken = data.accessToken || data.access_token;
     if (!this.accessToken) throw new Error("Qogita login response did not contain an access token");
     const expires = Number(data.accessExp || data.access_exp);
@@ -140,7 +144,7 @@ export class QogitaClient {
 
     const contentType = res.headers.get("content-type") || "";
     const responseText = await res.text();
-    let responseData = null;
+    let responseData;
     if (contentType.includes("application/json") || responseText.startsWith("{") || responseText.startsWith("[")) {
       try {
         responseData = JSON.parse(responseText);
