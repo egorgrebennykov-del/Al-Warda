@@ -32,6 +32,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [deletions, setDeletions] = useState([]);
   const deletionRequestedAt = useRef(null);
   const [deletionPending, setDeletionPending] = useState(false);
+  const [deletionSubmitting, setDeletionSubmitting] = useState(false);
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -161,6 +162,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     });
     if (!approved) return;
     setBusy(true);
+    setDeletionSubmitting(true);
     setActionError("");
     setActionMessage("");
     try {
@@ -183,6 +185,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     } catch (err) {
       setActionError(err.message);
     } finally {
+      setDeletionSubmitting(false);
       setBusy(false);
     }
   };
@@ -200,7 +203,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     };
   }, [loadStatus, loadRuns]);
 
-  const deleting = deletionPending || deletions.some((run) => run.status !== "completed");
+  const deleting = deletionSubmitting || deletionPending || deletions.some((run) => run.status !== "completed");
   const selectableImages = (status?.images || []).filter(
     (image) => /^\d{1,20}$/.test(String(image.id)) && /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl),
   );
@@ -260,6 +263,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         {needsQogita && onOpenQogita && <button type="button" onClick={onOpenQogita}>{isRussian ? "Открыть Qogita B2B" : "Open Qogita B2B"}</button>}
       </div>}
       {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
+      {deleting && <div className="product-image-queue__deleting" role="status" aria-live="polite">
+        <span className="product-image-queue__spinner" aria-hidden="true" />
+        <span>
+          <strong>{isRussian ? "Удаление фотографий запущено" : "Image deletion in progress"}</strong>
+          <span>{isRussian ? "Задача выполняется в GitHub Actions. Дождитесь завершения." : "The GitHub Actions job is running or queued. Please wait for it to finish."}</span>
+        </span>
+      </div>}
       {runs.map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">GitHub Actions: {run.status}</a>)}
       {deletions.slice(0, 1).map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">
         {isRussian ? "Удаление фото" : "Image deletion"}: {run.status === "completed" ? run.conclusion : run.status}

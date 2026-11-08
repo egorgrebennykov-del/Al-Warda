@@ -161,19 +161,34 @@ def fetch_stock_rows(session, supabase_url):
 
 
 def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=False):
+    if only_if_unchanged:
+        response = session.post(
+            f"{supabase_url}/rest/v1/rpc/update_stock_image_if_unchanged",
+            json={
+                "p_id": str(row["id"]),
+                "p_expected_info": row.get("info"),
+                "p_expected_image": row.get("image"),
+                "p_info": info,
+                "p_image": image,
+            },
+            timeout=30,
+        )
+        if not response.ok:
+            raise RuntimeError(
+                f"Could not update stock {row['id']} ({response.status_code}): "
+                f"{response.text[:400]}"
+            )
+        if response.json() is not True:
+            raise RuntimeError(f"Stock {row['id']} changed during deletion; refresh the list")
+        return
     fields = {"info": info}
     if image is not None:
         fields["image"] = image
     params = {"id": f"eq.{row['id']}"}
-    if only_if_unchanged:
-        original_info = row.get("info")
-        original_image = row.get("image")
-        params["info"] = "is.null" if original_info is None else "eq." + json.dumps(original_info, separators=(",", ":"), ensure_ascii=False)
-        params["image"] = "is.null" if original_image is None else f"eq.{original_image}"
     response = session.patch(
         f"{supabase_url}/rest/v1/stocks",
         params=params,
-        headers={"Prefer": "return=representation" if only_if_unchanged else "return=minimal"},
+        headers={"Prefer": "return=minimal"},
         json=fields,
         timeout=30,
     )
@@ -182,8 +197,6 @@ def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=
             f"Could not update stock {row['id']} ({response.status_code}): "
             f"{response.text[:400]}"
         )
-    if only_if_unchanged and not response.json():
-        raise RuntimeError(f"Stock {row['id']} changed during deletion; refresh the list")
 
 
 def generate_product_edit(session, account_id, api_token, source_bytes):

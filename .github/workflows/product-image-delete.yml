@@ -17,14 +17,14 @@ concurrency:
 
 jobs:
   delete:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       SUPABASE_URL: https://mfvenfrmlkxqgvdtedet.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         id: checkout
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip

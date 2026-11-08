@@ -348,13 +348,16 @@ class ProductImageGenerationTests(unittest.TestCase):
     def test_conditional_delete_detects_concurrent_changes(self):
         row = {"id": 7, "image": "/old.png", "info": {"a": 1}}
         response = unittest.mock.Mock(ok=True)
-        response.json.return_value = []
+        response.json.return_value = False
         session = unittest.mock.Mock()
-        session.patch.return_value = response
+        session.post.return_value = response
         with self.assertRaisesRegex(RuntimeError, "changed during deletion"):
             queue.patch_stock(session, "https://db.example", row, {}, image="", only_if_unchanged=True)
-        self.assertEqual(session.patch.call_args.kwargs["params"]["info"], 'eq.{"a":1}')
-        self.assertEqual(session.patch.call_args.kwargs["params"]["image"], "eq./old.png")
+        self.assertEqual(session.post.call_args.kwargs["json"]["p_expected_info"], {"a": 1})
+        self.assertEqual(session.post.call_args.kwargs["json"]["p_expected_image"], "/old.png")
+        response.json.return_value = True
+        queue.patch_stock(session, "https://db.example", row, {}, image="", only_if_unchanged=True)
+        session.patch.assert_not_called()
 
     def test_invalid_non_qogita_sources_are_not_queued(self):
         self.assertIsNone(queue.product_source({"info": {"rawImage": "https://example.com/image.jpg"}}))

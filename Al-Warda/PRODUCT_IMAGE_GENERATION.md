@@ -79,6 +79,10 @@ Supabase Storage remain supported.
    to finish before submitting a deletion. If a batch fails, inspect its Actions
    log: unchanged selections may already have been deleted, while changed
    products are left untouched.
+   The deletion workflow requires the service-role-only
+   `update_stock_image_if_unchanged` function from
+   [conditional_image_delete.sql](scripts/sql/conditional_image_delete.sql).
+   Apply it in the Supabase SQL editor before deploying the workflow.
 
 Qogita sessions use the provider's refresh cookie, encrypted in an HttpOnly
 site cookie. Refresh is attempted when needed; Qogita can expire or revoke the
