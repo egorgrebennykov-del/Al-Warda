@@ -1,5 +1,4 @@
 import workerEnv from "./workerEnv.js";
-import { isClaudeGenerated } from "../utils/perfumeProvenance.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import {
@@ -99,7 +98,7 @@ function completedProductPhoto(perfume) {
 }
 
 export function isReadyProduct(perfume) {
-  return isClaudeGenerated(perfume) && Boolean(completedProductPhoto(perfume));
+  return Boolean(completedProductPhoto(perfume));
 }
 
 function jsonResponse(body, status = 200) {

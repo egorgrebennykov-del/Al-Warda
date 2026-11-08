@@ -37,13 +37,32 @@ describe("perfume image readiness", () => {
         },
         {
           id: 3,
-          name: "Invalid generated path",
+          name: "Unmarked content with completed image",
           image: "https://img.qogita.com/original-invalid.jpg",
           info: {
-            contentGeneration: { provider: "template" },
             imageGeneration: {
               status: "completed",
-              imageUrl: generatedImage,
+              imageUrl: `/assets/img/generated-products/${"b".repeat(64)}.png`,
+            },
+          },
+        },
+        {
+          id: 4,
+          name: "Old template image",
+          info: {
+            imageGeneration: {
+              status: "completed",
+              imageUrl: "/assets/img/products/12345678.jpg",
+            },
+          },
+        },
+        {
+          id: 5,
+          name: "Unpublished image",
+          info: {
+            imageGeneration: {
+              status: "publishing",
+              imageUrl: `/assets/img/generated-products/${"c".repeat(64)}.png`,
             },
           },
         },
@@ -52,13 +71,15 @@ describe("perfume image readiness", () => {
 
     const perfumes = await getPerfumes({ includeDropship: false });
 
-    assert.equal(perfumes.length, 1);
+    assert.equal(perfumes.length, 2);
     assert.equal(perfumes[0].name, "AI-ready perfume");
     assert.equal(perfumes[0].image, generatedImage);
     assert.equal(perfumes[0].fullCardImage, generatedImage);
+    assert.equal(perfumes[1].name, "Unmarked content with completed image");
+    assert.equal(perfumes[1].image, `/assets/img/generated-products/${"b".repeat(64)}.png`);
   });
 
-  it("requires Claude provenance for Worker catalog readiness", () => {
+  it("requires a completed generated image regardless of content provider", () => {
     const imageGeneration = {
       status: "completed",
       imageUrl:
@@ -81,7 +102,7 @@ describe("perfume image readiness", () => {
           imageGeneration,
         },
       }),
-      false,
+      true,
     );
     assert.equal(isReadyProduct({
       info: {
@@ -99,6 +120,11 @@ describe("perfume image readiness", () => {
           status: "publishing",
           imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
         },
+      },
+    }), false);
+    assert.equal(isReadyProduct({
+      info: {
+        imageGeneration: { status: "completed", imageUrl: "/assets/img/products/12345678.jpg" },
       },
     }), false);
   });

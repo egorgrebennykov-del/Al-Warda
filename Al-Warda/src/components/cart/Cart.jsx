@@ -130,11 +130,12 @@ export default function Cart({ onSearch }) {
                   className="cart__book-link"
                   to={item.link || `/book/${item.perfume_id || "raghba"}`}
                 >
-                  <img
+                  {item.image && <img
                     className="cart__image"
-                    src={item.image || "/assets/img/template/flacon_template.jpg"}
+                    src={item.image}
                     alt={item.title || ""}
-                  />
+                    onError={(e) => { e.currentTarget.hidden = true; }}
+                  />}
                   <span className="cart__book-info">
                     <strong style={{ fontFamily: "var(--second-font)", color: "#f7ede2" }}>
                       {item.title}

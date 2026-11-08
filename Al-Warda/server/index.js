@@ -268,16 +268,6 @@ const server = createServer(async (req, res) => {
         fs.createReadStream(absPath).pipe(res);
         return;
       }
-      const templateAbs = path.resolve(__dirname, "../public/assets/img/template/flacon_template.jpg");
-      if (fs.existsSync(templateAbs)) {
-        res.writeHead(200, {
-          "Content-Type": "image/jpeg",
-          "Cache-Control": "public, max-age=86400",
-          "Access-Control-Allow-Origin": "*",
-        });
-        fs.createReadStream(templateAbs).pipe(res);
-        return;
-      }
       respond(res, 404, { error: "Product image not found" });
     } catch (err) {
       respond(res, 500, { error: err.message });

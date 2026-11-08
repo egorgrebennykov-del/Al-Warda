@@ -310,8 +310,7 @@ export default function SearchResults() {
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
+                        e.currentTarget.hidden = true;
                       }}
                     />
                     <div className="warda-perfume-card__sheen" />

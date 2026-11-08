@@ -597,8 +597,7 @@ export default function Featured() {
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/assets/img/template/flacon_template.jpg";
+                        e.currentTarget.hidden = true;
                       }}
                     />
                   </div>

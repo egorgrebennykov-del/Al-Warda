@@ -7,9 +7,8 @@ source canvas is not cropped. Final PNG files are committed to the repository
 under `public/assets/img/generated-products` and deployed as Cloudflare static
 assets; no Supabase Storage bucket is used for new images. Queue state is stored
 in the existing `stocks.info` JSON.
-Public catalog products must also have
-`info.contentGeneration.provider = "claude"`; products without that explicit
-Claude provenance are hidden. Images are marked `completed` only after their
+Public catalog products require a completed generated product image, regardless
+of the text generation provider. Images are marked `completed` only after their
 deployed bytes match the locally generated file. Existing completed images in
 Supabase Storage remain supported.
 

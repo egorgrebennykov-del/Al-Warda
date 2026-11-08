@@ -1,5 +1,4 @@
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
-import { isClaudeGenerated } from "./perfumeProvenance.js";
 import { isGeneratedProductImage } from "./generatedProductImage.js";
 
 const SUPABASE_URL =
@@ -23,7 +22,7 @@ function resolveCardImage(img, gtin, rawImage) {
   if (rawImage && /^https?:\/\//i.test(rawImage)) {
     return `/api/transparent-image?url=${encodeURIComponent(rawImage)}&v=${PRODUCT_IMAGE_VERSION}`;
   }
-  return img || "/assets/img/template/flacon_template.jpg";
+  return img || "";
 }
 
 function hasCompletedGeneratedImage(product) {
@@ -270,7 +269,6 @@ export async function fetchPerfumesFromSupabase() {
       // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders)
       const validRows = allRows.filter((r) => {
         const img = ((r.image || "") + (r.raw_image || "") + (r.info?.rawImage || "")).toLowerCase();
-        if (!isClaudeGenerated(r)) return false;
         if (
           img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
           img.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
@@ -388,7 +386,6 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       const items = rawList
         .filter(
           (p) =>
-            isClaudeGenerated(p) &&
             hasCompletedGeneratedImage(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
@@ -408,7 +405,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
         const fallbackData = await fallbackRes.json();
         const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
         const items = rawList
-          .filter((p) => isClaudeGenerated(p) && hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+          .filter((p) => hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
           .map(ensurePerfumeEnrichment);
         if (!query) memoryDropshipCache = items;
         return items;
