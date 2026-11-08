@@ -15,6 +15,7 @@ async function github(env, path, options = {}) {
     ...options,
     headers: {
       Accept: "application/vnd.github+json",
+      "User-Agent": "Al-Warda-product-image-controls",
       Authorization: `Bearer ${token}`,
       "X-GitHub-Api-Version": "2022-11-28",
       ...(options.body ? { "Content-Type": "application/json" } : {}),

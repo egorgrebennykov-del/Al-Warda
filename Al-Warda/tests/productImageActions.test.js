@@ -42,6 +42,7 @@ test("start and stop require authenticated owner and send scoped GitHub requests
   assert.equal((await handleProductImageActions(action({ action: "start", count: 0, account: "primary" }), env)).status, 400);
   assert.equal((await handleProductImageActions(action({ action: "start", count: 4, account: "secondary", regenerateCompleted: true }), env)).status, 202);
   const dispatch = calls.find((call) => call.url.endsWith("/dispatches"));
+  assert.equal(dispatch.options.headers["User-Agent"], "Al-Warda-product-image-controls");
   assert.deepEqual(JSON.parse(dispatch.options.body), { ref: "main", inputs: { max_images: "4", cloudflare_account: "secondary", regenerate_completed: "true" } });
   running = true;
   assert.equal((await handleProductImageActions(action({ action: "start", count: 2, account: "primary", regenerateCompleted: false }), env)).status, 409);
