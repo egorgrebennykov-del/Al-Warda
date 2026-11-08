@@ -380,11 +380,13 @@
   margin-top: 1.5rem;
 }
 
-/* Sibling focus pull: softly dim other slides like in categories */
-.warda-shop-grid:hover .warda-perfume-card:not(:hover) {
-  opacity: 0.42;
-  filter: brightness(0.85);
-  transform: scale(0.985);
+/* Sibling focus pull: ONLY when an actual card is hovered on desktop (never on empty grid space or mobile) */
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
+    opacity: 0.42;
+    filter: brightness(0.85);
+    transform: scale(0.985);
+  }
 }
 
 /* Card: Completely transparent without solid background */
@@ -648,6 +650,44 @@
   background: #2ecc71 !important;
   border-color: #2ecc71 !important;
   color: #fff !important;
+}
+
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  .warda-shop-grid:hover .warda-perfume-card:not(:hover),
+  .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  .warda-perfume-card,
+  .warda-perfume-card:hover,
+  .warda-perfume-card:active,
+  .warda-perfume-card:focus {
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-color: rgba(212, 175, 55, 0.2) !important;
+  }
+  .warda-perfume-card__media,
+  .warda-perfume-card:hover .warda-perfume-card__media {
+    transform: none !important;
+    transition: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__img {
+    transform: translateY(-20px) !important;
+    animation: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__aura,
+  .warda-perfume-card:hover .warda-perfume-card__sheen {
+    opacity: 0 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__title {
+    color: var(--gold-light, #e8d08d) !important;
+    text-shadow: none !important;
+  }
 }
 
 @media (max-width: 768px) {

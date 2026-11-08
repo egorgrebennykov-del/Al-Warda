@@ -116,6 +116,7 @@ export default function Search({ show, onClose }) {
   };
 
   const handleCardMouseMove = (e) => {
+    if (typeof window !== "undefined" && (window.innerWidth <= 768 || window.matchMedia("(hover: none)").matches)) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;

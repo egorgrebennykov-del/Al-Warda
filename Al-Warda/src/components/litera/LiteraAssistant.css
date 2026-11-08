@@ -247,9 +247,11 @@
   z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.55))
-          drop-shadow(0 4px 20px rgba(0, 0, 0, 0.95));
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 14px rgba(212, 175, 55, 0.45))
+          drop-shadow(0 4px 16px rgba(0, 0, 0, 0.9));
 }
 
 /* Chat Window Wrapper */
@@ -284,13 +286,13 @@
   }
 
   .litera-companion-dock__character {
-    width: 116px !important;
-    height: 116px !important;
+    width: 112px !important;
+    height: 112px !important;
   }
 
   .litera-companion-dock__name-tag {
-    padding: 4px 12px;
-    margin-top: -10px;
+    padding: 4px 14px;
+    margin-top: -14px;
   }
 
   .litera-companion-dock__name {
@@ -307,24 +309,48 @@
 }
 
 .litera-companion-dock__character-box {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 20px rgba(212, 175, 55, 0.28));
 }
 
 .litera-companion-dock__character {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2.5px solid #e5c07b;
+  background: radial-gradient(circle at 48% 35%, #3d2c18 0%, #1c140c 58%, #0d0a08 100%);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.95),
+    0 0 26px rgba(212, 175, 55, 0.42),
+    inset 0 0 18px rgba(212, 175, 55, 0.22);
+  padding: 0;
   animation: literaGentleHover 4s ease-in-out infinite;
 }
 
+.litera-companion-dock__character .litera-character__aura {
+  inset: 0;
+  border-radius: 50%;
+}
+
+.litera-companion-dock__character .litera-character__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 50%;
+  transform: scale(1.03);
+}
+
 .litera-companion-dock__name-tag {
-  background: #0d0a08;
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  padding: 6px 16px;
-  border-radius: 20px;
-  margin-top: -12px;
-  z-index: 2;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.9), 0 0 10px rgba(212, 175, 55, 0.2);
+  background: linear-gradient(180deg, #16110c 0%, #0b0806 100%);
+  border: 1.5px solid rgba(229, 192, 123, 0.65);
+  padding: 6px 18px;
+  border-radius: 999px;
+  margin-top: -18px;
+  z-index: 3;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.95), 0 0 14px rgba(212, 175, 55, 0.28);
   display: flex;
   flex-direction: column;
   align-items: center;

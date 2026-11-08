@@ -181,11 +181,52 @@
   box-sizing: border-box;
 }
 
-/* Sibling focus pull: softly dim other slides like in categories */
-.search__grid:hover .search__card:not(:hover) {
-  opacity: 0.42;
-  filter: brightness(0.85);
-  transform: scale(0.985);
+/* Sibling focus pull: ONLY when an actual card is hovered on desktop (never on empty grid space or mobile) */
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .search__grid:has(.search__card:hover) .search__card:not(:hover) {
+    opacity: 0.42;
+    filter: brightness(0.85);
+    transform: scale(0.985);
+  }
+}
+
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  .search__grid:hover .search__card:not(:hover),
+  .search__grid:has(.search__card:hover) .search__card:not(:hover) {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  .search__card,
+  .search__card:hover,
+  .search__card:active,
+  .search__card:focus {
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-color: rgba(212, 175, 55, 0.18) !important;
+  }
+  .search__card-img-wrap,
+  .search__card:hover .search__card-img-wrap {
+    transform: none !important;
+    transition: none !important;
+  }
+  .search__card:hover .search__card-img {
+    animation: none !important;
+    transform: none !important;
+  }
+  .search__card:hover .search__card-aura,
+  .search__card:hover .search__card-sheen {
+    opacity: 0 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .search__card:hover .search__card-title {
+    color: var(--gold-light, #e8d08d) !important;
+    letter-spacing: normal !important;
+    text-shadow: none !important;
+  }
 }
 
 /* Card: Completely transparent, 3D perspective, without solid background */

@@ -11,10 +11,22 @@
   overflow: visible;
 }
 
-.ornate-card:hover {
-  border-color: var(--primary-gold, #d4af37);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.15);
-  transform: translateY(-4px);
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .ornate-card:hover {
+    border-color: var(--primary-gold, #d4af37);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.15);
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  .ornate-card,
+  .ornate-card:hover,
+  .ornate-card:active {
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
 }
 
 .ornate-card__content {

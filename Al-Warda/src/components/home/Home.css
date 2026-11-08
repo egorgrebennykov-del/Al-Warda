@@ -250,11 +250,13 @@
   }
 }
 
-/* Sibling focus pull: softly dim other slides */
-.warda-categories-carousel:hover .warda-cat-slide:not(:hover) {
-  opacity: 0.42;
-  filter: brightness(0.85);
-  transform: scale(0.985);
+/* Sibling focus pull: ONLY when an actual slide is hovered on desktop (never on empty space or mobile) */
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .warda-categories-carousel:has(.warda-cat-slide:hover) .warda-cat-slide:not(:hover) {
+    opacity: 0.42;
+    filter: brightness(0.85);
+    transform: scale(0.985);
+  }
 }
 
 .warda-cat-slide:hover {
@@ -611,19 +613,33 @@
   }
 }
 
-@media (hover: none), (pointer: coarse) {
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
   .warda-cm-container { display: none; }
-  .warda-categories-carousel:hover .warda-cat-slide:not(:hover) {
-    opacity: 1;
-    filter: none;
-    transform: none;
+  .warda-categories-carousel:hover .warda-cat-slide:not(:hover),
+  .warda-categories-carousel:has(.warda-cat-slide:hover) .warda-cat-slide:not(:hover) {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
   }
-  .warda-cat-slide:hover { transform: none; }
-  .warda-cat-slide__media { transform: none; }
+  .warda-cat-slide,
+  .warda-cat-slide:hover {
+    transform: none !important;
+    transition: none !important;
+  }
+  .warda-cat-slide__media { transform: none !important; }
   .warda-cat-slide__img,
   .warda-cat-slide:hover .warda-cat-slide__img {
-    animation: none;
-    filter: none;
+    animation: none !important;
+    filter: none !important;
+  }
+  .warda-perfume-card,
+  .warda-perfume-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__img {
+    transform: translateY(-20px) translateZ(0) !important;
+    animation: none !important;
   }
   .warda-carousel-btn {
     backdrop-filter: none;

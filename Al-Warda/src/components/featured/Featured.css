@@ -410,6 +410,39 @@
   gap: 1.75rem;
 }
 
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
+    opacity: 0.42;
+    filter: brightness(0.85);
+    transform: scale(0.985);
+  }
+}
+
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  .warda-shop-grid:hover .warda-perfume-card:not(:hover),
+  .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  .warda-perfume-card,
+  .warda-perfume-card:hover,
+  .warda-perfume-card:active,
+  .warda-perfume-card:focus {
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__img {
+    animation: none !important;
+  }
+  .warda-perfume-card:hover .warda-perfume-card__aura,
+  .warda-perfume-card:hover .warda-perfume-card__sheen {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+}
+
 /* -------------------------------------------------------------
    CONTINUATION BANNER / LOAD MORE / SKELETON
    ------------------------------------------------------------- */
