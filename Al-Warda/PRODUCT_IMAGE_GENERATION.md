@@ -62,6 +62,9 @@ Supabase Storage remain supported.
    (or `regenerate_completed` when dispatching in GitHub). This mode processes
    those images instead of the pending queue. The original published image stays
    available until the replacement is deployed and its bytes are verified.
+   The page also lists completed images, newest publication completion first.
+   Times are displayed in the browser's local time zone; older records without a
+   valid completion timestamp appear last with their time marked unavailable.
 
 Never put service-role keys or Cloudflare tokens in Vite variables,
 `wrangler.jsonc`, source code, or browser storage.

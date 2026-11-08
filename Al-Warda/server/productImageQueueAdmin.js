@@ -93,7 +93,7 @@ function json(body, status = 200) {
 
 async function fetchStockPage(env, key, from, to) {
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
-  url.searchParams.set("select", "id,image,info");
+  url.searchParams.set("select", "id,name,brand,image,info");
   url.searchParams.set("order", "id.asc");
   const result = await fetch(url, {
     headers: {
@@ -145,13 +145,21 @@ export async function getProductImageQueueStatus(request, env) {
     const rows = await fetchAllStocks(env, getServiceKey(env));
     const today = new Date().toISOString().slice(0, 10);
     const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
+    const images = [];
     let eligible = 0;
     let attemptedToday = 0;
     for (const row of rows) {
       const info = row.info && typeof row.info === "object" ? row.info : {};
+      const job = info.imageGeneration || {};
+      const imageUrl = job.imageUrl || row.image;
+      if (job.status === "completed" && typeof imageUrl === "string" &&
+          (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
+        const completedAt = typeof job.completedAt === "string" && Number.isFinite(Date.parse(job.completedAt))
+          ? job.completedAt : null;
+        images.push({ id: row.id, name: row.name, brand: row.brand, imageUrl, completedAt });
+      }
       if (!hasRawImage(info)) continue;
       eligible++;
-      const job = info.imageGeneration || {};
       const status = job.status === "publishing"
         ? "processing"
         : counts[job.status] === undefined ? "pending" : job.status;
@@ -161,11 +169,14 @@ export async function getProductImageQueueStatus(request, env) {
       }
     }
 
+    images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
+      (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
     return json({
       total: eligible,
       ...counts,
       attemptedToday,
       utcDay: today,
+      images,
     });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {

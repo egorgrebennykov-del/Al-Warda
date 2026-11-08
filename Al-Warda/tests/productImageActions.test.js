@@ -55,7 +55,9 @@ test("forged user cookie alone cannot control actions", async () => {
   const request = new Request(`${origin}/api/admin/product-images/actions`, {
     headers: { cookie: `user=${encodeURIComponent(JSON.stringify({ id: "1" }))}` },
   });
-  assert.equal((await handleProductImageActions(request, env)).status, 401);
+  const response = await handleProductImageActions(request, env);
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).code, "QOGITA_OWNER_SESSION_REQUIRED");
 });
 
 test("wrong Qogita owner and missing server token are rejected", async () => {

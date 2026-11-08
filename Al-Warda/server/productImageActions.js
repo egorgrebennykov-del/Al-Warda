@@ -54,7 +54,7 @@ export async function handleProductImageActions(request, env) {
     if (!owner) return json({ error: "QOGITA_EXPORT_ACCOUNT_EMAIL is not configured on the server" }, 503);
     const session = await readQogitaSession(request, env);
     if (!session || session.accountEmail !== owner) {
-      return json({ error: "Sign in to the configured Qogita owner account in connection settings" }, 401);
+      return json({ error: "Sign in to the configured Qogita owner account in connection settings", code: "QOGITA_OWNER_SESSION_REQUIRED" }, 401);
     }
 
     if (request.method === "GET") {

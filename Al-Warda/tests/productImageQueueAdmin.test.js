@@ -85,4 +85,29 @@ describe("product image queue admin API", () => {
     assert.deepEqual(calls, ["/rest/v1/user", "/rest/v1/stocks"]);
   });
 
+  it("lists completed image records newest first, with unknown dates last", async () => {
+    globalThis.fetch = async (input) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      assert.equal(url.searchParams.get("select"), "id,name,brand,image,info");
+      return Response.json([
+        { id: 1, name: "Old", info: { imageGeneration: { status: "completed", imageUrl: "https://cdn.example/old.png", completedAt: "2025-01-01T12:00:00Z" } } },
+        { id: 2, name: "Unknown", image: "https://cdn.example/unknown.png", info: { imageGeneration: { status: "completed", completedAt: "invalid" } } },
+        { id: 3, name: "New", brand: "Brand", info: { imageGeneration: { status: "completed", imageUrl: "/assets/img/generated-products/new.png", completedAt: "2026-01-01T12:00:00Z" } } },
+        { id: 4, name: "Publishing", info: { imageGeneration: { status: "publishing", imageUrl: "https://cdn.example/pending.png" } } },
+        { id: 5, name: "Unsafe", info: { imageGeneration: { status: "completed", imageUrl: "javascript:alert(1)" } } },
+      ]);
+    };
+    const response = await getProductImageQueueStatus(
+      request("/api/admin/product-images/status", userCookie()),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+    const body = await response.json();
+    assert.deepEqual(body.images.map((image) => image.id), [3, 1, 2]);
+    assert.equal(body.images[0].name, "New");
+    assert.equal(body.images[0].brand, "Brand");
+    assert.equal(body.images[2].completedAt, null);
+  });
 });

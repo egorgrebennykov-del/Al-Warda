@@ -5342,7 +5342,7 @@ export default function Privileged() {
         )}
         {activeSection === "product-images" && (
           <div className="privileged__panel">
-            <ProductImageQueue language={language} />
+            <ProductImageQueue language={language} onOpenQogita={() => setActiveSection("qogita")} />
           </div>
         )}
       </div>
