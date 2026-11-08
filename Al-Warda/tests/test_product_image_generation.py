@@ -32,6 +32,46 @@ def image_bytes(image, format_name="PNG"):
 
 
 class ProductImageGenerationTests(unittest.TestCase):
+    def test_account_pool_switches_on_limit_and_retries_same_image(self):
+        accounts = [(f"account-{n}", f"id-{n}", f"token-{n}") for n in range(5)]
+        pool = queue.ImageAccountPool(accounts)
+        with patch.object(queue, "generate_product_edit", side_effect=[
+            queue.WorkersDailyQuotaExceeded("limit"),
+            queue.WorkersDailyQuotaExceeded("limit"),
+            b"image",
+            b"next-image",
+        ]) as generate:
+            self.assertEqual(pool.generate("session", b"source"), b"image")
+            self.assertEqual(pool.generate("session", b"next"), b"next-image")
+        self.assertEqual([call.args[1] for call in generate.call_args_list], ["id-0", "id-1", "id-2", "id-2"])
+        self.assertEqual([call.args[3] for call in generate.call_args_list], [b"source", b"source", b"source", b"next"])
+
+    def test_account_pool_reports_exhaustion_and_does_not_hide_configuration_errors(self):
+        accounts = [(f"account-{n}", f"id-{n}", f"token-{n}") for n in range(5)]
+        pool = queue.ImageAccountPool(accounts)
+        with patch.object(queue, "generate_product_edit", side_effect=queue.WorkersDailyQuotaExceeded("limit")) as generate:
+            with self.assertRaisesRegex(queue.WorkersDailyQuotaExceeded, "All selected"):
+                pool.generate("session", b"source")
+            self.assertEqual(generate.call_count, 5)
+        pool = queue.ImageAccountPool(accounts)
+        with patch.object(queue, "generate_product_edit", side_effect=queue.WorkersConfigurationError("unauthorized")) as generate:
+            with self.assertRaises(queue.WorkersConfigurationError):
+                pool.generate("session", b"source")
+            self.assertEqual(generate.call_count, 1)
+
+    def test_auto_requires_five_distinct_confirmed_accounts(self):
+        environ = {"CLOUDFLARE_IMAGE_ACCOUNT": "auto"}
+        for index, (_, (id_key, token_key, free_key)) in enumerate(queue.ACCOUNT_ENV.items()):
+            environ.update({id_key: f"id-{index}", token_key: f"token-{index}", free_key: "true"})
+        self.assertEqual(len(queue.load_image_accounts(environ)), 5)
+        environ["FIFTH_FREE_CONFIRMED"] = ""
+        with self.assertRaisesRegex(queue.WorkersConfigurationError, "fifth Free plan"):
+            queue.load_image_accounts(environ)
+        environ["FIFTH_FREE_CONFIRMED"] = "true"
+        environ["FIFTH_ACCOUNT_ID"] = environ["THIRD_ACCOUNT_ID"]
+        with self.assertRaisesRegex(queue.WorkersConfigurationError, "distinct"):
+            queue.load_image_accounts(environ)
+
     def test_segmentation_model_uses_verified_cache(self):
         data = b"known model"
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -217,6 +257,24 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertEqual(job["status"], "publishing")
         self.assertEqual(job["model"], queue.MODEL_ID)
         self.assertEqual(job["steps"], 4)
+
+    def test_limit_switch_keeps_product_processing_until_success(self):
+        source = image_bytes(Image.new("RGB", (20, 20)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        pool = queue.ImageAccountPool([("primary", "id-1", "token-1"), ("secondary", "id-2", "token-2")])
+        states = []
+        def capture_update(_session, _url, _row, info, **_kwargs):
+            states.append(info["imageGeneration"]["status"])
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", side_effect=[queue.WorkersDailyQuotaExceeded("limit"), b"edited"]) as edit, \
+             patch.object(queue, "transparent_product_image", return_value=(b"png", (1024, 1024))), \
+             patch.object(queue, "save_generated_image", return_value="/image.png"), \
+             patch.object(queue, "patch_stock", side_effect=capture_update):
+            queue.process_product(object(), row, "https://db.example", "", "", None,
+                                  datetime.now(timezone.utc), account_pool=pool)
+        self.assertEqual(states, ["processing", "publishing"])
+        self.assertEqual([call.args[1] for call in edit.call_args_list], ["id-1", "id-2"])
 
     def test_rejects_unexpected_edit_dimensions(self):
         source = image_bytes(Image.new("RGB", (20, 20)))

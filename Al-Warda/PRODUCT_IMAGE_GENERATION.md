@@ -52,11 +52,13 @@ Supabase Storage remain supported.
 4. Deploy the Worker and open **Admin → Product images** to view progress or
    open GitHub Actions to manually dispatch the queue. The scheduled job runs
    daily at 00:20 UTC. The manual dispatch accepts the maximum number of
-   products to attempt in that run and can select a secondary Cloudflare
-   account. To enable the secondary account, set GitHub Actions secrets
-   `CLOUDFLARE_SECONDARY_ACCOUNT_ID`, `CLOUDFLARE_SECONDARY_API_TOKEN`, and
-   `CLOUDFLARE_SECONDARY_FREE_PLAN_CONFIRMED` (set to `true` only after
-   confirming its Free plan).
+   products to attempt in that run and can select one account or automatic
+   rotation across all five. For each of `SECONDARY`, `THIRD`, `FOURTH`, and
+   `FIFTH`, add GitHub Actions secrets `CLOUDFLARE_<NAME>_ACCOUNT_ID`,
+   `CLOUDFLARE_<NAME>_API_TOKEN`, and
+   `CLOUDFLARE_<NAME>_FREE_PLAN_CONFIRMED`. Set the last secret to `true`
+   only after confirming that account's Free plan. Automatic rotation requires
+   all five distinct accounts to be configured and confirmed.
    To replace previously completed images made by an older model, enable
    **Regenerate completed images from older models** on the generation page
    (or `regenerate_completed` when dispatching in GitHub). This mode processes
@@ -101,9 +103,12 @@ runner is interrupted, uncommitted outputs may need regeneration.
 
 ## Daily quota and billing
 
-The application does not impose a daily image or Neuron quota. Each run attempts
-up to the selected batch size, stopping when Cloudflare reports a quota or rate
-limit. The scheduled run defaults to 160 attempts. A failed or interrupted item
+The application does not impose a daily image or Neuron quota. In automatic
+mode, a Cloudflare quota or rate-limit response moves the same image attempt to
+the next account; if all accounts report a limit, the run fails visibly.
+Authorization failures stop the run rather than being treated as quota errors.
+Manual single-account mode stops on that account's limit. The scheduled run
+uses automatic mode and defaults to 160 attempts. A failed or interrupted item
 can be retried in a later run; an active processing item is not retried until
 it becomes stale.
 
@@ -112,3 +117,5 @@ secret is set. It never enables or upgrades a Cloudflare plan. To maintain a $0
 budget, keep the account on the Workers AI Free plan and account for other AI
 workloads sharing the account quota. The application cannot verify the account's
 actual plan, inspect billing, or guarantee that paid usage is disabled.
+The interface does not currently retrieve account balances or remaining neurons.
+Cloudflare documents that the daily allocation resets at 00:00 UTC.

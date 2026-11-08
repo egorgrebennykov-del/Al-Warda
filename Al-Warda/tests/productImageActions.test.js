@@ -44,6 +44,11 @@ test("start and stop require authenticated owner and send scoped GitHub requests
   const dispatch = calls.find((call) => call.url.endsWith("/dispatches"));
   assert.equal(dispatch.options.headers["User-Agent"], "Al-Warda-product-image-controls");
   assert.deepEqual(JSON.parse(dispatch.options.body), { ref: "main", inputs: { max_images: "4", cloudflare_account: "secondary", regenerate_completed: "true" } });
+  for (const account of ["auto", "third", "fourth", "fifth"]) {
+    assert.equal((await handleProductImageActions(action({ action: "start", count: 1, account, regenerateCompleted: false }), env)).status, 202);
+    assert.equal(JSON.parse(calls.filter((call) => call.url.includes("/product-image-generation.yml/dispatches")).at(-1).options.body).inputs.cloudflare_account, account);
+  }
+  assert.equal((await handleProductImageActions(action({ action: "start", count: 1, account: "unknown", regenerateCompleted: false }), env)).status, 400);
   const selected = [{ id: "7", imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png` }];
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 202);
   const deletion = calls.find((call) => call.url.includes("/product-image-delete.yml/dispatches"));

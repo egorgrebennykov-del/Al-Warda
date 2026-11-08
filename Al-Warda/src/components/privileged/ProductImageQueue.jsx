@@ -26,7 +26,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [count, setCount] = useState(50);
-  const [account, setAccount] = useState("primary");
+  const [account, setAccount] = useState("auto");
   const [regenerateCompleted, setRegenerateCompleted] = useState(false);
   const [runs, setRuns] = useState([]);
   const [deletions, setDeletions] = useState([]);
@@ -247,8 +247,12 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         <label>
           {isRussian ? "Аккаунт Cloudflare" : "Cloudflare account"}
           <select value={account} onChange={(e) => setAccount(e.target.value)}>
+            <option value="auto">{isRussian ? "Автоматически (все пять)" : "Automatic (all five)"}</option>
             <option value="primary">{isRussian ? "Основной" : "Primary"}</option>
             <option value="secondary">{isRussian ? "Второй" : "Secondary"}</option>
+            <option value="third">{isRussian ? "Третий" : "Third"}</option>
+            <option value="fourth">{isRussian ? "Четвёртый" : "Fourth"}</option>
+            <option value="fifth">{isRussian ? "Пятый" : "Fifth"}</option>
           </select>
         </label>
         <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || !Number.isInteger(Number(count)) || Number(count) < 1 || Number(count) > 100000} onClick={() => runAction("start")}>
@@ -310,8 +314,8 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       </div>
       <p className="product-image-queue__footnote">
         {isRussian
-          ? "Обработка остановится, если Cloudflare сообщит о превышении квоты или ограничении запросов. Аккаунт должен оставаться на Free."
-          : "Processing stops when Cloudflare reports a quota or rate limit. Keep the account on the Free plan."}
+          ? "В автоматическом режиме при лимите генератор переходит к следующему аккаунту; когда все пять достигнут лимита, задача остановится. Суточная квота обновляется в 00:00 UTC. Остаток квоты здесь не проверяется; аккаунты должны оставаться на Free."
+          : "In automatic mode the generator switches accounts on a provider limit and stops when all five are limited. The daily quota resets at 00:00 UTC. Remaining quota is not checked here; accounts must stay on Free."}
       </p>
       <section className="product-image-queue__gallery" aria-labelledby="generated-images-heading">
         <h3 id="generated-images-heading">{isRussian ? "Готовые изображения" : "Generated images"}</h3>

@@ -50,6 +50,49 @@ class WorkersConfigurationError(RuntimeError):
     pass
 
 
+ACCOUNT_ENV = {
+    "primary": ("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED"),
+    "secondary": ("SECONDARY_ACCOUNT_ID", "SECONDARY_API_TOKEN", "SECONDARY_FREE_CONFIRMED"),
+    "third": ("THIRD_ACCOUNT_ID", "THIRD_API_TOKEN", "THIRD_FREE_CONFIRMED"),
+    "fourth": ("FOURTH_ACCOUNT_ID", "FOURTH_API_TOKEN", "FOURTH_FREE_CONFIRMED"),
+    "fifth": ("FIFTH_ACCOUNT_ID", "FIFTH_API_TOKEN", "FIFTH_FREE_CONFIRMED"),
+}
+
+
+def load_image_accounts(environ):
+    selected = environ.get("CLOUDFLARE_IMAGE_ACCOUNT", "primary")
+    if selected != "auto" and selected not in ACCOUNT_ENV:
+        raise WorkersConfigurationError("Unknown Cloudflare account selection")
+    names = list(ACCOUNT_ENV) if selected == "auto" else [selected]
+    accounts = []
+    for name in names:
+        id_key, token_key, free_key = ACCOUNT_ENV[name]
+        if not environ.get(id_key) or not environ.get(token_key):
+            raise WorkersConfigurationError(f"Cloudflare {name} account ID or API token is missing")
+        if environ.get(free_key) != "true":
+            raise WorkersConfigurationError(f"Cloudflare {name} Free plan has not been confirmed")
+        accounts.append((name, environ[id_key], environ[token_key]))
+    if len({account[1] for account in accounts}) != len(accounts):
+        raise WorkersConfigurationError("Cloudflare account IDs must be distinct")
+    return accounts
+
+
+class ImageAccountPool:
+    def __init__(self, accounts):
+        self.accounts = accounts
+        self.index = 0
+
+    def generate(self, session, source_bytes):
+        while self.index < len(self.accounts):
+            name, account_id, api_token = self.accounts[self.index]
+            try:
+                return generate_product_edit(session, account_id, api_token, source_bytes)
+            except WorkersDailyQuotaExceeded:
+                print(f"PROVIDER LIMIT: {name} account; switching if another account is available.", flush=True)
+                self.index += 1
+        raise WorkersDailyQuotaExceeded("All selected Cloudflare accounts reported a provider limit")
+
+
 def file_sha256(path):
     digest = hashlib.sha256()
     with path.open("rb") as model:
@@ -399,6 +442,7 @@ def process_product(
     segmentation_session,
     now,
     regenerate_completed=False,
+    account_pool=None,
 ):
     info = dict(row.get("info") or {})
     job_key = "imageGenerationReplacement" if regenerate_completed else "imageGeneration"
@@ -431,7 +475,10 @@ def process_product(
             if source_buffer.tell() > MAX_SOURCE_BYTES:
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
-        edited_bytes = generate_product_edit(requests, account_id, api_token, source_bytes)
+        edited_bytes = (
+            account_pool.generate(requests, source_bytes) if account_pool
+            else generate_product_edit(requests, account_id, api_token, source_bytes)
+        )
         output, original_size = transparent_product_image(edited_bytes, segmentation_session)
         image_url = save_generated_image(output)
 
@@ -625,27 +672,19 @@ def main():
                 make_session(), supabase_url, "https://al-warda.egor-grebennykov.workers.dev"
             )
         return
-    if os.environ.get("CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED") != "true":
-        raise RuntimeError(
-            "Set CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED=true only after confirming "
-            "that the Cloudflare account is on the Free plan"
-        )
     if not 1 <= args.max_images <= MAX_BATCH_SIZE:
         parser.error(f"--max-images must be between 1 and {MAX_BATCH_SIZE}")
     supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
     service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
-    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
-    api_token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
     missing = [
         name for name, value in (
             ("SUPABASE_URL", supabase_url),
             ("SUPABASE_SERVICE_ROLE_KEY", service_key),
-            ("CLOUDFLARE_ACCOUNT_ID", account_id),
-            ("CLOUDFLARE_API_TOKEN", api_token),
         ) if not value
     ]
     if missing:
         raise RuntimeError(f"Missing server-side environment variables: {', '.join(missing)}")
+    account_pool = ImageAccountPool(load_image_accounts(os.environ))
 
     session = make_session()
     rows = fetch_stock_rows(session, supabase_url)
@@ -670,17 +709,19 @@ def main():
                 session,
                 row,
                 supabase_url,
-                account_id,
-                api_token,
+                "",
+                "",
                 segmentation_session,
                 utc_now(),
                 args.regenerate_completed,
+                account_pool,
             )
             completed += 1
             print(f"AWAITING DEPLOYMENT {row['id']}: {url}")
         except WorkersDailyQuotaExceeded as error:
             failed += 1
-            print(f"PROVIDER LIMIT: {error}. Batch stopped.")
+            configuration_failure = True
+            print(f"PROVIDER LIMIT: {error}. Batch stopped.", file=sys.stderr)
             break
         except WorkersConfigurationError as error:
             failed += 1

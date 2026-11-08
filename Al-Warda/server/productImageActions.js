@@ -87,7 +87,7 @@ export async function handleProductImageActions(request, env) {
       if (!Number.isSafeInteger(count) || count < 1 || count > 100000) {
         return json({ error: "Image count must be an integer from 1 to 100000" }, 400);
       }
-      if (!["primary", "secondary"].includes(body.account)) return json({ error: "Invalid Cloudflare account" }, 400);
+      if (!["auto", "primary", "secondary", "third", "fourth", "fifth"].includes(body.account)) return json({ error: "Invalid Cloudflare account" }, 400);
       if (typeof body.regenerateCompleted !== "boolean") return json({ error: "Invalid regeneration option" }, 400);
       if ((await activeRuns(env)).length) return json({ error: "An image generation run is already active" }, 409);
       if ((await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
