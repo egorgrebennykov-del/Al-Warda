@@ -160,7 +160,8 @@
 .warda-trigger-btn {
   width: 72px;
   height: 72px;
-  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
   border: 2px solid #e5c07b;
   background: radial-gradient(circle at 45% 35%, #3d2c18 0%, #1e150c 55%, #0d0a08 100%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95), 0 0 24px rgba(212, 175, 55, 0.55), inset 0 0 14px rgba(212, 175, 55, 0.2);
@@ -178,7 +179,7 @@
   content: "";
   position: absolute;
   inset: -6px;
-  border-radius: 50%;
+  border-radius: 22px;
   border: 1px dashed rgba(212, 175, 55, 0.45);
   pointer-events: none;
   animation: alwardaRotateAura 20s linear infinite;
@@ -198,24 +199,25 @@
 .warda-trigger-avatar {
   width: 100% !important;
   height: 100% !important;
-  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 14px !important;
   overflow: hidden !important;
-  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-  mask-image: radial-gradient(white, black) !important;
-  -webkit-clip-path: circle(50% at 50% 50%) !important;
-  clip-path: circle(50% at 50% 50%) !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  -webkit-clip-path: none !important;
+  clip-path: none !important;
   isolation: isolate;
   pointer-events: none;
 }
 
 .warda-trigger-avatar .warda-character__image {
-  border-radius: 50% !important;
-  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-  mask-image: radial-gradient(white, black) !important;
-  -webkit-clip-path: circle(50% at 50% 50%) !important;
-  clip-path: circle(50% at 50% 50%) !important;
+  border-radius: 14px !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  -webkit-clip-path: none !important;
+  clip-path: none !important;
   object-fit: cover !important;
-  object-position: center 10% !important;
+  object-position: center 20% !important;
 }
 
 .warda-trigger-avatar .warda-character__aura {
@@ -243,12 +245,13 @@
   justify-content: center;
   user-select: none;
   transition: transform 0.3s ease;
+  aspect-ratio: 1 / 1;
 }
 
 .warda-character__aura {
   position: absolute;
-  inset: -12%;
-  border-radius: 50%;
+  inset: -8%;
+  border-radius: 24px;
   background: radial-gradient(
     circle,
     rgba(212, 175, 55, 0.42) 0%,
@@ -266,6 +269,7 @@
   z-index: 1;
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: contain;
   object-position: center bottom;
   filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.42))
@@ -297,20 +301,21 @@
   }
 
   .warda-companion-dock {
-    margin-bottom: -10px;
+    margin-bottom: 6px;
     z-index: 3;
     flex-shrink: 0;
     pointer-events: none;
   }
 
   .warda-companion-dock__character {
-    width: 140px !important;
-    height: 140px !important;
+    width: 160px !important;
+    height: 160px !important;
+    aspect-ratio: 1 / 1 !important;
   }
 
   .warda-companion-dock__name-tag {
     padding: 5px 18px;
-    margin-top: -10px;
+    margin-top: 6px !important;
     min-width: 130px;
   }
 
@@ -335,6 +340,9 @@
 }
 
 .warda-companion-dock__character {
+  width: 230px !important;
+  height: 230px !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 0;
   overflow: visible;
   border: none;
@@ -345,13 +353,13 @@
 }
 
 .warda-companion-dock__character .warda-character__aura {
-  inset: 6% 8% 10% 8%;
-  border-radius: 50%;
+  inset: -6%;
+  border-radius: 24px;
   background: radial-gradient(
     circle,
-    rgba(212, 175, 55, 0.3) 0%,
-    rgba(212, 175, 55, 0.14) 48%,
-    transparent 76%
+    rgba(212, 175, 55, 0.35) 0%,
+    rgba(212, 175, 55, 0.15) 50%,
+    transparent 78%
   );
   filter: blur(16px);
 }
@@ -359,13 +367,14 @@
 .warda-companion-dock__character .warda-character__image {
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: contain;
   object-position: center bottom;
   border-radius: 0;
   transform: none;
   filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.38));
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 68%, rgba(0, 0, 0, 0.45) 84%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 68%, rgba(0, 0, 0, 0.45) 84%, transparent 100%);
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
 }
 
 .warda-companion-dock__name-tag {
@@ -374,7 +383,7 @@
   padding: 7px 22px;
   min-width: 165px;
   border-radius: 999px;
-  margin-top: -14px;
+  margin-top: 6px !important;
   z-index: 3;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.92), 0 0 16px rgba(212, 175, 55, 0.22);
   display: flex;

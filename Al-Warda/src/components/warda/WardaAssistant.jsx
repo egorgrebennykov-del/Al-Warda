@@ -630,7 +630,7 @@ export default function WardaAssistant() {
             <div className="warda-companion-dock__character-box">
               <WardaCharacter
                 emotion={loading && loadingStatus === "searching" ? "thinking" : emotion}
-                size={215}
+                size={230}
                 className="warda-companion-dock__character"
               />
               <div className="warda-companion-dock__name-tag">

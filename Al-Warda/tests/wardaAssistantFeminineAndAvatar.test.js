@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   enforceFeminineSelfReferences,
   capitalizeReligionNames,
+  sanitizeReligiousPhrases,
   getCanonicalEmotion,
   CANONICAL_EMOTION_MAP,
   processWardaChat,
@@ -138,6 +139,51 @@ test("capitalizeReligionNames ensures religion and denomination names are capita
 
   for (const { input, expected } of cases) {
     assert.equal(capitalizeReligionNames(input), expected);
+  }
+});
+
+test("sanitizeReligiousPhrases strips intrusive religious greetings and formulas", () => {
+  const cases = [
+    {
+      input: "Мир вам! Здравствуйте! Я подобрала для вас изысканный аромат.",
+      expected: "Здравствуйте! Я подобрала для вас изысканный аромат.",
+    },
+    {
+      input: "Мир вам и вашему дому! Рада видеть вас в бутике Al-Warda.",
+      expected: "Рада видеть вас в бутике Al-Warda.",
+    },
+    {
+      input: "Ассаляму алейкум! Какой парфюм вы ищете сегодня?",
+      expected: "Какой парфюм вы ищете сегодня?",
+    },
+    {
+      input: "Ассалямуалейкум! Здравствуйте.",
+      expected: "Здравствуйте.",
+    },
+    {
+      input: "Салам алейкум! Помогу выбрать подарок.",
+      expected: "Помогу выбрать подарок.",
+    },
+    {
+      input: "Здравствуйте! Мир вам, помогу с заказом.",
+      expected: "Здравствуйте! Помогу с заказом.",
+    },
+    {
+      input: "Привет! Иншааллах, все доставим в срок.",
+      expected: "Привет! Все доставим в срок.",
+    },
+    {
+      input: "Ассаляму алейкум!",
+      expected: "Здравствуйте! Рада вас приветствовать в бутике Al-Warda.",
+    },
+    {
+      input: "Peace be upon you! Welcome to Al-Warda.",
+      expected: "Welcome to Al-Warda.",
+    },
+  ];
+
+  for (const { input, expected } of cases) {
+    assert.equal(sanitizeReligiousPhrases(input), expected, `Failed for input: "${input}"`);
   }
 });
 
