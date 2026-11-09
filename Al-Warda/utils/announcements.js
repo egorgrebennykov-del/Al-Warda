@@ -1,8 +1,8 @@
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ||
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const SUPABASE_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const TABLE_URL = `${SUPABASE_URL}/rest/v1/announcements`;
@@ -55,7 +55,8 @@ export function normalizeAnnouncement(row) {
   return {
     id: row.id,
     created_at: row.created_at,
-    from: row.from || row.created_at,
+    starts_at: row.starts_at || row.from || row.created_at,
+    from: row.starts_at || row.from || row.created_at,
     until: row.until,
     userId: row.user_id,
     type,
@@ -216,16 +217,17 @@ export async function fetchActiveAnnouncements() {
         if (a.order !== b.order) return a.order - b.order;
         return new Date(b.created_at) - new Date(a.created_at);
       });
-      cachedActiveAnnouncements = sorted;
+      const finalResult = sorted.length > 0 ? sorted : DEFAULT_ACTIVE_ANNOUNCEMENTS;
+      cachedActiveAnnouncements = finalResult;
       activeCacheExpiry = Date.now() + ACTIVE_CACHE_TTL_MS;
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem(ACTIVE_STORAGE_KEY, JSON.stringify(sorted));
+          localStorage.setItem(ACTIVE_STORAGE_KEY, JSON.stringify(finalResult));
         } catch {
           // ignore
         }
       }
-      return sorted;
+      return finalResult;
     } catch (err) {
       console.warn("Error fetching active announcements:", err);
       return cachedActiveAnnouncements || [];
@@ -274,7 +276,7 @@ export async function translateAnnouncementWithAI(rawText) {
     try {
       const prompt = `Translate the following store announcement (which may be written in Ukrainian, Russian, English, or any other language) into both Russian and English for the luxury Arabian perfume boutique "Al-Warda". Keep all promo codes, numbers, percentages, dates, and emojis intact. Return ONLY valid JSON: {"text_ru": "...", "text_en": "..."}\n\nInput announcement:\n${clean}`;
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -412,7 +414,7 @@ export async function createAnnouncement({
 
   const payload = {
     user_id: userId || null,
-    from: fromDate,
+    starts_at: fromDate,
     until: untilDate,
     content_ru,
     content_en,
@@ -508,7 +510,7 @@ export async function updateAnnouncement(id, {
   };
 
   const payload = {
-    from: fromDate,
+    starts_at: fromDate,
     until: untilDate,
     content_ru,
     content_en,

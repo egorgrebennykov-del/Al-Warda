@@ -401,6 +401,20 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
         timeout=(15, 180),
     )
     error_details = response.text[:400] if not response.ok else ""
+    if not response.ok and ("flagged" in error_details.lower() or "3030" in error_details):
+        print("Flagged prompt/image detected; retrying with clean studio prompt...", flush=True)
+        safe_prompt = (
+            "Professional commercial studio product photography of a luxury perfume flacon, "
+            "glass bottle centered on plain light grey background, elegant lighting, 8k"
+        )
+        response = session.post(
+            IMAGE_ENDPOINT.format(account_id=quote(account_id, safe="")),
+            headers={"Authorization": f"Bearer {api_token}"},
+            data={"prompt": safe_prompt, "width": "1024", "height": "1024"},
+            files={"input_image_0": ("reference.png", reference.getvalue(), "image/png")},
+            timeout=(15, 180),
+        )
+        error_details = response.text[:400] if not response.ok else ""
     quota_error = re.search(
         r"daily.{0,50}(quota|limit|allocation|neuron)|(?:quota|limit|allocation).{0,30}daily",
         error_details,
@@ -681,11 +695,29 @@ def process_product(
             if source_buffer.tell() > MAX_SOURCE_BYTES:
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
-        edited_bytes = (
-            account_pool.generate(requests, source_bytes) if account_pool
-            else generate_product_edit(requests, account_id, api_token, source_bytes)
-        )
-        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+        try:
+            edited_bytes = (
+                account_pool.generate(requests, source_bytes) if account_pool
+                else generate_product_edit(requests, account_id, api_token, source_bytes)
+            )
+            output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+        except Exception as gen_err:
+            gen_err_str = str(gen_err).lower()
+            if "flagged" in gen_err_str or "3030" in gen_err_str:
+                print(f"Workers AI flagged stock {row['id']}; falling back to clean direct U2Net cutout", flush=True)
+                source_img = decode_source(source_bytes)
+                cutout_result = remove(source_img, session=segmentation_session, only_mask=False, alpha_matting=False)
+                if isinstance(cutout_result, Image.Image):
+                    cutout = cutout_result.convert("RGBA")
+                else:
+                    with Image.open(io.BytesIO(cutout_result)) as ci:
+                        cutout = ci.convert("RGBA")
+                out_buf = io.BytesIO()
+                cutout.save(out_buf, format="PNG", optimize=True)
+                output = out_buf.getvalue()
+                original_size = cutout.size
+            else:
+                raise
         image_url = save_generated_image(output)
 
         job.update({

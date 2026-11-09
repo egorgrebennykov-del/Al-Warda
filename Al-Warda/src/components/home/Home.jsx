@@ -4,6 +4,8 @@ import { getBestSellerPerfumes, getCategories, getPerfumeUrl } from "../../../ut
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
+import LargeAnnouncementRoulette from "../announcements/LargeAnnouncementRoulette";
+import { fetchActiveAnnouncements } from "../../../utils/announcements";
 import CategoryCinematicMotion from "./CategoryCinematicMotion";
 import "./Home.css";
 import "../common/ProductCardImages.css";
@@ -13,11 +15,28 @@ export default function Home() {
   const { language } = useLanguage();
   const [bestSellers, setBestSellers] = useState([]);
   const [categories] = useState(() => getCategories());
+  const [largeAnnouncements, setLargeAnnouncements] = useState([]);
   const [addedIds, setAddedIds] = useState({});
 
   const carouselRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchActiveAnnouncements()
+      .then((items) => {
+        if (!cancelled && Array.isArray(items)) {
+          const largeOnly = items.filter((item) => item && item.type === "large");
+          setLargeAnnouncements(largeOnly);
+        }
+      })
+      .catch((err) => console.warn("Could not load large announcements:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +166,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 1.5. LARGE PROMOTIONAL ANNOUNCEMENT POSTERS ROULETTE */}
+      {largeAnnouncements.length > 0 && (
+        <section className="container" style={{ margin: "1.5rem auto 1rem auto" }}>
+          <LargeAnnouncementRoulette items={largeAnnouncements} />
+        </section>
+      )}
 
       {/* 2. SECTION DIVIDER: SHOP BY CATEGORY */}
       <div className="container">

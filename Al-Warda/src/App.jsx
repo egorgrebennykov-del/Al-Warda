@@ -10,10 +10,12 @@ import Footer from "./components/footer/Footer";
 import Header from "./components/header/Header";
 import Home from "./components/home/Home";
 import Search from "./components/search/Search";
+import SmallAnnouncements from "./components/announcements/SmallAnnouncements";
 import { isLoggedIn } from "../utils/auth";
 import { useAuth } from "./context/AuthContext";
 import { getCookie, setCookie } from "../utils/cookies";
 import { getPerfumes } from "../utils/perfumes";
+import { fetchActiveAnnouncements } from "../utils/announcements";
 
 // Immediately warm critical perfumes data as soon as the bundle loads
 if (typeof window !== "undefined") {
@@ -116,6 +118,7 @@ function PrivateRoute({ children, redirectTo, privilegedOnly = false }) {
 function App() {
   const [lightTheme, setLightTheme] = useState(getInitialTheme);
   const [showSearch, setShowSearch] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const shouldRestoreScroll = Boolean(
@@ -123,6 +126,21 @@ function App() {
     location.state?.restoreDiscountScroll ||
     location.state?.restoreHomeScroll,
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchActiveAnnouncements()
+      .then((items) => {
+        if (!cancelled && Array.isArray(items)) {
+          setAnnouncements(items);
+        }
+      })
+      .catch((err) => console.warn("Failed to load active announcements:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     // Defer background prefetching until after initial page render is complete
@@ -181,6 +199,11 @@ function App() {
         onSearch={() => setShowSearch(true)}
       />
       <Search show={showSearch} onClose={() => setShowSearch(false)} />
+      {announcements.length > 0 && (
+        <div className="container" style={{ paddingTop: "1rem", paddingBottom: "0.25rem" }}>
+          <SmallAnnouncements items={announcements} />
+        </div>
+      )}
       <Suspense
         fallback={
           <div className="app-route-loader" role="status" aria-live="polite">

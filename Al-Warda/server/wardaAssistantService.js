@@ -17,8 +17,13 @@ export function getGeminiApiKey() {
   );
 }
 
-const GEMINI_FAST_MODEL = "gemini-2.0-flash";
-const GEMINI_TIMEOUT_MS = 1600;
+const GEMINI_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-flash-latest",
+];
+const GEMINI_FAST_MODEL = "gemini-3.5-flash-lite";
+const GEMINI_TIMEOUT_MS = 6000;
 
 // ============================================================================
 // 1. LIVE CATALOG LOADER (STRICTLY REAL ITEMS FROM SITE CATALOG)
@@ -634,46 +639,51 @@ export async function callGeminiJson({
   systemInstruction,
   prompt,
   timeoutMs = GEMINI_TIMEOUT_MS,
-  maxOutputTokens = 320,
+  maxOutputTokens = 450,
   temperature = 0.2,
 }) {
   if (!apiKey) return null;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_FAST_MODEL}:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        maxOutputTokens,
-        temperature,
-      },
-    };
-    if (systemInstruction) {
-      payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+  for (const model of GEMINI_MODELS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens,
+          temperature,
+        },
+      };
+      if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        continue;
+      }
+      const data = await res.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) continue;
+
+      const cleanJson = rawText.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}");
+      return JSON.parse(cleanJson);
+    } catch {
+      continue;
+    } finally {
+      clearTimeout(timer);
     }
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) return null;
-
-    const cleanJson = rawText.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}");
-    return JSON.parse(cleanJson);
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
   }
+  return null;
 }
 
 const PRODUCT_STEMS = [
