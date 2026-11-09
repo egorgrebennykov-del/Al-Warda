@@ -4,6 +4,7 @@ import {
   getCachedPerfumes,
   getPerfumeUrl,
   ensurePerfumeEnrichment,
+  isPerfumeSet,
 } from "../utils/perfumes.js";
 
 const DEFAULT_API_KEY = "";
@@ -229,6 +230,36 @@ const STOP_WORDS = new Set([
 // ============================================================================
 // 3. INTELLIGENT PERFUME DATABASE SEARCH (STRICTLY CATALOG ITEMS & GENDER-AWARE)
 // ============================================================================
+export function isSamplePerfume(p) {
+  if (!p) return false;
+  if (p.isSample) return true;
+  const idStr = String(p.id || "");
+  if (idStr.startsWith("sample-") || idStr.includes("-sample-")) return true;
+  const text = `${p.name || ""} ${p.title || ""} ${p.volume || ""}`.toLowerCase();
+  // Vials of 1-10 ml that are not multi-item gift/discovery sets
+  if (/(?:^|[\s,·+!?.;:()«»"'-])(1|2|3|5|8|10)\s*(ml|мл)(?:$|[\s,·+!?.;:()«»"'-])/i.test(text) && !isPerfumeSet(p)) {
+    return true;
+  }
+  if (/(?:^|[\s,·+!?.;:()«»"'-])(пробник|отливант|виалк|атомайзер|семпл|сэмпл|sample|decant|vial|мини-спрей)/i.test(text) && !isPerfumeSet(p)) {
+    return true;
+  }
+  return false;
+}
+
+export function isSampleRequested(query = "", history = []) {
+  const q = String(query || "").toLowerCase();
+  const sampleRegex = /(?:^|[\s,·+!?.;:()«»"'-])(пробник|отливант|виалк|атомайзер|семпл|сэмпл|дискавери|миниатюр|sample|decant|vial|miniature|travel\s*spray|(1|2|3|5|8|10)\s*(ml|мл))/i;
+  if (sampleRegex.test(q)) return true;
+
+  const userMessages = (Array.isArray(history) ? history : [])
+    .filter((m) => m && m.role === "user")
+    .slice(-2);
+  for (const m of userMessages) {
+    if (sampleRegex.test(String(m.content || "").toLowerCase())) return true;
+  }
+  return false;
+}
+
 function getPerfumeGenderFlags(p) {
   if (p?._genderFlags) return p._genderFlags;
   const g = (p?.gender || "").toLowerCase();
@@ -260,6 +291,7 @@ export function searchPerfumesInDatabase(query, options = {}) {
     priceOrder = "relevance", // 'relevance' | 'asc' | 'desc'
     maxPrice = null,
     minPrice = null,
+    allowSamples = false,
     limit = 6,
   } = options;
 
@@ -285,6 +317,10 @@ export function searchPerfumesInDatabase(query, options = {}) {
 
   for (const p of ALL_PERFUMES) {
     if (excludeIds.has(p.id) || excludeIds.has(p.slug) || excludeIds.has(p.key)) {
+      continue;
+    }
+
+    if (!allowSamples && isSamplePerfume(p)) {
       continue;
     }
 
@@ -382,6 +418,7 @@ export function searchPerfumesInDatabase(query, options = {}) {
       for (const p of ALL_PERFUMES) {
         if (
           p.brand?.toLowerCase() === primaryBrand &&
+          (allowSamples || !isSamplePerfume(p)) &&
           matchesTargetGender(p, preferredGender) &&
           !excludeIds.has(p.id) &&
           !combined.some((item) => item.id === p.id)
@@ -396,7 +433,7 @@ export function searchPerfumesInDatabase(query, options = {}) {
   // Pad with remaining gender-matching catalog items
   if (combined.length < limit) {
     for (const item of scored.map((s) => s.perfume)) {
-      if (!combined.some((c) => c.id === item.id)) {
+      if ((allowSamples || !isSamplePerfume(item)) && !combined.some((c) => c.id === item.id)) {
         combined.push(item);
         if (combined.length >= limit) break;
       }
@@ -899,6 +936,13 @@ STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
 4. Gender: tailor picks to the detected interlocutor gender. When it is unknown and you are recommending, you may ask once who the perfume is for; provided items are already filtered accordingly.
 5. "bookIds": return ONLY exact ids from the provided items (3–6 for recommendations, 1 for a single bottle). Every perfume you name in "message" MUST have its id in "bookIds". For conversation without products use [].
 6. Cart / account / navigation questions: use "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
+7. SAMPLES & DISCOVERY POLICY (CRITICAL):
+   - When a customer asks for perfume, recommendations, notes, scents, gifts or ideas WITHOUT explicitly asking for a sample or decant:
+     * NEVER recommend, mention, or display sample vials / decants / mini bottles («пробники», «отливанты», 1ml, 2ml, 5ml, 10ml).
+     * ALWAYS recommend standard full-size original flacons / bottles (e.g. 100ml / standard bottles).
+     * Do NOT suggest, offer or show samples unless specifically asked or truly contextually appropriate.
+   - ONLY when the customer explicitly asks for a sample («хочу пробник», «есть ли пробники?», «хочу попробовать 5 мл», «отливант», «sample», «decant»):
+     * You may mention that Al-Warda offers discovery samples (1ml, 2ml, 5ml, 10ml) in the "Try & Discover" section.
 
 STYLE & EMOJI FORMATTING:
 - Reply in the exact language of the customer's last message (Russian or English; other languages are fine if the customer uses them).
@@ -1005,6 +1049,21 @@ function wantsProductSuggestions(text, memory, history) {
 // ============================================================================
 // 6. MAIN CHAT HANDLER WITH FULL MEMORY & LIVE CATALOG GROUNDING
 // ============================================================================
+export function stripUnsolicitedSampleMentions(message = "", sampleRequested = false) {
+  if (sampleRequested || !message) return message;
+  const sentences = message.split(/(?<=[.!?…])\s+/);
+  const filtered = sentences.filter((s) => {
+    const sLower = s.toLowerCase();
+    const isSamplePitch =
+      /\b(пробник\w*|отливант\w*|виалк\w*|атомайзер\w*|семпл\w*|сэмпл\w*|sample\w*|decant\w*|1\s*мл|2\s*мл|5\s*мл|10\s*мл)\b/i.test(sLower) &&
+      /\b(заказать|купить|попробовать|доступн\w*|представлен\w*|выбрать|формат\w*|раздел\w*|коллекци\w*|try & discover|order|try|available)\b/i.test(sLower);
+    return !isSamplePitch;
+  });
+
+  const result = filtered.join(" ").trim();
+  return result.length > 15 ? result : message;
+}
+
 export async function processWardaChat({ messages = [], language = "ru", context = {}, onStatus } = {}) {
   await ensureCatalogLoaded(context?.catalog);
 
@@ -1036,6 +1095,8 @@ export async function processWardaChat({ messages = [], language = "ru", context
   const isPerfumeSearch =
     !isPureGreeting && !isPureCartOrNav && !isFaithOrIdentityQuery && wantsProductSuggestions(latestMessage, memory, history.slice(0, -1));
 
+  const sampleRequested = isSampleRequested(latestMessage, history);
+
   if (typeof onStatus === "function") {
     try {
       onStatus(isPerfumeSearch ? "searching" : "typing");
@@ -1050,7 +1111,7 @@ export async function processWardaChat({ messages = [], language = "ru", context
       const fullPerfume =
         PERFUME_BY_ID.get(String(memory.targetPerfume.id || "").toLowerCase()) ||
         PERFUME_BY_ID.get(String(memory.targetPerfume.name || memory.targetPerfume.title || "").toLowerCase());
-      if (fullPerfume) {
+      if (fullPerfume && (sampleRequested || !isSamplePerfume(fullPerfume))) {
         foundPerfumes = [fullPerfume];
       }
     }
@@ -1062,6 +1123,7 @@ export async function processWardaChat({ messages = [], language = "ru", context
         preferredGender: memory.preferredGender,
         priceOrder: memory.priceOrder,
         maxPrice: memory.maxPrice,
+        allowSamples: sampleRequested,
         limit: 6,
       });
     }
@@ -1077,6 +1139,7 @@ CURRENT USER & SITE CONTEXT:
 - Brands currently in Al-Warda catalog: ${catalogBrandsSummary || "Afnan, Al Haramain, Risala, Lattafa, Armaf"}
 - User is logged in: ${userInfo?.isLoggedIn ? `Yes (${userInfo.name || "Guest"})` : "No (Guest)"}
 - Detected interlocutor/target gender: ${memory.preferredGender || "неизвестен (рекомендовать ТОЛЬКО Унисекс)"}
+- Customer sample inquiry: ${sampleRequested ? "YES (customer explicitly requested samples/decants/1-10ml)" : "NO (customer did NOT request samples -> recommend ONLY full-size original flacons, do NOT show or suggest samples/decants)"}
 - Current route: ${pageInfo?.pathname || "/"}
 - Cart: ${
     !cartInfo?.isLoggedIn
@@ -1165,38 +1228,42 @@ No catalog items are attached to this turn. Respond to what the customer actuall
     }
   }
 
-  // Validate that Gemini did not hallucinate non-catalog bookIds and respected target gender
+  // Validate that Gemini did not hallucinate non-catalog bookIds and respected target gender & sample policy
   let resolvedAI = [];
   if (aiResult && Array.isArray(aiResult.bookIds)) {
     resolvedAI = aiResult.bookIds
       .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
-      .filter((p) => p && (memory.isSpecificInquiry || matchesTargetGender(p, memory.preferredGender)));
+      .filter((p) => p && (sampleRequested || !isSamplePerfume(p)) && (memory.isSpecificInquiry || matchesTargetGender(p, memory.preferredGender)));
   }
 
   if (!aiResult || !aiResult.message || (isPerfumeSearch && foundPerfumes.length > 0 && resolvedAI.length === 0)) {
     aiResult = generateHeuristicResponse({
       isConversational: !isPerfumeSearch,
       latestMessage,
-      foundPerfumes,
+      foundPerfumes: sampleRequested ? foundPerfumes : foundPerfumes.filter((p) => !isSamplePerfume(p)),
       memory,
       language,
       cartInfo,
       isPureGreeting,
+      sampleRequested,
     });
     resolvedAI = (aiResult.bookIds || [])
       .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
-      .filter(Boolean);
+      .filter((p) => p && (sampleRequested || !isSamplePerfume(p)));
   }
 
   if (isPerfumeSearch && resolvedAI.length === 0 && foundPerfumes.length > 0) {
-    resolvedAI = foundPerfumes;
+    resolvedAI = sampleRequested ? foundPerfumes : foundPerfumes.filter((p) => !isSamplePerfume(p));
   }
 
-  const finalPerfumes = resolvedAI.slice(0, 6);
+  const finalPerfumes = (sampleRequested ? resolvedAI : resolvedAI.filter((p) => !isSamplePerfume(p))).slice(0, 6);
 
   const cleanMessage = formatAssistantSpeech(
-    sanitizeReligiousPhrases(
-      capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""))
+    stripUnsolicitedSampleMentions(
+      sanitizeReligiousPhrases(
+        capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""))
+      ),
+      sampleRequested
     )
   );
   const cleanEmotion = getCanonicalEmotion(aiResult.emotion || "greeting");
@@ -1242,6 +1309,7 @@ function generateHeuristicResponse({
   language,
   cartInfo,
   isPureGreeting,
+  sampleRequested = false,
 }) {
   const isRu = language === "ru";
   const q = (latestMessage || "").toLowerCase();
@@ -1403,6 +1471,13 @@ function generateConversationalFallback(q, isRu) {
       "Отличный вопрос! Точные условия доставки, оплаты и возврата лучше уточнить у администратора — нажмите «Связаться с администратором», и он ответит подробно. А я пока могу подобрать аромат, чтобы к моменту заказа вы уже знали свой выбор.",
       "Great question! For exact delivery, payment and return terms please contact an administrator — they will answer in detail. Meanwhile I can help you choose a fragrance so you're ready to order.",
       "speaking",
+    );
+  }
+  if (/(пробник|отливант|дискавери|виалк|sample|decant)/i.test(q)) {
+    return reply(
+      "Да, конечно! В нашем специальном разделе «Try & Discover» вы можете заказать удобные пробники и отливанты объемом 1 мл, 2 мл, 5 мл и 10 мл со спреем, а также готовые подарочные и дискавери-сеты, чтобы познакомиться с ароматом до покупки полного флакона. ✨",
+      "Yes, absolutely! In our «Try & Discover» section, you can explore sample vials and decants in 1ml, 2ml, 5ml, and 10ml with sprayers, as well as discovery sets, to experience any fragrance before purchasing a full bottle. ✨",
+      "happy"
     );
   }
   if (/(пока|до свидания|bye|goodbye)/i.test(q)) {

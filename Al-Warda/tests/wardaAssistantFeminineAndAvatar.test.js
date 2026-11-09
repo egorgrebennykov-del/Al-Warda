@@ -8,6 +8,9 @@ import {
   CANONICAL_EMOTION_MAP,
   processWardaChat,
   formatAssistantSpeech,
+  isSamplePerfume,
+  isSampleRequested,
+  stripUnsolicitedSampleMentions,
 } from "../server/wardaAssistantService.js";
 
 test("enforceFeminineSelfReferences converts masculine self-references to feminine", () => {
@@ -223,4 +226,68 @@ test("formatAssistantSpeech formats emojis on fresh paragraphs and avoids orphan
     formatted.includes("А\u00A0о\u00A0чём"),
     "Should bind prepositions with non-breaking spaces"
   );
+});
+
+test("isSamplePerfume identifies samples vs full bottles and sets", () => {
+  const fullBottle = { id: "101", name: "Lattafa Khamrah 100ml EDP", volume: "100ml" };
+  const sampleVial1 = { id: "sample-101-1ml", name: "Lattafa Khamrah (Пробник 1 мл)", isSample: true };
+  const sampleVial2 = { id: "202", name: "Afnan Highness 5ml", volume: "5ml" };
+  const discoverySet = { id: "303", name: "Lattafa Discovery Set 5x10ml", volume: "5x10ml", isSet: true };
+
+  assert.equal(isSamplePerfume(fullBottle), false, "100ml bottle is not a sample");
+  assert.equal(isSamplePerfume(sampleVial1), true, "1ml marked sample is a sample");
+  assert.equal(isSamplePerfume(sampleVial2), true, "5ml vial is a sample");
+  assert.equal(isSamplePerfume(discoverySet), false, "Discovery set is a set, not a single sample vial");
+});
+
+test("isSampleRequested identifies when customer asks for samples vs regular perfumes", () => {
+  assert.equal(isSampleRequested("Посоветуй стойкий древесный парфюм"), false);
+  assert.equal(isSampleRequested("Хочу духи на вечер с нотами розы и амбры"), false);
+  assert.equal(isSampleRequested("Какой парфюм купить парню в подарок?"), false);
+
+  assert.equal(isSampleRequested("Есть ли у вас пробники?"), true);
+  assert.equal(isSampleRequested("Хочу заказать пробник 5 мл Lattafa Khamrah"), true);
+  assert.equal(isSampleRequested("Покажи отливанты"), true);
+  assert.equal(isSampleRequested("Can I get a 1ml or 2ml sample vial?"), true);
+});
+
+test("processWardaChat does not recommend samples when user asks for perfume without mentioning samples", async () => {
+  const mockCatalog = [
+    {
+      id: "bottle-1",
+      name: "Lattafa Khamrah Eau De Parfum 100ml",
+      brand: "Lattafa",
+      price: 49.99,
+      volume: "100 мл",
+      topNotes: ["Корица", "Мускатный орех"],
+      heartNotes: ["Финики", "Пралине"],
+      baseNotes: ["Ваниль", "Бобы тонка"],
+      gender: "Унисекс",
+      image: "/assets/img/khamrah.png",
+    },
+    {
+      id: "sample-1",
+      name: "Lattafa Khamrah (Пробник 1 мл)",
+      brand: "Lattafa",
+      price: 4.5,
+      volume: "1 мл",
+      isSample: true,
+      topNotes: ["Корица", "Мускатный орех"],
+      heartNotes: ["Финики", "Пралине"],
+      baseNotes: ["Ваниль", "Бобы тонка"],
+      gender: "Унисекс",
+      image: "/assets/img/khamrah.png",
+    },
+  ];
+
+  const result = await processWardaChat({
+    messages: [{ role: "user", content: "Посоветуй красивый сладкий парфюм с корицей" }],
+    language: "ru",
+    context: { catalog: mockCatalog },
+  });
+
+  // books must NOT include the sample
+  assert.ok(result.books.length > 0, "Should recommend at least one perfume");
+  assert.ok(result.books.every((b) => !isSamplePerfume(b)), "Must NOT include sample vials");
+  assert.ok(result.books.some((b) => b.id === "bottle-1"), "Must include the full bottle");
 });
