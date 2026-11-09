@@ -30,6 +30,18 @@
       })();
     </script>
     <style>
+      html, body {
+        background-color: #080605 !important;
+        color: #f7ede2;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100%;
+      }
+      #root {
+        background-color: #080605 !important;
+        min-height: 100vh;
+      }
       .warda-boot-loader {
         position: fixed;
         inset: 0;
@@ -127,18 +139,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link rel="preconnect" href="https://mfvenfrmlkxqgvdtedet.supabase.co" crossorigin />
+    <link rel="preload" href="/assets/css/styles.css" as="style" />
     <link rel="stylesheet" href="/assets/css/styles.css" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      />
+    </noscript>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
+      />
+    </noscript>
   </head>
-  <body>
-    <div id="root">
+  <body style="background-color: #080605;">
+    <div id="root" style="background-color: #080605;">
       <div class="warda-boot-loader" role="status" aria-label="Loading Al-Warda Parfumes">
         <div class="warda-boot-loader__ring-wrap">
           <div class="warda-boot-loader__ring"></div>

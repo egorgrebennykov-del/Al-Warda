@@ -1504,10 +1504,7 @@ let memoryDropshipCache = null;
 
 export async function fetchDropshipArabianPerfumes(query = "") {
   try {
-    let res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
-    if (!res.ok) {
-      res = await fetch("/data/cachedArabianPerfumes.json");
-    }
+    const res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
     if (res.ok) {
       const data = await res.json();
       const rawList = Array.isArray(data) ? data : (data.results || []);
@@ -1527,18 +1524,6 @@ export async function fetchDropshipArabianPerfumes(query = "") {
       return items;
     }
   } catch (err) {
-    try {
-      const fallbackRes = await fetch("/data/cachedArabianPerfumes.json");
-      if (fallbackRes.ok) {
-        const fallbackData = await fallbackRes.json();
-        const rawList = Array.isArray(fallbackData) ? fallbackData : (fallbackData.results || []);
-        const items = rawList
-          .filter((p) => hasCompletedGeneratedImage(p) && p.image && !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
-          .map(ensurePerfumeEnrichment);
-        if (!query) memoryDropshipCache = items;
-        return items;
-      }
-    } catch {}
     console.warn("Could not fetch dropship perfumes:", err);
   }
   return memoryDropshipCache || [];
@@ -1549,10 +1534,12 @@ async function getPerfumesUnfiltered(options = {}) {
   let base = memoryPerfumesCache || [];
   let dropship = memoryDropshipCache || [];
 
-  if (refresh || !memoryPerfumesCache || !memoryDropshipCache) {
+  if (refresh || !memoryPerfumesCache) {
     if (!catalogRefresh) {
-      catalogRefresh = Promise.allSettled([fetchPerfumesFromSupabase(), fetchDropshipArabianPerfumes()])
-        .finally(() => { catalogRefresh = null; });
+      catalogRefresh = Promise.allSettled([
+        fetchPerfumesFromSupabase(),
+        includeDropship ? fetchDropshipArabianPerfumes() : Promise.resolve([]),
+      ]).finally(() => { catalogRefresh = null; });
     }
     const results = await catalogRefresh;
     for (const result of results) {
@@ -1579,6 +1566,7 @@ async function getPerfumesUnfiltered(options = {}) {
 
 let memoryMinOrderSettings = { minOrderFrom: 0, minOrderTo: 0 };
 let minOrderSettingsLoadedAt = 0;
+let minOrderSettingsPromise = null;
 
 export function getPerfumeMinOrder(p) {
   const value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 1);
@@ -1587,23 +1575,31 @@ export function getPerfumeMinOrder(p) {
 
 export async function fetchMinOrderSettings(force = false) {
   if (!force && Date.now() - minOrderSettingsLoadedAt < 60000) return memoryMinOrderSettings;
-  try {
-    const res = await fetch(`${TABLE_PERFUMES}?select=info&slug=eq.site-settings&limit=1`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-    });
-    if (res.ok) {
-      const rows = await res.json();
-      const info = rows?.[0]?.info || {};
-      memoryMinOrderSettings = {
-        minOrderFrom: Number(info.minOrderFrom) || 0,
-        minOrderTo: Number(info.minOrderTo ?? info.maxAllowedMinOrder) || 0,
-      };
-      minOrderSettingsLoadedAt = Date.now();
+  if (minOrderSettingsPromise) return minOrderSettingsPromise;
+
+  minOrderSettingsPromise = (async () => {
+    try {
+      const res = await fetch(`${TABLE_PERFUMES}?select=info&slug=eq.site-settings&limit=1`, {
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        const info = rows?.[0]?.info || {};
+        memoryMinOrderSettings = {
+          minOrderFrom: Number(info.minOrderFrom) || 0,
+          minOrderTo: Number(info.minOrderTo ?? info.maxAllowedMinOrder) || 0,
+        };
+        minOrderSettingsLoadedAt = Date.now();
+      }
+    } catch (err) {
+      console.warn("Could not load min order settings:", err);
+    } finally {
+      minOrderSettingsPromise = null;
     }
-  } catch (err) {
-    console.warn("Could not load min order settings:", err);
-  }
-  return memoryMinOrderSettings;
+    return memoryMinOrderSettings;
+  })();
+
+  return minOrderSettingsPromise;
 }
 
 export function applyMinOrderFilter(list, settings = memoryMinOrderSettings) {

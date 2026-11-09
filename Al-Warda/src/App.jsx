@@ -17,9 +17,17 @@ import { getCookie, setCookie } from "../utils/cookies";
 import { getPerfumes } from "../utils/perfumes";
 import { fetchActiveAnnouncements } from "../utils/announcements";
 
-// Immediately warm critical perfumes data as soon as the bundle loads
+// Warm perfumes catalog when idle so initial React mount and paint are instantaneous
 if (typeof window !== "undefined") {
-  getPerfumes().catch(() => {});
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(() => {
+      getPerfumes().catch(() => {});
+    }, { timeout: 2000 });
+  } else {
+    setTimeout(() => {
+      getPerfumes().catch(() => {});
+    }, 300);
+  }
 }
 
 const loadFeatured = () => import("./components/featured/Featured");

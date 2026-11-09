@@ -40,7 +40,7 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    getBestSellerPerfumes({ refresh: true })
+    getBestSellerPerfumes()
       .then((items) => {
         if (!cancelled && Array.isArray(items) && items.length > 0) {
           setBestSellers(items.slice(0, 3));
@@ -49,7 +49,7 @@ export default function Home() {
       .catch((err) => console.warn("Could not load bestsellers:", err));
 
     const timer = window.setInterval(() => {
-      getBestSellerPerfumes({ refresh: true })
+      getBestSellerPerfumes()
         .then((items) => { if (!cancelled) setBestSellers(items.slice(0, 3)); })
         .catch((err) => console.warn("Could not refresh bestsellers:", err));
     }, 30000);
