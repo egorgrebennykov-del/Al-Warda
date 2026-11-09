@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
-import { getPerfumeById, ensurePerfumeEnrichment, getHarmoniousNotes } from "../../../utils/perfumes";
+import {
+  getPerfumeById,
+  ensurePerfumeEnrichment,
+  getHarmoniousNotes,
+  isPerfumeSet,
+  SAMPLE_VOLUMES,
+  getSamplePrice,
+  createSampleCartItem,
+} from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
@@ -22,6 +30,10 @@ export default function BookDetails() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
+  const [selectedVolume, setSelectedVolume] = useState(() => {
+    const s = searchParams.get("sample");
+    return ["1ml", "2ml", "5ml", "10ml"].includes(s) ? s : "full";
+  });
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -63,10 +75,24 @@ export default function BookDetails() {
     };
   }, [targetId]);
 
+  const isSet = perfume ? isPerfumeSet(perfume) : false;
+  const activeSampleConfig = !isSet && selectedVolume !== "full"
+    ? SAMPLE_VOLUMES.find((v) => v.key === selectedVolume)
+    : null;
+  const displayPrice = activeSampleConfig
+    ? getSamplePrice(perfume?.price, activeSampleConfig.key)
+    : Number(perfume?.price || 0);
+  const displayVolume = activeSampleConfig
+    ? `${isRu ? activeSampleConfig.labelRu : activeSampleConfig.labelEn} (${isRu ? activeSampleConfig.descRu : activeSampleConfig.descEn})`
+    : (perfume?.volume || "100 мл");
+
   const handleAddToCart = async () => {
     if (!perfume) return;
     try {
-      await addToCart(perfume, quantity);
+      const itemToAdd = activeSampleConfig
+        ? createSampleCartItem(perfume, activeSampleConfig.key, language)
+        : perfume;
+      await addToCart(itemToAdd, quantity);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 2200);
     } catch (err) {
@@ -216,7 +242,7 @@ export default function BookDetails() {
             </div>
 
             <div className="warda-details-price-row">
-              <span className="warda-details-price">€{Number(perfume.price).toFixed(2)}</span>
+              <span className="warda-details-price">€{displayPrice.toFixed(2)}</span>
               {perfume.inStock === false && <span className="warda-stock-status">{language === "ru" ? "Под заказ" : "Pre-order"}</span>}
             </div>
 
@@ -263,7 +289,7 @@ export default function BookDetails() {
             <div className="warda-specs-row">
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{language === "ru" ? "Объем:" : "Volume:"}</span>
-                <span className="warda-spec-val">{perfume.volume}</span>
+                <span className="warda-spec-val">{displayVolume}</span>
               </div>
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{language === "ru" ? "Пол:" : "Gender:"}</span>
@@ -274,6 +300,42 @@ export default function BookDetails() {
                 <span className="warda-spec-val">{language === "ru" ? (perfume.longevityRu || perfume.longevity) : (perfume.longevityEn || perfume.longevity)}</span>
               </div>
             </div>
+
+            {/* FORMAT / VOLUME SELECTOR: FULL BOTTLE OR SAMPLES (1ml, 2ml, 5ml, 10ml) */}
+            {!isSet && (
+              <div className="warda-details-volumes">
+                <span className="warda-details-volumes-label">
+                  <i className="ri-flask-line" style={{ marginRight: "0.4rem", color: "#d4af37" }} />
+                  {isRu ? "Выберите формат (флакон или пробник):" : "Choose format (bottle or sample):"}
+                </span>
+                <div className="warda-details-volume-pills">
+                  <button
+                    type="button"
+                    className={`warda-volume-pill ${selectedVolume === "full" ? "active" : ""}`}
+                    onClick={() => setSelectedVolume("full")}
+                  >
+                    <span className="warda-volume-pill__title">{perfume.volume || "100 мл"}</span>
+                    <span className="warda-volume-pill__sub">{isRu ? "Оригинальный флакон" : "Full Bottle"}</span>
+                    <span className="warda-volume-pill__price">€{Number(perfume.price).toFixed(2)}</span>
+                  </button>
+                  {SAMPLE_VOLUMES.map((sv) => {
+                    const sPrice = getSamplePrice(perfume.price, sv.key);
+                    return (
+                      <button
+                        key={sv.key}
+                        type="button"
+                        className={`warda-volume-pill ${selectedVolume === sv.key ? "active" : ""}`}
+                        onClick={() => setSelectedVolume(sv.key)}
+                      >
+                        <span className="warda-volume-pill__title">{isRu ? sv.labelRu : sv.labelEn}</span>
+                        <span className="warda-volume-pill__sub">{isRu ? sv.descRu : sv.descEn}</span>
+                        <span className="warda-volume-pill__price">€{sPrice.toFixed(2)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* ACTION ROW */}
             <div className="warda-details-actions">

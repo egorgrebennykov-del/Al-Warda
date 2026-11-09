@@ -186,6 +186,128 @@
   backdrop-filter: blur(6px);
 }
 
+.warda-sample-card__badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  background: rgba(8, 14, 20, 0.9);
+  border: 1px solid rgba(135, 206, 235, 0.6);
+  color: #b8e6ff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+/* -------------------------------------------------------------
+   TRY & DISCOVER: LUXURY ASSURANCE BENEFITS
+   ------------------------------------------------------------- */
+.warda-sets-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem auto 2.2rem;
+  max-width: 960px;
+}
+
+.warda-sets-benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(26, 20, 15, 0.7), rgba(14, 11, 8, 0.85));
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  text-align: left;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.warda-sets-benefit-item > i {
+  font-size: 1.5rem;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.warda-sets-benefit-item strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #f7ede2;
+  font-family: var(--second-font, 'Cinzel', serif);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.warda-sets-benefit-item span {
+  display: block;
+  font-size: 0.72rem;
+  color: #b5a48e;
+  line-height: 1.35;
+}
+
+/* -------------------------------------------------------------
+   CARD VOLUME SWITCHER PILLS (1ml, 2ml, 5ml, 10ml)
+   ------------------------------------------------------------- */
+.warda-card-volumes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.45rem 0 0.65rem;
+  flex-wrap: wrap;
+}
+
+.warda-card-vol-pill {
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  background: rgba(22, 17, 14, 0.75);
+  color: #dfd3c3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+.warda-card-vol-pill:hover {
+  border-color: #d4af37;
+  color: #f7ede2;
+  background: rgba(212, 175, 55, 0.18);
+  transform: translateY(-1px);
+}
+
+.warda-card-vol-pill.active {
+  background: linear-gradient(135deg, #d4af37 0%, #a67c1e 100%);
+  border-color: #ffd700;
+  color: #0b0806;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
+}
+
+.warda-sets-load-more {
+  text-align: center;
+  margin: 2.5rem 0 1rem;
+}
+
+.warda-sets-load-more__btn {
+  padding: 0.75rem 2.2rem !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+.warda-sets-load-more__hint {
+  font-size: 0.78rem;
+  color: #a89882;
+  margin-top: 0.6rem;
+}
+
 @media (max-width: 768px) {
   .warda-sets-subbar {
     flex-direction: column;
@@ -334,5 +456,27 @@
     letter-spacing: 0.04em !important;
     gap: 0.2rem !important;
     border-radius: 4px !important;
+  }
+  .warda-sample-card__badge {
+    top: 6px !important;
+    left: 6px !important;
+    padding: 2px 6px !important;
+    font-size: 0.55rem !important;
+    letter-spacing: 0.04em !important;
+    gap: 0.2rem !important;
+    border-radius: 4px !important;
+  }
+  .warda-card-volumes {
+    gap: 0.2rem !important;
+    margin: 0.3rem 0 0.45rem !important;
+  }
+  .warda-card-vol-pill {
+    padding: 0.15rem 0.35rem !important;
+    font-size: 0.62rem !important;
+  }
+  .warda-sets-benefits {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+    margin: 1rem 0 1.5rem !important;
   }
 }

@@ -327,6 +327,8 @@ function App() {
           <Route path="/shop" element={<Featured />} />
           <Route path="/featured" element={<Featured />} />
           <Route path="/sets" element={<Sets />} />
+          <Route path="/try-and-discover" element={<Sets />} />
+          <Route path="/discovery" element={<Sets />} />
           <Route path="/discount" element={<Discount />} />
           <Route path="/new" element={<NewBooks />} />
           <Route path="/about" element={<About />} />

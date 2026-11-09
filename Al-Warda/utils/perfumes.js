@@ -1716,6 +1716,45 @@ export async function getBestSellerPerfumes(options = {}) {
   return best.length > 0 ? best.slice(0, 3) : pool.slice(0, 3);
 }
 
+export const SAMPLE_VOLUMES = [
+  { key: "1ml", ml: 1, labelRu: "1 мл", labelEn: "1 ml", descRu: "Фирменный микро-пробник", descEn: "Micro-sample vial", factor: 0.05, baseFee: 2.50, minPrice: 3.90 },
+  { key: "2ml", ml: 2, labelRu: "2 мл", labelEn: "2 ml", descRu: "Спрей-виалка", descEn: "Spray vial", factor: 0.09, baseFee: 3.20, minPrice: 5.90 },
+  { key: "5ml", ml: 5, labelRu: "5 мл", labelEn: "5 ml", descRu: "Тревел-атомайзер", descEn: "Travel atomizer", factor: 0.18, baseFee: 4.90, minPrice: 10.90 },
+  { key: "10ml", ml: 10, labelRu: "10 мл", labelEn: "10 ml", descRu: "Люкс-миниатюра", descEn: "Deluxe decant", factor: 0.32, baseFee: 6.90, minPrice: 18.90 },
+];
+
+export function getSamplePrice(perfumePrice, volumeKey = "1ml") {
+  const p = Number(perfumePrice) || 45;
+  const cfg = SAMPLE_VOLUMES.find((v) => v.key === volumeKey) || SAMPLE_VOLUMES[0];
+  const raw = Math.round((p * cfg.factor + cfg.baseFee) * 10) / 10;
+  return Math.max(cfg.minPrice, raw);
+}
+
+export function createSampleCartItem(perfume, volumeKey = "1ml", language = "ru") {
+  const cfg = SAMPLE_VOLUMES.find((v) => v.key === volumeKey) || SAMPLE_VOLUMES[0];
+  const samplePrice = getSamplePrice(perfume?.price, cfg.key);
+  const sampleLabel = language === "ru" ? `Пробник ${cfg.labelRu}` : `Sample ${cfg.labelEn}`;
+  const baseTitle = perfume?.name || perfume?.title || "Al-Warda Fragrance";
+  const uniqueId = `sample-${perfume?.id || "item"}-${cfg.key}`;
+  const baseUrl = getPerfumeUrl(perfume);
+
+  return {
+    id: uniqueId,
+    perfume_id: uniqueId,
+    title: `${baseTitle} (${sampleLabel})`,
+    name: `${baseTitle} (${sampleLabel})`,
+    brand: perfume?.brand || "Al-Warda",
+    price: samplePrice,
+    image: perfume?.image || perfume?.fullCardImage || "/assets/img/perfumes/hero-perfume.png",
+    link: `${baseUrl}?sample=${cfg.key}`,
+    url: `${baseUrl}?sample=${cfg.key}`,
+    volume: cfg.labelRu,
+    isSample: true,
+    sampleVolume: cfg.key,
+    originalPerfumeId: perfume?.id,
+  };
+}
+
 export function getCategories() {
   return PERFUME_CATEGORIES;
 }

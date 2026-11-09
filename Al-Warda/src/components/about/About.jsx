@@ -293,8 +293,8 @@ export default function About() {
             <span>{isRu ? "ПЕРЕЙТИ В КАТАЛОГ" : "EXPLORE CATALOG"}</span>
           </Link>
           <Link to="/sets" className="warda-btn warda-about-cta__btn-secondary">
-            <i className="ri-gift-2-line" />
-            <span>{isRu ? "ПОДАРОЧНЫЕ СЕТЫ" : "VIEW GIFT SETS"}</span>
+            <i className="ri-flask-line" />
+            <span>{isRu ? "TRY & DISCOVER" : "TRY & DISCOVER"}</span>
           </Link>
           <button
             type="button"
