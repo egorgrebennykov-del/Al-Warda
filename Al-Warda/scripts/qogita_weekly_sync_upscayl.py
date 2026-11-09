@@ -374,6 +374,8 @@ def sync_to_supabase(perfumes_list):
                 "volume": "100 мл EDP",
                 "concentration": "Eau de Parfum",
                 "gtin": p.get("gtin") or "",
+                "minOrderQuantity": int(p.get("minOrderQuantity") or 1),
+                "unit": int(p.get("minOrderQuantity") or 1),
                 "rawImage": raw_image,
                 "imageGeneration": generation,
                 "description": p.get("descriptionRu") or rich["descriptionRu"],
@@ -501,6 +503,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 currency = "EUR"
 
             gtin = item.get("gtin")
+            min_order = int(item.get("unit") or 1)
             name_clean = name.strip().lower()
 
             # Delta / incremental check
@@ -516,6 +519,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 existing_item["gtin"] = gtin or existing_item.get("gtin")
                 existing_item["rawImage"] = raw_img
                 existing_info["gtin"] = gtin or existing_info.get("gtin", "")
+                existing_info["minOrderQuantity"] = min_order
                 existing_info["rawImage"] = raw_img
                 existing_item["image"] = (
                     generation.get("imageUrl")
@@ -573,6 +577,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 "rawImage": raw_img,
                 "imageGeneration": {"status": "pending"},
                 "gtin": gtin,
+                "minOrderQuantity": min_order,
                 "category": rich["category"],
                 "categoryEn": rich["categoryEn"],
                 "categorySlug": rich["categorySlug"],
@@ -613,6 +618,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         "sillageEn": "Noticeable, alluring sillage",
                         "volume": "100 мл EDP",
                         "gtin": gtin or "",
+                        "minOrderQuantity": min_order,
+                        "unit": min_order,
                         "rawImage": raw_img,
                         "imageGeneration": {"status": "pending"},
                         "description": rich["descriptionRu"],
@@ -629,6 +636,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 if existing_info.get("rawImage") != raw_img or not existing_info.get("imageGeneration"):
                     existing_info["imageGeneration"] = {"status": "pending"}
                 existing_info["gtin"] = gtin or existing_info.get("gtin", "")
+                existing_info["minOrderQuantity"] = min_order
+                existing_info["unit"] = min_order
                 existing_info["rawImage"] = raw_img
                 existing_enriched[key]["image"] = (
                     existing_info["imageGeneration"].get("imageUrl")

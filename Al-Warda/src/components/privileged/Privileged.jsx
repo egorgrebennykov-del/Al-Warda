@@ -89,6 +89,9 @@ const PRIVILEGED_TAB_ALIASES = {
   productimages: "product-images",
   images: "product-images",
   photos: "product-images",
+  other: "other",
+  misc: "other",
+  settings: "other",
 };
 
 function resolvePrivilegedTab(rawTab) {
@@ -424,6 +427,76 @@ export default function Privileged() {
   const [announcementFrom, setAnnouncementFrom] = useState("");
   const [announcementUntil, setAnnouncementUntil] = useState("");
   const [announcementActive, setAnnouncementActive] = useState(true);
+
+  // Other / site settings state
+  const [minOrderFrom, setMinOrderFrom] = useState("");
+  const [minOrderTo, setMinOrderTo] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [catalogMinOrders, setCatalogMinOrders] = useState([]);
+
+  useEffect(() => {
+    if (!isPrivilegedUser || activeSection !== "other") return;
+    let cancelled = false;
+    fetch("/api/admin/settings", { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled || data.error) return;
+        setMinOrderFrom(data.minOrderFrom ? String(data.minOrderFrom) : "");
+        setMinOrderTo(data.minOrderTo ? String(data.minOrderTo) : "");
+        setSettingsLoaded(true);
+      })
+      .catch(() => {});
+    import("../../../utils/perfumes").then(async (mod) => {
+      try {
+        const all = await mod.getPerfumes({ refresh: true });
+        if (!cancelled) setCatalogMinOrders(all.map((p) => mod.getPerfumeMinOrder(p)));
+      } catch {
+        // ignore
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isPrivilegedUser, activeSection]);
+
+  const handleSaveSettings = async (e) => {
+    e?.preventDefault();
+    const from = minOrderFrom === "" ? 0 : Number(minOrderFrom);
+    const to = minOrderTo === "" ? 0 : Number(minOrderTo);
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0) {
+      showNotice(language === "ru" ? "Введите целые числа не меньше 0" : "Enter whole numbers, 0 or greater", true);
+      return;
+    }
+    if (to > 0 && from > to) {
+      showNotice(language === "ru" ? "«От» не может быть больше «До»" : "\"From\" cannot exceed \"To\"", true);
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ minOrderFrom: from, minOrderTo: to }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      const mod = await import("../../../utils/perfumes");
+      await mod.fetchMinOrderSettings(true);
+      showNotice(language === "ru" ? "Настройка сохранена" : "Setting saved");
+    } catch (err) {
+      showNotice(err.message, true);
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const settingsFromNum = minOrderFrom === "" ? 0 : Number(minOrderFrom) || 0;
+  const settingsToNum = minOrderTo === "" ? 0 : Number(minOrderTo) || 0;
+  const matchingPerfumesCount = catalogMinOrders.filter(
+    (q) => q >= settingsFromNum && (!settingsToNum || q <= settingsToNum),
+  ).length;
 
   // Check auth and verify privileged role/status
   useEffect(() => {
@@ -1719,6 +1792,17 @@ export default function Privileged() {
         >
           <i className="ri-image-edit-line" />
           <span>{language === "ru" ? "Фото товаров" : "Product images"}</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "other"}
+          className={`privileged__nav-btn ${activeSection === "other" ? "privileged__nav-btn--active" : ""}`}
+          onClick={() => setActiveSection("other")}
+        >
+          <i className="ri-settings-3-line" />
+          <span>{language === "ru" ? "Прочее" : "Other"}</span>
         </button>
       </div>
 
@@ -5243,6 +5327,68 @@ export default function Privileged() {
         {activeSection === "product-images" && (
           <div className="privileged__panel">
             <ProductImageQueue language={language} onOpenQogita={() => setActiveSection("qogita")} />
+          </div>
+        )}
+        {activeSection === "other" && (
+          <div className="privileged__panel">
+            <div className="privileged__panel-header">
+              <div>
+                <h2 className="privileged__panel-title">
+                  <i className="ri-settings-3-line" />
+                  {language === "ru" ? "Прочее" : "Other"}
+                </h2>
+              </div>
+            </div>
+            <form onSubmit={handleSaveSettings} style={{ display: "grid", gap: "1rem", maxWidth: 520 }}>
+              <strong>
+                {language === "ru" ? "Допустимый минимальный заказ (шт.)" : "Allowed minimum order (pcs)"}
+              </strong>
+              <p className="privileged__stats-text">
+                {language === "ru"
+                  ? "Показываются только духи, у которых минимальный заказ попадает в диапазон от и до (включительно). Например, «от 3 до 8» — духи с минимальным заказом 3–8 штук. Если указать только «До» = 2, будут показаны духи с минимальным заказом от 1 до 2. Пустое поле — без ограничения."
+                  : "Only perfumes whose minimum order falls within the from–to range (inclusive) are shown. E.g. 'from 3 to 8' shows perfumes with a minimum order of 3–8 pcs. Setting only 'To' = 2 shows 1 to 2. Empty means no limit."}
+              </p>
+              <div className="privileged__form-row-2">
+                <div className="privileged__form-group">
+                  <label className="privileged__form-label">{language === "ru" ? "От (шт.)" : "From (pcs)"}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="privileged__form-input"
+                    placeholder="1"
+                    value={minOrderFrom}
+                    onChange={(e) => setMinOrderFrom(e.target.value)}
+                  />
+                </div>
+                <div className="privileged__form-group">
+                  <label className="privileged__form-label">{language === "ru" ? "До (шт.)" : "To (pcs)"}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="privileged__form-input"
+                    placeholder="∞"
+                    value={minOrderTo}
+                    onChange={(e) => setMinOrderTo(e.target.value)}
+                  />
+                </div>
+              </div>
+              {catalogMinOrders.length > 0 && (
+                <span className="privileged__stats-text">
+                  {language === "ru"
+                    ? `Подходит под условие: ${matchingPerfumesCount} из ${catalogMinOrders.length} духов`
+                    : `Matching: ${matchingPerfumesCount} of ${catalogMinOrders.length} perfumes`}
+                </span>
+              )}
+              <div>
+                <button type="submit" className="button" disabled={savingSettings || !settingsLoaded}>
+                  {savingSettings
+                    ? language === "ru" ? "Сохранение..." : "Saving..."
+                    : language === "ru" ? "Сохранить" : "Save"}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>

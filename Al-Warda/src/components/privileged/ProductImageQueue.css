@@ -532,3 +532,17 @@
     flex-direction: column;
   }
 }
+
+.product-image-queue__failed-top {
+  flex-wrap: wrap;
+}
+
+.product-image-queue__failed-requeue-one {
+  margin-left: auto;
+  color: #684d35;
+  border-color: #c9b196;
+}
+
+.product-image-queue__failed-requeue-one:hover:not(:disabled) {
+  background: #f5efe5;
+}

@@ -330,6 +330,164 @@ export async function getProductImageQueueStatus(request, env) {
   }
 }
 
+function parseIds(body) {
+  if (!body || !Array.isArray(body.ids) || body.ids.length === 0) return null;
+  const ids = [];
+  const seen = new Set();
+  for (const rawId of body.ids) {
+    const id = String(rawId ?? "").trim();
+    if (!/^\d{1,20}$/.test(id)) return { error: `Invalid product ID: ${id}` };
+    if (!seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  }
+  return { ids };
+}
+
+export async function requeueFailedProductItems(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+    const parsed = parseIds(body);
+    if (!parsed) return json({ error: "Select at least one failed product ID" }, 400);
+    if (parsed.error) return json({ error: parsed.error }, 400);
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+    let requeued = 0;
+    for (let i = 0; i < parsed.ids.length; i += 200) {
+      const chunk = parsed.ids.slice(i, i + 200);
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("select", "id,info");
+      url.searchParams.set("id", `in.(${chunk.join(",")})`);
+      const result = await fetch(url, { headers });
+      if (!result.ok) throw new Error(`Could not load failed items (${result.status})`);
+      const rows = await result.json();
+      for (const row of rows) {
+        const info = row.info && typeof row.info === "object" ? { ...row.info } : {};
+        if (info.imageGeneration?.status === "failed") {
+          info.imageGeneration = { status: "pending" };
+        }
+        if (info.imageGenerationReplacement?.status === "failed") {
+          delete info.imageGenerationReplacement;
+        }
+        const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+        patchUrl.searchParams.set("id", `eq.${row.id}`);
+        const patch = await fetch(patchUrl, {
+          method: "PATCH",
+          headers: { ...headers, Prefer: "return=minimal" },
+          body: JSON.stringify({ info }),
+        });
+        if (!patch.ok) {
+          const details = (await patch.text()).slice(0, 300);
+          throw new Error(`Could not requeue item ${row.id} (${patch.status}): ${details}`);
+        }
+        requeued++;
+      }
+    }
+    return json({ requeuedCount: requeued, ids: parsed.ids });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not requeue failed items" }, 500);
+  }
+}
+
+const SETTINGS_SLUG = "site-settings";
+
+async function loadSettingsRow(env, key) {
+  const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
+  url.searchParams.set("select", "id,info");
+  url.searchParams.set("slug", `eq.${SETTINGS_SLUG}`);
+  url.searchParams.set("limit", "1");
+  const result = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  if (!result.ok) throw new Error(`Could not load settings (${result.status})`);
+  const rows = await result.json();
+  return rows[0] || null;
+}
+
+export async function getSiteSettings(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    const row = await loadSettingsRow(env, getServiceKey(env));
+    return json({ minOrderFrom: Number(row?.info?.minOrderFrom) || 0, minOrderTo: Number(row?.info?.minOrderTo ?? row?.info?.maxAllowedMinOrder) || 0 });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not load settings" }, 500);
+  }
+}
+
+export async function saveSiteSettings(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+    const from = Number(body?.minOrderFrom ?? 0);
+    const to = Number(body?.minOrderTo ?? 0);
+    if (![from, to].every((v) => Number.isInteger(v) && v >= 0 && v <= 100000)) {
+      return json({ error: "minOrderFrom and minOrderTo must be integers from 0 to 100000" }, 400);
+    }
+    if (to > 0 && from > to) {
+      return json({ error: "minOrderFrom must not exceed minOrderTo" }, 400);
+    }
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=minimal" };
+    const row = await loadSettingsRow(env, key);
+    let response;
+    if (row) {
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("id", `eq.${row.id}`);
+      response = await fetch(url, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ info: { ...(row.info || {}), minOrderFrom: from, minOrderTo: to, maxAllowedMinOrder: to } }),
+      });
+    } else {
+      response = await fetch(`${baseUrl}/rest/v1/stocks`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          slug: SETTINGS_SLUG,
+          name: "Site settings",
+          title: "Site settings",
+          brand: "system",
+          price: 0,
+          in_stock: false,
+          info: { minOrderFrom: from, minOrderTo: to, maxAllowedMinOrder: to },
+        }),
+      });
+    }
+    if (!response.ok) {
+      const details = (await response.text()).slice(0, 300);
+      throw new Error(`Could not save settings (${response.status}): ${details}`);
+    }
+    return json({ minOrderFrom: from, minOrderTo: to });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not save settings" }, 500);
+  }
+}
+
 export async function deleteFailedProductItems(request, env) {
   try {
     const auth = await requirePrivilegedUser(request, env);

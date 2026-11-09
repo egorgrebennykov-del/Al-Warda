@@ -28,6 +28,9 @@ import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
 import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
+  requeueFailedProductItems,
+  getSiteSettings,
+  saveSiteSettings,
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
@@ -175,6 +178,28 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await deleteFailedProductItems(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/product-images/requeue" && req.method === "POST") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await requeueFailedProductItems(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/settings" && (req.method === "GET" || req.method === "POST")) {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = req.method === "GET" ? await getSiteSettings(request, process.env) : await saveSiteSettings(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);

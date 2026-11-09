@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
+  requeueFailedProductItems,
 } from "../server/productImageQueueAdmin.js";
 
 const originalFetch = globalThis.fetch;
@@ -202,5 +203,25 @@ describe("product image queue admin API", () => {
     assert.equal(payload.deletedCount, 3);
     assert.deepEqual(payload.ids, ["5292", "5293", "4986"]);
     assert.deepEqual(deletedQueries, ["in.(5292,5293,4986)"]);
+  });
+
+  it("returns failed items to pending", async () => {
+    const patched = [];
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) return Response.json([{ id: "admin-1", status: "privileged" }]);
+      if (init.method === "PATCH") {
+        patched.push(JSON.parse(init.body).info.imageGeneration);
+        return new Response(null, { status: 204 });
+      }
+      return Response.json([{ id: 7, info: { rawImage: "x", imageGeneration: { status: "failed", error: "e" } } }]);
+    };
+    const res = await requeueFailedProductItems(
+      request("/api/admin/product-images/requeue", userCookie(), { method: "POST", body: JSON.stringify({ ids: ["7"] }) }),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "k" },
+    );
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).requeuedCount, 1);
+    assert.deepEqual(patched, [{ status: "pending" }]);
   });
 });

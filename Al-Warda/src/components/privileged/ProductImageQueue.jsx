@@ -273,6 +273,44 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     }
   };
 
+  const requeueFailed = async (explicitIds = null) => {
+    const ids = explicitIds || Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
+    if (!ids.length) return;
+    setDeletingFailed(true);
+    setBusy(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch("/api/admin/product-images/requeue", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
+      }
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+      setSelectedFailed((current) => {
+        const next = { ...current };
+        for (const id of ids) delete next[String(id)];
+        return next;
+      });
+      setActionMessage(
+        isRussian
+          ? `Возвращено в ожидание: ${payload.requeuedCount ?? ids.length}.`
+          : `Returned to pending: ${payload.requeuedCount ?? ids.length}.`,
+      );
+      await loadStatus();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setDeletingFailed(false);
+      setBusy(false);
+    }
+  };
+
   const deleteImages = async () => {
     const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({ id, imageUrl }));
     if (!images.length) return;
@@ -599,8 +637,8 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
             </h3>
             <p>
               {isRussian
-                ? "Товары, при обработке которых возникла ошибка. Вы можете выбрать отдельные позиции или все сразу и удалить их из базы данных."
-                : "Products that failed during image generation. You can select individual items or all at once and delete them from the database."}
+                ? "Товары, при обработке которых возникла ошибка. Вы можете выбрать отдельные позиции или все сразу, вернуть их в ожидание или удалить из базы данных."
+                : "Products that failed during image generation. You can select individual items or all at once, return them to pending or delete them from the database."}
             </p>
           </div>
           {failedItems.length > 0 && (
@@ -622,6 +660,17 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                 {allFailedSelected
                   ? (isRussian ? "Снять выделение" : "Deselect all")
                   : (isRussian ? `Выбрать все (${failedItems.length})` : `Select all (${failedItems.length})`)}
+              </button>
+              <button
+                type="button"
+                className="product-image-queue__start"
+                disabled={busy || deletingFailed || selectedFailedIds.length === 0}
+                onClick={() => requeueFailed()}
+              >
+                <i className="ri-refresh-line" />
+                {isRussian
+                  ? `Вернуть в ожидание (${selectedFailedIds.length})`
+                  : `Return to pending (${selectedFailedIds.length})`}
               </button>
               <button
                 type="button"
@@ -672,6 +721,15 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                         />
                         <span>ID #{itemId}</span>
                       </label>
+                      <button
+                        type="button"
+                        className="product-image-queue__failed-delete-one product-image-queue__failed-requeue-one"
+                        disabled={busy || deletingFailed}
+                        onClick={() => requeueFailed([itemId])}
+                      >
+                        <i className="ri-refresh-line" />
+                        {isRussian ? "В ожидание" : "To pending"}
+                      </button>
                       <button
                         type="button"
                         className="product-image-queue__failed-delete-one"
