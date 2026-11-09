@@ -72,7 +72,7 @@ const GENDER_OPTIONS = [
 
 const POPULAR_NOTES = [
   { id: "oud", nameRu: "Уд", nameEn: "Oud", keywords: ["уд", "агар", "oud", "agarwood"] },
-  { id: "rose", nameRu: "Дамасская и таифская роза", nameEn: "Damask & Taif Rose", keywords: ["роз", "rose", "ward", "taif"] },
+  { id: "rose", nameRu: "Дамасская и таифская роза", nameEn: "Damask & Taif Rose", keywords: ["роза", "розы", "розе", "розу", "розой", "rose", "ward", "taif"] },
   { id: "vanilla", nameRu: "Мадагаскарская ваниль", nameEn: "Vanilla", keywords: ["ванил", "vanil"] },
   { id: "amber", nameRu: "Золотая и серая амбра", nameEn: "Golden & Grey Amber", keywords: ["амбр", "amber", "ambrox"] },
   { id: "musk", nameRu: "Белый мускус", nameEn: "White Musk", keywords: ["мускус", "musk"] },
@@ -110,6 +110,44 @@ const POPULAR_NOTES = [
   { id: "mint", nameRu: "Свежая мята и шалфей", nameEn: "Fresh Mint & Sage", keywords: ["мят", "шалфей", "геран", "mint", "sage", "geranium"] },
   { id: "oakmoss", nameRu: "Дубовый мох", nameEn: "Oakmoss", keywords: ["мох", "oakmoss", "берез", "birch"] },
 ];
+
+/**
+ * High-precision note matchers with word-boundary awareness and negative exclusions.
+ * Prevents false positives like "розовый перец" (pink pepper) matching "роза" (rose),
+ * or "пудра" matching "уд", or "pineapple" matching "apple".
+ */
+const NOTE_MATCHERS = {
+  rose: (text) => {
+    const clean = text
+      .replace(/\b(?:pink\s+pepper(?:corn)?|baies?\s+roses?)\b/gi, " ")
+      .replace(/розов\w*\s+перец\w*/gi, " ")
+      .replace(/розмарин\w*|rosemary/gi, " ")
+      .replace(/розов\w*\s+дерев\w*|rosewood/gi, " ")
+      .replace(/тубероз\w*|tuberose/gi, " ");
+    return /(?:^|[^\p{L}\p{N}])(?:дамасск\w*\s+роз\w*|таифск\w*\s+роз\w*|болгарск\w*\s+роз\w*|столепестков\w*\s+роз\w*|роз[аеуой]|розы|роз(?:\s|$|[,\.!\?;:])|розов\w*\s+(?:масл|вод|абсолют|лепестк)|rose|roses|damask\s+rose|taif\s+rose|ward|taif)(?:$|[^\p{L}\p{N}])/iu.test(clean);
+  },
+  oud: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:уд|уда|удом|уде|удов\w*|агар\w*|oud|agarwood|aoud|oudh)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  mint: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:мят\w*|шалфей\w*|геран\w*|mint|spearmint|peppermint|sage|clary\s+sage|geranium)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  pepper: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:перец|перц\w*|розов\w*\s+перец\w*|черн\w*\s+перец\w*|сычуаньск\w*\s+перец\w*|pepper|peppercorn|pink\s+pepper|black\s+pepper)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  leather: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:кож[аеуой]|кожи|кожан\w*|замш\w*|leather|suede)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  pear: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:груш\w*|\bpear\b|\bpears\b)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  apple: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:яблок\w*|\bapple\b|\bapples\b)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+  oakmoss: (text) => {
+    return /(?:^|[^\p{L}\p{N}])(?:мох|мха|мхом|дубов\w*\s+мох\w*|берез\w*|oakmoss|moss|birch)(?:$|[^\p{L}\p{N}])/iu.test(text);
+  },
+};
 
 const EXTRA_FILTER_CATEGORIES = [
   { id: "oriental", slug: "oriental", nameRu: "ВОСТОЧНЫЕ И АМБРОВЫЕ", nameEn: "ORIENTAL & AMBER" },
@@ -394,8 +432,18 @@ export default function Featured() {
           if (!noteObj) {
             return allNotesText.includes(cleanKey);
           }
-          if (Array.isArray(noteObj.keywords) && noteObj.keywords.some((kw) => allNotesText.includes(kw.toLowerCase()))) {
-            return true;
+          if (typeof NOTE_MATCHERS[noteObj.id] === "function") {
+            return NOTE_MATCHERS[noteObj.id](allNotesText);
+          }
+          if (Array.isArray(noteObj.keywords)) {
+            return noteObj.keywords.some((kw) => {
+              const kwLower = kw.toLowerCase();
+              if (kwLower.length <= 4) {
+                const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{N}])`, "iu").test(allNotesText);
+              }
+              return allNotesText.includes(kwLower);
+            });
           }
           return (
             allNotesText.includes(noteObj.nameRu.toLowerCase()) ||
