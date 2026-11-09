@@ -26,6 +26,27 @@ const STORE_NAMES = {
   "middle_east": "Middle East Hub",
 };
 
+export function formatAssistantSpeech(content) {
+  if (!content || typeof content !== "string") return "";
+
+  let text = content;
+
+  // 1. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
+  // put it onto a new paragraph instead of awkwardly gluing it to the previous line.
+  text = text.replace(/([.!?…])\s*([\p{Extended_Pictographic}\u2600-\u27bf])\s*([\p{L}])/gu, "$1\n\n$2 $3");
+
+  // 2. Prevent emoji from hanging at the end of a line without its opening word
+  text = text.replace(/([\p{Extended_Pictographic}\u2600-\u27bf])\s+([\p{L}])/gu, "$1\u00A0$2");
+
+  // 3. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
+  text = text.replace(/(?<=^|[\s«"'(])([а-яёА-ЯЁa-zA-Z])\s+/gu, "$1\u00A0");
+
+  // 4. Normalize excessive newlines
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  return text.trim();
+}
+
 export default function WardaAssistant() {
   const { language, t } = useLanguage();
   const confirm = useConfirm();
@@ -459,7 +480,7 @@ export default function WardaAssistant() {
       const assistantMsg = {
         id: generateId("assistant"),
         role: "assistant",
-        content: data?.message || "",
+        content: formatAssistantSpeech(data?.message || ""),
         emotion: assistantEmotion,
         books: Array.isArray(data?.books) ? data.books : [],
         referToAdmin: Boolean(data?.referToAdmin),
@@ -751,7 +772,11 @@ export default function WardaAssistant() {
                             : undefined
                         }
                       >
-                        <p className="warda-msg-text">{msg.content}</p>
+                        <p className="warda-msg-text">
+                          {msg.role === "assistant"
+                            ? formatAssistantSpeech(msg.content)
+                            : msg.content}
+                        </p>
 
                         {isLongMsg && (
                           <button

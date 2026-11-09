@@ -817,6 +817,27 @@ export function capitalizeReligionNames(text) {
   return res;
 }
 
+export function formatAssistantSpeech(content) {
+  if (!content || typeof content !== "string") return "";
+
+  let text = content;
+
+  // 1. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
+  // put it onto a new paragraph instead of awkwardly gluing it to the previous line.
+  text = text.replace(/([.!?…])\s*([\p{Extended_Pictographic}\u2600-\u27bf])\s*([\p{L}])/gu, "$1\n\n$2 $3");
+
+  // 2. Prevent emoji from hanging at the end of a line without its opening word
+  text = text.replace(/([\p{Extended_Pictographic}\u2600-\u27bf])\s+([\p{L}])/gu, "$1\u00A0$2");
+
+  // 3. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
+  text = text.replace(/(?<=^|[\s«"'(])([а-яёА-ЯЁa-zA-Z])\s+/gu, "$1\u00A0");
+
+  // 4. Normalize excessive newlines
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  return text.trim();
+}
+
 // ============================================================================
 // 5. YASMIN SYSTEM INSTRUCTION & GEMINI CALLER
 // ============================================================================
@@ -879,9 +900,15 @@ STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
 5. "bookIds": return ONLY exact ids from the provided items (3–6 for recommendations, 1 for a single bottle). Every perfume you name in "message" MUST have its id in "bookIds". For conversation without products use [].
 6. Cart / account / navigation questions: use "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
 
-STYLE:
+STYLE & EMOJI FORMATTING:
 - Reply in the exact language of the customer's last message (Russian or English; other languages are fine if the customer uses them).
-- Natural, elegant, human. Usually 2–6 sentences; longer only when the customer asks for details. No bullet-point walls, no robotic phrases, at most one or two tasteful emojis.
+- Natural, elegant, human. Usually 2–6 sentences; longer only when the customer asks for details. No bullet-point walls, no robotic phrases.
+- TASTEFUL EMOJIS (1–2 per message).
+- CRITICAL EMOJI FORMATTING:
+  * NEVER glue an emoji between two sentences on the same line (e.g. NEVER write: '...история. ✨ А о чём...').
+  * When introducing a question, transition, or new thought with an emoji (✨, 🌹, 💬, etc.), ALWAYS start a fresh paragraph using two newlines:
+    Example:
+    'Люблю открывать для гостей мир восточных ароматов, где у каждого флакона есть своя история.\n\n✨ А о чём или о ком вам было бы интересно узнать сегодня?'
 
 OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
@@ -1167,8 +1194,10 @@ No catalog items are attached to this turn. Respond to what the customer actuall
 
   const finalPerfumes = resolvedAI.slice(0, 6);
 
-  const cleanMessage = sanitizeReligiousPhrases(
-    capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""))
+  const cleanMessage = formatAssistantSpeech(
+    sanitizeReligiousPhrases(
+      capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""))
+    )
   );
   const cleanEmotion = getCanonicalEmotion(aiResult.emotion || "greeting");
 

@@ -7,6 +7,7 @@ import {
   getCanonicalEmotion,
   CANONICAL_EMOTION_MAP,
   processWardaChat,
+  formatAssistantSpeech,
 } from "../server/wardaAssistantService.js";
 
 test("enforceFeminineSelfReferences converts masculine self-references to feminine", () => {
@@ -199,4 +200,27 @@ test("processWardaChat answers faith and identity queries with warmth and self-a
   assert.ok(result.message.includes("Ислам"), "Should capitalize Islam");
   assert.ok(result.message.includes("Суннит"), "Should capitalize Sunni");
   assert.equal(result.books.length, 0, "Should not pitch products when asked personal faith question");
+});
+
+test("formatAssistantSpeech formats emojis on fresh paragraphs and avoids orphan letters", () => {
+  const raw =
+    "Люблю открывать для них удивительный мир восточных ароматов, где у каждого флакона есть свой характер и своя история. ✨ А о чём или о ком вам было бы интересно узнать сегодня?";
+
+  const formatted = formatAssistantSpeech(raw);
+
+  // Must have paragraph break before ✨
+  assert.ok(
+    formatted.includes("своя история.\n\n✨"),
+    "Should separate transition with double newline before emoji"
+  );
+  // Non-breaking space after emoji
+  assert.ok(
+    formatted.includes("✨\u00A0А"),
+    "Should bind emoji to the following word with non-breaking space"
+  );
+  // Non-breaking space after single-letter prepositions
+  assert.ok(
+    formatted.includes("А\u00A0о\u00A0чём"),
+    "Should bind prepositions with non-breaking spaces"
+  );
 });
