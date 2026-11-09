@@ -505,9 +505,9 @@ export default function Featured() {
     return () => observer.disconnect();
   }, [isLoadingMore, visibleLimit, filteredPerfumes.length, loadMoreItems]);
 
-  const handleAddToCart = (perfume, e) => {
+  const handleAddToCart = async (perfume, e) => {
     e.stopPropagation();
-    addToCart(perfume, 1);
+    await addToCart(perfume, 1);
     setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
     setTimeout(() => {
       setAddedIds((prev) => ({ ...prev, [perfume.id]: false }));

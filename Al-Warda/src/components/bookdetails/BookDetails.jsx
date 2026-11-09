@@ -66,9 +66,7 @@ export default function BookDetails() {
   const handleAddToCart = async () => {
     if (!perfume) return;
     try {
-      for (let i = 0; i < quantity; i++) {
-        await addToCart(perfume);
-      }
+      await addToCart(perfume, quantity);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 2200);
     } catch (err) {

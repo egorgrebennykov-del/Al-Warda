@@ -448,15 +448,17 @@ export default function Checkout() {
             street: addressForm.street.trim(),
             postalCode: addressForm.postalCode.trim(),
           };
-          const saved = await saveUserAddress(user.id, addressToSave);
-          finalShippingAddress = saved;
+          if (user?.id) {
+            const saved = await saveUserAddress(user.id, addressToSave);
+            finalShippingAddress = saved;
+          }
         } catch {
           // Continue even if saving address fails
         }
       }
 
       // Save phone to user's phone list if not already saved
-      if (fullPhone) {
+      if (fullPhone && user?.id) {
         try {
           const updatedPhones = await saveUserPhone(user.id, fullPhone);
           setSavedPhones(updatedPhones);
@@ -475,7 +477,7 @@ export default function Checkout() {
 
       // Record order in Supabase orders_in_progress
       await createOrderInProgress({
-        userId: user.id,
+        userId: user?.id || null,
         orderNumber,
         items,
         address: finalOrderAddress,
@@ -494,7 +496,7 @@ export default function Checkout() {
       });
 
       // Increment coupon usage count if coupon applied
-      if (appliedCoupon?.id) {
+      if (appliedCoupon?.id && user?.id) {
         try {
           await redeemCoupon(appliedCoupon.id, user.id);
         } catch (couponErr) {
@@ -503,7 +505,7 @@ export default function Checkout() {
       }
 
       // Clear the cart
-      await clearCart(user.id);
+      await clearCart(user?.id);
 
       // Record successful order
       setOrderComplete({
