@@ -85,8 +85,8 @@ export default function Checkout() {
   });
   const [addressError, setAddressError] = useState("");
 
-  // Country selector & phone state
-  const [selectedCountryIso, setSelectedCountryIso] = useState("MD");
+  // Country selector & phone state (defaults to Italy "IT")
+  const [selectedCountryIso, setSelectedCountryIso] = useState("IT");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [primaryPhone, setPrimaryPhone] = useState("");
   const [usePrimaryPhone, setUsePrimaryPhone] = useState(false);
@@ -99,7 +99,7 @@ export default function Checkout() {
   const [couponValidating, setCouponValidating] = useState(false);
 
   const selectedCountry = useMemo(
-    () => countries.find((c) => c.iso2 === selectedCountryIso) || countries[0],
+    () => countries.find((c) => c.iso2 === selectedCountryIso) || countries.find((c) => c.iso2 === "IT") || countries[0],
     [selectedCountryIso],
   );
 
@@ -119,6 +119,7 @@ export default function Checkout() {
       }
     } else {
       setPhoneNumber("");
+      setSelectedCountryIso("IT");
     }
   };
 

@@ -2263,7 +2263,7 @@ export default function Privileged() {
                           <input
                             type="text"
                             className="privileged__form-input"
-                            placeholder="+373 69 123 456"
+                            placeholder="+39 312 345 6789"
                             value={createUserForm.phone}
                             onChange={(e) =>
                               setCreateUserForm((prev) => ({

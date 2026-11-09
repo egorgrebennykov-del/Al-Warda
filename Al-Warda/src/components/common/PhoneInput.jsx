@@ -10,7 +10,7 @@ import {
 export default function PhoneInput({
   id = "phone",
   phone = "",
-  countryIso = "MD",
+  countryIso = "IT",
   onPhoneChange,
   onCountryChange,
   savedPhones = [],
@@ -30,7 +30,7 @@ export default function PhoneInput({
   const savedPhonesRef = useRef(null);
 
   const selectedCountry = useMemo(
-    () => countries.find((c) => c.iso2 === countryIso) || countries[0],
+    () => countries.find((c) => c.iso2 === countryIso) || countries.find((c) => c.iso2 === "IT") || countries[0],
     [countryIso],
   );
 

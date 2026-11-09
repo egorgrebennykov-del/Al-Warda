@@ -30,7 +30,7 @@ export default function SignUp({ onLogin, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeat, setShowRepeat] = useState(false);
   const [phone, setPhone] = useState("");
-  const [countryIso, setCountryIso] = useState("MD");
+  const [countryIso, setCountryIso] = useState("IT");
   const [step, setStep] = useState("form"); // "form" | "verify"
   const [verificationCode, setVerificationCode] = useState("");
   const [expectedCode, setExpectedCode] = useState("");
@@ -235,7 +235,7 @@ export default function SignUp({ onLogin, onClose }) {
     setSubmitting(true);
     try {
       const selectedCountry =
-        countries.find((c) => c.iso2 === countryIso) || countries[0];
+        countries.find((c) => c.iso2 === countryIso) || countries.find((c) => c.iso2 === "IT") || countries[0];
       const fullPhone = `${selectedCountry.dialCode} ${phone.trim()}`;
       await authRegister({
         firstName: form.firstName,
