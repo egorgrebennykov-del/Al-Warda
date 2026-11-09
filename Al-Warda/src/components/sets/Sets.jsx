@@ -296,25 +296,24 @@ export default function Sets() {
         <div className="warda-shop-grid">
           {filteredSets.map((perfume) => {
             const isAdded = Boolean(addedIds[perfume.id]);
-            const displayNotes =
-              language === "ru"
-                ? perfume.notesSummaryRu || perfume.notesSummary || perfume.brand
-                : perfume.notesSummaryEn || perfume.notesSummary || perfume.brand;
+            const productUrl = getPerfumeUrl(perfume);
 
             return (
               <OrnateCard
                 key={perfume.id}
                 className="warda-perfume-card warda-set-card"
-                onClick={() => navigate(getPerfumeUrl(perfume))}
+                onClick={() => navigate(productUrl)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && navigate(getPerfumeUrl(perfume))}
+                onKeyDown={(e) => e.key === "Enter" && navigate(productUrl)}
               >
                 <div className="warda-perfume-card__media">
                   <span className="warda-set-card__badge">
                     <i className="ri-gift-2-fill" />
                     {getSetBadgeLabel(perfume, language)}
                   </span>
+                  <span className="warda-perfume-card__aura" />
+                  <span className="warda-perfume-card__sheen" />
                   {perfume.image && (
                     <img
                       src={perfume.image}
@@ -330,9 +329,10 @@ export default function Sets() {
                 </div>
 
                 <div className="warda-perfume-card__info">
-                  <span className="warda-shop-brand-tag">{perfume.brand}</span>
-                  <h3 className="warda-perfume-card__title">{perfume.name}</h3>
-                  <p className="warda-perfume-card__notes">{displayNotes}</p>
+                  <h3 className="warda-perfume-card__title" title={perfume.name}>
+                    {perfume.name}
+                  </h3>
+                  <p className="warda-perfume-card__notes">{perfume.brand || "Al-Warda"}</p>
                   <div className="warda-perfume-card__price">
                     €{Number(perfume.price).toFixed(2)}
                   </div>
@@ -343,6 +343,7 @@ export default function Sets() {
                     type="button"
                     className={`warda-btn warda-btn--card ${isAdded ? "warda-btn--added" : ""}`}
                     onClick={(e) => handleAddToCart(perfume, e)}
+                    aria-label={`Add ${perfume.name} to cart`}
                   >
                     {isAdded
                       ? language === "ru"
