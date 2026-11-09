@@ -257,6 +257,13 @@ export default function Sets() {
     setSearchQuery("");
   };
 
+  const hasActiveFilters =
+    selectedType !== "all" ||
+    selectedVolume !== "all" ||
+    selectedBrand !== "all" ||
+    selectedGender !== "all" ||
+    Boolean(searchQuery.trim());
+
   return (
     <div className="container warda-shop-page warda-sets-page">
       {/* HERO BANNER */}
@@ -402,6 +409,17 @@ export default function Sets() {
                 <option value="price-asc">{isRu ? "Сначала дешевле" : "Price: Low to High"}</option>
                 <option value="price-desc">{isRu ? "Сначала дороже" : "Price: High to Low"}</option>
               </select>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="warda-reset-filters-btn"
+                  onClick={resetFilters}
+                  title={isRu ? "Снять все фильтры" : "Clear all filters"}
+                >
+                  ✕ {isRu ? "Снять все фильтры" : "Clear all filters"}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -794,8 +794,12 @@ export default function Featured() {
                   type="button"
                   className="warda-reset-filters-btn"
                   onClick={resetAllFilters}
+                  title={language === "ru" ? "Снять абсолютно все фильтры" : "Clear all filters"}
                 >
-                  ✕ {language === "ru" ? "Сбросить все" : "Clear all"}
+                  ✕ {language === "ru" ? "Снять все фильтры" : "Clear all filters"}
+                  <span className="warda-filter-count-badge" style={{ marginLeft: "4px" }}>
+                    {totalActiveFilters}
+                  </span>
                 </button>
               )}
             </div>
@@ -906,8 +910,23 @@ export default function Featured() {
             <div className="warda-filters-expanded">
               {/* Release Format (Sets / Bottles) section */}
               <div>
-                <div className="warda-filter-section-title">
-                  🎁 {language === "ru" ? "Формат выпуска (наборы и сеты):" : "Release Format (Sets & Gifts):"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    🎁 {language === "ru" ? "Формат выпуска (наборы и сеты):" : "Release Format (Sets & Gifts):"}
+                  </div>
+                  {selectedFormat !== "all" && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedFormat("all");
+                      }}
+                      title={language === "ru" ? "Отменить выбор формата" : "Reset format"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {FORMAT_OPTIONS.map((fmt) => {
@@ -930,8 +949,23 @@ export default function Featured() {
 
               {/* Fragrance Longevity section */}
               <div>
-                <div className="warda-filter-section-title">
-                  ⏳ {language === "ru" ? "Стойкость аромата:" : "Fragrance Longevity:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    ⏳ {language === "ru" ? "Стойкость аромата:" : "Fragrance Longevity:"}
+                  </div>
+                  {selectedLongevities.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedLongevities([]);
+                      }}
+                      title={language === "ru" ? "Отменить выбор стойкости" : "Reset longevity"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {LONGEVITY_OPTIONS.map((opt) => {
@@ -953,8 +987,23 @@ export default function Featured() {
 
               {/* Bottle Volume section */}
               <div>
-                <div className="warda-filter-section-title">
-                  🧴 {language === "ru" ? "Объем флакона:" : "Bottle Volume:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    🧴 {language === "ru" ? "Объем флакона:" : "Bottle Volume:"}
+                  </div>
+                  {selectedVolumes.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedVolumes([]);
+                      }}
+                      title={language === "ru" ? "Отменить выбор объема" : "Reset volume"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {VOLUME_OPTIONS.map((opt) => {
@@ -976,8 +1025,23 @@ export default function Featured() {
 
               {/* Category section */}
               <div>
-                <div className="warda-filter-section-title">
-                  🏷️ {language === "ru" ? "Категория:" : "Category:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    🏷️ {language === "ru" ? "Категория:" : "Category:"}
+                  </div>
+                  {selectedCategories.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedCategories([]);
+                      }}
+                      title={language === "ru" ? "Отменить выбор категории" : "Reset category"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {categories.map((cat) => {
@@ -1000,8 +1064,23 @@ export default function Featured() {
 
               {/* Gender section */}
               <div>
-                <div className="warda-filter-section-title">
-                  👥 {language === "ru" ? "Пол:" : "Gender:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    👥 {language === "ru" ? "Пол:" : "Gender:"}
+                  </div>
+                  {selectedGenders.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedGenders([]);
+                      }}
+                      title={language === "ru" ? "Отменить выбор пола" : "Reset gender"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {GENDER_OPTIONS.map((g) => {
@@ -1023,8 +1102,23 @@ export default function Featured() {
 
               {/* Brands section */}
               <div>
-                <div className="warda-filter-section-title">
-                  💎 {language === "ru" ? "Бренд:" : "Brand:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    💎 {language === "ru" ? "Бренд:" : "Brand:"}
+                  </div>
+                  {selectedBrands.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedBrands([]);
+                      }}
+                      title={language === "ru" ? "Отменить выбор брендов" : "Reset brands"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
                 <div className="warda-pills-wrap">
                   {POPULAR_ARABIAN_BRANDS.map((brand) => {
@@ -1046,8 +1140,24 @@ export default function Featured() {
 
               {/* Notes section */}
               <div className="warda-filter-notes-section">
-                <div className="warda-filter-section-title">
-                  🌿 {language === "ru" ? "Ноты композиции:" : "Olfactory Notes:"}
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    🌿 {language === "ru" ? "Ноты композиции:" : "Olfactory Notes:"}
+                  </div>
+                  {selectedNotes.length > 0 && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setVisibleLimit(PAGE_SIZE);
+                        setSelectedNotes([]);
+                        setNotesCombination(false);
+                      }}
+                      title={language === "ru" ? "Отменить выбор нот" : "Reset notes"}
+                    >
+                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                    </button>
+                  )}
                 </div>
 
                 <div className="warda-combination-block">
@@ -1083,6 +1193,20 @@ export default function Featured() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* CLEAR ALL EXPANDED FOOTER */}
+              <div className="warda-filters-expanded-footer">
+                <button
+                  type="button"
+                  className="warda-clear-all-expanded-btn"
+                  onClick={resetAllFilters}
+                  disabled={totalActiveFilters === 0}
+                  title={language === "ru" ? "Снять абсолютно все активные фильтры" : "Clear all active filters"}
+                >
+                  ✕ {language === "ru" ? "Снять все фильтры" : "Clear all filters"}
+                  {totalActiveFilters > 0 && ` (${totalActiveFilters})`}
+                </button>
               </div>
             </div>
           )}
