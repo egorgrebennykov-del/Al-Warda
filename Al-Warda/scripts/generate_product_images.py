@@ -729,6 +729,31 @@ def transparent_product_image(image_bytes, segmentation_session):
     edge += alpha.crop((width - 1, 1, width, height - 1)).tobytes()
     if sum(value > 32 for value in edge) > len(edge) * 0.05:
         raise ValueError("The segmented image has an opaque border; the product must be regenerated")
+
+    # Validate perfume flacon solidity vs hollow jewelry/bracelet/non-perfume object
+    bbox = alpha.getbbox()
+    if bbox:
+        bx1, by1, bx2, by2 = bbox
+        bw = bx2 - bx1
+        bh = by2 - by1
+        if bw * bh > 0:
+            import numpy as np
+            alpha_arr = np.array(alpha)
+            obj_pixels = int(np.sum(alpha_arr[by1:by2, bx1:bx2] > 20))
+            bbox_fill = obj_pixels / (bw * bh)
+            cx1, cx2 = int(bx1 + bw * 0.35), int(bx1 + bw * 0.65)
+            cy1, cy2 = int(by1 + bh * 0.35), int(by1 + bh * 0.65)
+            center_sub = alpha_arr[cy1:cy2, cx1:cx2]
+            center_fill = float(np.mean(center_sub > 20)) if center_sub.size > 0 else 0.0
+            if center_fill < 0.20 and bbox_fill < 0.35:
+                raise ValueError(
+                    f"Изображение не содержит флакон парфюма: обнаружен полый предмет (бижутерия / браслет / кольцо, заполнение центра: {center_fill*100:.1f}%)"
+                )
+            if bbox_fill < 0.22:
+                raise ValueError(
+                    f"Изображение не содержит флакон парфюма: объект слишком неплотный ({bbox_fill*100:.1f}%) для флакона духов"
+                )
+
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True)
     return output.getvalue(), cutout.size
@@ -864,6 +889,10 @@ def process_product(
     patch_stock(session, supabase_url, row, info)
 
     try:
+        item_title = f"{row.get('name') or ''} {info.get('title') or ''} {info.get('category') or ''}".lower()
+        if re.search(r"\b(bracelet|necklace|ring|earring|jewelry|watch|handbag|wallet|belt|shoes|dress|sunglasses|браслет|колье|ожерелье|кольцо|серьги|бижутерия|часы|сумка|кошелек|ремень)\b", item_title, re.IGNORECASE):
+            raise ValueError(f"Товар не является парфюмерией (обнаружен непарфюмерный товар / аксессуар): {row.get('name')}")
+
         source_response = requests.get(
             product_source(row),
             headers={"User-Agent": "Al-Warda product image pipeline/1.0"},

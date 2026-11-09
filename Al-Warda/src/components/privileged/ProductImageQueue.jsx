@@ -45,6 +45,11 @@ function formatDateTime(isoString, isRussian = true) {
 
 function describeErrorSummary(errorText = "", isRussian = true) {
   const text = String(errorText || "");
+  if (/не парфюм|не содержит флакон|бижутер|браслет|украшен|non-perfume|jewelry|bracelet/i.test(text)) {
+    return isRussian
+      ? "Отклонено: на изображении нет парфюма (бижутерия / посторонний предмет)"
+      : "Rejected: no perfume bottle in image (jewelry / non-fragrance item)";
+  }
   if (/flagged|3030/i.test(text)) {
     return isRussian
       ? "Отклонено фильтром безопасности Cloudflare AI (код 3030)"
