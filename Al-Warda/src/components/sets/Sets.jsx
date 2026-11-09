@@ -135,6 +135,12 @@ export default function Sets() {
       result.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
     } else if (sortBy === "price-desc") {
       result.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+    } else if (sortBy === "popular") {
+      result.sort((a, b) => {
+        const scoreA = (a.isBestSeller ? 50 : 0) + (a.isFeatured ? 25 : 0) + (Number(a.rating) || 4.5) * 10 + (Number(a.reviewsCount) || 0);
+        const scoreB = (b.isBestSeller ? 50 : 0) + (b.isFeatured ? 25 : 0) + (Number(b.rating) || 4.5) * 10 + (Number(b.reviewsCount) || 0);
+        return scoreB - scoreA;
+      });
     }
 
     return result;
