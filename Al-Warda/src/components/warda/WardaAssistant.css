@@ -693,11 +693,23 @@
   min-width: 0;
 }
 
+.warda-msg-row--assistant .warda-msg-bubble {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
 .warda-msg-row--assistant .warda-msg-text {
   word-break: normal;
   overflow-wrap: break-word;
   hyphens: manual;
   line-height: 1.55;
+}
+
+.warda-price-tag {
+  white-space: nowrap !important;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .warda-msg-row--user .warda-msg-text {

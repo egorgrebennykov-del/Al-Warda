@@ -32,20 +32,56 @@ export function formatAssistantSpeech(content) {
 
   let text = content;
 
-  // 1. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
+  // 1. Currency & Prices: convert any EUR/euro/евро/€ to euro symbol with non-breaking space
+  // Handle price ranges: 24.09 - 30.50 EUR -> 24.09–30.50 €
+  text = text.replace(
+    /(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro|€)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+    "$1–$2\u00A0€"
+  );
+  // Handle € preceding number: € 24.09 or €24.09 -> 24.09 €
+  text = text.replace(/€\s*(\d+(?:[.,]\d+)?)/gu, "$1\u00A0€");
+  // Handle number followed by EUR / евро / euro: 24.09 EUR -> 24.09 €
+  text = text.replace(
+    /(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+    "$1\u00A0€"
+  );
+  // Ensure non-breaking space before € symbol if written with space or newline: 24.09 € -> 24.09\u00A0€
+  text = text.replace(/(\d+(?:[.,]\d+)?)\s*€/gu, "$1\u00A0€");
+
+  // 2. Volumes: e.g. 90 ml, 100 мл, 50 ml -> non-breaking space
+  text = text.replace(/(\d+)\s*(ml|мл)(?![а-яёА-ЯЁa-zA-Z0-9])/giu, "$1\u00A0$2");
+
+  // 3. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
   // put it onto a new paragraph instead of awkwardly gluing it to the previous line.
   text = text.replace(/([.!?…])\s*([\p{Extended_Pictographic}\u2600-\u27bf])\s*([\p{L}])/gu, "$1\n\n$2 $3");
 
-  // 2. Prevent emoji from hanging at the end of a line without its opening word
+  // 4. Prevent emoji from hanging at the end of a line without its opening word
   text = text.replace(/([\p{Extended_Pictographic}\u2600-\u27bf])\s+([\p{L}])/gu, "$1\u00A0$2");
 
-  // 3. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
+  // 5. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
   text = text.replace(/(?<=^|[\s«"'(])([а-яёА-ЯЁa-zA-Z])\s+/gu, "$1\u00A0");
 
-  // 4. Normalize excessive newlines
+  // 6. Normalize excessive newlines
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
+}
+
+export function renderFormattedAssistantText(text) {
+  if (!text || typeof text !== "string") return text;
+  // Match formatted prices (e.g. "24.09 €" or "24 €" with nbsp) to wrap in an unbreakable inline tag
+  const parts = text.split(/(\d+(?:[.,]\d+)?\u00A0€)/gu);
+  if (parts.length === 1) return text;
+  return parts.map((part, idx) => {
+    if (/^\d+(?:[.,]\d+)?\u00A0€$/u.test(part)) {
+      return (
+        <span key={idx} className="warda-price-tag">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
 }
 
 export default function WardaAssistant() {
@@ -762,7 +798,7 @@ export default function WardaAssistant() {
                       >
                         <p className="warda-msg-text">
                           {msg.role === "assistant"
-                            ? formatAssistantSpeech(msg.content)
+                            ? renderFormattedAssistantText(formatAssistantSpeech(msg.content))
                             : msg.content}
                         </p>
 

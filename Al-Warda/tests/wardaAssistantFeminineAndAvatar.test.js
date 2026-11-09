@@ -228,6 +228,48 @@ test("formatAssistantSpeech formats emojis on fresh paragraphs and avoids orphan
   );
 });
 
+test("formatAssistantSpeech formats prices with euro symbol and non-breaking space", () => {
+  const screenshotExample =
+    "Четвёртый аромат в нашей подборке — это изысканный Afnan Mirsaal Of Trust Eau De Parfum 90ml стоимостью 24.09\nEUR. В нём гармонично переплелись ноты ветивера";
+  const formatted = formatAssistantSpeech(screenshotExample);
+
+  // Must replace EUR with € symbol and non-breaking space
+  assert.ok(
+    formatted.includes("24.09\u00A0€."),
+    "Must convert EUR to € with non-breaking space U+00A0"
+  );
+  assert.ok(
+    !formatted.includes("EUR"),
+    "Must not contain EUR in speech"
+  );
+
+  // Other currency variations
+  assert.equal(
+    formatAssistantSpeech("цена 24.09 EUR"),
+    "цена 24.09\u00A0€"
+  );
+  assert.equal(
+    formatAssistantSpeech("цена 24.09 евро"),
+    "цена 24.09\u00A0€"
+  );
+  assert.equal(
+    formatAssistantSpeech("цена 24.09 euro"),
+    "цена 24.09\u00A0€"
+  );
+  assert.equal(
+    formatAssistantSpeech("цена 24.09 €"),
+    "цена 24.09\u00A0€"
+  );
+  assert.equal(
+    formatAssistantSpeech("цена €24.09"),
+    "цена 24.09\u00A0€"
+  );
+  assert.equal(
+    formatAssistantSpeech("диапазон 20 - 30 EUR"),
+    "диапазон 20–30\u00A0€"
+  );
+});
+
 test("isSamplePerfume identifies samples vs full bottles and sets", () => {
   const fullBottle = { id: "101", name: "Lattafa Khamrah 100ml EDP", volume: "100ml" };
   const sampleVial1 = { id: "sample-101-1ml", name: "Lattafa Khamrah (Пробник 1 мл)", isSample: true };

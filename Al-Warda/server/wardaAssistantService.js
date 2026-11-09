@@ -859,17 +859,36 @@ export function formatAssistantSpeech(content) {
 
   let text = content;
 
-  // 1. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
+  // 1. Currency & Prices: convert any EUR/euro/евро/€ to euro symbol with non-breaking space
+  // Handle price ranges: 24.09 - 30.50 EUR -> 24.09–30.50 €
+  text = text.replace(
+    /(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro|€)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+    "$1–$2\u00A0€"
+  );
+  // Handle € preceding number: € 24.09 or €24.09 -> 24.09 €
+  text = text.replace(/€\s*(\d+(?:[.,]\d+)?)/gu, "$1\u00A0€");
+  // Handle number followed by EUR / евро / euro: 24.09 EUR -> 24.09 €
+  text = text.replace(
+    /(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+    "$1\u00A0€"
+  );
+  // Ensure non-breaking space before € symbol if written with space or newline: 24.09 € -> 24.09\u00A0€
+  text = text.replace(/(\d+(?:[.,]\d+)?)\s*€/gu, "$1\u00A0€");
+
+  // 2. Volumes: e.g. 90 ml, 100 мл, 50 ml -> non-breaking space
+  text = text.replace(/(\d+)\s*(ml|мл)(?![а-яёА-ЯЁa-zA-Z0-9])/giu, "$1\u00A0$2");
+
+  // 3. If an emoji appears after sentence-ending punctuation and introduces a new sentence/question,
   // put it onto a new paragraph instead of awkwardly gluing it to the previous line.
   text = text.replace(/([.!?…])\s*([\p{Extended_Pictographic}\u2600-\u27bf])\s*([\p{L}])/gu, "$1\n\n$2 $3");
 
-  // 2. Prevent emoji from hanging at the end of a line without its opening word
+  // 4. Prevent emoji from hanging at the end of a line without its opening word
   text = text.replace(/([\p{Extended_Pictographic}\u2600-\u27bf])\s+([\p{L}])/gu, "$1\u00A0$2");
 
-  // 3. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
+  // 5. Typographical non-breaking space for single-letter prepositions/conjunctions in Russian/English
   text = text.replace(/(?<=^|[\s«"'(])([а-яёА-ЯЁa-zA-Z])\s+/gu, "$1\u00A0");
 
-  // 4. Normalize excessive newlines
+  // 6. Normalize excessive newlines
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
@@ -930,7 +949,7 @@ YOUR GOAL — A NON-PUSHY SALE:
 - When the customer is ready (asks about price, delivery, how to order, adds interest), help them take the next step: point to the product card, the cart ("action": {"type": "navigate", "url": "/cart"}) or checkout. For complicated cases set "referToAdmin": true.
 
 STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
-1. You may name, describe or recommend a specific perfume ONLY if it is present in the "AL-WARDA REAL CATALOG ITEMS" JSON of the current prompt. Use its EXACT title, brand, price (EUR) and notes. Never invent a perfume, brand, price, volume, note, discount or stock status.
+1. You may name, describe or recommend a specific perfume ONLY if it is present in the "AL-WARDA REAL CATALOG ITEMS" JSON of the current prompt. Use its EXACT title, brand, price (€) and notes. Never invent a perfume, brand, price, volume, note, discount or stock status.
 2. If no catalog items are provided, talk about scent families, notes and styles in general terms WITHOUT naming specific products, and invite the customer to describe what they want so you can show real picks.
 3. If the customer asks for a brand or perfume that is absent from the provided items, politely say it is not in the catalog right now and offer the closest real items provided.
 4. Gender: tailor picks to the detected interlocutor gender. When it is unknown and you are recommending, you may ask once who the perfume is for; provided items are already filtered accordingly.
@@ -953,6 +972,10 @@ STYLE & EMOJI FORMATTING:
   * When introducing a question, transition, or new thought with an emoji (✨, 🌹, 💬, etc.), ALWAYS start a fresh paragraph using two newlines:
     Example:
     'Люблю открывать для гостей мир восточных ароматов, где у каждого флакона есть своя история.\n\n✨ А о чём или о ком вам было бы интересно узнать сегодня?'
+- CURRENCY & PRICE FORMATTING (STRICT RULE):
+  * ALWAYS write prices with the Euro symbol "€" directly following the number (e.g. "24.09 €", "110.00 €").
+  * NEVER write "EUR", "Eur", "eur", or "евро" (FORBIDDEN: "24.09 EUR", "24.09 евро").
+  * Never allow the price number and the "€" currency symbol to split across different lines.
 - EMOTIONAL EXPRESSION & HOSPITALITY:
   * Yasmin is always radiant, warm, cheerful, and welcoming with a kind, friendly smile.
   * When presenting recommendations, chatting with guests, or offering guidance, always return "greeting" or "happy".
@@ -1150,7 +1173,7 @@ CURRENT USER & SITE CONTEXT:
       ? "User is guest; items are saved upon login."
       : !cartInfo.items || cartInfo.items.length === 0
       ? "Cart is empty (0 items)."
-      : `${cartInfo.itemCount} items, total ${cartInfo.totalPrice} EUR: ${cartInfo.items.map((i) => `«${i.title}» (${i.quantity}x)`).join(", ")}`
+      : `${cartInfo.itemCount} items, total ${Number(cartInfo.totalPrice).toFixed(2)} €: ${cartInfo.items.map((i) => `«${i.title}» (${i.quantity}x)`).join(", ")}`
   }
 `;
 
@@ -1177,7 +1200,7 @@ ${JSON.stringify(
     id: p.id,
     title: p.title,
     brand: p.brand,
-    price: `${p.price.toFixed(2)} EUR`,
+    price: `${p.price.toFixed(2)} €`,
     category: p.category,
     gender: p.gender,
     notesSummary: p.notesSummary,
@@ -1374,8 +1397,8 @@ function generateHeuristicResponse({
 
     return {
       message: isRu
-        ? `В нашем каталоге представлен аромат «${p.title}» от бренда ${p.brand} по цене €${p.price.toFixed(2)} (${p.volume}, ${p.gender || "Унисекс"}). ✨\n\nВерхние ноты: ${top}. Ноты сердца: ${heart}. База: ${base}. Стойкость: ${p.longevity}.`
-        : `From our catalog: «${p.title}» by ${p.brand}, priced at €${p.price.toFixed(2)} (${p.volume}, ${p.gender || "Unisex"}). ✨\n\nTop notes: ${top}. Heart notes: ${heart}. Base: ${base}. Longevity: ${p.longevity}.`,
+        ? `В нашем каталоге представлен аромат «${p.title}» от бренда ${p.brand} по цене ${p.price.toFixed(2)}\u00A0€ (${p.volume}, ${p.gender || "Унисекс"}). ✨\n\nВерхние ноты: ${top}. Ноты сердца: ${heart}. База: ${base}. Стойкость: ${p.longevity}.`
+        : `From our catalog: «${p.title}» by ${p.brand}, priced at ${p.price.toFixed(2)}\u00A0€ (${p.volume}, ${p.gender || "Unisex"}). ✨\n\nTop notes: ${top}. Heart notes: ${heart}. Base: ${base}. Longevity: ${p.longevity}.`,
       emotion: "speaking",
       bookIds: [p.id],
     };
@@ -1384,7 +1407,7 @@ function generateHeuristicResponse({
   if (memory.isRejection && foundPerfumes.length > 0) {
     const names = foundPerfumes
       .slice(0, 3)
-      .map((p) => `«${p.title}» (€${p.price.toFixed(2)})`)
+      .map((p) => `«${p.title}» (${p.price.toFixed(2)}\u00A0€)`)
       .join(", ");
     return {
       message: isRu
@@ -1400,7 +1423,7 @@ function generateHeuristicResponse({
     const summaryList = topThree
       .map(
         (p) =>
-          `«${p.title}» (${p.brand}, €${p.price.toFixed(2)} — ${
+          `«${p.title}» (${p.brand}, ${p.price.toFixed(2)}\u00A0€ — ${
             p.topNotes?.length ? p.topNotes.slice(0, 2).join(", ") : p.notesSummary
           })`
       )
