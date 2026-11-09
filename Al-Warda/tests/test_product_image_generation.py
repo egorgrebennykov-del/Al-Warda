@@ -581,6 +581,20 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertIn("шлейф", result["descriptionRu"])
         self.assertGreater(len(result["descriptionRu"]), 150)
 
+    def test_cloudflare_flagged_rejection_marks_product_failed_without_u2net_cutout(self):
+        source = image_bytes(Image.new("RGB", (20, 20)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 999, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", side_effect=RuntimeError("Workers AI request failed (400): Image flagged by moderation (3030)")), \
+             patch.object(queue, "remove") as remove_mock, \
+             patch.object(queue, "patch_stock") as update:
+            with self.assertRaisesRegex(RuntimeError, "Image flagged"):
+                queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
+        remove_mock.assert_not_called()
+        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
+        self.assertIn("flagged", update.call_args.args[3]["imageGeneration"]["error"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()

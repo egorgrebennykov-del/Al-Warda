@@ -879,29 +879,11 @@ def process_product(
             if source_buffer.tell() > MAX_SOURCE_BYTES:
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
-        try:
-            edited_bytes = (
-                account_pool.generate(requests, source_bytes) if account_pool
-                else generate_product_edit(requests, account_id, api_token, source_bytes)
-            )
-            output, original_size = transparent_product_image(edited_bytes, segmentation_session)
-        except Exception as gen_err:
-            gen_err_str = str(gen_err).lower()
-            if "flagged" in gen_err_str or "3030" in gen_err_str:
-                print(f"Workers AI flagged stock {row['id']}; falling back to clean direct U2Net cutout", flush=True)
-                source_img = decode_source(source_bytes)
-                cutout_result = remove(source_img, session=segmentation_session, only_mask=False, alpha_matting=False)
-                if isinstance(cutout_result, Image.Image):
-                    cutout = cutout_result.convert("RGBA")
-                else:
-                    with Image.open(io.BytesIO(cutout_result)) as ci:
-                        cutout = ci.convert("RGBA")
-                out_buf = io.BytesIO()
-                cutout.save(out_buf, format="PNG", optimize=True)
-                output = out_buf.getvalue()
-                original_size = cutout.size
-            else:
-                raise
+        edited_bytes = (
+            account_pool.generate(requests, source_bytes) if account_pool
+            else generate_product_edit(requests, account_id, api_token, source_bytes)
+        )
+        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
         image_url = save_generated_image(output)
 
         # Generate an evocative luxury description with another AI right after image generation
