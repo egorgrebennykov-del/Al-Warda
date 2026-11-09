@@ -158,6 +158,118 @@ const EXTRA_FILTER_CATEGORIES = [
   { id: "musky", slug: "musky", nameRu: "МУСКУСНЫЕ И ПУДРОВЫЕ", nameEn: "MUSKY & POWDERY" },
 ];
 
+const FORMAT_OPTIONS = [
+  { id: "all", nameRu: "Все ароматы", nameEn: "All Items" },
+  { id: "sets", nameRu: "Только сеты и наборы", nameEn: "Sets & Gifts Only" },
+  { id: "bottles", nameRu: "Только флаконы", nameEn: "Bottles Only" },
+];
+
+const LONGEVITY_OPTIONS = [
+  {
+    id: "eternal",
+    nameRu: "Максимальная (12–16+ ч)",
+    nameEn: "Maximum (12–16+ hrs)",
+    matcher: (p) => {
+      const long = `${p.longevityRu || ""} ${p.longevity || ""} ${p.longevityEn || ""}`.toLowerCase();
+      const conc = `${p.concentration || ""} ${p.categoryRu || ""}`.toLowerCase();
+      return (
+        long.includes("12–16") ||
+        long.includes("12-16") ||
+        long.includes("максимальная") ||
+        conc.includes("extrait") ||
+        conc.includes("cpo") ||
+        conc.includes("масло") ||
+        conc.includes("маслян")
+      );
+    },
+  },
+  {
+    id: "very-long",
+    nameRu: "Очень высокая (10–14 ч)",
+    nameEn: "Very Long-Lasting (10–14 hrs)",
+    matcher: (p) => {
+      const long = `${p.longevityRu || ""} ${p.longevity || ""} ${p.longevityEn || ""}`.toLowerCase();
+      return (
+        long.includes("10–14") ||
+        long.includes("10-14") ||
+        long.includes("очень высокая") ||
+        long.includes("very long")
+      );
+    },
+  },
+  {
+    id: "long",
+    nameRu: "Высокая (8–12 ч)",
+    nameEn: "Long-Lasting (8–12 hrs)",
+    matcher: (p) => {
+      const long = `${p.longevityRu || ""} ${p.longevity || ""} ${p.longevityEn || ""}`.toLowerCase();
+      return (
+        long.includes("8–12") ||
+        long.includes("8-12") ||
+        long.includes("8–11") ||
+        long.includes("8-11") ||
+        long.includes("высокая") ||
+        long.includes("стойкая свежесть")
+      );
+    },
+  },
+  {
+    id: "moderate",
+    nameRu: "Умеренная (до 8-10 ч)",
+    nameEn: "Moderate (up to 8-10 hrs)",
+    matcher: (p) => {
+      const long = `${p.longevityRu || ""} ${p.longevity || ""} ${p.longevityEn || ""}`.toLowerCase();
+      return (
+        long.includes("умерен") ||
+        long.includes("до 8") ||
+        long.includes("4–6") ||
+        long.includes("6–8") ||
+        long.includes("7–10")
+      );
+    },
+  },
+];
+
+const VOLUME_OPTIONS = [
+  {
+    id: "mini",
+    nameRu: "До 30 мл (аттары, мини)",
+    nameEn: "Up to 30 ml (attars, mini)",
+    matcher: (ml) => ml <= 30,
+  },
+  {
+    id: "50ml",
+    nameRu: "50 мл (50–65 мл)",
+    nameEn: "50 ml (50–65 ml)",
+    matcher: (ml) => ml > 30 && ml <= 65,
+  },
+  {
+    id: "75-90ml",
+    nameRu: "75–90 мл",
+    nameEn: "75–90 ml",
+    matcher: (ml) => ml >= 70 && ml <= 90,
+  },
+  {
+    id: "100ml",
+    nameRu: "100 мл (Классический)",
+    nameEn: "100 ml (Classic Flacon)",
+    matcher: (ml) => ml === 100,
+  },
+  {
+    id: "large",
+    nameRu: "Более 100 мл (120–250 мл)",
+    nameEn: "100+ ml (120–250 ml)",
+    matcher: (ml) => ml > 100,
+  },
+];
+
+function getPerfumeMl(p) {
+  if (!p) return 100;
+  const raw = `${p.info?.volume || ""} ${p.volume || ""} ${p.name || ""} ${p.title || ""}`;
+  const m = raw.match(/(\d+)\s*(?:ml|мл)/i);
+  return m ? parseInt(m[1], 10) : 100;
+}
+
 // Always 4 items per row -> page size multiple of 4 (e.g. 24 = 6 full rows)
 const PAGE_SIZE = 24;
 
@@ -192,6 +304,24 @@ export default function Featured() {
       ? raw.split(",").map((n) => n.trim().toLowerCase()).filter(Boolean)
       : [];
   });
+  const [selectedVolumes, setSelectedVolumes] = useState(() => {
+    const raw = searchParams.get("volume") || searchParams.get("volumes");
+    return raw
+      ? raw.split(",").map((v) => v.trim().toLowerCase()).filter(Boolean)
+      : [];
+  });
+  const [selectedLongevities, setSelectedLongevities] = useState(() => {
+    const raw = searchParams.get("longevity") || searchParams.get("duration");
+    return raw
+      ? raw.split(",").map((l) => l.trim().toLowerCase()).filter(Boolean)
+      : [];
+  });
+  const [selectedFormat, setSelectedFormat] = useState(() => {
+    const raw = searchParams.get("format");
+    if (raw === "sets" || raw === "bottles") return raw;
+    if (searchParams.get("sets") === "1" || searchParams.get("sets") === "only" || searchParams.get("onlySets") === "1") return "sets";
+    return "all";
+  });
   const [notesCombination, setNotesCombination] = useState(() => {
     const raw = searchParams.get("combination") || searchParams.get("combo");
     return raw === "1" || raw === "true";
@@ -208,10 +338,24 @@ export default function Featured() {
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
     if (selectedGenders.length > 0) params.set("gender", selectedGenders.join(","));
     if (selectedNotes.length > 0) params.set("notes", selectedNotes.join(","));
+    if (selectedVolumes.length > 0) params.set("volume", selectedVolumes.join(","));
+    if (selectedLongevities.length > 0) params.set("longevity", selectedLongevities.join(","));
+    if (selectedFormat && selectedFormat !== "all") params.set("format", selectedFormat);
     if (notesCombination) params.set("combination", "1");
     if (sortBy && sortBy !== "popular") params.set("sort", sortBy);
     setSearchParams(params, { replace: true, preventScrollReset: true });
-  }, [selectedCategories, selectedBrands, selectedGenders, selectedNotes, notesCombination, sortBy, setSearchParams]);
+  }, [
+    selectedCategories,
+    selectedBrands,
+    selectedGenders,
+    selectedNotes,
+    selectedVolumes,
+    selectedLongevities,
+    selectedFormat,
+    notesCombination,
+    sortBy,
+    setSearchParams,
+  ]);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -230,7 +374,7 @@ export default function Featured() {
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
-          setPerfumes(items.filter((p) => !isPerfumeSet(p)));
+          setPerfumes(items);
           setLoading(false);
         }
       })
@@ -241,7 +385,9 @@ export default function Featured() {
 
     const timer = window.setInterval(() => {
       getPerfumes({ refresh: true })
-        .then((items) => { if (!cancelled) setPerfumes(items.filter((p) => !isPerfumeSet(p))); })
+        .then((items) => {
+          if (!cancelled) setPerfumes(items);
+        })
         .catch((err) => console.warn("Could not refresh catalog:", err));
     }, 30000);
     return () => {
@@ -249,6 +395,10 @@ export default function Featured() {
       window.clearInterval(timer);
     };
   }, []);
+
+  const setsCount = useMemo(() => {
+    return perfumes.filter(isPerfumeSet).length;
+  }, [perfumes]);
 
   // Multi-toggle helpers
   const toggleCategory = (catId) => {
@@ -292,11 +442,44 @@ export default function Featured() {
     });
   };
 
+  const toggleVolume = (volId) => {
+    setVisibleLimit(PAGE_SIZE);
+    setSelectedVolumes((prev) => {
+      if (prev.includes(volId)) {
+        return prev.filter((v) => v !== volId);
+      }
+      return [...prev, volId];
+    });
+  };
+
+  const toggleLongevity = (longId) => {
+    setVisibleLimit(PAGE_SIZE);
+    setSelectedLongevities((prev) => {
+      if (prev.includes(longId)) {
+        return prev.filter((l) => l !== longId);
+      }
+      return [...prev, longId];
+    });
+  };
+
+  const toggleFormat = (formatId) => {
+    setVisibleLimit(PAGE_SIZE);
+    setSelectedFormat(formatId);
+  };
+
+  const toggleOnlySets = () => {
+    setVisibleLimit(PAGE_SIZE);
+    setSelectedFormat((prev) => (prev === "sets" ? "all" : "sets"));
+  };
+
   const resetAllFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
     setSelectedGenders([]);
     setSelectedNotes([]);
+    setSelectedVolumes([]);
+    setSelectedLongevities([]);
+    setSelectedFormat("all");
     setNotesCombination(false);
     setSortBy("popular");
     setVisibleLimit(PAGE_SIZE);
@@ -308,7 +491,10 @@ export default function Featured() {
     selectedCategories.length +
     selectedBrands.length +
     selectedGenders.length +
-    selectedNotes.length;
+    selectedNotes.length +
+    selectedVolumes.length +
+    selectedLongevities.length +
+    (selectedFormat !== "all" ? 1 : 0);
 
   // Deterministic shuffled collection for default assortment (вразброс)
   const shuffledPerfumes = useMemo(() => {
@@ -333,7 +519,33 @@ export default function Featured() {
       result = [...perfumes];
     } else {
       result = perfumes.filter((p) => {
-      const allNotesText = [
+        // Format / Sets filter
+        if (selectedFormat === "sets") {
+          if (!isPerfumeSet(p)) return false;
+        } else if (selectedFormat === "bottles") {
+          if (isPerfumeSet(p)) return false;
+        }
+
+        // Bottle volume filter
+        if (selectedVolumes.length > 0) {
+          const ml = getPerfumeMl(p);
+          const matchesVolume = selectedVolumes.some((volId) => {
+            const opt = VOLUME_OPTIONS.find((v) => v.id === volId);
+            return opt ? opt.matcher(ml) : false;
+          });
+          if (!matchesVolume) return false;
+        }
+
+        // Longevity filter
+        if (selectedLongevities.length > 0) {
+          const matchesLongevity = selectedLongevities.some((longId) => {
+            const opt = LONGEVITY_OPTIONS.find((l) => l.id === longId);
+            return opt ? opt.matcher(p) : false;
+          });
+          if (!matchesLongevity) return false;
+        }
+
+        const allNotesText = [
         ...(p.topNotes || []),
         ...(p.heartNotes || []),
         ...(p.baseNotes || []),
@@ -476,7 +688,20 @@ export default function Featured() {
     }
 
     return result;
-  }, [perfumes, shuffledPerfumes, totalActiveFilters, selectedCategories, selectedBrands, selectedGenders, selectedNotes, notesCombination, sortBy]);
+  }, [
+    perfumes,
+    shuffledPerfumes,
+    totalActiveFilters,
+    selectedCategories,
+    selectedBrands,
+    selectedGenders,
+    selectedNotes,
+    selectedVolumes,
+    selectedLongevities,
+    selectedFormat,
+    notesCombination,
+    sortBy,
+  ]);
 
   const visiblePerfumes = filteredPerfumes.slice(0, visibleLimit);
   const remainingCount = Math.max(0, filteredPerfumes.length - visibleLimit);
@@ -552,6 +777,18 @@ export default function Featured() {
                 <span>{isFilterPanelOpen ? "▲" : "▼"}</span>
               </button>
 
+              <button
+                type="button"
+                className={`warda-sets-quick-toggle ${selectedFormat === "sets" ? "active" : ""}`}
+                onClick={toggleOnlySets}
+                title={language === "ru" ? "Показать только парфюмерные сеты и подарочные наборы" : "Show sets and gift sets only"}
+              >
+                <span>🎁 {language === "ru" ? "Только сеты" : "Only Sets"}</span>
+                {setsCount > 0 && (
+                  <span className="warda-sets-count-badge">{setsCount}</span>
+                )}
+              </button>
+
               {totalActiveFilters > 0 && (
                 <button
                   type="button"
@@ -591,6 +828,37 @@ export default function Featured() {
           {/* ACTIVE FILTER CHIPS ROW */}
           {totalActiveFilters > 0 && (
             <div className="warda-active-chips">
+              {selectedFormat !== "all" && (
+                <span className="warda-chip">
+                  {selectedFormat === "sets"
+                    ? (language === "ru" ? "🎁 Только сеты" : "🎁 Only Sets")
+                    : (language === "ru" ? "🧴 Только флаконы" : "🧴 Bottles Only")}
+                  <button type="button" className="warda-chip-remove" onClick={() => setSelectedFormat("all")}>×</button>
+                </span>
+              )}
+
+              {selectedLongevities.map((l) => {
+                const opt = LONGEVITY_OPTIONS.find((o) => o.id === l);
+                const name = opt ? (language === "ru" ? opt.nameRu : opt.nameEn) : l;
+                return (
+                  <span key={`chip-long-${l}`} className="warda-chip">
+                    ⏳ {name}
+                    <button type="button" className="warda-chip-remove" onClick={() => toggleLongevity(l)}>×</button>
+                  </span>
+                );
+              })}
+
+              {selectedVolumes.map((v) => {
+                const opt = VOLUME_OPTIONS.find((o) => o.id === v);
+                const name = opt ? (language === "ru" ? opt.nameRu : opt.nameEn) : v;
+                return (
+                  <span key={`chip-vol-${v}`} className="warda-chip">
+                    🧴 {name}
+                    <button type="button" className="warda-chip-remove" onClick={() => toggleVolume(v)}>×</button>
+                  </span>
+                );
+              })}
+
               {selectedCategories.map((c) => {
                 const catObj = categories.find((cat) => cat.id === c || cat.slug === c);
                 const name = catObj ? (language === "ru" ? (catObj.nameRu || catObj.name) : (catObj.nameEn || catObj.name)) : c;
@@ -636,6 +904,76 @@ export default function Featured() {
           {/* EXPANDABLE MULTI-SELECT PANEL */}
           {isFilterPanelOpen && (
             <div className="warda-filters-expanded">
+              {/* Release Format (Sets / Bottles) section */}
+              <div>
+                <div className="warda-filter-section-title">
+                  🎁 {language === "ru" ? "Формат выпуска (наборы и сеты):" : "Release Format (Sets & Gifts):"}
+                </div>
+                <div className="warda-pills-wrap">
+                  {FORMAT_OPTIONS.map((fmt) => {
+                    const isActive = selectedFormat === fmt.id;
+                    return (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        className={`warda-filter-pill ${isActive ? "active" : ""}`}
+                        onClick={() => toggleFormat(fmt.id)}
+                      >
+                        {isActive && "✓ "}
+                        {language === "ru" ? fmt.nameRu : fmt.nameEn}
+                        {fmt.id === "sets" && setsCount > 0 && ` (${setsCount})`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Fragrance Longevity section */}
+              <div>
+                <div className="warda-filter-section-title">
+                  ⏳ {language === "ru" ? "Стойкость аромата:" : "Fragrance Longevity:"}
+                </div>
+                <div className="warda-pills-wrap">
+                  {LONGEVITY_OPTIONS.map((opt) => {
+                    const isActive = selectedLongevities.includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        className={`warda-filter-pill ${isActive ? "active" : ""}`}
+                        onClick={() => toggleLongevity(opt.id)}
+                      >
+                        {isActive && "✓ "}
+                        {language === "ru" ? opt.nameRu : opt.nameEn}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bottle Volume section */}
+              <div>
+                <div className="warda-filter-section-title">
+                  🧴 {language === "ru" ? "Объем флакона:" : "Bottle Volume:"}
+                </div>
+                <div className="warda-pills-wrap">
+                  {VOLUME_OPTIONS.map((opt) => {
+                    const isActive = selectedVolumes.includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        className={`warda-filter-pill ${isActive ? "active" : ""}`}
+                        onClick={() => toggleVolume(opt.id)}
+                      >
+                        {isActive && "✓ "}
+                        {language === "ru" ? opt.nameRu : opt.nameEn}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Category section */}
               <div>
                 <div className="warda-filter-section-title">
@@ -791,6 +1129,11 @@ export default function Featured() {
                   onKeyDown={(e) => e.key === "Enter" && navigate(productUrl)}
                 >
                   <div className="warda-perfume-card__media">
+                    {isPerfumeSet(perfume) && (
+                      <span className="warda-perfume-card__set-tag">
+                        🎁 {language === "ru" ? "СЕТ / НАБОР" : "GIFT SET"}
+                      </span>
+                    )}
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
                     <img
@@ -809,7 +1152,14 @@ export default function Featured() {
                     <h3 className="warda-perfume-card__title" title={perfume.name}>
                       {perfume.name}
                     </h3>
-                    <p className="warda-perfume-card__notes">{perfume.brand || "Al-Warda"}</p>
+                    <p className="warda-perfume-card__notes">
+                      {perfume.brand || "Al-Warda"}
+                      {perfume.volume && (
+                        <span style={{ marginLeft: "0.4rem", opacity: 0.75, fontSize: "0.8rem" }}>
+                          · {perfume.volume.split("/")[0].trim()}
+                        </span>
+                      )}
+                    </p>
                     <div className="warda-perfume-card__price">
                       €{Number(perfume.price).toFixed(2)}
                     </div>

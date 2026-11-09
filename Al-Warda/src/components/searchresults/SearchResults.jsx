@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
+import { getPerfumes, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -305,6 +305,11 @@ export default function SearchResults() {
                   onKeyDown={(e) => e.key === "Enter" && navigate(getPerfumeUrl(perfume))}
                 >
                   <div className="warda-perfume-card__media">
+                    {isPerfumeSet(perfume) && (
+                      <span className="warda-perfume-card__set-tag">
+                        🎁 {isRu ? "СЕТ / НАБОР" : "GIFT SET"}
+                      </span>
+                    )}
                     <div className="warda-perfume-card__aura" />
                     <img
                       src={perfume.image}

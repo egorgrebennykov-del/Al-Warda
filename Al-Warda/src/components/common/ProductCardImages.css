@@ -21,6 +21,23 @@
   -webkit-mask-image: none;
   mask-image: none;
   transform: none;
+  position: relative;
+}
+
+.warda-perfume-card__set-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.95), rgba(170, 130, 10, 0.95));
+  color: #080605;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
 }
 
 .warda-perfume-card .warda-perfume-card__media::before,
