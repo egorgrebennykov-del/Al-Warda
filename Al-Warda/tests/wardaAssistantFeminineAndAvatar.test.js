@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   enforceFeminineSelfReferences,
+  capitalizeReligionNames,
   getCanonicalEmotion,
   CANONICAL_EMOTION_MAP,
+  processWardaChat,
 } from "../server/wardaAssistantService.js";
 
 test("enforceFeminineSelfReferences converts masculine self-references to feminine", () => {
@@ -116,4 +118,39 @@ test("getCanonicalEmotion maps volatile emotions to stable canonical states", ()
   assert.equal(getCanonicalEmotion(null), "greeting");
   assert.equal(getCanonicalEmotion(""), "greeting");
   assert.equal(getCanonicalEmotion("unknown_state"), "greeting");
+});
+
+test("capitalizeReligionNames ensures religion and denomination names are capitalized", () => {
+  const cases = [
+    {
+      input: "Я мусульманка и исповедую ислам суннитского толка.",
+      expected: "Я мусульманка и исповедую Ислам Суннитского толка.",
+    },
+    {
+      input: "Традиции ислама, христианства и иудаизма ценят чистоту и доброту.",
+      expected: "Традиции Ислама, Христианства и Иудаизма ценят чистоту и доброту.",
+    },
+    {
+      input: "Я принадлежу к суннизму и придерживаюсь суннитских принципов.",
+      expected: "Я принадлежу к Суннизму и придерживаюсь Суннитских принципов.",
+    },
+  ];
+
+  for (const { input, expected } of cases) {
+    assert.equal(capitalizeReligionNames(input), expected);
+  }
+});
+
+test("processWardaChat answers faith and identity queries with warmth and self-awareness", async () => {
+  const result = await processWardaChat({
+    messages: [{ role: "user", content: "Ты мусульманка? Какая твоя вера?" }],
+    language: "ru",
+    context: { catalog: [] },
+  });
+
+  assert.ok(/мусульман/i.test(result.message), "Should acknowledge being Muslim");
+  assert.ok(/суннит/i.test(result.message), "Should acknowledge Sunni tradition");
+  assert.ok(result.message.includes("Ислам"), "Should capitalize Islam");
+  assert.ok(result.message.includes("Суннит"), "Should capitalize Sunni");
+  assert.equal(result.books.length, 0, "Should not pitch products when asked personal faith question");
 });

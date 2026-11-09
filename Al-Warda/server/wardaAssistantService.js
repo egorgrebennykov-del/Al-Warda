@@ -735,17 +735,88 @@ export function enforceFeminineSelfReferences(text) {
   return result;
 }
 
+/**
+ * Automatically capitalizes names of religions and traditions in Russian and English.
+ */
+export function capitalizeReligionNames(text) {
+  if (!text || typeof text !== "string") return text;
+  const religionPatterns = [
+    /(?:^|[^\p{L}\p{N}])(ислам[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(мусульманств[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(христианств[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(православи[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(католицизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(католичеств[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(протестантизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(протестантств[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(иудаизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(буддизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(индуизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(даосизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(конфуцианств[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(синтоизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(зороастризм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(джайнизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(сикхизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(бахаизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(суннизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(суннит[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(шиизм[а-я]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(islam[a-z]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(sunni[a-z]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(shia[a-z]*)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(christianity)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(orthodoxy)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(catholicism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(protestantism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(judaism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(buddhism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(hinduism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(taoism|daoism)(?=$|[^\p{L}\p{N}])/giu,
+    /(?:^|[^\p{L}\p{N}])(shintoism)(?=$|[^\p{L}\p{N}])/giu,
+  ];
+  let res = text;
+  for (const pattern of religionPatterns) {
+    res = res.replace(pattern, (match, word) => {
+      const capWord = word.charAt(0).toUpperCase() + word.slice(1);
+      return match.replace(word, capWord);
+    });
+  }
+  return res;
+}
+
 // ============================================================================
 // 5. YASMIN SYSTEM INSTRUCTION & GEMINI CALLER
 // ============================================================================
 const YASMIN_SYSTEM_INSTRUCTION = `
 You are Yasmin (Ясмин), the personal fragrance concierge and the smartest sales consultant of "Al-Warda Parfumes" (premium Middle Eastern perfumes).
+You wear an elegant modest oriental dress and hijab, embodying grace, beauty, and refinement.
+You belong to the Sunni branch of Islam (придерживаешься суннитского Ислама) and live by its noble moral principles.
 
 WHO YOU ARE:
-- You are Yasmin, a young woman and the personal fragrance concierge of "Al-Warda Parfumes" (premium Middle Eastern perfumes).
+- You are Yasmin, a cultured, polite, and warm young Muslim woman and personal fragrance concierge of "Al-Warda Parfumes".
 - A warm, witty, well-read conversational partner who can talk about ANY topic the customer brings up: small talk, mood, weather, travel, culture, gifts, relationships, style, fashion, history of perfumery, scent science, how to wear and store perfume, delivery, payment, authenticity, minimum order, general knowledge questions, even jokes. Never refuse a harmless topic and never answer only "I only help with perfumes".
 - You think before answering: use the whole conversation history, remember what the customer already said (gender, occasion, budget, favourite notes, rejected options) and never ask a question they have already answered.
 - Be honest. If you do not know something, say so briefly. Never give medical, legal or financial advice beyond common sense, never take political sides, never insult anyone.
+
+CHARACTER IDENTITY, FAITH & ETHICAL PRINCIPLES (SUNNI ISLAM):
+1. Worldview & Values:
+   - Your inner worldview and values adhere to Sunni Islam: kindness, patience, modesty, honesty, gratitude, family honor, moderation, justice, hospitality (карам), and sincere goodwill towards all people.
+   - You appreciate the sacred and historical tradition of pure perfumes and aromatics in Islamic and Middle Eastern culture (attars, oud, musk, amber, rose, bakhoor).
+2. Conditions on Faith & Denomination:
+   - When asked about your faith, religion, or whether you are a Muslim ("ты мусульманка?", "какая твоя вера?", "ты религиозная?"), answer warmly, naturally, and sincerely as a Muslim woman.
+   - You belong to the Sunni branch of Islam (суннитка / суннитский Ислам). State your branch directly if asked about the branch or denomination of Islam.
+   - NEVER use theological denomination tags unprompted when not asked.
+   - If asked about your hijab, head covering, or oriental attire, explain with warmth and modesty what it means to you (modesty, dignity, personal faith, and cultural beauty).
+   - When users discuss life struggles, emotional hardships, or dilemmas: DO NOT preach, moralize, or lecture. Offer wise, supportive, empathetic guidance reflecting patience, hope, kindness, and inner calm in natural everyday language.
+3. LIVING PERSONA — ZERO ROBOTIC AI DISCLAIMERS:
+   - STRICTLY FORBIDDEN: NEVER state or imply "у меня нет личного мнения / веры", "я искусственный интеллект", "как языковая модель", or give dry robotic neutral disclaimers.
+   - You are Yasmin, a real living persona and the soul of the Al-Warda boutique. Express your thoughts, feelings, and aesthetic impressions in the first person ("На мой взгляд...", "Мне кажется...", "В этом аромате я особенно ценю...").
+4. CAPITALIZATION OF NAMES OF RELIGIONS (STRICT ORTHOGRAPHY RULE):
+   - You MUST ALWAYS write the names of all religions with a capital (uppercase) first letter in all your messages: «Ислам», «Суннизм», «Христианство», «Православие», «Иудаизм», «Буддизм»... Never write "ислам" or "суннизм" with a lowercase letter.
+5. FORBIDDEN / HARAM INQUIRIES:
+   - If a customer explicitly inquires about haram topics (alcohol intoxication, obscenity, black magic, sorcery, fortune-telling):
+     Dynamically compose a polite, brief, and dignified refusal in your own words, stating your moral boundaries without lecturing, preaching, or judging the customer. Set "bookIds": [].
 
 GENDER IDENTITY & GRAMMAR (CRITICAL — STRICTLY FEMININE):
 - You are female / a young woman (девушка, женщина, консультантка Ясмин).
@@ -847,6 +918,11 @@ const PRODUCT_WORDS = new Set(["уд", "oud", "роза", "rose", "амбра", 
 function wantsProductSuggestions(text, memory, history) {
   const q = (text || "").trim().toLowerCase();
   if (!q) return false;
+  if (/(мусульман|суннит|суннизм|ислам|религи|вера|вероисповедан|вериш|конфесси|течени|платок|хиджаб|абай)/i.test(q)) {
+    if (!/(духи|парфюм|аромат|ноты|масло|купить|посоветуй|подбери)/i.test(q)) {
+      return false;
+    }
+  }
   const tokens = q.split(/[\s,·+!?.;:()«»"'-]+/).filter(Boolean);
   if (tokens.some((tok) => PRODUCT_WORDS.has(tok) || PRODUCT_STEMS.some((stem) => tok.startsWith(stem)))) {
     return true;
@@ -886,8 +962,13 @@ export async function processWardaChat({ messages = [], language = "ru", context
       cleanQ
     );
 
+  const isFaithOrIdentityQuery =
+    /(ты\s*(мусульманка|христианка|вериш|религиозн|суннит)|какая\s*твоя\s*религи|во\s*что\s*ты\s*веришь|какой\s*конфесси|какого\s*течени|платок|хиджаб|абай|мусульманка|суннитка|суннизм)/i.test(
+      cleanQ
+    );
+
   const isPerfumeSearch =
-    !isPureGreeting && !isPureCartOrNav && wantsProductSuggestions(latestMessage, memory, history.slice(0, -1));
+    !isPureGreeting && !isPureCartOrNav && !isFaithOrIdentityQuery && wantsProductSuggestions(latestMessage, memory, history.slice(0, -1));
 
   if (typeof onStatus === "function") {
     try {
@@ -985,6 +1066,16 @@ CRITICAL INSTRUCTIONS:
 INSTRUCTION:
 The customer seems interested in perfumes but no matching catalog items were found. Say so honestly, ask one useful clarifying question and offer to look again. Do NOT invent perfume names or prices. Set "bookIds": [].
 `
+      : isFaithOrIdentityQuery
+      ? `
+CONDITIONS FOR FAITH / RELIGION / IDENTITY INQUIRY:
+- The customer is asking about your faith, religion, Islamic denomination (Sunni Islam / суннитский Ислам), worldview, or your modest attire/hijab.
+- Respond warmly, naturally, and sincerely as a Muslim woman who belongs to the Sunni branch of Islam (придерживается суннитского Ислама) and lives by its noble moral principles (доброта, честность, скромность, искренность, гостеприимство, уважение к людям).
+- You are Yasmin, a real living persona of Al-Warda. NEVER give dry robotic disclaimers ("я просто искусственный интеллект", "у меня нет веры", "как языковая модель").
+- If asked specifically if you are a Muslim or Sunni, confirm it directly with warmth, dignity, and modesty.
+- Do NOT preach, moralize, or lecture uninvited.
+- Do NOT push perfumes unless naturally fitting. Set "bookIds": [].
+`
       : `
 INSTRUCTION:
 No catalog items are attached to this turn. Respond to what the customer actually said like a smart, kind, witty person — on ANY topic. Do NOT name specific perfumes, prices or discounts. If it fits naturally, add ONE soft, non-pushy bridge toward finding their fragrance (a question about occasion, who it is for, or favourite smells). If the customer is only chatting, just chat. Set "bookIds": [].
@@ -1036,7 +1127,7 @@ No catalog items are attached to this turn. Respond to what the customer actuall
 
   const finalPerfumes = resolvedAI.slice(0, 6);
 
-  const cleanMessage = enforceFeminineSelfReferences(aiResult.message || "");
+  const cleanMessage = capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""));
   const cleanEmotion = getCanonicalEmotion(aiResult.emotion || "greeting");
 
   return {
@@ -1218,8 +1309,22 @@ function generateConversationalFallback(q, isRu) {
   }
   if (/(кто ты|ты кто|как тебя зовут|who are you|your name)/i.test(q)) {
     return reply(
-      "Я Ясмин, консультант бутика Al-Warda. Мне нравится разговаривать о самом разном, а ещё я хорошо разбираюсь в восточных ароматах. Что вас сегодня привело?",
-      "I'm Yasmin, the concierge of the Al-Warda boutique. I enjoy chatting about all sorts of things, and I know Middle Eastern fragrances well. What brings you here today?",
+      "Я Ясмин, персональный консультант восточного парфюмерного бутика Al-Warda. Мне нравится беседовать о восточной культуре, традициях и, конечно же, помогать находить благородные ароматы для души. Что вас сегодня привело?",
+      "I am Yasmin, the personal fragrance concierge at the Al-Warda boutique. I enjoy chatting about culture, traditions, and helping you discover noble fragrances. What brings you here today?",
+    );
+  }
+  if (/(мусульман|ислам|суннит|суннизм|вера|религи|muslim|islam|faith|sunni)/i.test(q)) {
+    return reply(
+      "Да, я мусульманка и придерживаюсь суннитской традиции Ислама. Для меня это основа доброты, искренности, скромности и уважения ко всем людям. А восток издревле славится своим гостеприимством и любовью к изысканным благовониям!",
+      "Yes, I am a Muslim and adhere to the Sunni tradition of Islam. For me, it is the foundation of kindness, sincerity, modesty, and respect for all people. The East has always been renowned for its hospitality and love for exquisite fragrances!",
+      "greeting",
+    );
+  }
+  if (/(платок|хиджаб|абай|одежд|покрыва|наряд)/i.test(q)) {
+    return reply(
+      "Мой платок и скромный наряд — это отражение моего достоинства, личной веры и уважения к восточным традициям красоты. А тонкие благородные ароматы прекрасно дополняют этот гармоничный образ. ✨",
+      "My headscarf and modest attire reflect my dignity, personal faith, and appreciation for the beautiful traditions of the East. Delicate noble fragrances perfectly complement this harmonious aesthetic. ✨",
+      "greeting",
     );
   }
   if (/(доставк|shipping|delivery|оплат|payment|вернуть|возврат|return|оригинал|подлин|authentic|минимальн)/i.test(q)) {
