@@ -169,6 +169,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link rel="preconnect" href="https://mfvenfrmlkxqgvdtedet.supabase.co" crossorigin />
+    <link rel="preload" href="/assets/img/al-warda-header-logo-mobile.webp" as="image" type="image/webp" />
+    <link rel="preload" href="/assets/img/perfumes/al-warda-rose-smoke-mobile.webp" as="image" type="image/webp" media="(max-width: 640px)" />
     <link rel="preload" href="/assets/css/styles.css" as="style" />
     <link rel="stylesheet" href="/assets/css/styles.css" />
     <link
@@ -202,9 +204,13 @@
         <div class="warda-boot-loader__ring-wrap">
           <div class="warda-boot-loader__ring"></div>
           <img
-            src="/assets/img/al-warda-header-logo.png?v=transparent-20261108"
+            src="/assets/img/al-warda-header-logo-mobile.webp"
             alt="Al-Warda"
             class="warda-boot-loader__logo"
+            width="58"
+            height="58"
+            fetchpriority="high"
+            decoding="async"
           />
         </div>
         <p class="warda-boot-loader__title">Al-Warda</p>

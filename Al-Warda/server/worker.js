@@ -348,7 +348,17 @@ export default {
 
     // Static assets & SPA fallback
     if (env?.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const response = await env.ASSETS.fetch(request);
+      if (response && response.ok && pathname.startsWith("/assets/")) {
+        const headers = new Headers(response.headers);
+        headers.set("Cache-Control", "public, max-age=31536000, immutable");
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+      }
+      return response;
     }
 
     return new Response("Not found", { status: 404 });

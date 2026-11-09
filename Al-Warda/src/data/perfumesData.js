@@ -6,7 +6,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "OUD & SMOKE",
     slug: "oud",
     title: "Oud & Smoke Collection",
-    image: "/assets/img/categories/IMG_0875 (2).PNG",
+    image: "/assets/img/categories/oud-smoke.webp",
     description: "Deep, resinous agarwood from ancient Arabian traditions. Rich, smoky, and majestic.",
   },
   {
@@ -16,7 +16,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "CITRUS",
     slug: "citrus",
     title: "Citrus Collection",
-    image: "/assets/img/categories/citrus.png",
+    image: "/assets/img/categories/citrus.webp",
     description: "Sun-drenched Calabrian bergamot, blood orange, crisp lemons, and crystal drops.",
   },
   {
@@ -26,7 +26,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "GOURMAND",
     slug: "gourmand",
     title: "Gourmand Collection",
-    image: "/assets/img/categories/gourmand.png",
+    image: "/assets/img/categories/gourmand.webp",
     description: "Roasted hazelnuts, melted caramel, bourbon vanilla, and dark cocoa praline.",
   },
   {
@@ -36,7 +36,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "FLORAL",
     slug: "floral",
     title: "Floral Collection",
-    image: "/assets/img/categories/floral.png",
+    image: "/assets/img/categories/floral.webp",
     description: "Imperial Taif roses, night-blooming jasmine, and velvet petals bathed in golden sun.",
   },
   {
@@ -46,7 +46,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "FRESH",
     slug: "fresh",
     title: "Fresh Collection",
-    image: "/assets/img/categories/fresh.png",
+    image: "/assets/img/categories/fresh.webp",
     description: "Crisp mint leaves, icy crystalline droplets, ozonic breezes, and vibrant green accord.",
   },
   {
@@ -56,7 +56,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "SPICES",
     slug: "spices",
     title: "Spices Collection",
-    image: "/assets/img/categories/IMG_0868.PNG",
+    image: "/assets/img/categories/spices.webp",
     description: "Royal saffron, black pepper, cardamom pods, and warm cinnamon bark.",
   },
   {
@@ -66,7 +66,7 @@ export const PERFUME_CATEGORIES = [
     nameEn: "FOUGÈRE",
     slug: "fougere",
     title: "Fougère Collection",
-    image: "/assets/img/categories/fougere.png",
+    image: "/assets/img/categories/fougere.webp",
     description: "Highland cedar, wild rosemary, bergamot rind, oakmoss, and herbal aromatic notes.",
   },
 ];

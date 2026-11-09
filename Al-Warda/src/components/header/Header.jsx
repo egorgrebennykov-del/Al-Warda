@@ -223,11 +223,23 @@ export default function Header({ theme, isLight, onSearch }) {
         {/* CENTER PROMINENT LOGO - PURE EMBLEM WITHOUT ANY CIRCLES OR FRAMES */}
         <div className="warda-nav__center">
           <Link to="/" className="warda-nav__crest-logo" aria-label="Al-Warda Parfumes Home">
-            <img
-              src="/assets/img/al-warda-header-logo.png?v=transparent-20261108"
-              alt="Al-Warda Parfumes"
-              className="warda-nav__crest-img"
-            />
+            <picture>
+              <source
+                media="(max-width: 1050px)"
+                srcSet="/assets/img/al-warda-header-logo-mobile.webp"
+                type="image/webp"
+              />
+              <img
+                src="/assets/img/al-warda-header-logo.webp"
+                alt="Al-Warda Parfumes"
+                className="warda-nav__crest-img"
+                width="73"
+                height="80"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </Link>
         </div>
 

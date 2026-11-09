@@ -159,15 +159,23 @@ export default function Home() {
 
         <div className="warda-hero__visual">
           <div className="warda-hero__img-frame">
-            <img
-              src="/assets/img/perfumes/al-warda-rose-smoke-cropped.webp?v=grand-hero-20261108"
-              alt="Al-Warda Royal Fragrance"
-              className="warda-hero__img"
-              loading="eager"
-              fetchPriority="high"
-              width="1600"
-              height="1066"
-            />
+            <picture>
+              <source
+                media="(max-width: 640px)"
+                srcSet="/assets/img/perfumes/al-warda-rose-smoke-mobile.webp"
+                type="image/webp"
+              />
+              <img
+                src="/assets/img/perfumes/al-warda-rose-smoke-cropped.webp?v=grand-hero-20261108"
+                alt="Al-Warda Royal Fragrance"
+                className="warda-hero__img"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                width="1600"
+                height="1066"
+              />
+            </picture>
           </div>
         </div>
       </section>

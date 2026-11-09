@@ -19,14 +19,21 @@ import { fetchActiveAnnouncements } from "../utils/announcements";
 
 // Warm perfumes catalog when idle so initial React mount and paint are instantaneous
 if (typeof window !== "undefined") {
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(() => {
-      getPerfumes().catch(() => {});
-    }, { timeout: 2000 });
+  const warmCatalog = () => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => {
+        getPerfumes().catch(() => {});
+      }, { timeout: 3500 });
+    } else {
+      setTimeout(() => {
+        getPerfumes().catch(() => {});
+      }, 1000);
+    }
+  };
+  if (document.readyState === "complete") {
+    warmCatalog();
   } else {
-    setTimeout(() => {
-      getPerfumes().catch(() => {});
-    }, 300);
+    window.addEventListener("load", warmCatalog, { once: true });
   }
 }
 
