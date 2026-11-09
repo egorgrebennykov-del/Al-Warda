@@ -30,20 +30,20 @@ export const translations = {
     "home.support": "Поддержка 24/7",
     "home.supportDesc": "Мы всегда готовы ответить на ваши вопросы",
 
-    // Book Picks (Featured)
+    // Fragrances (Featured)
     "featured.title": "Коллекция парфюмов",
-    "featured.info": "Курируемая подборка от ведущих издательств",
-    "featured.loading": "Загрузка подборки книг...",
+    "featured.info": "Курируемая подборка оригинальных арабских ароматов",
+    "featured.loading": "Загрузка коллекции ароматов...",
     "featured.error": "Не удалось загрузить подборку. Попробуйте позже.",
-    "featured.empty": "В подборке пока нет доступных книг.",
+    "featured.empty": "В подборке пока нет доступных ароматов.",
 
     // Discount
-    "discount.title": "Книги со скидкой",
+    "discount.title": "Ароматы со скидкой",
     "discount.updated": "Обновлено",
     "discount.offers": "предложений",
-    "discount.loading": "Загрузка книг со скидками...",
+    "discount.loading": "Загрузка ароматов со скидками...",
     "discount.error": "Не удалось загрузить скидки. Попробуйте позже.",
-    "discount.empty": "В последнем обновлении нет книг со скидками.",
+    "discount.empty": "В последнем обновлении нет ароматов со скидками.",
 
     // New Books
     "newBooks.title": "Новинки",
@@ -58,13 +58,13 @@ export const translations = {
     "search.searching": "Поиск...",
     "search.resultsFor": "Результаты по запросу",
     "search.nothingFound": "Ничего не найдено",
-    "search.loading1": "Опрашиваем книжные магазины",
-    "search.loading2": "Ищем ваши книги",
+    "search.loading1": "Подбираем восточные ноты",
+    "search.loading2": "Ищем ваши ароматы",
     "search.loading3": "Сравниваем цены",
-    "search.loading4": "Просматриваем каталоги",
+    "search.loading4": "Просматриваем каталоги парфюмерии",
     "search.loading5": "Ищем лучшие предложения",
-    "search.loading6": "Проверяем наличие книг",
-    "search.loading7": "Собираем цены из магазинов",
+    "search.loading6": "Проверяем наличие ароматов",
+    "search.loading7": "Собираем лучшие цены",
     "search.loading8": "Почти готово",
 
     // Common Cart actions
@@ -81,8 +81,8 @@ export const translations = {
     "cart.title": "Ваша корзина",
     "cart.emptyTitle": "Ваша корзина пуста",
     "cart.emptyDesc":
-      "Найдите книги в поиске или каталоге и добавьте их в корзину.",
-    "cart.findBooks": "Искать книгу",
+      "Найдите ароматы в поиске или каталоге и добавьте их в корзину.",
+    "cart.findBooks": "В каталог ароматов",
     "cart.total": "Итого:",
     "cart.proceed": "Оформить заказ",
     "cart.makeOrder": "Сделать заказ",
@@ -115,14 +115,14 @@ export const translations = {
     "checkout.phone": "Номер телефона",
     "checkout.saveAddress": "Сохранить этот адрес",
     "checkout.deliveryTitle": "Расчет доставки и оплата",
-    "checkout.itemsTotal": "Стоимость книг:",
+    "checkout.itemsTotal": "Стоимость товаров:",
     "checkout.shipping": "Доставка:",
     "checkout.finalTotal": "Итого к оплате:",
     "checkout.pay": "Оплатить",
     "checkout.paying": "Оплата...",
     "checkout.successTitle": "Заказ успешно оформлен!",
     "checkout.successDesc":
-      "Спасибо за ваш заказ! Мы начали комплектацию и скоро отправим книги по вашему адресу.",
+      "Спасибо за ваш заказ! Мы начали комплектацию и скоро отправим ваш заказ по указанному адресу.",
     "checkout.orderNumber": "Номер заказа",
     "checkout.deliveryAddress": "Адрес доставки",
     "checkout.toHome": "На главную",
@@ -179,9 +179,9 @@ export const translations = {
     "book.back": "Назад",
     "book.inStock": "В наличии",
     "book.outOfStock": "Нет в наличии",
-    "book.notFound": "Не удалось загрузить книгу.",
+    "book.notFound": "Не удалось загрузить аромат.",
     "book.goHome": "На главную",
-    "book.about": "О книге",
+    "book.about": "Об аромате",
     "book.details": "Характеристики",
     "book.loadingHint": "Загрузка подробной информации...",
     "book.author": "Автор",
@@ -220,14 +220,14 @@ export const translations = {
     "auth.hidePassword": "Скрыть пароль",
 
     // Testimonial & Feedbacks
-    "testimonial.title": "Отзывы наших читателей",
+    "testimonial.title": "Отзывы наших клиентов",
     "testimonial.subtitle":
       "Делитесь своими впечатлениями о сервисе и читайте отзывы других покупателей",
     "testimonial.leaveReview": "Оставить отзыв",
     "testimonial.rating": "Ваша оценка",
     "testimonial.text": "Текст отзыва",
     "testimonial.placeholder":
-      "Поделитесь впечатлениями о сервисе, книгах или доставке...",
+      "Поделитесь впечатлениями о сервисе, ароматах или доставке...",
     "testimonial.submit": "Опубликовать отзыв",
     "testimonial.submitting": "Публикация...",
     "testimonial.success": "Спасибо за ваш отзыв!",
@@ -272,10 +272,10 @@ export const translations = {
 
     // Footer
     "footer.rights": "Все права защищены",
-    "footer.tagline": "Ваш книжный магазин в Европе",
+    "footer.tagline": "Ваш бутик восточной парфюмерии в Европе",
     "footer.aboutTitle": "О бренде Al-Warda",
     "footer.aboutDesc":
-      "Интернет-магазин книг с широким выбором и выгодными ценами.",
+      "Бутик селективной арабской парфюмерии с доставкой по всей Европе.",
 
     // Privileged / Admin Panel
     "privileged.checkingAuth": "Проверка прав доступа...",
@@ -353,7 +353,7 @@ export const translations = {
     "privileged.coupons.createFirst": "Создать первый купон",
     "privileged.coupons.modalTitle": "Новый купон",
     "privileged.coupons.codeLabel": "Код купона (промокод) *",
-    "privileged.coupons.codePlaceholder": "Например: AUTUMN15, BOOK2026",
+    "privileged.coupons.codePlaceholder": "Например: AUTUMN15, WARDA2026",
     "privileged.coupons.generateCode": "Сгенерировать",
     "privileged.coupons.generateCodeTitle":
       "Сгенерировать код из 6 латинских букв и цифр",
@@ -396,7 +396,7 @@ export const translations = {
     "privileged.coupons.maxAmountPlaceholder": "Без максимума",
     "privileged.coupons.giftNameLabel": "Название подарка",
     "privileged.coupons.giftNamePlaceholder":
-      "Например: Фирменная закладка, Книга в подарок",
+      "Например: Пробник в подарок, Фирменный флакон",
     "privileged.coupons.giftConditionCheckbox": "Условие",
     "privileged.coupons.ifText": "Если",
     "privileged.coupons.condPurchased": "Купил",
@@ -435,7 +435,7 @@ export const translations = {
     "privileged.orders.statusUpdated": "Статус заказа обновлен на",
     "privileged.orders.deliveryAddress": "Адрес доставки:",
     "privileged.orders.totalPrice": "Сумма:",
-    "privileged.orders.booksSubtotal": "Книги:",
+    "privileged.orders.booksSubtotal": "Товары:",
     "privileged.orders.shippingCost": "Доставка:",
     "privileged.orders.pcs": "шт.",
     "privileged.orders.empty": "В этой категории пока нет заказов",
@@ -569,41 +569,41 @@ export const translations = {
     "home.support": "24/7 Support",
     "home.supportDesc": "Call us anytime",
 
-    // Book Picks (Featured)
-    "featured.title": "Book Picks",
-    "featured.info": "Curated selection from leading publishers",
-    "featured.loading": "Loading books...",
-    "featured.error": "Could not load Book Picks. Please try again later.",
-    "featured.empty": "No books have been added yet.",
+    // Fragrances (Featured)
+    "featured.title": "Fragrance Collection",
+    "featured.info": "Curated selection of genuine oriental perfumes",
+    "featured.loading": "Loading collection...",
+    "featured.error": "Could not load collection. Please try again later.",
+    "featured.empty": "No fragrances have been added yet.",
 
     // Discount
-    "discount.title": "Discount books",
+    "discount.title": "Special Offers",
     "discount.updated": "Updated",
     "discount.offers": "offers",
     "discount.loading": "Loading discounts...",
     "discount.error": "Could not load discounts. Please try again later.",
-    "discount.empty": "No discounted books in the latest update.",
+    "discount.empty": "No discounted fragrances in the latest update.",
 
-    // New Books
-    "newBooks.title": "New Books",
+    // New Arrivals
+    "newBooks.title": "New Arrivals",
     "newBooks.updated": "Updated",
     "newBooks.arrivals": "new arrivals",
-    "newBooks.loading": "Loading new books...",
-    "newBooks.error": "Could not load new books. Please try again later.",
-    "newBooks.empty": "No new books available at this moment.",
+    "newBooks.loading": "Loading new arrivals...",
+    "newBooks.error": "Could not load new arrivals. Please try again later.",
+    "newBooks.empty": "No new arrivals available at this moment.",
 
     // Search & Results
     "search.placeholder": "What are you looking for?",
     "search.searching": "Searching...",
     "search.resultsFor": "Results for",
     "search.nothingFound": "Nothing found",
-    "search.loading1": "Checking bookstores",
-    "search.loading2": "Searching for your books",
+    "search.loading1": "Exploring oriental fragrance notes",
+    "search.loading2": "Searching for your fragrances",
     "search.loading3": "Comparing prices",
-    "search.loading4": "Browsing book catalogs",
+    "search.loading4": "Browsing perfume catalog",
     "search.loading5": "Finding the best deals",
-    "search.loading6": "Checking book availability",
-    "search.loading7": "Collecting prices from stores",
+    "search.loading6": "Checking fragrance availability",
+    "search.loading7": "Collecting best prices",
     "search.loading8": "Almost there",
 
     // Common Cart actions
@@ -620,8 +620,8 @@ export const translations = {
     "cart.title": "Your cart",
     "cart.emptyTitle": "Your cart is empty",
     "cart.emptyDesc":
-      "Find books using search or catalog and add them to your cart.",
-    "cart.findBooks": "Find a book",
+      "Find fragrances using search or catalog and add them to your cart.",
+    "cart.findBooks": "Explore Fragrances",
     "cart.total": "Total:",
     "cart.proceed": "Proceed to checkout",
     "cart.makeOrder": "Place order",
@@ -654,18 +654,18 @@ export const translations = {
     "checkout.phone": "Phone number",
     "checkout.saveAddress": "Save this address",
     "checkout.deliveryTitle": "Shipping & Payment",
-    "checkout.itemsTotal": "Books total:",
+    "checkout.itemsTotal": "Items subtotal:",
     "checkout.shipping": "Shipping:",
     "checkout.finalTotal": "Total to pay:",
     "checkout.pay": "Pay now",
     "checkout.paying": "Processing...",
     "checkout.successTitle": "Order placed successfully!",
     "checkout.successDesc":
-      "Thank you for your order! We are preparing your books and will ship them to your address soon.",
+      "Thank you for your order! We are preparing your fragrances and will ship them to your address soon.",
     "checkout.orderNumber": "Order number",
     "checkout.deliveryAddress": "Delivery address",
     "checkout.toHome": "Back to Home",
-    "checkout.toCatalog": "Browse books",
+    "checkout.toCatalog": "Browse catalog",
     "checkout.emptyCart": "Your cart is empty. Cannot proceed to checkout.",
     "checkout.backToCart": "Back to cart",
     "checkout.fillAddressPrompt":
@@ -712,16 +712,16 @@ export const translations = {
     "orders.deliveryAddress": "Delivery address",
     "orders.items": "Items",
     "orders.total": "Total",
-    "orders.toCatalog": "Browse books",
+    "orders.toCatalog": "Browse catalog",
     "orders.loading": "Loading orders...",
 
-    // Book Details
+    // Fragrance Details
     "book.back": "Back",
     "book.inStock": "In stock",
     "book.outOfStock": "Out of stock",
-    "book.notFound": "Could not load the book.",
+    "book.notFound": "Could not load the fragrance.",
     "book.goHome": "Go home",
-    "book.about": "About the book",
+    "book.about": "About the fragrance",
     "book.details": "Details",
     "book.loadingHint": "Loading full details...",
     "book.author": "Author",
@@ -762,12 +762,12 @@ export const translations = {
     // Testimonial & Feedbacks
     "testimonial.title": "Customer Reviews",
     "testimonial.subtitle":
-      "Share your shopping experience and read reviews from other book lovers",
+      "Share your shopping experience and read reviews from other fragrance lovers",
     "testimonial.leaveReview": "Leave a Review",
     "testimonial.rating": "Your Rating",
     "testimonial.text": "Review Text",
     "testimonial.placeholder":
-      "Share your thoughts about your books, order, or delivery...",
+      "Share your thoughts about your fragrances, order, or delivery...",
     "testimonial.submit": "Submit Review",
     "testimonial.submitting": "Submitting...",
     "testimonial.success": "Thank you for your review!",
@@ -810,10 +810,10 @@ export const translations = {
 
     // Footer
     "footer.rights": "All rights reserved",
-    "footer.tagline": "Your bookstore for Europe",
+    "footer.tagline": "Your Arabian perfume boutique in Europe",
     "footer.aboutTitle": "About Al-Warda",
     "footer.aboutDesc":
-      "Online bookstore offering a wide selection of books at great prices.",
+      "Luxury Arabian perfume boutique offering authentic niche fragrances across Europe.",
 
     // Privileged / Admin Panel
     "privileged.checkingAuth": "Checking access permissions...",
@@ -889,11 +889,11 @@ export const translations = {
     "privileged.coupons.createFirst": "Create first coupon",
     "privileged.coupons.modalTitle": "New Coupon",
     "privileged.coupons.codeLabel": "Coupon code (promo code) *",
-    "privileged.coupons.codePlaceholder": "E.g.: AUTUMN15, BOOK2026",
+    "privileged.coupons.codePlaceholder": "E.g.: AUTUMN15, WARDA2026",
     "privileged.coupons.generateCode": "Generate",
     "privileged.coupons.generateCodeTitle": "Generate random 6-character code",
     "privileged.coupons.descLabel": "Description / Name",
-    "privileged.coupons.descPlaceholder": "Autumn discount for regular readers",
+    "privileged.coupons.descPlaceholder": "Autumn discount for regular clients",
     "privileged.coupons.targetUsersLabel": "Target users for coupon",
     "privileged.coupons.targetUsersPlaceholder": "Search by name or email...",
     "privileged.coupons.applyToAll": "Applies to everyone",
@@ -928,7 +928,7 @@ export const translations = {
     "privileged.coupons.minAmountPlaceholder": "No limit",
     "privileged.coupons.maxAmountPlaceholder": "No limit",
     "privileged.coupons.giftNameLabel": "Gift name / description",
-    "privileged.coupons.giftNamePlaceholder": "E.g.: Free bookmark, Gift book",
+    "privileged.coupons.giftNamePlaceholder": "E.g.: Free sample, Gift perfume",
     "privileged.coupons.giftConditionCheckbox": "Condition",
     "privileged.coupons.ifText": "If",
     "privileged.coupons.condPurchased": "Purchased",
@@ -967,7 +967,7 @@ export const translations = {
     "privileged.orders.statusUpdated": "Order status updated to",
     "privileged.orders.deliveryAddress": "Delivery address:",
     "privileged.orders.totalPrice": "Total:",
-    "privileged.orders.booksSubtotal": "Books:",
+    "privileged.orders.booksSubtotal": "Items:",
     "privileged.orders.shippingCost": "Shipping:",
     "privileged.orders.pcs": "pcs.",
     "privileged.orders.empty": "No orders in this category yet",

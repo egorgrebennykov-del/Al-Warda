@@ -103,8 +103,8 @@ export default function NotFound() {
                 <strong>{t("notFound.catalog")}</strong>
                 <span>
                   {language === "ru"
-                    ? "Выгодные скидки на лучшие книги"
-                    : "Great deals on top books"}
+                    ? "Выгодные скидки на лучшие ароматы"
+                    : "Great deals on luxury perfumes"}
                 </span>
               </div>
               <i className="ri-arrow-right-s-line not-found__nav-arrow" />
@@ -112,14 +112,14 @@ export default function NotFound() {
 
             <Link to="/featured" className="not-found__nav-card">
               <div className="not-found__nav-icon not-found__nav-icon--featured">
-                <i className="ri-book-open-line" />
+                <i className="ri-sparkling-line" />
               </div>
               <div className="not-found__nav-info">
                 <strong>{t("notFound.featured")}</strong>
                 <span>
                   {language === "ru"
-                    ? "Курируемые подборки издательств"
-                    : "Curated selections from publishers"}
+                    ? "Курируемые коллекции восточных парфюмов"
+                    : "Curated oriental perfume collections"}
                 </span>
               </div>
               <i className="ri-arrow-right-s-line not-found__nav-arrow" />

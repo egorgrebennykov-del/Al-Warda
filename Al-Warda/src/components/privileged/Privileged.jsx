@@ -4393,8 +4393,8 @@ export default function Privileged() {
                 </h3>
                 <p className="privileged__empty-text">
                   {language === "ru"
-                    ? "Создайте небольшую текстовую вставку вверху страницы или большой плакат над рулеткой из книг."
-                    : "Create a small top banner or a large poster banner above the book roulette."}
+                    ? "Создайте небольшую текстовую вставку вверху страницы или большой плакат над витриной парфюмерии."
+                    : "Create a small top banner or a large poster banner above the fragrance showcase."}
                 </p>
                 <button
                   type="button"
@@ -4815,8 +4815,8 @@ export default function Privileged() {
                             </strong>
                             <span>
                               {language === "ru"
-                                ? "Красочный баннер над рулеткой из книг (только фото). Если плакатов несколько, создается рулетка."
-                                : "Banner above the book carousel (photo only). Rotates as a roulette if multiple."}
+                                ? "Красочный баннер над витриной парфюмерии (только фото). Если плакатов несколько, создается рулетка."
+                                : "Banner above the fragrance carousel (photo only). Rotates as a roulette if multiple."}
                             </span>
                           </div>
                         </button>
@@ -5666,8 +5666,8 @@ export default function Privileged() {
                   rows={3}
                   placeholder={
                     language === "ru"
-                      ? "Например: Клиент интересуется оптовым заказом книг / Клиент хочет купить спецэффическую книгу..."
-                      : "E.g. Client inquiries about wholesale orders / Specific genre specialist..."
+                      ? "Например: Клиент интересуется оптовым заказом парфюмерии / Клиент хочет подобрать редкий уд..."
+                      : "E.g. Client inquiries about wholesale orders / Specific fragrance consultation..."
                   }
                   value={transferReason}
                   onChange={(e) => setTransferReason(e.target.value)}

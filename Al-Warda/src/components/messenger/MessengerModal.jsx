@@ -286,8 +286,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
           setSendError(
             check.reason ||
               (language === "ru"
-                ? "Наш ИИ-ассистент Ясмин с удовольствием ответит на этот вопрос о книгах, сюжете, авторах или корзине! Нажмите на Ясмин в углу экрана."
-                : "Our AI assistant Al-Warda will gladly answer this question about books, plots, authors, or your cart! Click on Al-Warda in the corner.")
+                ? "Наш ИИ-ассистент Ясмин с удовольствием ответит на этот вопрос о парфюмах, нотах, брендах или корзине! Нажмите на Ясмин в углу экрана."
+                : "Our AI assistant Al-Warda will gladly answer this question about perfumes, notes, brands, or your cart! Click on Al-Warda in the corner.")
           );
           // Trigger Al-Warda's floating speech bubble with help offer
           window.dispatchEvent(
@@ -542,8 +542,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   </div>
                   <p>
                     {language === "ru"
-                      ? "Здравствуйте! Задайте любой вопрос по книгам, доставке или заказам — администратор скоро ответит вам."
-                      : "Hello! Ask any question about books, delivery or orders — an administrator will answer shortly."}
+                      ? "Здравствуйте! Задайте любой вопрос по ароматам, доставке или заказам — администратор скоро ответит вам."
+                      : "Hello! Ask any question about fragrances, delivery or orders — an administrator will answer shortly."}
                   </p>
                 </div>
               ) : (
