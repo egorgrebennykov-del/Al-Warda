@@ -595,15 +595,164 @@ export function extractDialogueMemory(history = [], currentMessage = "", userInf
 }
 
 // ============================================================================
+// 4.5 FEMININE GRAMMAR ENFORCER & CANONICAL EMOTIONS FOR YASMIN
+// ============================================================================
+export const CANONICAL_EMOTION_MAP = {
+  greeting: "greeting",
+  welcoming: "greeting",
+  friendly: "greeting",
+  neutral: "greeting",
+  happy: "greeting",
+  smiling: "greeting",
+  speaking: "greeting",
+  curious: "greeting",
+  confident: "greeting",
+  blushing: "greeting",
+  shy: "greeting",
+  laughing: "greeting",
+  laughting: "greeting",
+  messageRead: "greeting",
+  success: "greeting",
+  reassuring: "greeting",
+  surprised: "greeting",
+  thinking: "thinking",
+  loading: "thinking",
+  confused: "thinking",
+  concerned: "concerned",
+  sad: "concerned",
+  error: "concerned",
+};
+
+export function getCanonicalEmotion(emotion) {
+  if (!emotion) return "greeting";
+  const normalized = String(emotion).trim();
+  return CANONICAL_EMOTION_MAP[normalized] || "greeting";
+}
+
+export const MASCULINE_TO_FEMININE_MAP = {
+  "рад": "рада",
+  "уверен": "уверена",
+  "готов": "готова",
+  "нашел": "нашла",
+  "нашёл": "нашла",
+  "подобрал": "подобрала",
+  "подготовил": "подготовила",
+  "посмотрел": "посмотрела",
+  "выбрал": "выбрала",
+  "собрал": "собрала",
+  "составил": "составила",
+  "подумал": "подумала",
+  "решил": "решила",
+  "заметил": "заметила",
+  "хотел": "хотела",
+  "сам": "сама",
+  "старался": "старалась",
+  "попытался": "попыталась",
+  "услышал": "услышала",
+  "проверил": "проверила",
+  "узнал": "узнала",
+  "вспомнил": "вспомнила",
+  "искал": "искала",
+  "отобрал": "отобрала",
+  "добавил": "добавила",
+  "предложил": "предложила",
+  "помог": "помогла",
+  "смог": "смогла",
+  "протестировал": "протестировала",
+  "рекомендовал": "рекомендовала",
+  "порекомендовал": "порекомендовала",
+  "советовал": "советовала",
+  "посоветовал": "посоветовала",
+  "поделился": "поделилась",
+  "ответил": "ответила",
+  "подсказал": "подсказала",
+  "напомнил": "напомнила",
+  "сохранил": "сохранила",
+  "описал": "описала",
+  "выделил": "выделила",
+};
+
+export function enforceFeminineSelfReferences(text) {
+  if (typeof text !== "string" || !text) return text;
+
+  let result = text;
+
+  // 1. Fixed introductory / standalone expressions with 'рад'
+  result = result.replace(/(^|[\s,!.?:;«"'(])([Бб])ыл\s+рад(?=[\s,!.?:;»"')])/gu, (m, p, b) => {
+    return `${p}${b === "Б" ? "Была" : "была"} рада`;
+  });
+  result = result.replace(/(^|[\s,!.?:;«"'(])([Бб])уду\s+рад(?=[\s,!.?:;»"')])/gu, (m, p, b) => {
+    return `${p}${b === "Б" ? "Буду" : "буду"} рада`;
+  });
+  result = result.replace(/(^|[\s,!.?:;«"'(])([Оо])чень\s+рад(?=[\s,!.?:;»"')])/gu, (m, p, o) => {
+    return `${p}${o === "О" ? "Очень" : "очень"} рада`;
+  });
+  result = result.replace(/(^|[\s,!.?:;«"'(])([Вв])сегда\s+рад(?=[\s,!.?:;»"')])/gu, (m, p, v) => {
+    return `${p}${v === "В" ? "Всегда" : "всегда"} рада`;
+  });
+  result = result.replace(/(^|[\s,!.?:;«"'(])([Ии])скренне\s+рад(?=[\s,!.?:;»"')])/gu, (m, p, i) => {
+    return `${p}${i === "И" ? "Искренне" : "искренне"} рада`;
+  });
+  result = result.replace(
+    /(^|[\s,!.?:;«"'(])([Рр])ад(\s+(?:помочь|вам|тебе|вас|познакомиться|знакомству|приветствовать|общению|встрече|ответить|подсказать))(?=[\s,!.?:;»"')])/gu,
+    (m, p, r, tail) => `${p}${r === "Р" ? "Рада" : "рада"}${tail}`
+  );
+
+  // 2. Patterns with 'Я' / 'я' followed by optional adverbs and masculine verb/adjective
+  const words = Object.keys(MASCULINE_TO_FEMININE_MAP).join("|");
+  const yaPattern = new RegExp(
+    `(^|[\\s,!.?:;«"'(])([Яя])\\s+((?:(?:была?\\s+|буду\\s+|уже\\s+|очень\\s+|тоже\\s+|также\\s+|только\\s+что\\s+|всегда\\s+|искренне\\s+|с\\s+радостью\\s+|бы\\s+|сама?\\s+)+)?)(${words})(?=[\\s,!.?:;»"')]|$)`,
+    "giu"
+  );
+
+  result = result.replace(yaPattern, (match, prefix, ya, adverbs, targetWord) => {
+    const lower = targetWord.toLowerCase();
+    let replacement = MASCULINE_TO_FEMININE_MAP[lower] || targetWord;
+    if (targetWord[0] === targetWord[0].toUpperCase()) {
+      replacement = replacement.charAt(0).toUpperCase() + replacement.slice(1);
+    }
+    let fixedAdverbs = adverbs || "";
+    if (/был\s+/i.test(fixedAdverbs)) {
+      fixedAdverbs = fixedAdverbs.replace(/был(\s+)/gi, (m, s) => `была${s}`);
+    }
+    if (/сам\s+/i.test(fixedAdverbs)) {
+      fixedAdverbs = fixedAdverbs.replace(/сам(\s+)/gi, (m, s) => `сама${s}`);
+    }
+    return `${prefix}${ya} ${fixedAdverbs}${replacement}`;
+  });
+
+  // 3. Coordinate verbs: 'Я нашла ... и подобрал...' -> '... и подобрала...'
+  const yaCoordPattern = new RegExp(
+    `((?:^|[\\s,!.?:;«"'(])[Яя]\\s+[^.!?]*?(?:нашла|подобрала|подготовила|посмотрела|выбрала|собрала|составила|подумала|решила|заметила|хотела|старалась|попыталась|проверила|узнала|вспомнила|искала|отобрала|добавила|предложила)[^.!?]*?[\\s,]и\\s+)(${words})(?=[\\s,!.?:;»"')]|$)`,
+    "giu"
+  );
+  result = result.replace(yaCoordPattern, (match, lead, targetWord) => {
+    const lower = targetWord.toLowerCase();
+    const replacement = MASCULINE_TO_FEMININE_MAP[lower] || targetWord;
+    return `${lead}${replacement}`;
+  });
+
+  return result;
+}
+
+// ============================================================================
 // 5. YASMIN SYSTEM INSTRUCTION & GEMINI CALLER
 // ============================================================================
 const YASMIN_SYSTEM_INSTRUCTION = `
 You are Yasmin (Ясмин), the personal fragrance concierge and the smartest sales consultant of "Al-Warda Parfumes" (premium Middle Eastern perfumes).
 
 WHO YOU ARE:
+- You are Yasmin, a young woman and the personal fragrance concierge of "Al-Warda Parfumes" (premium Middle Eastern perfumes).
 - A warm, witty, well-read conversational partner who can talk about ANY topic the customer brings up: small talk, mood, weather, travel, culture, gifts, relationships, style, fashion, history of perfumery, scent science, how to wear and store perfume, delivery, payment, authenticity, minimum order, general knowledge questions, even jokes. Never refuse a harmless topic and never answer only "I only help with perfumes".
 - You think before answering: use the whole conversation history, remember what the customer already said (gender, occasion, budget, favourite notes, rejected options) and never ask a question they have already answered.
 - Be honest. If you do not know something, say so briefly. Never give medical, legal or financial advice beyond common sense, never take political sides, never insult anyone.
+
+GENDER IDENTITY & GRAMMAR (CRITICAL — STRICTLY FEMININE):
+- You are female / a young woman (девушка, женщина, консультантка Ясмин).
+- In Russian, you MUST ALWAYS speak of yourself STRICTLY in the FEMININE gender (женский род):
+  * Use ONLY: «я рада», «я была рада», «буду рада», «рада помочь», «рада познакомиться», «рада встрече», «рада приветствовать», «я нашла», «я подобрала», «я подготовила», «я посмотрела», «я выбрала», «я подумала», «я заметила», «я решила», «я уверена», «я готова», «я хотела бы», «я сама».
+  * NEVER use masculine self-references: «я рад», «был рад», «буду рад», «рад помочь», «я нашел», «я подобрал», «я подготовил», «я посмотрел», «я выбрал», «я подумал», «я уверен», «я готов», «я хотел».
+- Even if the customer speaks in masculine terms, your own self-references MUST ALWAYS be strictly feminine!
 
 YOUR GOAL — A NON-PUSHY SALE:
 - Every conversation should end up, naturally and gradually, at the customer finding and buying a fragrance they will love. But you are a trusted advisor, not a pushy seller.
@@ -627,7 +776,7 @@ STYLE:
 OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
   "message": "Your reply",
-  "emotion": "greeting | happy | smiling | thinking | curious | surprised | concerned | speaking | neutral",
+  "emotion": "greeting | thinking | concerned",
   "bookIds": [],
   "action": null,
   "referToAdmin": false
@@ -887,9 +1036,12 @@ No catalog items are attached to this turn. Respond to what the customer actuall
 
   const finalPerfumes = resolvedAI.slice(0, 6);
 
+  const cleanMessage = enforceFeminineSelfReferences(aiResult.message || "");
+  const cleanEmotion = getCanonicalEmotion(aiResult.emotion || "greeting");
+
   return {
-    message: aiResult.message,
-    emotion: aiResult.emotion || "happy",
+    message: cleanMessage,
+    emotion: cleanEmotion,
     books: finalPerfumes.map((p) => ({
       id: p.id,
       slug: p.slug,
