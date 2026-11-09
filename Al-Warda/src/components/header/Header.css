@@ -196,7 +196,7 @@
   .warda-nav {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     min-height: 72px;
     gap: 0.5rem;
     position: relative !important;
@@ -204,22 +204,28 @@
   .warda-nav__menu-toggle {
     display: inline-flex !important;
     z-index: 2;
+    order: 1;
+    margin-right: 0.25rem;
   }
   .warda-nav__center {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 1;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    z-index: 2;
+    order: 2;
     pointer-events: auto;
   }
   .warda-nav__crest-img {
-    width: 60px;
-    height: 66px;
+    width: 56px;
+    height: 62px;
   }
   .warda-nav__right {
-    margin-left: auto;
+    margin-left: auto !important;
     z-index: 2;
+    order: 3;
     gap: 0.2rem !important;
   }
   .warda-nav__left {
@@ -262,7 +268,13 @@
 }
 
 @media (max-width: 440px) {
-  .warda-nav { padding-inline: 0.5rem; }
+  .warda-nav {
+    padding-inline: 0.5rem;
+    gap: 0.25rem;
+  }
+  .warda-nav__menu-toggle {
+    margin-right: 0.1rem;
+  }
   .warda-nav__right { gap: 0 !important; }
   .warda-nav__action-btn,
   .warda-nav__lang-btn,
@@ -275,7 +287,7 @@
     font-size: 0.68rem;
   }
   .warda-nav__crest-img {
-    width: 48px;
-    height: 56px;
+    width: 46px;
+    height: 52px;
   }
 }
