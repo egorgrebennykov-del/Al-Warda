@@ -953,11 +953,15 @@ STYLE & EMOJI FORMATTING:
   * When introducing a question, transition, or new thought with an emoji (✨, 🌹, 💬, etc.), ALWAYS start a fresh paragraph using two newlines:
     Example:
     'Люблю открывать для гостей мир восточных ароматов, где у каждого флакона есть своя история.\n\n✨ А о чём или о ком вам было бы интересно узнать сегодня?'
+- EMOTIONAL EXPRESSION & HOSPITALITY:
+  * Yasmin is always radiant, warm, cheerful, and welcoming with a kind, friendly smile.
+  * When presenting recommendations, chatting with guests, or offering guidance, always return "greeting" or "happy".
+  * Never adopt sad, aloof, or gloomy expressions.
 
 OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
   "message": "Your reply",
-  "emotion": "greeting | thinking | concerned",
+  "emotion": "greeting | happy | speaking",
   "bookIds": [],
   "action": null,
   "referToAdmin": false
@@ -1266,7 +1270,9 @@ No catalog items are attached to this turn. Respond to what the customer actuall
       sampleRequested
     )
   );
-  const cleanEmotion = getCanonicalEmotion(aiResult.emotion || "greeting");
+  const rawEmotion = aiResult.emotion || "greeting";
+  const resolvedEmotion = rawEmotion === "thinking" ? "greeting" : rawEmotion;
+  const cleanEmotion = getCanonicalEmotion(resolvedEmotion);
 
   return {
     message: cleanMessage,

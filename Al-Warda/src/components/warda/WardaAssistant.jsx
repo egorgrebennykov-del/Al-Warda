@@ -476,7 +476,8 @@ export default function WardaAssistant() {
         window.dispatchEvent(new CustomEvent("warda-refer-to-admin"));
       }
 
-      const assistantEmotion = data?.emotion || "greeting";
+      const rawEmotion = data?.emotion || "greeting";
+      const assistantEmotion = rawEmotion === "thinking" ? "greeting" : rawEmotion;
       setEmotion(assistantEmotion);
 
       const assistantMsg = {
