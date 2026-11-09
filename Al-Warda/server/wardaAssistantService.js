@@ -202,6 +202,7 @@ export async function ensureCatalogLoaded(contextCatalog = null) {
 // 2. NOTE KEYWORDS & SYNONYMS
 // ============================================================================
 const NOTE_SYNONYMS = {
+  ягоды: ["ягод", "клубник", "малин", "земляник", "смородин", "ежевик", "черник", "брусник", "клюкв", "вишн", "черешн", "барбарис", "гранат", "смородина", "черная смородина", "berry", "berries", "strawberry", "raspberry", "blackberry", "blueberry", "currant", "blackcurrant", "cherry", "cranberry", "pomegranate"],
   ваниль: ["ваниль", "карамел", "сливк", "пралине", "маршмеллоу", "бобы тонка", "гурман", "сладк", "vanilla", "caramel", "gourmand", "sweet", "tonka"],
   уд: ["уд", "агар", "смол", "смолист", "ладан", "oud", "agarwood", "smoke", "incense", "frankincense"],
   роза: ["роз", "таиф", "лепестк", "дамасск", "rose", "taif", "damask"],
@@ -214,17 +215,19 @@ const NOTE_SYNONYMS = {
   кожа: ["кож", "замш", "leather", "suede"],
   дерево: ["дерев", "сандал", "кедр", "пачули", "древесн", "ветивер", "мох", "wood", "sandalwood", "cedar", "patchouli", "vetiver"],
   цветы: ["цвет", "жасмин", "ирис", "тубероз", "пион", "ландыш", "фиалк", "иланг", "флердоранж", "floral", "jasmine", "iris", "violet", "ylang"],
-  фрукты: ["фрукт", "персик", "яблок", "вишн", "малин", "гранат", "слив", "груш", "ананас", "fruity", "cherry", "peach", "apple", "pear"],
+  фрукты: ["фрукт", "персик", "яблок", "вишн", "малин", "гранат", "слив", "груш", "ананас", "ягод", "клубник", "fruity", "cherry", "peach", "apple", "pear"],
 };
 
 const STOP_WORDS = new Set([
   "найди", "посоветуй", "порекомендуй", "подбери", "выбери", "покажи", "какие", "какой",
-  "какая", "какое", "есть", "ли", "у", "вас", "хочу", "купить", "духи", "духов", "парфюм",
-  "парфюма", "парфюмы", "аромат", "ароматы", "ароматов", "ноты", "нотами", "нотах", "запах",
-  "флакон", "пожалуйста", "мне", "что", "чем", "для", "про", "каталоге", "каталог", "сайте",
-  "в", "на", "с", "и", "или", "расскажи", "опиши", "предложи", "find", "show", "search",
-  "recommend", "suggest", "perfume", "perfumes", "fragrance", "fragrances", "scent", "notes",
-  "parfum", "catalog", "what", "have", "you", "the", "with", "for"
+  "какая", "какое", "есть", "ли", "у", "вас", "хочу", "хочется", "ищу", "ищем", "купить",
+  "духи", "духов", "парфюм", "парфюма", "парфюмы", "парфюмерия", "аромат", "ароматы", "ароматов",
+  "ноты", "нотами", "нотах", "запах", "флакон", "пожалуйста", "мне", "что", "чтото", "что-то",
+  "чтонибудь", "что-нибудь", "какой-то", "какойто", "какой-нибудь", "какойнибудь", "чем", "для",
+  "про", "каталоге", "каталог", "сайте", "в", "на", "с", "со", "из", "без", "и", "или",
+  "нужен", "нужно", "нужна", "нужны", "вариант", "варианты", "расскажи", "опиши", "предложи",
+  "find", "show", "search", "recommend", "suggest", "perfume", "perfumes", "fragrance",
+  "fragrances", "scent", "notes", "parfum", "catalog", "what", "have", "you", "the", "with", "for"
 ]);
 
 // ============================================================================
@@ -342,7 +345,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
     const topStr = p._topStr ?? p.topNotes.join(" ").toLowerCase();
     const heartStr = p._heartStr ?? p.heartNotes.join(" ").toLowerCase();
     const baseStr = p._baseStr ?? p.baseNotes.join(" ").toLowerCase();
-    const allText = p._allText || `${nameLower} ${brandLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr}`;
+    const descStr = (p.description || p.descriptionRu || p.descriptionEn || "").toLowerCase();
+    const allText = p._allText || `${nameLower} ${brandLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descStr}`;
 
     if (meaningfulTokens.length > 0 && nameLower.includes(q) && q.length > 2) score += 100;
     if (meaningfulTokens.length > 0 && q.includes(nameLower) && nameLower.length > 3) score += 100;
@@ -373,17 +377,19 @@ export function searchPerfumesInDatabase(query, options = {}) {
     for (const synGroup of matchedNoteCategories) {
       const groupMatched = synGroup.some((syn) => allText.includes(syn));
       if (groupMatched) {
-        score += 30;
-        if (synGroup.some((syn) => notesSummary.includes(syn))) score += 15;
+        score += 40;
+        if (synGroup.some((syn) => notesSummary.includes(syn))) score += 25;
         if (synGroup.some((syn) => topStr.includes(syn) || heartStr.includes(syn) || baseStr.includes(syn))) {
-          score += 20;
+          score += 25;
         }
+        if (synGroup.some((syn) => nameLower.includes(syn))) score += 50;
       }
     }
 
     for (const tok of meaningfulTokens) {
-      if (notesSummary.includes(tok)) score += 15;
-      else if (allText.includes(tok)) score += 8;
+      if (notesSummary.includes(tok)) score += 25;
+      else if (allText.includes(tok)) score += 15;
+      else if (tok.length >= 4 && allText.includes(tok.slice(0, 4))) score += 12;
     }
 
     const { isWomen, isMen, isUnisex } = getPerfumeGenderFlags(p);
@@ -1043,14 +1049,30 @@ export async function callGeminiJson({
   return null;
 }
 
+const SEARCH_INTENT_PATTERN =
+  /(?:^|[\s,·+!?.;:()«»"'-])(хочу|хочется|хотелось|ищу|ищем|подбери|подберите|подобрать|посоветуй|посоветуйте|порекомендуй|порекомендуйте|покажи|покажите|найди|найдите|предложи|предложите|выбери|выберите|выбрать|какие|какой|какую|что\s*(?:есть|посовету|выбрать|взять|купить|лучше)|есть\s*ли|есть\s*что|нужен|нужно|нужна|нужны|нравится|люблю|обожаю|подходят|подойдет|в\s*подарок|подарок|на\s*вечер|на\s*лето|на\s*зиму|на\s*каждый\s*день|для\s*(?:себя|девушки|парня|мужчины|женщины|мамы|мужа|жены|подруги)|want|looking\s*for|find|recommend|suggest|show\s*me|pick|need)(?:$|[\s,·+!?.;:()«»"'-])/i;
+
+const NOTE_STEMS = [
+  "ягод", "клубник", "малин", "смородин", "земляник", "ежевик", "черник", "брусник", "клюкв", "вишн", "черешн", "барбарис", "гранат", "berry", "berries", "strawberry", "raspberry", "cherry",
+  "фрукт", "персик", "яблок", "груш", "слив", "инжир", "ананас", "манго", "кокос", "fruit", "peach", "apple",
+  "цитрус", "бергамот", "лимон", "апельсин", "мандарин", "грейпфрут", "лайм", "citrus", "lemon", "orange",
+  "ванил", "карамел", "шоколад", "кофе", "какао", "пралине", "тонка", "гурман", "сладк", "sweet", "vanilla",
+  "роз", "жасмин", "тубероз", "пион", "ирис", "фиалк", "ландыш", "лаванд", "цветочн", "цвет", "floral", "rose",
+  "свеж", "морск", "акватич", "океан", "мят", "зелен", "трав", "fresh", "aquatic", "mint",
+  "дерев", "древесн", "сандал", "кедр", "пачули", "ветивер", "уд", "oud", "wood", "sandalwood",
+  "амбр", "мускус", "ладан", "прян", "пряност", "шафран", "кориц", "перец", "табак", "кож", "дым", "amber", "musk",
+  "стойк", "шлейф", "вечерн", "летн", "зимн", "мужск", "женск", "унисекс",
+];
+
 const PRODUCT_STEMS = [
   "дух", "парфюм", "аромат", "запах", "нот", "флакон", "подар", "купит", "цен", "стоим", "стоит",
   "бренд", "посовет", "подбер", "подобр", "найд", "найти", "покаж", "рекоменд", "ванил", "сладк", "свеж",
   "мужск", "женск", "унисекс", "дешев", "дорог", "послащ", "покрепч", "постойч", "шлейф", "стойк",
+  "хоч", "ищ", "нужн", "выбер", "предлож",
   "perfum", "fragran", "scent", "recommend", "suggest", "gift", "buy", "price", "brand", "cologne",
   "edp", "edt", "eau", "sweet", "fresh", "cheaper", "pricier", "longer", "woody", "floral", "musk",
 ];
-const PRODUCT_WORDS = new Set(["уд", "oud", "роза", "rose", "амбра", "amber", "мускус", "show", "find", "notes"]);
+const PRODUCT_WORDS = new Set(["уд", "oud", "роза", "rose", "амбра", "amber", "мускус", "show", "find", "notes", "berry", "berries"]);
 
 function wantsProductSuggestions(text, memory, history) {
   const q = (text || "").trim().toLowerCase();
@@ -1060,8 +1082,22 @@ function wantsProductSuggestions(text, memory, history) {
       return false;
     }
   }
+
+  // 1. Explicit request / intent to search or recommend ("хочу что-то с ягодами", "ищу...", "подбери...")
+  if (SEARCH_INTENT_PATTERN.test(q)) {
+    return true;
+  }
+
+  // 2. Note stems or product keywords mentioned
   const tokens = q.split(/[\s,·+!?.;:()«»"'-]+/).filter(Boolean);
-  if (tokens.some((tok) => PRODUCT_WORDS.has(tok) || PRODUCT_STEMS.some((stem) => tok.startsWith(stem)))) {
+  if (
+    tokens.some(
+      (tok) =>
+        PRODUCT_WORDS.has(tok) ||
+        PRODUCT_STEMS.some((stem) => tok.startsWith(stem)) ||
+        NOTE_STEMS.some((stem) => tok.startsWith(stem))
+    )
+  ) {
     return true;
   }
   if (memory?.isSpecificInquiry || memory?.isRejection || memory?.maxPrice) return true;
@@ -1154,6 +1190,12 @@ export async function processWardaChat({ messages = [], language = "ru", context
         limit: 6,
       });
     }
+
+    if (foundPerfumes.length === 0 && ALL_PERFUMES.length > 0) {
+      // Fallback: pick popular items matching preferred gender so user always receives concrete recommendations
+      const pool = ALL_PERFUMES.filter((p) => (sampleRequested || !isSamplePerfume(p)) && matchesTargetGender(p, memory.preferredGender));
+      foundPerfumes = pool.slice(0, 4);
+    }
   }
 
   const catalogBrandsSummary = Array.from(
@@ -1212,8 +1254,11 @@ ${JSON.stringify(
 )}
 
 CRITICAL INSTRUCTIONS:
-- Mention and recommend ONLY perfumes from AL-WARDA REAL CATALOG ITEMS above.
-- Do NOT mention any perfume or brand not in AL-WARDA REAL CATALOG ITEMS.
+- The customer explicitly wants you to find and recommend a perfume matching their wish (e.g. "${latestMessage}").
+- You MUST ACT AS AN EXPERT PERFUME CONCIERGE: IMMEDIATELY recommend and present 2–4 matching fragrances from the AL-WARDA REAL CATALOG ITEMS above!
+- In your very first sentence, warmly acknowledge their request and enthusiastically introduce the matching fragrances from the list below.
+- Vividly describe why these specific bottles match their request (mentioning specific notes like berries, sweetness, sillage, mood).
+- NEVER reply with only abstract descriptions or ask counter-questions without recommending perfumes! ALWAYS present the bottles from the catalog right away.
 - Return their exact IDs in "bookIds": ${JSON.stringify(foundPerfumes.map((p) => p.id))}.
 `;
   } else {

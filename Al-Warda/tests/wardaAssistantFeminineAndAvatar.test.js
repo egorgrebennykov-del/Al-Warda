@@ -333,3 +333,42 @@ test("processWardaChat does not recommend samples when user asks for perfume wit
   assert.ok(result.books.every((b) => !isSamplePerfume(b)), "Must NOT include sample vials");
   assert.ok(result.books.some((b) => b.id === "bottle-1"), "Must include the full bottle");
 });
+
+test("processWardaChat understands desire queries like 'хочу чтото с ягодами' and recommends matching perfumes", async () => {
+  const mockCatalog = [
+    {
+      id: "orientica-berries-1",
+      name: "Orientica Dynasty Eau De Parfum 80ml",
+      brand: "Orientica",
+      price: 65.0,
+      volume: "80 мл",
+      topNotes: ["Бергамот", "Розовые ягоды"],
+      heartNotes: ["Клубника", "Малина"],
+      baseNotes: ["Пачули", "Мускус", "Амбра"],
+      gender: "Унисекс",
+      image: "/assets/img/orientica.png",
+      description: "Сочный шлейфовый аромат со спелыми лесными ягодами",
+    },
+    {
+      id: "wood-bottle-2",
+      name: "Lattafa Ameer Al Oudh 100ml",
+      brand: "Lattafa",
+      price: 35.0,
+      volume: "100 мл",
+      topNotes: ["Уд", "Кедр"],
+      heartNotes: ["Древесные ноты"],
+      baseNotes: ["Амбра"],
+      gender: "Унисекс",
+      image: "/assets/img/wood.png",
+    },
+  ];
+
+  const result = await processWardaChat({
+    messages: [{ role: "user", content: "хочу чтото с ягодами" }],
+    language: "ru",
+    context: { catalog: mockCatalog },
+  });
+
+  assert.ok(result.books.length > 0, "Should recognize intent and recommend berry perfumes");
+  assert.equal(result.books[0].id, "orientica-berries-1", "Top match should be the berry perfume");
+});
