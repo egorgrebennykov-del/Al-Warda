@@ -3,11 +3,11 @@
   max-width: 1220px;
   margin: 0 auto 2.5rem auto;
   position: relative;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.75), 0 0 25px rgba(212, 175, 55, 0.08);
+  box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.75), 0 0 20px rgba(212, 175, 55, 0.06);
   background: var(--bg-card, #0d0a08);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -18,14 +18,14 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.75) 50%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6) 50%, transparent);
   z-index: 6;
   pointer-events: none;
 }
 
 .warda-poster-roulette-container:hover {
-  border-color: rgba(212, 175, 55, 0.6);
-  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.16);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.12);
 }
 
 .warda-poster-slide-wrapper {
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1c1510 0%, #080605 100%);
+  background: radial-gradient(circle at center, #18120c 0%, #080605 100%);
 }
 
 .warda-poster-link {
@@ -59,26 +59,26 @@
   transform: scale(1.015);
 }
 
-/* Prev / Next Buttons harmonized with .warda-carousel-btn */
+/* Prev / Next Buttons */
 .warda-poster-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: rgba(14, 10, 7, 0.88);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.4);
   color: var(--first-color, #d4af37);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
   z-index: 5;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
   transition: all 0.25s ease;
 }
 
@@ -86,8 +86,8 @@
   background: var(--first-color, #d4af37);
   color: #080605;
   border-color: var(--first-color, #d4af37);
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.7);
-  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+  transform: translateY(-50%) scale(1.08);
 }
 
 .warda-poster-btn--prev {
@@ -113,7 +113,7 @@
   -webkit-backdrop-filter: blur(10px);
   padding: 5px 12px;
   border-radius: 30px;
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
 }
 
@@ -121,69 +121,23 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  background: rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: rgba(212, 175, 55, 0.3);
   cursor: pointer;
   padding: 0;
   transition: width 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .warda-poster-dot:hover {
-  background: rgba(212, 175, 55, 0.7);
+  background: rgba(212, 175, 55, 0.6);
 }
 
 .warda-poster-dot--active {
-  width: 24px;
+  width: 22px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #d4af37, #f7ede2);
+  background: linear-gradient(90deg, #d4af37, #c5a059);
   border-color: #d4af37;
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.7);
-}
-
-/* Light theme for large announcement roulette */
-body:not(.dark-theme) .warda-poster-roulette-container {
-  background: #fcfaf6;
-  border: 1px solid rgba(197, 160, 89, 0.45);
-  box-shadow: 0 12px 35px -8px rgba(197, 160, 89, 0.2);
-}
-
-body:not(.dark-theme) .warda-poster-roulette-container::before {
-  background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.8) 50%, transparent);
-}
-
-body:not(.dark-theme) .warda-poster-slide-wrapper {
-  background: radial-gradient(circle at center, #f5efe6 0%, #e8dec8 100%);
-}
-
-body:not(.dark-theme) .warda-poster-btn {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(197, 160, 89, 0.6);
-  color: #8c6e2d;
-  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.25);
-}
-
-body:not(.dark-theme) .warda-poster-btn:hover {
-  background: #c5a059;
-  color: #ffffff;
-  border-color: #c5a059;
-  box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
-}
-
-body:not(.dark-theme) .warda-poster-dots {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(197, 160, 89, 0.4);
-  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.2);
-}
-
-body:not(.dark-theme) .warda-poster-dot {
-  background: rgba(197, 160, 89, 0.35);
-  border-color: rgba(197, 160, 89, 0.3);
-}
-
-body:not(.dark-theme) .warda-poster-dot--active {
-  background: linear-gradient(90deg, #c5a059, #8c6e2d);
-  border-color: #8c6e2d;
-  box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
 }
 
 @media screen and (max-width: 768px) {

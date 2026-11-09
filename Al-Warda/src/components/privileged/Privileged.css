@@ -2827,7 +2827,7 @@
 
 .privileged__ann-order-btn:hover:not(:disabled) {
   background-color: var(--first-color);
-  color: #fff;
+  color: #080605;
   border-color: var(--first-color);
 }
 
@@ -3143,7 +3143,7 @@
   height: 24px;
   border-radius: 50%;
   background-color: var(--first-color);
-  color: #fff;
+  color: #080605;
   font-size: 0.8rem;
   font-weight: 700;
   display: inline-flex;

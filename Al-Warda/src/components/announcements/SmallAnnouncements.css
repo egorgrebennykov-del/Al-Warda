@@ -3,14 +3,14 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   animation: wardaAnnounceFadeIn 0.35s ease-out;
 }
 
 @keyframes wardaAnnounceFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -22,15 +22,15 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 18px;
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(26, 20, 16, 0.94) 45%, rgba(14, 11, 8, 0.98) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  border-left: 4px solid var(--first-color, #d4af37);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 15px rgba(212, 175, 55, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, rgba(26, 20, 16, 0.9) 0%, rgba(14, 11, 8, 0.94) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-left: 3px solid var(--first-color, #d4af37);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 10px rgba(212, 175, 55, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -42,35 +42,35 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.75), rgba(212, 175, 55, 0.2) 60%, transparent 100%);
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.6), rgba(212, 175, 55, 0.15) 50%, transparent 100%);
   pointer-events: none;
 }
 
 .warda-small-announcement-banner:hover {
-  border-color: rgba(212, 175, 55, 0.55);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 175, 55, 0.08);
   transform: translateY(-1px);
 }
 
 .warda-small-announcement-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(140, 110, 45, 0.1) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   color: var(--first-color, #d4af37);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.05rem;
+  font-size: 1rem;
   flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.15);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .warda-small-announcement-banner:hover .warda-small-announcement-icon {
-  transform: rotate(12deg) scale(1.08);
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.4);
+  transform: rotate(12deg) scale(1.06);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
 }
 
 .warda-small-announcement-content {
@@ -82,15 +82,15 @@
   gap: 8px 16px;
   font-size: 0.92rem;
   line-height: 1.5;
-  color: var(--title-color, #f7ede2);
+  color: #d8cebe;
   overflow: visible;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
 
 .warda-small-announcement-text {
-  font-weight: 500;
-  color: var(--title-color, #f7ede2);
+  font-weight: 400;
+  color: #d8cebe;
   letter-spacing: 0.01em;
   white-space: normal;
   word-break: break-word;
@@ -102,25 +102,25 @@
   align-items: center;
   gap: 6px;
   font-family: var(--second-font, 'Cinzel', serif);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--first-color, #d4af37);
   text-decoration: none;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.45);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.4);
   padding-bottom: 1px;
   transition: all 0.2s ease;
 }
 
 .warda-small-announcement-link i {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: transform 0.2s ease;
 }
 
 .warda-small-announcement-link:hover {
-  color: #fff6e8;
+  color: #e8d08d;
   border-bottom-color: #d4af37;
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
 }
 
 .warda-small-announcement-link:hover i {
@@ -128,14 +128,14 @@
 }
 
 .warda-small-announcement-close {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.18);
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  color: rgba(247, 237, 226, 0.6);
-  font-size: 1.1rem;
+  color: #8c7d6b;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,56 +145,9 @@
 
 .warda-small-announcement-close:hover {
   background-color: rgba(212, 175, 55, 0.15);
-  border-color: rgba(212, 175, 55, 0.5);
+  border-color: rgba(212, 175, 55, 0.45);
   color: #d4af37;
-  transform: scale(1.1);
-}
-
-/* Light Theme */
-body:not(.dark-theme) .warda-small-announcement-banner {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 244, 237, 0.95) 100%);
-  border: 1px solid rgba(197, 160, 89, 0.45);
-  border-left: 4px solid #c5a059;
-  box-shadow: 0 4px 18px rgba(197, 160, 89, 0.14);
-}
-
-body:not(.dark-theme) .warda-small-announcement-banner::before {
-  background: linear-gradient(90deg, rgba(197, 160, 89, 0.8), rgba(197, 160, 89, 0.2) 60%, transparent 100%);
-}
-
-body:not(.dark-theme) .warda-small-announcement-icon {
-  background: linear-gradient(135deg, rgba(197, 160, 89, 0.2) 0%, rgba(140, 110, 45, 0.08) 100%);
-  border-color: rgba(197, 160, 89, 0.5);
-  color: #8c6e2d;
-  box-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
-}
-
-body:not(.dark-theme) .warda-small-announcement-content,
-body:not(.dark-theme) .warda-small-announcement-text {
-  color: #2b221a;
-}
-
-body:not(.dark-theme) .warda-small-announcement-link {
-  color: #8c6e2d;
-  border-bottom-color: rgba(140, 110, 45, 0.4);
-}
-
-body:not(.dark-theme) .warda-small-announcement-link:hover {
-  color: #553e14;
-  border-bottom-color: #8c6e2d;
-  text-shadow: none;
-}
-
-body:not(.dark-theme) .warda-small-announcement-close {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(197, 160, 89, 0.3);
-  color: #7a6a58;
-}
-
-body:not(.dark-theme) .warda-small-announcement-close:hover {
-  background: rgba(197, 160, 89, 0.18);
-  border-color: rgba(197, 160, 89, 0.6);
-  color: #8c6e2d;
+  transform: scale(1.08);
 }
 
 /* Mobile Responsiveness */
@@ -208,15 +161,15 @@ body:not(.dark-theme) .warda-small-announcement-close:hover {
 
   .warda-small-announcement-banner {
     align-items: flex-start;
-    padding: 11px 14px;
-    gap: 12px;
-    border-radius: 10px;
+    padding: 10px 14px;
+    gap: 10px;
+    border-radius: 9px;
   }
 
   .warda-small-announcement-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 0.95rem;
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
     margin-top: 2px;
   }
 
@@ -248,7 +201,7 @@ body:not(.dark-theme) .warda-small-announcement-close:hover {
   .warda-small-announcement-close {
     width: 24px;
     height: 24px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-top: 2px;
   }
 }
