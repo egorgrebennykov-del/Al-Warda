@@ -522,6 +522,65 @@ class ProductImageGenerationTests(unittest.TestCase):
                     queue.publish_generated_images(object(), "https://db.example", "https://site.example")
             update.assert_not_called()
 
+    def test_generates_ai_description_via_gemini(self):
+        import json
+        row = {"id": 100, "name": "Afnan 9 PM", "brand": "Afnan", "info": {}}
+        gemini_response = types.SimpleNamespace(
+            ok=True,
+            json=lambda: {
+                "candidates": [{
+                    "content": {
+                        "parts": [{
+                            "text": json.dumps({
+                                "descriptionRu": "Afnan 9 PM — чувственный гурманский аромат с Ближнего Востока с яркими нотами бергамота, корицы и ванили. С первых секунд композиция очаровывает глубоким звучанием.",
+                                "descriptionEn": "Afnan 9 PM is a sensual oriental fragrance from the Middle East with notes of bergamot, cinnamon and vanilla.",
+                                "notesSummary": "Afnan — бергамот, корица, ваниль",
+                            })
+                        }]
+                    }
+                }]
+            },
+        )
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), \
+             patch.object(queue.requests, "post", return_value=gemini_response):
+            result = queue.generate_ai_perfume_description(queue.requests, row, {})
+        self.assertIn("Afnan 9 PM", result["descriptionRu"])
+        self.assertIn("Ближн", result["descriptionRu"])
+        self.assertIn("Middle East", result["descriptionEn"])
+        self.assertTrue(result["aiModel"].startswith("gemini/"))
+
+    def test_generates_ai_description_via_cloudflare_llm(self):
+        import json
+        row = {"id": 101, "name": "Lattafa Khamrah", "brand": "Lattafa", "info": {}}
+        cf_response = types.SimpleNamespace(
+            ok=True,
+            json=lambda: {
+                "result": {
+                    "response": json.dumps({
+                        "descriptionRu": "Lattafa Khamrah — изысканный десертно-пряный шедевр с Ближнего Востока с нотами фиников, пралине и мускатного ореха. Оставляет стойкий притягательный шлейф.",
+                        "descriptionEn": "Lattafa Khamrah is an exquisite sweet-spicy masterpiece from the Middle East featuring dates, praline and nutmeg.",
+                        "notesSummary": "Lattafa — финики, пралине, корица",
+                    })
+                }
+            },
+        )
+        with patch.dict(os.environ, {}, clear=True), \
+             patch.object(queue.requests, "post", return_value=cf_response):
+            result = queue.generate_ai_perfume_description(queue.requests, row, {}, account_id="acc123", api_token="tok123")
+        self.assertIn("Lattafa Khamrah", result["descriptionRu"])
+        self.assertIn("Ближн", result["descriptionRu"])
+        self.assertEqual(result["aiModel"], "@cf/meta/llama-3.1-8b-instruct")
+
+    def test_ai_description_fallback_generates_multi_sentence_luxury_copy(self):
+        row = {"id": 102, "name": "Amouage Interlude", "brand": "Amouage", "info": {}}
+        with patch.dict(os.environ, {}, clear=True):
+            result = queue.generate_ai_perfume_description(None, row, {})
+        self.assertIn("Amouage Interlude", result["descriptionRu"])
+        self.assertIn("Ближн", result["descriptionRu"])
+        self.assertIn("Middle East", result["descriptionEn"])
+        self.assertIn("шлейф", result["descriptionRu"])
+        self.assertGreater(len(result["descriptionRu"]), 150)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -66,16 +66,36 @@ function processOriginalPhoto(gtin, rawImage) {
   return `/assets/img/products/${gtin}.jpg`;
 }
 
-export async function generateProductFlacon({ gtin }) {
+export async function generateProductFlacon({ gtin, name, brand, volume, concentration } = {}) {
   if (!gtin) throw new Error("GTIN is required to process a Qogita product photo");
   const product = findProductByGtin(gtin);
   const rawImage = product?.rawImage || product?.info?.rawImage;
-  return processOriginalPhoto(gtin, rawImage);
+  const imageUrl = processOriginalPhoto(gtin, rawImage);
+
+  try {
+    const { enrichPerfumeWithAI } = await import("./wardaAssistantService.js");
+    const aiDesc = await enrichPerfumeWithAI({
+      name: name || product?.name || product?.title,
+      brand: brand || product?.brand,
+      notes: product?.notesSummary || product?.info?.notesSummary,
+    });
+    if (product) {
+      product.descriptionRu = aiDesc.descriptionRu;
+      product.descriptionEn = aiDesc.descriptionEn;
+      product.description = aiDesc.descriptionRu;
+      if (!product.info) product.info = {};
+      product.info.descriptionRu = aiDesc.descriptionRu;
+      product.info.descriptionEn = aiDesc.descriptionEn;
+      product.info.description = aiDesc.descriptionRu;
+      product.info.descriptionAiGenerated = true;
+    }
+  } catch (err) {
+    console.warn(`[productGeneratorService] Could not generate AI description for GTIN ${gtin}:`, err?.message);
+  }
+
+  return imageUrl;
 }
 
 export async function getOrGenerateFlaconByGtin(gtin) {
-  if (!gtin) throw new Error("GTIN is required to process a Qogita product photo");
-  const product = findProductByGtin(gtin);
-  const rawImage = product?.rawImage || product?.info?.rawImage;
-  return processOriginalPhoto(gtin, rawImage);
+  return generateProductFlacon({ gtin });
 }

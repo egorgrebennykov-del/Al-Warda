@@ -387,6 +387,190 @@ def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=
         )
 
 
+def generate_luxury_fallback_description(
+    name,
+    brand,
+    notes_summary="",
+    category="Восточные",
+    top_notes=None,
+    heart_notes=None,
+    base_notes=None,
+):
+    """Generate a rich, evocative multi-sentence description according to Al-Warda luxury standard."""
+    top_list = top_notes or ["Шафран", "Бергамот", "Розовый перец"]
+    heart_list = heart_notes or ["Дамасская роза", "Благородный уд", "Амбра"]
+    base_list = base_notes or ["Белый мускус", "Сандал", "Мадагаскарская ваниль"]
+
+    top_str_ru = ", ".join(top_list) if isinstance(top_list, list) else str(top_list)
+    heart_str_ru = ", ".join(heart_list) if isinstance(heart_list, list) else str(heart_list)
+    base_str_ru = ", ".join(base_list) if isinstance(base_list, list) else str(base_list)
+
+    top_str_en = ", ".join(top_list) if isinstance(top_list, list) else str(top_list)
+    heart_str_en = ", ".join(heart_list) if isinstance(heart_list, list) else str(heart_list)
+    base_str_en = ", ".join(base_list) if isinstance(base_list, list) else str(base_list)
+
+    desc_ru = (
+        f"{name} от парфюмерного дома {brand} — роскошный селективный аромат с Ближнего Востока, "
+        f"созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений "
+        f"композиция завораживает ярким вступлением верхних нот ({top_str_ru}), плавно раскрываясь "
+        f"глубоким и многогранным сердцем из акцентов: {heart_str_ru}. В финале аромат окутывает "
+        f"благородной, бархатистой базой ({base_str_ru}), формируя дорогой, стойкий и узнаваемый шлейф."
+    )
+    desc_en = (
+        f"{name} by {brand} is an opulent niche fragrance from the Middle East, crafted in the finest "
+        f"traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous "
+        f"top notes ({top_str_en}), seamlessly unfolding into a rich, multifaceted heart of {heart_str_en}. "
+        f"As it settles on the skin, a velvety, resonant base of {base_str_en} emerges, leaving an unforgettable "
+        f"and long-lasting trail."
+    )
+    return {
+        "descriptionRu": desc_ru,
+        "descriptionEn": desc_en,
+        "description": desc_ru,
+        "notesSummary": notes_summary or f"{brand} — {category}",
+        "aiModel": "al-warda/luxury-fallback-v1",
+    }
+
+
+def generate_ai_perfume_description(
+    requests_module,
+    row,
+    info,
+    account_id=None,
+    api_token=None,
+):
+    """Generate a rich, evocative luxury description for the perfume using another AI (Gemini or Cloudflare Workers AI LLM), with a high-end luxury fallback."""
+    name = (row.get("name") or info.get("name") or "Арабский парфюм").strip()
+    brand = (row.get("brand") or info.get("brand") or "Al-Warda").strip()
+    notes_summary = (info.get("notesSummary") or info.get("notes") or "").strip()
+    category = (info.get("categoryRu") or info.get("category") or "Восточные").strip()
+    top_notes = info.get("topNotes") or info.get("topNotesRu") or []
+    heart_notes = info.get("heartNotes") or info.get("heartNotesRu") or []
+    base_notes = info.get("baseNotes") or info.get("baseNotesRu") or []
+
+    # 1. Try Google Gemini API if key is available in environment
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
+    if gemini_key and requests_module:
+        for model in ("gemini-2.0-flash", "gemini-1.5-flash"):
+            try:
+                prompt_text = (
+                    f"Perfume Name: {name}\n"
+                    f"Brand: {brand}\n"
+                    f"Category: {category}\n"
+                    f"Known Notes: {notes_summary or 'precious oud, Damascus rose, amber, white musk, rare spices'}\n\n"
+                    "Instructions for luxury fragrance copywriter:\n"
+                    "1. Write an evocative luxury description in Russian (descriptionRu) and English (descriptionEn).\n"
+                    "2. Russian: multi-sentence, rich and sophisticated, describing the opening notes, heart, base, and longevity. Must state provenance as 'Ближний Восток' (never mention UAE or Saudi Arabia).\n"
+                    "3. English: poetic, niche luxury tone, stating origin as 'the Middle East'.\n"
+                    "4. Output valid JSON only with keys: descriptionRu, descriptionEn, notesSummary."
+                )
+                gemini_url = (
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                    f"?key={gemini_key}"
+                )
+                payload = {
+                    "contents": [{"parts": [{"text": prompt_text}]}],
+                    "generationConfig": {"responseMimeType": "application/json", "temperature": 0.7},
+                }
+                resp = requests_module.post(gemini_url, json=payload, timeout=20)
+                if resp.ok:
+                    data = resp.json()
+                    candidates = data.get("candidates") or []
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            raw_json = parts[0].get("text", "")
+                            parsed = json.loads(raw_json)
+                            desc_ru = (parsed.get("descriptionRu") or "").strip()
+                            desc_en = (parsed.get("descriptionEn") or "").strip()
+                            if desc_ru and desc_en and len(desc_ru) > 80:
+                                return {
+                                    "descriptionRu": desc_ru,
+                                    "descriptionEn": desc_en,
+                                    "description": desc_ru,
+                                    "notesSummary": parsed.get("notesSummary") or notes_summary,
+                                    "aiModel": f"gemini/{model}",
+                                }
+            except Exception:
+                pass
+
+    # 2. Try Cloudflare Workers AI Text LLM (Llama 3.1 8B Instruct)
+    if account_id and api_token and requests_module:
+        try:
+            cf_url = (
+                f"https://api.cloudflare.com/client/v4/accounts/{quote(account_id, safe='')}/ai/run/"
+                f"@cf/meta/llama-3.1-8b-instruct"
+            )
+            cf_payload = {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert luxury fragrance copywriter for Al-Warda Parfumes (Middle Eastern niche fragrances). "
+                            "Given a perfume name and brand, compose an enchanting, rich description in Russian (descriptionRu) and English (descriptionEn). "
+                            "Always refer to origin as 'Ближний Восток' in Russian and 'the Middle East' in English (never mention UAE, Dubai, or Saudi Arabia). "
+                            "Respond with ONLY valid JSON: {\"descriptionRu\": \"...\", \"descriptionEn\": \"...\", \"notesSummary\": \"...\"}"
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Perfume: {brand} {name}. "
+                            f"Category: {category}. "
+                            f"Known notes: {notes_summary or 'oriental precious oud, amber, floral notes, musk'}."
+                        ),
+                    },
+                ],
+                "temperature": 0.7,
+                "max_tokens": 1024,
+            }
+            cf_resp = requests_module.post(
+                cf_url,
+                headers={
+                    "Authorization": f"Bearer {api_token}",
+                    "Content-Type": "application/json",
+                },
+                json=cf_payload,
+                timeout=25,
+            )
+            if cf_resp.ok:
+                cf_data = cf_resp.json()
+                result_text = ""
+                if isinstance(cf_data, dict):
+                    res = cf_data.get("result")
+                    if isinstance(res, dict):
+                        result_text = res.get("response", "")
+                    elif isinstance(res, str):
+                        result_text = res
+                if result_text:
+                    json_match = re.search(r"\{[\s\S]*\}", result_text)
+                    if json_match:
+                        parsed = json.loads(json_match.group(0))
+                        desc_ru = (parsed.get("descriptionRu") or "").strip()
+                        desc_en = (parsed.get("descriptionEn") or "").strip()
+                        if desc_ru and desc_en and len(desc_ru) > 80:
+                            return {
+                                "descriptionRu": desc_ru,
+                                "descriptionEn": desc_en,
+                                "description": desc_ru,
+                                "notesSummary": parsed.get("notesSummary") or notes_summary,
+                                "aiModel": "@cf/meta/llama-3.1-8b-instruct",
+                            }
+        except Exception:
+            pass
+
+    # 3. High-end Luxury Deterministic Fallback Engine
+    return generate_luxury_fallback_description(
+        name=name,
+        brand=brand,
+        notes_summary=notes_summary,
+        category=category,
+        top_notes=top_notes,
+        heart_notes=heart_notes,
+        base_notes=base_notes,
+    )
+
+
 def generate_product_edit(session, account_id, api_token, source_bytes):
     source = decode_source(source_bytes)
     source.thumbnail((511, 511), Image.Resampling.LANCZOS)
@@ -720,6 +904,34 @@ def process_product(
                 raise
         image_url = save_generated_image(output)
 
+        # Generate an evocative luxury description with another AI right after image generation
+        try:
+            cur_acc_id = account_id
+            cur_token = api_token
+            if account_pool and getattr(account_pool, "accounts", None):
+                acc_entry = account_pool.accounts[account_pool.index % len(account_pool.accounts)]
+                cur_acc_id = acc_entry[1]
+                cur_token = acc_entry[2]
+            desc_result = generate_ai_perfume_description(
+                requests,
+                row,
+                info,
+                account_id=cur_acc_id,
+                api_token=cur_token,
+            )
+            if desc_result:
+                info["descriptionRu"] = desc_result["descriptionRu"]
+                info["descriptionEn"] = desc_result["descriptionEn"]
+                info["description"] = desc_result["descriptionRu"]
+                info["descriptionAiGenerated"] = True
+                info["descriptionModel"] = desc_result.get("aiModel")
+                info["descriptionGeneratedAt"] = now.isoformat()
+                if desc_result.get("notesSummary") and not info.get("notesSummary"):
+                    info["notesSummary"] = desc_result["notesSummary"]
+                print(f"DESCRIBED {row['id']}: AI ({desc_result.get('aiModel')}) generated luxury description", flush=True)
+        except Exception as desc_err:
+            print(f"Warning: could not generate AI description for {row['id']}: {desc_err}", flush=True)
+
         job.update({
             "status": "publishing",
             "imageUrl": image_url,
@@ -814,6 +1026,20 @@ def publish_generated_images(session, supabase_url, site_url):
             info["imageGeneration"] = job
             if job_key == "imageGenerationReplacement":
                 del info[job_key]
+
+            # Ensure AI description is present upon publication completion
+            if not info.get("descriptionRu") or not info.get("descriptionEn"):
+                try:
+                    desc_result = generate_ai_perfume_description(requests, row, info)
+                    if desc_result:
+                        info["descriptionRu"] = desc_result["descriptionRu"]
+                        info["descriptionEn"] = desc_result["descriptionEn"]
+                        info["description"] = desc_result["descriptionRu"]
+                        info["descriptionAiGenerated"] = True
+                        info["descriptionModel"] = desc_result.get("aiModel")
+                except Exception:
+                    pass
+
             patch_stock(session, supabase_url, row, info, image=image_url)
             print(f"PUBLISHED {row['id']}: {image_url}", flush=True)
         pending = remaining
