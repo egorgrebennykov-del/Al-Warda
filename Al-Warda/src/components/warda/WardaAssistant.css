@@ -344,10 +344,9 @@
   object-position: center bottom;
   border-radius: 0;
   transform: none;
-  /* Soft elliptical vignette: shoulders dissolve on every side, so the bust never looks cut off */
-  /* Smooth gentle gradient at the bottom so the bust fades softly into the name tag without being cut off */
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, rgba(0, 0, 0, 0.6) 90%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, rgba(0, 0, 0, 0.6) 90%, transparent 100%);
+  filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.38));
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 68%, rgba(0, 0, 0, 0.45) 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 68%, rgba(0, 0, 0, 0.45) 84%, transparent 100%);
 }
 
 .warda-companion-dock__name-tag {
