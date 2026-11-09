@@ -50,8 +50,8 @@ export default function SmallAnnouncements({ items = [] }) {
 
         return (
           <div key={item.id} className="warda-small-announcement-banner">
-            <div className="warda-small-announcement-icon">
-              <i className="ri-megaphone-fill" />
+            <div className="warda-small-announcement-icon" aria-hidden="true">
+              <i className="ri-sparkling-fill" />
             </div>
 
             <div className="warda-small-announcement-content">

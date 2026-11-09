@@ -112,7 +112,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
               type="button"
               className="warda-poster-btn warda-poster-btn--prev"
               onClick={handlePrev}
-              aria-label="Предыдущий плакат"
+              aria-label={language === "ru" ? "Предыдущий плакат" : "Previous poster"}
             >
               <i className="ri-arrow-left-s-line" />
             </button>
@@ -120,7 +120,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
               type="button"
               className="warda-poster-btn warda-poster-btn--next"
               onClick={handleNext}
-              aria-label="Следующий плакат"
+              aria-label={language === "ru" ? "Следующий плакат" : "Next poster"}
             >
               <i className="ri-arrow-right-s-line" />
             </button>
@@ -136,7 +136,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
                     e.stopPropagation();
                     setCurrentIndex(idx);
                   }}
-                  aria-label={`Плакат ${idx + 1}`}
+                  aria-label={language === "ru" ? `Плакат ${idx + 1}` : `Poster ${idx + 1}`}
                 />
               ))}
             </div>
