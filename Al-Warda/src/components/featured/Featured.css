@@ -558,14 +558,26 @@
     transform: translateY(-6px) !important;
   }
   .warda-perfume-card__title {
-    font-size: 0.78rem !important;
-    line-height: 1.3 !important;
-    height: 2.6em !important;
-    margin-bottom: 0.25rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.04em !important;
+    min-height: 2.7em !important;
+    height: auto !important;
+    max-height: 4.1em !important;
+    margin-bottom: 0.35rem !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
   }
   .warda-perfume-card__notes {
     font-size: 0.7rem !important;
     margin-bottom: 0.4rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
   .warda-perfume-card__price {
     font-size: 0.95rem !important;

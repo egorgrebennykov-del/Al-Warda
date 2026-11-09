@@ -722,8 +722,17 @@
     max-height: 150px;
   }
   .warda-perfume-card__title {
-    font-size: 0.9rem;
-    min-height: 2.4rem;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.04em !important;
+    min-height: 2.7em !important;
+    height: auto !important;
+    max-height: 4.1em !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    text-overflow: ellipsis !important;
   }
   .warda-btn--card {
     font-size: 0.72rem;

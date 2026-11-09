@@ -666,3 +666,21 @@
   .warda-cat-slide__media,
   .warda-cat-slide__img { transition: none; }
 }
+
+@media screen and (max-width: 768px) {
+  .warda-perfume-card__title {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.35 !important;
+    min-height: 2.7em !important;
+    height: auto !important;
+    max-height: 4.1em !important;
+    margin-bottom: 0.35rem !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
+  }
+}

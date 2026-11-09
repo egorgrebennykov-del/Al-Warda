@@ -201,16 +201,16 @@ export default function Header({ theme, isLight, onSearch }) {
               </NavLink>
             </li>
             {(isPrivilegedUser || isAdminOrDev) && (
-              <li className="warda-nav__item">
+              <li className="warda-nav__item warda-nav__item--privileged">
                 <NavLink
                   to="/privileged"
                   className={({ isActive }) =>
                     `warda-nav__privileged-pill ${isActive ? "active" : ""}`
                   }
-                  title={language === "ru" ? "Панель для привилегированных" : "Privileged Panel"}
+                  title={language === "ru" ? "Панель управления" : "Control Panel"}
                 >
                   <i className="ri-vip-crown-fill" />
-                  <span>{language === "ru" ? "ПАНЕЛЬ" : "VIP PANEL"}</span>
+                  <span>{language === "ru" ? "ПАНЕЛЬ УПРАВЛЕНИЯ" : "CONTROL PANEL"}</span>
                   {adminUnreadCount > 0 && (
                     <span className="warda-nav__badge">{adminUnreadCount}</span>
                   )}
