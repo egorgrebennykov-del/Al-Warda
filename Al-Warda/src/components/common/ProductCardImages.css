@@ -84,3 +84,44 @@
   box-sizing: border-box;
   padding-inline: 0.75rem;
 }
+
+/* -------------------------------------------------------------
+   IN-CART TOGGLE BUTTON (В КОРЗИНЕ / УДАЛИТЬ)
+   ------------------------------------------------------------- */
+.warda-btn--in-cart {
+  background: linear-gradient(135deg, #d4af37 0%, #a67c1e 100%) !important;
+  color: #0b0806 !important;
+  border-color: #ffd700 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35) !important;
+  transition: all 0.25s ease !important;
+}
+
+.warda-btn--in-cart .warda-btn__text-hover {
+  display: none;
+}
+
+.warda-btn--in-cart .warda-btn__text-normal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .warda-btn--in-cart:hover {
+    background: linear-gradient(135deg, #a82020 0%, #730f0f 100%) !important;
+    color: #ffffff !important;
+    border-color: #ff7070 !important;
+    box-shadow: 0 4px 14px rgba(168, 32, 32, 0.45) !important;
+  }
+
+  .warda-btn--in-cart:hover .warda-btn__text-normal {
+    display: none !important;
+  }
+
+  .warda-btn--in-cart:hover .warda-btn__text-hover {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.3rem;
+  }
+}

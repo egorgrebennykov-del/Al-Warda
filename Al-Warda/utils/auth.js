@@ -9,11 +9,11 @@ async function getEmailJs() {
 }
 
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ||
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const TABLE_URL = `${SUPABASE_URL}/rest/v1/user`;
 const KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 const headers = {
   apikey: KEY,
@@ -22,11 +22,11 @@ const headers = {
 };
 
 const EMAILJS_SERVICE_ID =
-  import.meta.env.VITE_EMAILJS_SERVICE_ID || "default_service";
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_SERVICE_ID) || "default_service";
 const EMAILJS_TEMPLATE_ID =
-  import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_tco32u6";
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_TEMPLATE_ID) || "template_tco32u6";
 const EMAILJS_PUBLIC_KEY =
-  import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "mq7sRq7QGzp9XQUTh";
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_PUBLIC_KEY) || "mq7sRq7QGzp9XQUTh";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 

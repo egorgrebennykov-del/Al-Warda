@@ -1,5 +1,5 @@
 import { getCookieUser } from "./auth.js";
-import { getPerfumeUrl } from "./perfumes.js";
+import { getPerfumeUrl, createSampleCartItem } from "./perfumes.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -345,5 +345,109 @@ export async function clearCart(userIdInput) {
     } catch {
       // ignore
     }
+  }
+}
+
+export function findCartItem(cartItems, perfume, volKey = null) {
+  if (!Array.isArray(cartItems) || !perfume) return null;
+
+  const targetId = String(perfume.id || "").toLowerCase().trim();
+  const targetSlug = String(perfume.slug || "").toLowerCase().trim();
+  const targetUrl = String(perfume.url || perfume.link || getPerfumeUrl(perfume)).toLowerCase();
+  const targetTitle = String(perfume.name || perfume.title || "").toLowerCase().trim();
+
+  // 1. If checking for a specific sample volume (1ml, 2ml, 5ml, 10ml)
+  if (volKey && volKey !== "full") {
+    const expectedSampleId = `sample-${targetId}-${volKey}`.toLowerCase();
+    const sampleParam = `sample=${volKey}`.toLowerCase();
+
+    return (
+      cartItems.find((it) => {
+        const itId = String(it.id || it.perfume_id || "").toLowerCase();
+        const itLink = String(it.link || it.url || "").toLowerCase();
+        const itTitle = String(it.title || "").toLowerCase();
+
+        if (itId === expectedSampleId) return true;
+        if (itLink.includes(sampleParam) && (itLink.includes(targetId) || itLink.includes(targetSlug))) return true;
+        if (itTitle.includes(targetTitle) && itTitle.includes(volKey)) return true;
+        return false;
+      }) || null
+    );
+  }
+
+  // 2. If checking for full bottle (or general perfume if volKey not specified)
+  return (
+    cartItems.find((it) => {
+      // Exclude sample items if we are checking for full bottle
+      const itId = String(it.id || it.perfume_id || "").toLowerCase();
+      const itLink = String(it.link || it.url || "").toLowerCase();
+      const isSample = it.isSample || itId.startsWith("sample-") || itLink.includes("sample=");
+
+      if (volKey === "full" && isSample) {
+        return false;
+      }
+
+      // Check perfume_id
+      const itPerfumeId = String(it.perfume_id || "").toLowerCase().trim();
+      if (itPerfumeId && (itPerfumeId === targetId || itPerfumeId === targetSlug)) return true;
+
+      // Check link
+      if (itLink) {
+        const cleanLink = itLink.split("?")[0].replace(/\/+$/, "");
+        const cleanTarget = targetUrl.split("?")[0].replace(/\/+$/, "");
+        if (cleanLink && cleanTarget && cleanLink === cleanTarget) return true;
+        if (targetId && (cleanLink.endsWith(`/${targetId}`) || cleanLink.includes(`/book/${targetId}`) || cleanLink.includes(`/perfume/${targetId}`))) {
+          return true;
+        }
+        if (targetSlug && (cleanLink.endsWith(`/${targetSlug}`) || cleanLink.includes(`/book/${targetSlug}`) || cleanLink.includes(`/perfume/${targetSlug}`))) {
+          return true;
+        }
+      }
+
+      // Check id
+      if (itId && (itId === targetId || itId === targetSlug)) return true;
+
+      // Check title (exact base title match)
+      const itTitle = String(it.title || it.name || "").toLowerCase().trim();
+      if (!isSample && itTitle && itTitle === targetTitle) return true;
+
+      return false;
+    }) || null
+  );
+}
+
+export async function removePerfumeFromCart(perfume, userIdInput, volKey = null) {
+  const cookieUserId = getCookieUser()?.id;
+  const candidateId = userIdInput !== undefined ? userIdInput : cookieUserId;
+  const userId = isValidUuid(candidateId) ? candidateId : null;
+
+  const items = await getCart(userId);
+  const existing = findCartItem(items, perfume, volKey);
+  if (existing && existing.id) {
+    await removeFromCart(existing.id, userId);
+    return true;
+  }
+  return false;
+}
+
+export async function togglePerfumeInCart(perfume, userIdInput, options = {}) {
+  const { volKey = null, quantity = 1, isSample = false, language = "ru" } = options;
+  const cookieUserId = getCookieUser()?.id;
+  const candidateId = userIdInput !== undefined ? userIdInput : cookieUserId;
+  const userId = isValidUuid(candidateId) ? candidateId : null;
+
+  const items = await getCart(userId);
+  const existing = findCartItem(items, perfume, volKey);
+
+  if (existing && existing.id) {
+    await removeFromCart(existing.id, userId);
+    return { action: "removed", item: existing };
+  } else {
+    let itemToAdd = perfume;
+    if (isSample && volKey) {
+      itemToAdd = createSampleCartItem(perfume, volKey, language);
+    }
+    const added = await addToCart(itemToAdd, userId, quantity);
+    return { action: "added", item: added };
   }
 }

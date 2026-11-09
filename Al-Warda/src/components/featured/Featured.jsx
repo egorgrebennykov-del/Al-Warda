@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { getPerfumes, getCategories, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard } from "../common/OrnateCard";
 import "./Featured.css";
@@ -164,6 +165,7 @@ export default function Featured() {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isInCart, toggleCart } = useCartState();
 
   // Multi-select state synced with URL searchParams
   const [selectedCategories, setSelectedCategories] = useState(() => {
@@ -507,11 +509,18 @@ export default function Featured() {
 
   const handleAddToCart = async (perfume, e) => {
     e.stopPropagation();
-    await addToCart(perfume, 1);
-    setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
-    setTimeout(() => {
-      setAddedIds((prev) => ({ ...prev, [perfume.id]: false }));
-    }, 1800);
+    const currentlyInCart = isInCart(perfume);
+    try {
+      await toggleCart(perfume);
+      if (!currentlyInCart) {
+        setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
+        setTimeout(() => {
+          setAddedIds((prev) => ({ ...prev, [perfume.id]: false }));
+        }, 1800);
+      }
+    } catch (err) {
+      console.warn("Cart toggle error:", err);
+    }
   };
 
   return (
@@ -807,16 +816,29 @@ export default function Featured() {
                   </div>
 
                   <div className="warda-perfume-card__action">
-                    <button
-                      type="button"
-                      className={`warda-btn warda-btn--card ${isAdded ? "warda-btn--added" : ""}`}
-                      onClick={(e) => handleAddToCart(perfume, e)}
-                      aria-label={`Add ${perfume.name} to cart`}
-                    >
-                      {isAdded
-                        ? (language === "ru" ? "ДОБАВЛЕНО ✓" : "ADDED ✓")
-                        : (language === "ru" ? "В КОРЗИНУ" : "ADD TO CART")}
-                    </button>
+                    {(() => {
+                      const inCart = isInCart(perfume);
+                      return (
+                        <button
+                          type="button"
+                          className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
+                          onClick={(e) => handleAddToCart(perfume, e)}
+                          aria-label={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
+                          title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from cart") : undefined}
+                        >
+                          {inCart ? (
+                            <>
+                              <span className="warda-btn__text-normal">{language === "ru" ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
+                              <span className="warda-btn__text-hover">{language === "ru" ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                            </>
+                          ) : isAdded ? (
+                            language === "ru" ? "ДОБАВЛЕНО ✓" : "ADDED ✓"
+                          ) : (
+                            language === "ru" ? "В КОРЗИНУ" : "ADD TO CART"
+                          )}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </OrnateCard>
               );

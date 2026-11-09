@@ -974,6 +974,17 @@
   background: #2ed573 !important;
 }
 
+.warda-book-card__btn-cart--in-cart {
+  background: linear-gradient(135deg, #d4af37 0%, #a67c1e 100%) !important;
+  color: #0b0806 !important;
+  font-weight: 700 !important;
+}
+
+.warda-book-card__btn-cart--in-cart:hover {
+  background: linear-gradient(135deg, #a82020 0%, #730f0f 100%) !important;
+  color: #ffffff !important;
+}
+
 .warda-book-card__btn-cart--login-prompt {
   background: #fdf2e9 !important;
   color: #c05621 !important;

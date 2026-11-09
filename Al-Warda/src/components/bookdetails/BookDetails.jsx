@@ -10,8 +10,10 @@ import {
   createSampleCartItem,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
+import "../common/ProductCardImages.css";
 import "./BookDetails.css";
 
 export default function BookDetails() {
@@ -19,6 +21,7 @@ export default function BookDetails() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { isInCart, toggleCart } = useCartState();
 
   const idFromQuery = searchParams.get("url") || searchParams.get("q") || searchParams.get("id");
   const targetId = bookId || idFromQuery || "raghba";
@@ -89,14 +92,20 @@ export default function BookDetails() {
   const handleAddToCart = async () => {
     if (!perfume) return;
     try {
-      const itemToAdd = activeSampleConfig
-        ? createSampleCartItem(perfume, activeSampleConfig.key, language)
-        : perfume;
-      await addToCart(itemToAdd, quantity);
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 2200);
+      const currentVolKey = activeSampleConfig ? activeSampleConfig.key : null;
+      const currentlyInCart = isInCart(perfume, activeSampleConfig ? activeSampleConfig.key : "full");
+      await toggleCart(perfume, {
+        volKey: currentVolKey,
+        isSample: Boolean(activeSampleConfig),
+        quantity,
+        language,
+      });
+      if (!currentlyInCart) {
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2200);
+      }
     } catch (err) {
-      console.warn("Add to cart error:", err);
+      console.warn("Toggle cart error:", err);
     }
   };
 
@@ -359,13 +368,28 @@ export default function BookDetails() {
                 </button>
               </div>
 
-              <button
-                type="button"
-                className={`warda-btn warda-btn--add-details ${isAdded ? "warda-btn--added" : ""}`}
-                onClick={handleAddToCart}
-              >
-                {isAdded ? (language === "ru" ? "ДОБАВЛЕНО В КОРЗИНУ ✓" : "ADDED TO BAG ✓") : (language === "ru" ? "ДОБАВИТЬ В КОРЗИНУ" : "ADD TO CART")}
-              </button>
+              {(() => {
+                const inCart = isInCart(perfume, activeSampleConfig ? activeSampleConfig.key : "full");
+                return (
+                  <button
+                    type="button"
+                    className={`warda-btn warda-btn--add-details ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
+                    onClick={handleAddToCart}
+                    title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from bag") : undefined}
+                  >
+                    {inCart ? (
+                      <>
+                        <span className="warda-btn__text-normal">{language === "ru" ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
+                        <span className="warda-btn__text-hover">{language === "ru" ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                      </>
+                    ) : isAdded ? (
+                      language === "ru" ? "ДОБАВЛЕНО В КОРЗИНУ ✓" : "ADDED TO BAG ✓"
+                    ) : (
+                      language === "ru" ? "ДОБАВИТЬ В КОРЗИНУ" : "ADD TO CART"
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>

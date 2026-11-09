@@ -5,6 +5,7 @@ import BookImage from "../common/BookImage";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
+import { useCartState } from "../../hooks/useCartState";
 import { getPerfumeUrl } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./WardaAssistant.css";
@@ -52,6 +53,7 @@ export default function WardaAssistant() {
   const confirm = useConfirm();
   const customAlert = useAlert();
   const navigate = useNavigate();
+  const { isInCart, toggleCart } = useCartState();
 
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
@@ -521,36 +523,21 @@ export default function WardaAssistant() {
   };
 
   const handleAddToCart = async (book) => {
-    if (!isLoggedIn()) {
-      setLoginAlert(t("assistant.loginRequired"));
-      setCartLoginAlertId(book.id || book.url);
-      setTimeout(() => {
-        setLoginAlert("");
-        setCartLoginAlertId(null);
-      }, 4000);
-      return;
-    }
-
     try {
-      setCartAddingId(book.id || book.url);
-      await addToCart({
-        url: book.url,
-        title: book.title,
-        price: book.price,
-        image: book.image || "",
-        store: book.store,
-        currency: book.currency || "EUR",
-        quantity: 1,
-      });
+      const bookKey = book.id || book.url;
+      const inCart = isInCart(book);
+      setCartAddingId(bookKey);
+      await toggleCart(book);
 
-      setCartSuccessId(book.id || book.url);
-      window.dispatchEvent(new Event("cart-updated"));
-      setTimeout(() => setCartSuccessId(null), 2500);
+      if (!inCart) {
+        setCartSuccessId(bookKey);
+        setTimeout(() => setCartSuccessId(null), 2500);
+      }
     } catch (err) {
-      console.error("Failed to add perfume to cart:", err);
+      console.error("Failed to toggle perfume in cart:", err);
       await customAlert({
-        title: language === "ru" ? "Ошибка добавления в корзину" : "Cart Error",
-        message: err.message || (language === "ru" ? "Не удалось добавить парфюм в корзину" : "Failed to add perfume to bag"),
+        title: language === "ru" ? "Ошибка корзины" : "Cart Error",
+        message: err.message || (language === "ru" ? "Не удалось обновить корзину" : "Failed to update bag"),
         type: "danger",
       });
     } finally {
@@ -902,37 +889,49 @@ export default function WardaAssistant() {
                                     </div>
 
                                     <div className="warda-book-card__actions">
-                                      <button
-                                        type="button"
-                                        className={`warda-book-card__btn-cart ${
-                                          isSuccess
-                                            ? "warda-book-card__btn-cart--success"
-                                            : isLoginPrompt
-                                              ? "warda-book-card__btn-cart--login-prompt"
-                                              : ""
-                                        }`}
-                                        onClick={() => handleAddToCart(book)}
-                                        disabled={isAdding}
-                                      >
-                                        <i
-                                          className={
-                                            isSuccess
-                                              ? "ri-check-line"
-                                              : isLoginPrompt
-                                                ? "ri-login-box-line"
-                                                : isAdding
-                                                  ? "ri-loader-4-line ri-spin"
-                                                  : "ri-shopping-cart-2-line"
-                                          }
-                                        />
-                                        <span>
-                                          {isSuccess
-                                            ? t("assistant.addedToCart")
-                                            : isLoginPrompt
-                                              ? t("assistant.loginRequired")
-                                              : t("assistant.addToCart")}
-                                        </span>
-                                      </button>
+                                      {(() => {
+                                        const inCart = isInCart(book);
+                                        return (
+                                          <button
+                                            type="button"
+                                            className={`warda-book-card__btn-cart ${
+                                              inCart
+                                                ? "warda-book-card__btn-cart--in-cart"
+                                                : isSuccess
+                                                  ? "warda-book-card__btn-cart--success"
+                                                  : isLoginPrompt
+                                                    ? "warda-book-card__btn-cart--login-prompt"
+                                                    : ""
+                                            }`}
+                                            onClick={() => handleAddToCart(book)}
+                                            disabled={isAdding}
+                                            title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from bag") : undefined}
+                                          >
+                                            <i
+                                              className={
+                                                inCart
+                                                  ? "ri-check-line"
+                                                  : isSuccess
+                                                    ? "ri-check-line"
+                                                    : isLoginPrompt
+                                                      ? "ri-login-box-line"
+                                                      : isAdding
+                                                        ? "ri-loader-4-line ri-spin"
+                                                        : "ri-shopping-cart-2-line"
+                                              }
+                                            />
+                                            <span>
+                                              {inCart
+                                                ? (language === "ru" ? "В корзине" : "In Bag")
+                                                : isSuccess
+                                                  ? t("assistant.addedToCart")
+                                                  : isLoginPrompt
+                                                    ? t("assistant.loginRequired")
+                                                    : t("assistant.addToCart")}
+                                            </span>
+                                          </button>
+                                        );
+                                      })()}
                                       <button
                                         type="button"
                                         className="warda-book-card__btn-view"

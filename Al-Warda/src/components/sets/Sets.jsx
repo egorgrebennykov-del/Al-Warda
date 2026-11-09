@@ -9,6 +9,7 @@ import {
   createSampleCartItem,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import "../featured/Featured.css";
@@ -47,6 +48,7 @@ export default function Sets() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
   const isRu = language === "ru";
+  const { isInCart, toggleCart } = useCartState();
 
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -216,19 +218,22 @@ export default function Sets() {
 
     const isSet = isPerfumeSet(perfume);
     const itemKey = isSet ? perfume.id : `${perfume.id}-${volKey}`;
+    const checkVol = isSet ? "full" : volKey;
+    const currentlyInCart = isInCart(perfume, checkVol);
 
     try {
-      if (isSet) {
-        await addToCart(perfume, 1);
-      } else {
-        const sampleItem = createSampleCartItem(perfume, volKey, language);
-        await addToCart(sampleItem, 1);
-      }
+      await toggleCart(perfume, {
+        volKey: isSet ? null : volKey,
+        isSample: !isSet,
+        language,
+      });
 
-      setAddedIds((prev) => ({ ...prev, [itemKey]: true }));
-      setTimeout(() => {
-        setAddedIds((prev) => ({ ...prev, [itemKey]: false }));
-      }, 2200);
+      if (!currentlyInCart) {
+        setAddedIds((prev) => ({ ...prev, [itemKey]: true }));
+        setTimeout(() => {
+          setAddedIds((prev) => ({ ...prev, [itemKey]: false }));
+        }, 2200);
+      }
     } catch (err) {
       console.warn("Cart error:", err);
     }
@@ -521,18 +526,35 @@ export default function Sets() {
                   </div>
 
                   <div className="warda-perfume-card__action">
-                    <button
-                      type="button"
-                      className={`warda-btn warda-btn--card ${isAdded ? "warda-btn--added" : ""}`}
-                      onClick={(e) => handleAddToCartItem(perfume, activeVol, e)}
-                      aria-label={`Add ${perfume.name} to cart`}
-                    >
-                      {isAdded
-                        ? (isRu ? "ДОБАВЛЕНО ✓" : "ADDED ✓")
-                        : isSet
-                          ? (isRu ? "В КОРЗИНУ" : "ADD TO CART")
-                          : (isRu ? `В КОРЗИНУ (${volLabel})` : `ADD TO BAG (${volLabel})`)}
-                    </button>
+                    {(() => {
+                      const inCart = isInCart(perfume, isSet ? "full" : activeVol);
+                      return (
+                        <button
+                          type="button"
+                          className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
+                          onClick={(e) => handleAddToCartItem(perfume, activeVol, e)}
+                          aria-label={inCart ? (isRu ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
+                          title={inCart ? (isRu ? "Удалить из корзины" : "Remove from bag") : undefined}
+                        >
+                          {inCart ? (
+                            <>
+                              <span className="warda-btn__text-normal">
+                                {isRu ? (isSet ? "В КОРЗИНЕ ✓" : `В КОРЗИНЕ (${volLabel}) ✓`) : (isSet ? "IN BAG ✓" : `IN BAG (${volLabel}) ✓`)}
+                              </span>
+                              <span className="warda-btn__text-hover">
+                                {isRu ? "УДАЛИТЬ ✕" : "REMOVE ✕"}
+                              </span>
+                            </>
+                          ) : isAdded ? (
+                            isRu ? "ДОБАВЛЕНО ✓" : "ADDED ✓"
+                          ) : isSet ? (
+                            isRu ? "В КОРЗИНУ" : "ADD TO CART"
+                          ) : (
+                            isRu ? `В КОРЗИНУ (${volLabel})` : `ADD TO BAG (${volLabel})`
+                          )}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </OrnateCard>
               );
