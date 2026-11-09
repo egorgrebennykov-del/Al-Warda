@@ -3,6 +3,7 @@
 
 import argparse
 import base64
+import copy
 import hashlib
 import io
 import json
@@ -11,13 +12,27 @@ import re
 import sys
 import tempfile
 import time
-from datetime import datetime, timezone
+import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlencode, urlparse
 
-import requests
-from PIL import Image, ImageOps
-from rembg import new_session, remove
+try:
+    import requests
+except ImportError:
+    requests = None
+
+try:
+    from PIL import Image, ImageOps
+except ImportError:
+    Image = None
+    ImageOps = None
+
+try:
+    from rembg import new_session, remove
+except ImportError:
+    new_session = None
+    remove = None
 
 MODEL_ID = "@cf/black-forest-labs/flux-2-klein-4b"
 IMAGE_ENDPOINT = (
@@ -34,6 +49,7 @@ PAGE_SIZE = 500
 MAX_SOURCE_BYTES = 20 * 1024 * 1024
 MAX_SOURCE_PIXELS = 24_000_000
 STALE_PROCESSING_MINUTES = 30
+SCHEDULE_WAIT_WINDOW_SECONDS = 900
 UNPUBLISHED_ERROR = "Generated image was not published; generation must be retried"
 U2NET_SHA256 = "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491"
 U2NET_URLS = (
@@ -59,6 +75,72 @@ ACCOUNT_ENV = {
     "fifth": ("FIFTH_ACCOUNT_ID", "FIFTH_API_TOKEN", "FIFTH_FREE_CONFIRMED"),
 }
 
+DEFAULT_ACCOUNT_QUOTAS = {
+    "primary": {
+        "limitedAt": "2026-11-08T14:38:00.000Z",
+        "partialAvailableAt": "2026-11-09T10:06:19.000Z",
+        "availableAt": "2026-11-09T14:38:00.000Z",
+        "updatedAt": "2026-11-08T14:38:00.000Z",
+    },
+    "secondary": {
+        "limitedAt": "2026-11-08T14:53:00.000Z",
+        "availableAt": "2026-11-09T14:53:00.000Z",
+        "updatedAt": "2026-11-08T14:53:00.000Z",
+    },
+    "third": {
+        "limitedAt": "2026-11-08T15:25:17.000Z",
+        "availableAt": "2026-11-09T15:25:17.000Z",
+        "updatedAt": "2026-11-08T15:25:17.000Z",
+    },
+    "fourth": {
+        "limitedAt": "2026-11-08T15:46:19.000Z",
+        "availableAt": "2026-11-09T15:46:19.000Z",
+        "updatedAt": "2026-11-08T15:46:19.000Z",
+    },
+    "fifth": {
+        "limitedAt": "2026-11-08T16:07:14.000Z",
+        "availableAt": "2026-11-09T16:07:14.000Z",
+        "updatedAt": "2026-11-08T16:07:14.000Z",
+    },
+}
+
+
+def parse_iso_datetime(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def quota_entry_rank(entry):
+    if not isinstance(entry, dict):
+        return datetime.min.replace(tzinfo=timezone.utc)
+    for field in ("updatedAt", "availableAt", "limitedAt", "lastUsedAt"):
+        parsed = parse_iso_datetime(entry.get(field))
+        if parsed is not None:
+            return parsed
+    return datetime.min.replace(tzinfo=timezone.utc)
+
+
+def extract_account_quotas(rows):
+    merged = copy.deepcopy(DEFAULT_ACCOUNT_QUOTAS)
+    for row in rows:
+        info = row.get("info") if isinstance(row, dict) else None
+        if not isinstance(info, dict):
+            continue
+        stored = info.get("imageGenerationAccountQuotas")
+        if not isinstance(stored, dict):
+            continue
+        for account_name in ACCOUNT_ENV:
+            candidate = stored.get(account_name)
+            if isinstance(candidate, dict):
+                if quota_entry_rank(candidate) >= quota_entry_rank(merged.get(account_name)):
+                    merged[account_name] = {**(merged.get(account_name) or {}), **candidate}
+    return merged
+
 
 def load_image_accounts(environ):
     selected = environ.get("CLOUDFLARE_IMAGE_ACCOUNT", "primary")
@@ -79,16 +161,53 @@ def load_image_accounts(environ):
 
 
 class ImageAccountPool:
-    def __init__(self, accounts):
+    def __init__(self, accounts, quotas=None, persist_quotas=False):
         self.accounts = accounts
         self.index = 0
+        self.quotas = copy.deepcopy(quotas) if isinstance(quotas, dict) else {}
+        self.persist_quotas = bool(persist_quotas)
+        self.generated_in_run = {name: 0 for name, _, _ in accounts}
+
+    def record_success(self, name, now=None):
+        now_dt = now or utc_now()
+        self.generated_in_run[name] = self.generated_in_run.get(name, 0) + 1
+        if not self.persist_quotas:
+            return
+        entry = dict(self.quotas.get(name) or {})
+        entry["lastUsedAt"] = now_dt.isoformat()
+        entry["updatedAt"] = now_dt.isoformat()
+        avail_dt = parse_iso_datetime(entry.get("availableAt"))
+        if avail_dt and now_dt >= avail_dt:
+            entry.pop("partialAvailableAt", None)
+        self.quotas[name] = entry
+
+    def record_limit(self, name, now=None):
+        if not self.persist_quotas:
+            return
+        now_dt = now or utc_now()
+        entry = dict(self.quotas.get(name) or {})
+        existing_avail = parse_iso_datetime(entry.get("availableAt"))
+        if self.generated_in_run.get(name, 0) > 0 or existing_avail is None:
+            entry["limitedAt"] = now_dt.isoformat()
+            entry["availableAt"] = (now_dt + timedelta(hours=24)).isoformat()
+            entry.pop("partialAvailableAt", None)
+        elif now_dt >= existing_avail:
+            entry["availableAt"] = (now_dt + timedelta(minutes=30)).isoformat()
+        entry["updatedAt"] = now_dt.isoformat()
+        self.quotas[name] = entry
+
+    def export_quotas(self):
+        return copy.deepcopy(self.quotas)
 
     def generate(self, session, source_bytes):
         while self.index < len(self.accounts):
             name, account_id, api_token = self.accounts[self.index]
             try:
-                return generate_product_edit(session, account_id, api_token, source_bytes)
+                result = generate_product_edit(session, account_id, api_token, source_bytes)
+                self.record_success(name)
+                return result
             except WorkersDailyQuotaExceeded:
+                self.record_limit(name)
                 print(f"PROVIDER LIMIT: {name} account; switching if another account is available.", flush=True)
                 self.index += 1
         raise WorkersDailyQuotaExceeded("All selected Cloudflare accounts reported a provider limit")
@@ -204,6 +323,31 @@ def fetch_stock_rows(session, supabase_url):
     return rows
 
 
+def fetch_stock_rows_stdlib(supabase_url, service_key):
+    rows = []
+    start = 0
+    query = urlencode({"select": "id,name,brand,image,info", "order": "id.asc"})
+    while True:
+        req = urllib.request.Request(
+            f"{supabase_url}/rest/v1/stocks?{query}",
+            headers={
+                "apikey": service_key,
+                "Authorization": f"Bearer {service_key}",
+                "Range-Unit": "items",
+                "Range": f"{start}-{start + PAGE_SIZE - 1}",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            page = json.loads(resp.read().decode("utf-8"))
+        if not isinstance(page, list):
+            raise RuntimeError("Supabase stocks response was not a list")
+        rows.extend(page)
+        if len(page) < PAGE_SIZE:
+            break
+        start += PAGE_SIZE
+    return rows
+
+
 def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=False):
     if only_if_unchanged:
         response = session.post(
@@ -248,6 +392,7 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
     source.thumbnail((511, 511), Image.Resampling.LANCZOS)
     reference = io.BytesIO()
     source.save(reference, format="PNG")
+
     response = session.post(
         IMAGE_ENDPOINT.format(account_id=quote(account_id, safe="")),
         headers={"Authorization": f"Bearer {api_token}"},
@@ -434,6 +579,66 @@ def select_candidates(rows, now, regenerate_completed=False):
     return eligible, attempts_today
 
 
+def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECONDS):
+    for row in rows:
+        info = row.get("info") or {}
+        if is_awaiting_publication(image_generation(info)) or is_awaiting_publication(
+            info.get("imageGenerationReplacement") or {}
+        ):
+            return {
+                "should_run": True,
+                "reason": "awaiting_publication",
+                "wait_seconds": 0,
+                "pending_count": 0,
+            }
+
+    candidates, _ = select_candidates(rows, now, regenerate_completed=False)
+    if not candidates:
+        return {
+            "should_run": False,
+            "reason": "no_pending_images",
+            "wait_seconds": 0,
+            "pending_count": 0,
+        }
+
+    quotas = extract_account_quotas(rows)
+    unavailable_until = []
+    for account_name in ACCOUNT_ENV:
+        entry = quotas.get(account_name) or {}
+        avail_dt = parse_iso_datetime(entry.get("availableAt"))
+        if avail_dt and avail_dt > now:
+            unavailable_until.append((account_name, avail_dt))
+
+    if not unavailable_until:
+        return {
+            "should_run": True,
+            "reason": "all_accounts_available",
+            "wait_seconds": 0,
+            "pending_count": len(candidates),
+        }
+
+    latest_account, all_available_at = max(unavailable_until, key=lambda item: item[1])
+    remaining_seconds = max(0.0, (all_available_at - now).total_seconds())
+    if remaining_seconds <= wait_up_to_seconds:
+        return {
+            "should_run": True,
+            "reason": "all_accounts_available_soon",
+            "wait_seconds": remaining_seconds,
+            "all_available_at": all_available_at.isoformat(),
+            "latest_account": latest_account,
+            "pending_count": len(candidates),
+        }
+
+    return {
+        "should_run": False,
+        "reason": "accounts_on_cooldown",
+        "wait_seconds": remaining_seconds,
+        "all_available_at": all_available_at.isoformat(),
+        "latest_account": latest_account,
+        "pending_count": len(candidates),
+    }
+
+
 def process_product(
     session,
     row,
@@ -490,11 +695,15 @@ def process_product(
             "height": original_size[1],
         })
         info[job_key] = job
+        if account_pool and getattr(account_pool, "persist_quotas", False):
+            info["imageGenerationAccountQuotas"] = account_pool.export_quotas()
         patch_stock(session, supabase_url, row, info)
         return image_url
     except WorkersDailyQuotaExceeded as error:
         job.update({"status": "failed", "error": str(error), "failedAt": utc_now().isoformat()})
         info[job_key] = job
+        if account_pool and getattr(account_pool, "persist_quotas", False):
+            info["imageGenerationAccountQuotas"] = account_pool.export_quotas()
         patch_stock(session, supabase_url, row, info)
         raise
     except Exception as error:
@@ -694,9 +903,53 @@ def main():
     parser.add_argument("--cleanup-replaced", action="store_true")
     parser.add_argument("--delete-selected", action="store_true")
     parser.add_argument("--mark-unpublished-failed", metavar="PATH_LIST")
+    parser.add_argument("--check-schedule-ready", action="store_true",
+                        help="Check if there are pending images and all 5 accounts are available")
     parser.add_argument("--regenerate-completed", action="store_true",
                         help="Replace completed images made with an older model")
     args = parser.parse_args()
+    if args.check_schedule_ready:
+        supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+        service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        if not supabase_url or not service_key:
+            raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+        rows = (
+            fetch_stock_rows(make_session(), supabase_url)
+            if requests is not None
+            else fetch_stock_rows_stdlib(supabase_url, service_key)
+        )
+        status = check_schedule_ready(rows, utc_now())
+        if status["should_run"] and status.get("wait_seconds", 0) > 0:
+            wait_sec = int(status["wait_seconds"]) + 5
+            print(
+                f"All 5 accounts will become available in {wait_sec}s "
+                f"(at {status.get('all_available_at')}). Waiting to start...",
+                file=sys.stderr,
+                flush=True,
+            )
+            time.sleep(wait_sec)
+        elif not status["should_run"]:
+            if status["reason"] == "no_pending_images":
+                print("Schedule check: 0 pending images in queue. Skipping scheduled run.", file=sys.stderr, flush=True)
+            else:
+                rem_min = int(status.get("wait_seconds", 0) // 60)
+                hours, mins = divmod(rem_min, 60)
+                print(
+                    f"Schedule check: {status.get('pending_count', 0)} images waiting, "
+                    f"but accounts are still on cooldown until {status.get('all_available_at')} "
+                    f"({hours}h {mins}m remaining). Skipping this cron slot.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+        else:
+            print(
+                f"Schedule check: ready ({status['reason']}, "
+                f"pending={status.get('pending_count', 0)}). Starting run.",
+                file=sys.stderr,
+                flush=True,
+            )
+        print(f"should_run={'true' if status['should_run'] else 'false'}", flush=True)
+        return
     if args.publish_only or args.cleanup_replaced or args.delete_selected or args.mark_unpublished_failed:
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
         if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
@@ -725,10 +978,14 @@ def main():
     ]
     if missing:
         raise RuntimeError(f"Missing server-side environment variables: {', '.join(missing)}")
-    account_pool = ImageAccountPool(load_image_accounts(os.environ))
 
     session = make_session()
     rows = fetch_stock_rows(session, supabase_url)
+    account_pool = ImageAccountPool(
+        load_image_accounts(os.environ),
+        quotas=extract_account_quotas(rows),
+        persist_quotas=True,
+    )
     now = utc_now()
     candidates, attempts_today = select_candidates(rows, now, args.regenerate_completed)
     if not candidates:

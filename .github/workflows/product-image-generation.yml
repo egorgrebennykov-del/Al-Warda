@@ -2,14 +2,14 @@ name: Product Image Generation
 
 on:
   schedule:
-    - cron: "20 0 * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       max_images:
         description: "Maximum products to attempt in this run (1–100000)"
         required: true
         type: number
-        default: 160
+        default: 500
       cloudflare_account:
         description: "Cloudflare account (automatic switches on provider limits)"
         required: true
@@ -68,25 +68,42 @@ jobs:
         id: checkout
         with:
           fetch-depth: 0
+      - name: Check queue and account readiness for scheduled run
+        id: schedule_gate
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            python3 Al-Warda/scripts/generate_product_images.py --check-schedule-ready >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-python@v6
+        if: steps.schedule_gate.outputs.should_run == 'true'
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: requirements.txt
       - name: Install image processing dependencies
+        if: steps.schedule_gate.outputs.should_run == 'true'
         run: python -m pip install -r requirements.txt
       - name: Configure segmentation model directory
+        if: steps.schedule_gate.outputs.should_run == 'true'
         run: echo "U2NET_HOME=$RUNNER_TEMP/al-warda-u2net" >> "$GITHUB_ENV"
       - name: Restore segmentation model cache
+        if: steps.schedule_gate.outputs.should_run == 'true'
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/al-warda-u2net
           key: u2net-8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491
       - name: Finish previously deployed images
+        if: steps.schedule_gate.outputs.should_run == 'true'
         run: python Al-Warda/scripts/generate_product_images.py --publish-only
       - name: Process queued products
+        if: steps.schedule_gate.outputs.should_run == 'true'
         env:
-          MAX_IMAGES: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.max_images) || '160' }}
+          MAX_IMAGES: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.max_images) || '500' }}
           REGENERATE_COMPLETED: ${{ inputs.regenerate_completed || false }}
         run: |
           if [ "$REGENERATE_COMPLETED" = "true" ]; then
@@ -96,7 +113,7 @@ jobs:
           fi
       - name: Commit and publish generated images
         id: publish
-        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        if: ${{ always() && steps.checkout.outcome == 'success' && steps.schedule_gate.outputs.should_run == 'true' }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "action@github.com"

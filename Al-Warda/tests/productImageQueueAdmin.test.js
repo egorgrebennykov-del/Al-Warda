@@ -82,6 +82,9 @@ describe("product image queue admin API", () => {
     assert.equal(body.failed, 1);
     assert.equal(body.pending, 1);
     assert.equal(body.attemptedToday, 1);
+    assert.equal(body.accounts.length, 5);
+    assert.equal(body.schedule.waitingImages, 2);
+    assert.equal(body.schedule.hasWaitingImages, true);
     assert.deepEqual(calls, ["/rest/v1/user", "/rest/v1/stocks"]);
   });
 
@@ -109,5 +112,41 @@ describe("product image queue admin API", () => {
     assert.equal(body.images[0].name, "New");
     assert.equal(body.images[0].brand, "Brand");
     assert.equal(body.images[2].completedAt, null);
+  });
+
+  it("merges stored account quota timestamps and reports countdowns", async () => {
+    const futureIso = new Date(Date.now() + 2 * 3600 * 1000).toISOString();
+    globalThis.fetch = async (input) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      return Response.json([
+        {
+          id: 1,
+          info: {
+            rawImage: "https://img.qogita.com/1.jpg",
+            imageGenerationAccountQuotas: {
+              fifth: {
+                limitedAt: "2026-11-09T10:00:00.000Z",
+                availableAt: futureIso,
+                updatedAt: futureIso,
+              },
+            },
+          },
+        },
+      ]);
+    };
+    const response = await getProductImageQueueStatus(
+      request("/api/admin/product-images/status", userCookie()),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+    const body = await response.json();
+    const fifth = body.accounts.find((acc) => acc.id === "fifth");
+    assert.equal(fifth.available, false);
+    assert.equal(fifth.availableAt, futureIso);
+    assert.ok(fifth.remainingMs > 3600 * 1000);
+    assert.equal(body.schedule.allAccountsAvailable, false);
+    assert.equal(body.schedule.autoStartReady, false);
   });
 });

@@ -137,19 +137,141 @@ function hasRawImage(info) {
   }
 }
 
+const ACCOUNT_DEFS = [
+  { id: "primary", index: 1, labelRu: "1. Основной (primary)", labelEn: "1. Primary (primary)" },
+  { id: "secondary", index: 2, labelRu: "2. Второй (secondary)", labelEn: "2. Secondary (secondary)" },
+  { id: "third", index: 3, labelRu: "3. Третий (third)", labelEn: "3. Third (third)" },
+  { id: "fourth", index: 4, labelRu: "4. Четвёртый (fourth)", labelEn: "4. Fourth (fourth)" },
+  { id: "fifth", index: 5, labelRu: "5. Пятый (fifth)", labelEn: "5. Fifth (fifth)" },
+];
+
+export const DEFAULT_ACCOUNT_QUOTAS = {
+  primary: {
+    limitedAt: "2026-11-08T14:38:00.000Z",
+    partialAvailableAt: "2026-11-09T10:06:19.000Z",
+    availableAt: "2026-11-09T14:38:00.000Z",
+    updatedAt: "2026-11-08T14:38:00.000Z",
+  },
+  secondary: {
+    limitedAt: "2026-11-08T14:53:00.000Z",
+    availableAt: "2026-11-09T14:53:00.000Z",
+    updatedAt: "2026-11-08T14:53:00.000Z",
+  },
+  third: {
+    limitedAt: "2026-11-08T15:25:17.000Z",
+    availableAt: "2026-11-09T15:25:17.000Z",
+    updatedAt: "2026-11-08T15:25:17.000Z",
+  },
+  fourth: {
+    limitedAt: "2026-11-08T15:46:19.000Z",
+    availableAt: "2026-11-09T15:46:19.000Z",
+    updatedAt: "2026-11-08T15:46:19.000Z",
+  },
+  fifth: {
+    limitedAt: "2026-11-08T16:07:14.000Z",
+    availableAt: "2026-11-09T16:07:14.000Z",
+    updatedAt: "2026-11-08T16:07:14.000Z",
+  },
+};
+
+function validIsoTimestamp(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+}
+
+function quotaEntryRank(entry) {
+  if (!entry || typeof entry !== "object") return -Infinity;
+  for (const field of ["updatedAt", "availableAt", "limitedAt", "lastUsedAt"]) {
+    const parsed = Date.parse(entry[field] || "");
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return -Infinity;
+}
+
+function buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs = Date.now()) {
+  const accounts = ACCOUNT_DEFS.map((def) => {
+    const raw = mergedQuotas[def.id] || {};
+    const limitedAt = validIsoTimestamp(raw.limitedAt);
+    const availableAt = validIsoTimestamp(raw.availableAt);
+    const partialAvailableAt = validIsoTimestamp(raw.partialAvailableAt);
+    const lastUsedAt = validIsoTimestamp(raw.lastUsedAt);
+    const availableAtMs = availableAt ? Date.parse(availableAt) : 0;
+    const available = !availableAtMs || nowMs >= availableAtMs;
+    const remainingMs = available ? 0 : Math.max(0, availableAtMs - nowMs);
+    return {
+      id: def.id,
+      index: def.index,
+      labelRu: def.labelRu,
+      labelEn: def.labelEn,
+      limitedAt,
+      partialAvailableAt: !available && partialAvailableAt && Date.parse(partialAvailableAt) < availableAtMs
+        ? partialAvailableAt
+        : null,
+      availableAt,
+      lastUsedAt,
+      available,
+      remainingMs,
+    };
+  });
+
+  const unavailable = accounts.filter((account) => !account.available && account.availableAt);
+  const sortedByAvailability = [...unavailable].sort(
+    (a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt),
+  );
+  const nextAccountAvailableAt = sortedByAvailability[0]?.availableAt || null;
+  const allAccountsAvailableAt = sortedByAvailability.at(-1)?.availableAt || null;
+  const allAccountsAvailable = unavailable.length === 0;
+  const waitingImages = (counts.pending || 0) + (counts.failed || 0);
+  const hasWaitingImages = waitingImages > 0;
+
+  return {
+    accounts,
+    schedule: {
+      waitingImages,
+      hasWaitingImages,
+      availableAccountsCount: accounts.filter((account) => account.available).length,
+      totalAccountsCount: accounts.length,
+      allAccountsAvailable,
+      nextAccountAvailableAt,
+      nextAccountRemainingMs: nextAccountAvailableAt
+        ? Math.max(0, Date.parse(nextAccountAvailableAt) - nowMs)
+        : 0,
+      allAccountsAvailableAt,
+      allAccountsRemainingMs: allAccountsAvailableAt
+        ? Math.max(0, Date.parse(allAccountsAvailableAt) - nowMs)
+        : 0,
+      autoStartReady: hasWaitingImages && allAccountsAvailable,
+      cronIntervalMinutes: 30,
+    },
+  };
+}
+
 export async function getProductImageQueueStatus(request, env) {
   try {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
 
     const rows = await fetchAllStocks(env, getServiceKey(env));
-    const today = new Date().toISOString().slice(0, 10);
+    const nowMs = Date.now();
+    const today = new Date(nowMs).toISOString().slice(0, 10);
     const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
     const images = [];
+    const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
     let eligible = 0;
     let attemptedToday = 0;
     for (const row of rows) {
       const info = row.info && typeof row.info === "object" ? row.info : {};
+      if (info.imageGenerationAccountQuotas && typeof info.imageGenerationAccountQuotas === "object") {
+        for (const def of ACCOUNT_DEFS) {
+          const candidate = info.imageGenerationAccountQuotas[def.id];
+          if (candidate && typeof candidate === "object") {
+            if (quotaEntryRank(candidate) >= quotaEntryRank(mergedQuotas[def.id])) {
+              mergedQuotas[def.id] = { ...mergedQuotas[def.id], ...candidate };
+            }
+          }
+        }
+      }
       const job = info.imageGeneration || {};
       const imageUrl = job.imageUrl || row.image;
       if (job.status === "completed" && typeof imageUrl === "string" &&
@@ -171,11 +293,14 @@ export async function getProductImageQueueStatus(request, env) {
 
     images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
       (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
+    const { accounts, schedule } = buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs);
     return json({
       total: eligible,
       ...counts,
       attemptedToday,
       utcDay: today,
+      accounts,
+      schedule,
       images,
     });
   } catch (error) {

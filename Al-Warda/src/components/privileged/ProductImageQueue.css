@@ -111,6 +111,130 @@
   color: #b5473c;
 }
 
+.product-image-queue__accounts {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem;
+  border: 1px solid #dfd7cd;
+  border-radius: 0.85rem;
+  background: #faf8f5;
+}
+
+.product-image-queue__accounts-header {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.product-image-queue__accounts-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.product-image-queue__accounts-header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary, #68645f);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.product-image-queue__schedule-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.7rem;
+  border: 1px solid #d9c3a5;
+  background: #fff8ed;
+  color: #4f361c;
+}
+
+.product-image-queue__schedule-badge > i {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.product-image-queue__schedule-badge > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.product-image-queue__schedule-badge span {
+  font-size: 0.88rem;
+  color: #6b5239;
+}
+
+.product-image-queue__schedule-badge--ready {
+  border-color: #a3d4b5;
+  background: #eefaf2;
+  color: #1c5332;
+}
+
+.product-image-queue__schedule-badge--ready span {
+  color: #286641;
+}
+
+.product-image-queue__accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.product-image-queue__account-card {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  padding: 0.9rem;
+  border-radius: 0.7rem;
+  border: 1px solid #e3dcd3;
+  background: #fff;
+}
+
+.product-image-queue__account-card--available {
+  border-color: #b7dec5;
+}
+
+.product-image-queue__account-card--cooldown {
+  border-color: #e4ccb0;
+}
+
+.product-image-queue__account-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.product-image-queue__account-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.product-image-queue__account-pill--ok {
+  background: #e6f6ec;
+  color: #1f6b3d;
+}
+
+.product-image-queue__account-pill--wait {
+  background: #fdf0de;
+  color: #8a5117;
+}
+
+.product-image-queue__account-meta {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.84rem;
+  color: #68645f;
+}
+
+.product-image-queue__account-partial {
+  color: #684d35;
+  font-weight: 500;
+}
+
 .product-image-queue__message {
   padding: 0.75rem 1rem;
   border-radius: 0.6rem;
