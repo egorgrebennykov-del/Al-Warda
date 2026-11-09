@@ -4272,3 +4272,66 @@
   color: #4f46e5 !important;
   font-weight: 600 !important;
 }
+
+/* Danger zone (Full Database Refresh) */
+.privileged__workflow-card--danger {
+  border: 2px solid #c0392b !important;
+  background: rgba(192, 57, 43, 0.07);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
+}
+
+.privileged__danger-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  padding: 0.2rem 0.6rem;
+  margin-bottom: 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #c0392b;
+}
+
+.privileged__modal--danger {
+  max-width: 560px;
+  border: 2px solid #c0392b;
+}
+
+.privileged__modal-header--danger h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #c0392b;
+}
+
+.privileged__danger-body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0 1.25rem 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.privileged__danger-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.privileged__danger-confirm-btn {
+  background: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+}
+
+.privileged__danger-confirm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

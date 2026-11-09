@@ -1,23 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { refreshQogitaSession } from "../../utils/qogitaApi";
 import { useConfirm } from "../../context/ConfirmContext";
 import "./ProductImageQueue.css";
 
 async function fetchActions(options = {}) {
-  let response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
-  if (response.status === 401 && response.headers.get("content-type")?.includes("application/json")) {
-    const first = await response.clone().json();
-    if (first.code === "QOGITA_OWNER_SESSION_REQUIRED") {
-      try {
-        await refreshQogitaSession();
-      } catch (error) {
-        if (error.status !== 401) throw error;
-        return response;
-      }
-      response = await fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
-    }
-  }
-  return response;
+  return fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
 }
 
 function formatDuration(ms, isRussian = true, includeSeconds = true) {
@@ -114,16 +100,9 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   }, []);
 
   const actionErrorMessage = useCallback((payload, response) => {
-    if (payload.code === "QOGITA_OWNER_SESSION_REQUIRED" ||
-        payload.error === "Sign in to the configured Qogita owner account in connection settings") {
-      setNeedsQogita(true);
-      return isRussian
-        ? "Сессия владельца Qogita недействительна или истекла. Войдите снова в настройках подключения."
-        : "The Qogita owner session is invalid or expired. Sign in again in connection settings.";
-    }
     setNeedsQogita(false);
     return payload.error || `HTTP ${response.status}`;
-  }, [isRussian]);
+  }, []);
 
   const loadRuns = useCallback(async () => {
     try {

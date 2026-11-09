@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { handleQogitaWorker } from "../server/qogitaWorker.js";
 import { handleProductImageActions } from "../server/productImageActions.js";
 
 const originalFetch = globalThis.fetch;
@@ -14,7 +13,7 @@ const env = {
 };
 afterEach(() => { globalThis.fetch = originalFetch; });
 
-test("start and stop require authenticated owner and send scoped GitHub requests", async () => {
+test("start and stop require a privileged user (no Qogita session) and send scoped GitHub requests", async () => {
   const calls = [];
   let running = false;
   globalThis.fetch = async (input, options = {}) => {
@@ -27,12 +26,7 @@ test("start and stop require authenticated owner and send scoped GitHub requests
     if (url.endsWith("/123/cancel")) return new Response(null, { status: 202 });
     throw new Error(`Unexpected request: ${url}`);
   };
-  const login = await handleQogitaWorker(new Request(`${origin}/api/qogita/configure`, {
-    method: "POST",
-    headers: { origin, "content-type": "application/json" },
-    body: JSON.stringify({ email: "owner@example.test", password: "example" }),
-  }), env);
-  const cookie = `${login.headers.get("set-cookie").split(";")[0]}; user=${encodeURIComponent(JSON.stringify({ id: "1" }))}`;
+  const cookie = `user=${encodeURIComponent(JSON.stringify({ id: "1" }))}`;
   const action = (body, extra = {}) => new Request(`${origin}/api/admin/product-images/actions`, {
     method: "POST",
     headers: { origin, cookie, "content-type": "application/json", ...extra },
@@ -65,35 +59,22 @@ test("start and stop require authenticated owner and send scoped GitHub requests
   assert.ok(calls.some((call) => call.url.endsWith("/123/cancel")));
 });
 
-test("forged user cookie alone cannot control actions", async () => {
-  globalThis.fetch = async () => Response.json([{ id: "1", status: "privileged" }]);
-  const request = new Request(`${origin}/api/admin/product-images/actions`, {
-    headers: { cookie: `user=${encodeURIComponent(JSON.stringify({ id: "1" }))}` },
-  });
-  const response = await handleProductImageActions(request, env);
+test("requests without a user cookie are rejected and do not need a Qogita session", async () => {
+  globalThis.fetch = async () => { throw new Error("must not be called"); };
+  const response = await handleProductImageActions(new Request(`${origin}/api/admin/product-images/actions`), env);
   assert.equal(response.status, 401);
-  assert.equal((await response.json()).code, "QOGITA_OWNER_SESSION_REQUIRED");
 });
 
-test("wrong Qogita owner and missing server token are rejected", async () => {
+test("missing server GitHub token is reported without calling GitHub", async () => {
   let githubCalls = 0;
   globalThis.fetch = async (input) => {
     const url = String(input);
-    if (url.endsWith("/auth/login/")) return Response.json({ accessToken: "qogita-token", accessExp: Date.now() + 3600000 });
     if (url.startsWith("https://db.example/rest/v1/user")) return Response.json([{ id: "1", status: "privileged" }]);
     githubCalls++;
     throw new Error("GitHub must not be called");
   };
-  const login = await handleQogitaWorker(new Request(`${origin}/api/qogita/configure`, {
-    method: "POST",
-    headers: { origin, "content-type": "application/json" },
-    body: JSON.stringify({ email: "other@example.test", password: "example" }),
-  }), env);
-  const cookie = `${login.headers.get("set-cookie").split(";")[0]}; user=${encodeURIComponent(JSON.stringify({ id: "1" }))}`;
-  const request = () => new Request(`${origin}/api/admin/product-images/actions`, { headers: { cookie } });
-  assert.equal((await handleProductImageActions(request(), env)).status, 401);
-  const noToken = { ...env, QOGITA_EXPORT_ACCOUNT_EMAIL: "other@example.test", GITHUB_TOKEN: "" };
-  const response = await handleProductImageActions(request(), noToken);
+  const cookie = `user=${encodeURIComponent(JSON.stringify({ id: "1" }))}`;
+  const response = await handleProductImageActions(new Request(`${origin}/api/admin/product-images/actions`, { headers: { cookie } }), { ...env, GITHUB_TOKEN: "" });
   assert.equal(response.status, 502);
   assert.match((await response.json()).error, /GITHUB_TOKEN/);
   assert.equal(githubCalls, 0);

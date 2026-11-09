@@ -291,7 +291,7 @@
 
   .warda-companion-dock__name-tag {
     padding: 5px 18px;
-    margin-top: -20px;
+    margin-top: -10px;
     min-width: 130px;
   }
 
@@ -326,11 +326,11 @@
 }
 
 .warda-companion-dock__character .warda-character__aura {
-  inset: 4% 6% 12% 6%;
+  inset: 6% 8% 10% 8%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(212, 175, 55, 0.36) 0%,
+    rgba(212, 175, 55, 0.3) 0%,
     rgba(212, 175, 55, 0.14) 48%,
     transparent 76%
   );
@@ -344,20 +344,10 @@
   object-position: center bottom;
   border-radius: 0;
   transform: none;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 80%,
-    rgba(0, 0, 0, 0.55) 92%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 80%,
-    rgba(0, 0, 0, 0.55) 92%,
-    transparent 100%
-  );
+  /* Soft elliptical vignette: shoulders dissolve on every side, so the bust never looks cut off */
+  /* Smooth gentle gradient at the bottom so the bust fades softly into the name tag without being cut off */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, rgba(0, 0, 0, 0.6) 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, rgba(0, 0, 0, 0.6) 90%, transparent 100%);
 }
 
 .warda-companion-dock__name-tag {
@@ -366,7 +356,7 @@
   padding: 7px 22px;
   min-width: 165px;
   border-radius: 999px;
-  margin-top: -26px;
+  margin-top: -14px;
   z-index: 3;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.92), 0 0 16px rgba(212, 175, 55, 0.22);
   display: flex;
@@ -1285,4 +1275,11 @@
 
 .warda-translating-banner i {
   font-size: 1rem;
+}
+
+/* Companion dock must never clip the character or its glow */
+.warda-window-wrapper,
+.warda-companion-dock,
+.warda-companion-dock__character-box {
+  overflow: visible;
 }

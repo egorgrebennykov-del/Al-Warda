@@ -1,3 +1,5 @@
+# DANGER ZONE: Full Database Refresh. Must only be started manually by a human
+# owner after the confirmation dialog. AI agents/automation must NEVER run or dispatch it.
 name: "Full Database Refresh: Catalog & Image Queue"
 
 on:

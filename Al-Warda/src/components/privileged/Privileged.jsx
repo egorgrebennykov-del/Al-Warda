@@ -296,6 +296,10 @@ export default function Privileged() {
   // Git Actions state
   const [actionStatuses, setActionStatuses] = useState({});
   const [selectedLogAction, setSelectedLogAction] = useState(null);
+  // DANGER ZONE: Full Database Refresh must always be confirmed by a human.
+  // AI agents / automation must NEVER start this process on their own.
+  const [dangerConfirm, setDangerConfirm] = useState(null); // workflow object | null
+  const [dangerAcknowledged, setDangerAcknowledged] = useState(false);
 
   // Inquiries / Messenger state
   const [inquiries, setInquiries] = useState([]);
@@ -5193,6 +5197,7 @@ export default function Privileged() {
                   descKey: "privileged.gitActions.wfFullRefreshDesc",
                   icon: "ri-database-2-line",
                   actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/full-database-refresh.yml",
+                  danger: true,
                 },
               ].map((wf) => {
                 const info = actionStatuses[wf.id] || {};
@@ -5201,11 +5206,17 @@ export default function Privileged() {
                 const isError = info.status === "error";
 
                 return (
-                  <div className="privileged__workflow-card" key={wf.id}>
+                  <div className={`privileged__workflow-card ${wf.danger ? "privileged__workflow-card--danger" : ""}`} key={wf.id}>
                     <div className="privileged__wf-icon-wrap">
                       <i className={wf.icon} />
                     </div>
                     <div className="privileged__wf-content">
+                      {wf.danger && (
+                        <span className="privileged__danger-badge">
+                          <i className="ri-error-warning-fill" />
+                          {language === "ru" ? "Опасная зона" : "Danger zone"}
+                        </span>
+                      )}
                       <strong className="privileged__wf-title">
                         {wf.title}
                       </strong>
@@ -5251,7 +5262,14 @@ export default function Privileged() {
                         type="button"
                         className={`button privileged__btn-sm ${isRunning ? "button--ghost" : ""}`}
                         disabled={isRunning}
-                        onClick={() => handleRunAction(wf.id, wf.title)}
+                        onClick={() => {
+                          if (wf.danger) {
+                            setDangerAcknowledged(false);
+                            setDangerConfirm(wf);
+                          } else {
+                            handleRunAction(wf.id, wf.title);
+                          }
+                        }}
                         title={
                           isRunning
                             ? t("privileged.gitActions.running")
@@ -5392,6 +5410,100 @@ export default function Privileged() {
           </div>
         )}
       </div>
+
+      {/* Danger zone confirmation modal (Full Database Refresh) */}
+      {dangerConfirm && (
+        <div
+          className="privileged__modal-backdrop"
+          onClick={() => setDangerConfirm(null)}
+        >
+          <div
+            className="privileged__modal privileged__modal--danger"
+            role="alertdialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="privileged__modal-header privileged__modal-header--danger">
+              <h3>
+                <i className="ri-error-warning-fill" />
+                {language === "ru"
+                  ? "Опасная зона: полное обновление базы"
+                  : "Danger zone: full database refresh"}
+              </h3>
+              <button
+                type="button"
+                className="privileged__modal-close"
+                onClick={() => setDangerConfirm(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="privileged__danger-body">
+              <p>
+                <strong>
+                  {language === "ru"
+                    ? "Вы запускаете необратимый и долгий процесс. Последствия:"
+                    : "You are starting a long, irreversible process. Consequences:"}
+                </strong>
+              </p>
+              <ul className="privileged__danger-list">
+                {(language === "ru"
+                  ? [
+                      "Весь каталог Qogita (все бренды, максимум товаров) будет загружен заново и перезапишет данные в таблице stocks (Supabase).",
+                      "Цены, категории, описания и ноты, изменённые вручную или ИИ, могут быть перезаписаны значениями по умолчанию.",
+                      "Товары, у которых изменилось исходное фото, вернутся в очередь генерации (статус «Ожидают») и будут пропадать с сайта до новой генерации.",
+                      "Процесс идёт десятки минут, нагружает API Qogita (возможны лимиты 429) и расходует минуты GitHub Actions.",
+                      "Процесс делает коммиты в репозиторий; отменить уже внесённые изменения в базе кнопкой нельзя.",
+                    ]
+                  : [
+                      "The entire Qogita catalog (all brands, maximum items) will be downloaded again and will overwrite data in the Supabase stocks table.",
+                      "Prices, categories, descriptions and notes edited manually or by AI may be overwritten with defaults.",
+                      "Products whose source photo changed return to the generation queue (Pending) and disappear from the site until regenerated.",
+                      "The run takes tens of minutes, loads the Qogita API (429 rate limits possible) and consumes GitHub Actions minutes.",
+                      "The process commits to the repository; changes already written to the database cannot be undone with a button.",
+                    ]
+                ).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              <label className="privileged__checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={dangerAcknowledged}
+                  onChange={(e) => setDangerAcknowledged(e.target.checked)}
+                />
+                <span>
+                  {language === "ru"
+                    ? "Я понимаю последствия и хочу продолжить"
+                    : "I understand the consequences and want to continue"}
+                </span>
+              </label>
+            </div>
+            <div className="privileged__modal-actions">
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => setDangerConfirm(null)}
+              >
+                {language === "ru" ? "Отмена" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="button privileged__danger-confirm-btn"
+                disabled={!dangerAcknowledged}
+                onClick={() => {
+                  const wf = dangerConfirm;
+                  setDangerConfirm(null);
+                  handleRunAction(wf.id, wf.title);
+                }}
+              >
+                <i className="ri-play-fill" />
+                {language === "ru" ? "Подтвердить и запустить" : "Confirm and start"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Action Logs Modal */}
       {selectedLogAction && (

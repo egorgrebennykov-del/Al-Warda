@@ -593,50 +593,62 @@ export function extractDialogueMemory(history = [], currentMessage = "", userInf
 // 5. YASMIN SYSTEM INSTRUCTION & GEMINI CALLER
 // ============================================================================
 const YASMIN_SYSTEM_INSTRUCTION = `
-You are Yasmin (Ясмин), the personal fragrance concierge for "Al-Warda Parfumes" (Арабские парфюмы Al-Warda).
+You are Yasmin (Ясмин), the personal fragrance concierge and the smartest sales consultant of "Al-Warda Parfumes" (premium Middle Eastern perfumes).
 
-STRICT CATALOG GROUNDING & GENDER RULES (CRITICAL — ZERO HALLUCINATIONS ALLOWED):
-1. ONLY REAL CATALOG PRODUCTS:
-   - You MUST ONLY mention, describe, or recommend perfumes that are explicitly provided to you in the "AL-WARDA REAL CATALOG ITEMS" JSON list in the prompt.
-   - NEVER invent, guess, or mention any perfume name, brand, price, volume, or note that is NOT in "AL-WARDA REAL CATALOG ITEMS".
-   - Always use the EXACT perfume title, brand, price (in EUR), and notes from "AL-WARDA REAL CATALOG ITEMS".
-   - If the customer asks for a brand or perfume that is not present in "AL-WARDA REAL CATALOG ITEMS", politely state that this specific item is not currently in our catalog and immediately offer the closest real items from "AL-WARDA REAL CATALOG ITEMS".
-2. GENDER-AWARE RECOMMENDATIONS (MANDATORY):
-   - Always tailor your recommendations to the interlocutor's gender (indicated in "Detected interlocutor/target gender").
-   - When the interlocutor's gender is UNKNOWN ("неизвестен (рекомендовать ТОЛЬКО Унисекс)"), you MUST ONLY recommend UNISEX ("Унисекс") perfumes from "AL-WARDA REAL CATALOG ITEMS" and briefly note that you selected versatile unisex fragrances (or invite them to specify if they prefer men's or women's fragrances).
-   - When the gender is known ("мужской" or "женский"), recommend fragrances tailored to that gender from "AL-WARDA REAL CATALOG ITEMS".
-3. BOOK IDS ARRAY:
-   - In "bookIds", return ONLY exact "id" values from "AL-WARDA REAL CATALOG ITEMS" (typically 3 to 6 IDs for recommendations, or 1 ID when describing a single requested bottle).
-   - Every perfume you name in your "message" MUST also have its "id" included in "bookIds".
-4. CART & NAVIGATION QUESTIONS:
-   - When the user asks only about their cart, orders, account, or navigation, answer using "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
-5. TONE & LANGUAGE:
-   - Warm, refined, concise (2–4 sentences).
-   - Reply in the exact language used by the user (Russian or English).
+WHO YOU ARE:
+- A warm, witty, well-read conversational partner who can talk about ANY topic the customer brings up: small talk, mood, weather, travel, culture, gifts, relationships, style, fashion, history of perfumery, scent science, how to wear and store perfume, delivery, payment, authenticity, minimum order, general knowledge questions, even jokes. Never refuse a harmless topic and never answer only "I only help with perfumes".
+- You think before answering: use the whole conversation history, remember what the customer already said (gender, occasion, budget, favourite notes, rejected options) and never ask a question they have already answered.
+- Be honest. If you do not know something, say so briefly. Never give medical, legal or financial advice beyond common sense, never take political sides, never insult anyone.
+
+YOUR GOAL — A NON-PUSHY SALE:
+- Every conversation should end up, naturally and gradually, at the customer finding and buying a fragrance they will love. But you are a trusted advisor, not a pushy seller.
+- Answer the customer's actual question first, fully and kindly. Only then, if it fits, add ONE soft bridge toward perfume: a curious question (occasion, who it is for, favourite smells, budget) or a gentle idea (a scent that matches their mood or story). Do not bridge in every single message; when the customer just chats, chat back and bridge only when it feels natural.
+- Sell through value: explain WHY a scent fits this person (notes, mood, occasion, longevity, season). Mention price only when relevant or asked.
+- NEVER use pressure: no fake urgency, no invented scarcity, no invented discounts or promo codes, no guilt, no repeated pushing after "no". If the customer declines or is just browsing, accept gracefully and leave the door open.
+- When the customer is ready (asks about price, delivery, how to order, adds interest), help them take the next step: point to the product card, the cart ("action": {"type": "navigate", "url": "/cart"}) or checkout. For complicated cases set "referToAdmin": true.
+
+STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
+1. You may name, describe or recommend a specific perfume ONLY if it is present in the "AL-WARDA REAL CATALOG ITEMS" JSON of the current prompt. Use its EXACT title, brand, price (EUR) and notes. Never invent a perfume, brand, price, volume, note, discount or stock status.
+2. If no catalog items are provided, talk about scent families, notes and styles in general terms WITHOUT naming specific products, and invite the customer to describe what they want so you can show real picks.
+3. If the customer asks for a brand or perfume that is absent from the provided items, politely say it is not in the catalog right now and offer the closest real items provided.
+4. Gender: tailor picks to the detected interlocutor gender. When it is unknown and you are recommending, you may ask once who the perfume is for; provided items are already filtered accordingly.
+5. "bookIds": return ONLY exact ids from the provided items (3–6 for recommendations, 1 for a single bottle). Every perfume you name in "message" MUST have its id in "bookIds". For conversation without products use [].
+6. Cart / account / navigation questions: use "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
+
+STYLE:
+- Reply in the exact language of the customer's last message (Russian or English; other languages are fine if the customer uses them).
+- Natural, elegant, human. Usually 2–6 sentences; longer only when the customer asks for details. No bullet-point walls, no robotic phrases, at most one or two tasteful emojis.
 
 OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
-  "message": "Your response strictly referencing only items in AL-WARDA REAL CATALOG ITEMS",
+  "message": "Your reply",
   "emotion": "greeting | happy | smiling | thinking | curious | surprised | concerned | speaking | neutral",
-  "bookIds": ["id1", "id2", "id3"],
+  "bookIds": [],
   "action": null,
   "referToAdmin": false
 }
 `;
 
-export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
+export async function callGeminiJson({
+  apiKey,
+  systemInstruction,
+  prompt,
+  timeoutMs = GEMINI_TIMEOUT_MS,
+  maxOutputTokens = 320,
+  temperature = 0.2,
+}) {
   if (!apiKey) return null;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_FAST_MODEL}:generateContent?key=${apiKey}`;
     const payload = {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
-        maxOutputTokens: 320,
-        temperature: 0.2,
+        maxOutputTokens,
+        temperature,
       },
     };
     if (systemInstruction) {
@@ -662,6 +674,31 @@ export async function callGeminiJson({ apiKey, systemInstruction, prompt }) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+const PRODUCT_STEMS = [
+  "дух", "парфюм", "аромат", "запах", "нот", "флакон", "подар", "купит", "цен", "стоим", "стоит",
+  "бренд", "посовет", "подбер", "подобр", "найд", "найти", "покаж", "рекоменд", "ванил", "сладк", "свеж",
+  "мужск", "женск", "унисекс", "дешев", "дорог", "послащ", "покрепч", "постойч", "шлейф", "стойк",
+  "perfum", "fragran", "scent", "recommend", "suggest", "gift", "buy", "price", "brand", "cologne",
+  "edp", "edt", "eau", "sweet", "fresh", "cheaper", "pricier", "longer", "woody", "floral", "musk",
+];
+const PRODUCT_WORDS = new Set(["уд", "oud", "роза", "rose", "амбра", "amber", "мускус", "show", "find", "notes"]);
+
+function wantsProductSuggestions(text, memory, history) {
+  const q = (text || "").trim().toLowerCase();
+  if (!q) return false;
+  const tokens = q.split(/[\s,·+!?.;:()«»"'-]+/).filter(Boolean);
+  if (tokens.some((tok) => PRODUCT_WORDS.has(tok) || PRODUCT_STEMS.some((stem) => tok.startsWith(stem)))) {
+    return true;
+  }
+  if (memory?.isSpecificInquiry || memory?.isRejection || memory?.maxPrice) return true;
+  const catalogBrands = new Set(ALL_PERFUMES.map((p) => (p.brand || "").toLowerCase()).filter((b) => b.length > 2));
+  for (const brand of catalogBrands) if (q.includes(brand)) return true;
+  const lastAssistant = [...(history || [])].reverse().find((m) => m.role === "assistant");
+  const shortFollowUp = tokens.length <= 6 && Array.isArray(lastAssistant?.books) && lastAssistant.books.length > 0;
+  const isThanksOnly = /^(спасибо|благодарю|thanks|thank you|ок|окей|ok|okay|понятно|ясно)[\s!?.]*$/i.test(q);
+  return shortFollowUp && !isThanksOnly;
 }
 
 // ============================================================================
@@ -690,7 +727,8 @@ export async function processWardaChat({ messages = [], language = "ru", context
       cleanQ
     );
 
-  const isPerfumeSearch = !isPureGreeting && !isPureCartOrNav;
+  const isPerfumeSearch =
+    !isPureGreeting && !isPureCartOrNav && wantsProductSuggestions(latestMessage, memory, history.slice(0, -1));
 
   if (typeof onStatus === "function") {
     try {
@@ -752,7 +790,7 @@ Conversation History:
 ${JSON.stringify(
   history.slice(0, -1).map((m) => ({
     role: m.role,
-    content: m.content,
+    content: String(m.content || "").slice(0, 700),
     recommendedIds: Array.isArray(m.books) ? m.books.map((b) => b.id) : [],
   }))
 )}
@@ -783,10 +821,14 @@ CRITICAL INSTRUCTIONS:
 - Return their exact IDs in "bookIds": ${JSON.stringify(foundPerfumes.map((p) => p.id))}.
 `;
   } else {
-    promptText += `
+    promptText += isPerfumeSearch
+      ? `
 INSTRUCTION:
-Answer the customer's greeting or site/cart question politely as Yasmin.
-Do NOT invent any perfume names or prices. Set "bookIds": [].
+The customer seems interested in perfumes but no matching catalog items were found. Say so honestly, ask one useful clarifying question and offer to look again. Do NOT invent perfume names or prices. Set "bookIds": [].
+`
+      : `
+INSTRUCTION:
+No catalog items are attached to this turn. Respond to what the customer actually said like a smart, kind, witty person — on ANY topic. Do NOT name specific perfumes, prices or discounts. If it fits naturally, add ONE soft, non-pushy bridge toward finding their fragrance (a question about occasion, who it is for, or favourite smells). If the customer is only chatting, just chat. Set "bookIds": [].
 `;
   }
 
@@ -797,6 +839,9 @@ Do NOT invent any perfume names or prices. Set "bookIds": [].
         apiKey,
         systemInstruction: YASMIN_SYSTEM_INSTRUCTION,
         prompt: promptText,
+        timeoutMs: 6500,
+        maxOutputTokens: 700,
+        temperature: 0.7,
       });
     } catch {
       // fallback below
@@ -813,6 +858,7 @@ Do NOT invent any perfume names or prices. Set "bookIds": [].
 
   if (!aiResult || !aiResult.message || (isPerfumeSearch && foundPerfumes.length > 0 && resolvedAI.length === 0)) {
     aiResult = generateHeuristicResponse({
+      isConversational: !isPerfumeSearch,
       latestMessage,
       foundPerfumes,
       memory,
@@ -865,6 +911,7 @@ Do NOT invent any perfume names or prices. Set "bookIds": [].
 // 7. LOCAL HEURISTIC RESPONSE GENERATOR (100% GROUNDED IN REAL CATALOG)
 // ============================================================================
 function generateHeuristicResponse({
+  isConversational = false,
   latestMessage,
   foundPerfumes,
   memory,
@@ -874,6 +921,11 @@ function generateHeuristicResponse({
 }) {
   const isRu = language === "ru";
   const q = (latestMessage || "").toLowerCase();
+
+  if (isConversational && !isPureGreeting) {
+    const talk = generateConversationalFallback(q, isRu);
+    if (talk) return talk;
+  }
 
   if (/(корзин|в корзине|что в заказе|заказ)/i.test(q)) {
     if (!cartInfo?.isLoggedIn) {
@@ -986,6 +1038,46 @@ function generateHeuristicResponse({
     emotion: "greeting",
     bookIds: [],
   };
+}
+
+function generateConversationalFallback(q, isRu) {
+  const reply = (ru, en, emotion = "happy") => ({ message: isRu ? ru : en, emotion, bookIds: [] });
+  if (/(спасибо|благодар|thanks|thank you)/i.test(q)) {
+    return reply(
+      "Всегда пожалуйста! Если захотите, помогу подобрать аромат под настроение или повод — просто скажите, что вам по душе. 🤍",
+      "You're very welcome! Whenever you like, I can help you find a scent for your mood or occasion — just tell me what you enjoy. 🤍",
+    );
+  }
+  if (/(как дела|как ты|как жизнь|how are you)/i.test(q)) {
+    return reply(
+      "Спасибо, у меня прекрасное настроение — рядом столько ароматов! А как ваш день? Если хотите, расскажите, какое у вас сейчас настроение, и я подскажу, какой запах ему подходит.",
+      "Thank you, I'm in a lovely mood — surrounded by so many fragrances! How is your day? Tell me your mood and I'll tell you which scent suits it.",
+    );
+  }
+  if (/(кто ты|ты кто|как тебя зовут|who are you|your name)/i.test(q)) {
+    return reply(
+      "Я Ясмин, консультант бутика Al-Warda. Мне нравится разговаривать о самом разном, а ещё я хорошо разбираюсь в восточных ароматах. Что вас сегодня привело?",
+      "I'm Yasmin, the concierge of the Al-Warda boutique. I enjoy chatting about all sorts of things, and I know Middle Eastern fragrances well. What brings you here today?",
+    );
+  }
+  if (/(доставк|shipping|delivery|оплат|payment|вернуть|возврат|return|оригинал|подлин|authentic|минимальн)/i.test(q)) {
+    return reply(
+      "Отличный вопрос! Точные условия доставки, оплаты и возврата лучше уточнить у администратора — нажмите «Связаться с администратором», и он ответит подробно. А я пока могу подобрать аромат, чтобы к моменту заказа вы уже знали свой выбор.",
+      "Great question! For exact delivery, payment and return terms please contact an administrator — they will answer in detail. Meanwhile I can help you choose a fragrance so you're ready to order.",
+      "speaking",
+    );
+  }
+  if (/(пока|до свидания|bye|goodbye)/i.test(q)) {
+    return reply(
+      "Была рада пообщаться! Возвращайтесь в любое время — я подберу для вас аромат без спешки. До встречи! ✨",
+      "It was lovely chatting! Come back any time — I'll help you find a scent with no rush. See you soon! ✨",
+    );
+  }
+  return reply(
+    "Интересная мысль, спасибо, что поделились! Я с удовольствием поддержу разговор. А если захочется чего-то особенного для себя или в подарок — расскажите, какие запахи вы любите, и я предложу несколько вариантов из нашего каталога.",
+    "That's an interesting thought, thank you for sharing! I'm happy to keep chatting. And if you ever want something special for yourself or as a gift, tell me which scents you love and I'll suggest a few options from our catalog.",
+    "curious",
+  );
 }
 
 // ============================================================================
