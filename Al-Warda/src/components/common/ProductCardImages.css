@@ -55,6 +55,8 @@
   max-width: none;
   max-height: none !important;
   object-fit: contain !important;
+  box-sizing: border-box !important;
+  padding: 0.25rem;
   transform: none !important;
   filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }

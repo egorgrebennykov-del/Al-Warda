@@ -754,9 +754,53 @@ def transparent_product_image(image_bytes, segmentation_session):
                     f"Изображение не содержит флакон парфюма: объект слишком неплотный ({bbox_fill*100:.1f}%) для флакона духов"
                 )
 
+    cutout = normalize_flacon_cutout(cutout)
+
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True)
     return output.getvalue(), cutout.size
+
+
+def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024)):
+    if "A" not in cutout.getbands():
+        return cutout
+    alpha = cutout.getchannel("A")
+    import numpy as np
+    arr = np.array(alpha)
+    mask = (arr > 25).astype(np.uint8)
+    try:
+        import cv2
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
+        if num_labels <= 1:
+            return cutout
+        valid_mask = np.zeros_like(mask)
+        for lbl in range(1, num_labels):
+            if stats[lbl, cv2.CC_STAT_AREA] >= 60:
+                valid_mask[labels == lbl] = 1
+        ys, xs = np.where(valid_mask > 0)
+    except Exception:
+        ys, xs = np.where(arr > 25)
+
+    if len(xs) == 0:
+        return cutout
+    x1, y1 = max(0, int(xs.min()) - 4), max(0, int(ys.min()) - 4)
+    x2, y2 = min(cutout.size[0], int(xs.max()) + 5), min(cutout.size[1], int(ys.max()) + 5)
+    cw, ch = x2 - x1, y2 - y1
+    if cw <= 0 or ch <= 0:
+        return cutout
+
+    scale = min(target_max_w / float(cw), target_max_h / float(ch))
+    new_w = max(1, int(round(cw * scale)))
+    new_h = max(1, int(round(ch * scale)))
+
+    crop = cutout.crop((x1, y1, x2, y2))
+    resized = crop.resize((new_w, new_h), Image.Resampling.LANCZOS)
+    canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
+    pos_x = (canvas_size[0] - new_w) // 2
+    pos_y = (canvas_size[1] - new_h) // 2
+    canvas.paste(resized, (pos_x, pos_y), resized)
+    return canvas
+
 
 
 def is_stale_processing(job, now):

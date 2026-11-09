@@ -12,7 +12,7 @@ const SUPABASE_KEY =
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 let memoryPerfumesCache = null;
 let catalogRefresh = null;
-const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v3";
+const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v4";
 
 function resolveCardImage(img, gtin, rawImage) {
   if (img && /^https:\/\//i.test(img)) return img;
@@ -1330,9 +1330,15 @@ export function ensurePerfumeEnrichment(p) {
 
   const rawImage = p.rawImage || p.info?.rawImage || null;
   const gtin = p.gtin || p.info?.gtin;
-  const resolvedImg = hasCompletedGeneratedImage(p)
-    ? p.info.imageGeneration.imageUrl || p.image
-    : resolveCardImage(p.image, gtin, rawImage);
+  let resolvedImg = "";
+  if (hasCompletedGeneratedImage(p)) {
+    const rawGen = p.info.imageGeneration.imageUrl || p.image;
+    resolvedImg = rawGen && rawGen.startsWith("/assets/img/")
+      ? `${rawGen.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`
+      : rawGen;
+  } else {
+    resolvedImg = resolveCardImage(p.image, gtin, rawImage);
+  }
 
   return {
     ...p,
