@@ -57,6 +57,31 @@ function formatDateTime(isoString, isRussian = true) {
   });
 }
 
+function describeErrorSummary(errorText = "", isRussian = true) {
+  const text = String(errorText || "");
+  if (/flagged|3030/i.test(text)) {
+    return isRussian
+      ? "Отклонено фильтром безопасности Cloudflare AI (код 3030)"
+      : "Flagged by Cloudflare AI safety filter (code 3030)";
+  }
+  if (/quota|rate limit|429/i.test(text)) {
+    return isRussian
+      ? "Достигнут суточный лимит Cloudflare Workers AI"
+      : "Cloudflare Workers AI daily quota reached";
+  }
+  if (/opaque border/i.test(text)) {
+    return isRussian
+      ? "Непрозрачная рамка после удаления фона"
+      : "Opaque border after background removal";
+  }
+  if (/transparent background/i.test(text)) {
+    return isRussian
+      ? "Ошибка сегментации прозрачного фона"
+      : "Transparent background segmentation failed";
+  }
+  return null;
+}
+
 export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const isRussian = language === "ru";
   const [status, setStatus] = useState(null);
@@ -78,6 +103,9 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [needsQogita, setNeedsQogita] = useState(false);
   const [visibleImages, setVisibleImages] = useState(24);
   const [selectedImages, setSelectedImages] = useState({});
+  const [visibleFailed, setVisibleFailed] = useState(24);
+  const [selectedFailed, setSelectedFailed] = useState({});
+  const [deletingFailed, setDeletingFailed] = useState(false);
   const confirm = useConfirm();
 
   useEffect(() => {
@@ -182,6 +210,10 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         Object.entries(current).filter(([id, imageUrl]) =>
           payload.images.some((image) => String(image.id) === id && image.imageUrl === imageUrl)),
       ));
+      const validFailedIds = new Set((payload.failedItems || []).map((item) => String(item.id)));
+      setSelectedFailed((current) => Object.fromEntries(
+        Object.entries(current).filter(([id, checked]) => checked && validFailedIds.has(String(id))),
+      ));
       setError("");
     } catch (loadError) {
       setStatus(null);
@@ -190,6 +222,56 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       setLoading(false);
     }
   }, [isRussian]);
+
+  const deleteFailedFromDb = async (explicitIds = null) => {
+    const ids = explicitIds || Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
+    if (!ids.length) return;
+    const approved = await confirm({
+      title: isRussian ? "Удалить товары с ошибками из БД" : "Delete failed items from DB",
+      message: isRussian
+        ? `Удалить ${ids.length} поз. из базы данных (таблица stocks)? Эти товары будут полностью удалены из базы и очереди генерации.`
+        : `Delete ${ids.length} items from the database (stocks table)? These products will be permanently removed from the database and generation queue.`,
+    });
+    if (!approved) return;
+
+    setDeletingFailed(true);
+    setBusy(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch("/api/admin/product-images/failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
+      }
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || `HTTP ${response.status}`);
+      }
+      setSelectedFailed((current) => {
+        const next = { ...current };
+        for (const id of ids) {
+          delete next[String(id)];
+        }
+        return next;
+      });
+      setActionMessage(
+        isRussian
+          ? `Удалено записей из базы данных: ${payload.deletedCount ?? ids.length}.`
+          : `Deleted records from database: ${payload.deletedCount ?? ids.length}.`,
+      );
+      await loadStatus();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setDeletingFailed(false);
+      setBusy(false);
+    }
+  };
 
   const deleteImages = async () => {
     const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({ id, imageUrl }));
@@ -253,6 +335,12 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   );
   const allSelected = selectableImages.length > 0 &&
     selectableImages.every((image) => selectedImages[image.id] === image.imageUrl);
+
+  const failedItems = status?.failedItems || [];
+  const selectedFailedIds = Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
+  const allFailedSelected = failedItems.length > 0 &&
+    failedItems.every((item) => Boolean(selectedFailed[String(item.id)]));
+
   const progress = status?.total
     ? Math.min(100, Math.round((status.completed / status.total) * 100))
     : 0;
@@ -502,6 +590,146 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           ? "В автоматическом режиме при лимите генератор переходит к следующему аккаунту; когда все пять достигнут лимита, задача остановится и запишет точное время восстановления (24 часа)."
           : "In automatic mode the generator switches accounts on a provider limit; when all five reach their limit, the batch stops and records the exact 24-hour recovery time."}
       </p>
+
+      <section className="product-image-queue__failed" aria-labelledby="failed-images-heading">
+        <div className="product-image-queue__failed-header">
+          <div>
+            <h3 id="failed-images-heading">
+              {isRussian ? "Список ошибок генерации" : "Failed generation items"} ({failedItems.length})
+            </h3>
+            <p>
+              {isRussian
+                ? "Товары, при обработке которых возникла ошибка. Вы можете выбрать отдельные позиции или все сразу и удалить их из базы данных."
+                : "Products that failed during image generation. You can select individual items or all at once and delete them from the database."}
+            </p>
+          </div>
+          {failedItems.length > 0 && (
+            <div className="product-image-queue__gallery-actions">
+              <button
+                type="button"
+                className="product-image-queue__start"
+                disabled={busy || deletingFailed}
+                onClick={() => {
+                  if (allFailedSelected) {
+                    setSelectedFailed({});
+                  } else {
+                    setSelectedFailed(
+                      Object.fromEntries(failedItems.map((item) => [String(item.id), true])),
+                    );
+                  }
+                }}
+              >
+                {allFailedSelected
+                  ? (isRussian ? "Снять выделение" : "Deselect all")
+                  : (isRussian ? `Выбрать все (${failedItems.length})` : `Select all (${failedItems.length})`)}
+              </button>
+              <button
+                type="button"
+                className="product-image-queue__start product-image-queue__start--danger"
+                disabled={busy || deletingFailed || selectedFailedIds.length === 0}
+                onClick={() => deleteFailedFromDb()}
+              >
+                <i className="ri-delete-bin-line" />
+                {isRussian
+                  ? `Удалить выбранные из БД (${selectedFailedIds.length})`
+                  : `Delete selected from DB (${selectedFailedIds.length})`}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {failedItems.length === 0 ? (
+          <p className="product-image-queue__failed-empty">
+            {isRussian ? "Ошибок генерации сейчас нет." : "No failed generation items right now."}
+          </p>
+        ) : (
+          <>
+            <div className="product-image-queue__failed-list">
+              {failedItems.slice(0, visibleFailed).map((item) => {
+                const itemId = String(item.id);
+                const checked = Boolean(selectedFailed[itemId]);
+                const summary = describeErrorSummary(item.error, isRussian);
+                return (
+                  <article
+                    key={itemId}
+                    className={`product-image-queue__failed-item ${checked ? "product-image-queue__failed-item--selected" : ""}`}
+                  >
+                    <div className="product-image-queue__failed-top">
+                      <label className="product-image-queue__failed-check">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={busy || deletingFailed}
+                          onChange={(e) => {
+                            const nextChecked = e.target.checked;
+                            setSelectedFailed((current) => {
+                              const next = { ...current };
+                              if (nextChecked) next[itemId] = true;
+                              else delete next[itemId];
+                              return next;
+                            });
+                          }}
+                        />
+                        <span>ID #{itemId}</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="product-image-queue__failed-delete-one"
+                        disabled={busy || deletingFailed}
+                        onClick={() => deleteFailedFromDb([itemId])}
+                      >
+                        <i className="ri-delete-bin-line" />
+                        {isRussian ? "Удалить из БД" : "Delete from DB"}
+                      </button>
+                    </div>
+
+                    <div className="product-image-queue__failed-body">
+                      {item.rawImage && (
+                        <a
+                          href={item.rawImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="product-image-queue__failed-thumb"
+                          title={isRussian ? "Открыть исходное фото Qogita" : "Open original Qogita photo"}
+                        >
+                          <img src={item.rawImage} alt={item.name || `ID ${itemId}`} loading="lazy" />
+                        </a>
+                      )}
+                      <div className="product-image-queue__failed-info">
+                        <strong>{item.name || (isRussian ? `Товар #${itemId}` : `Product #${itemId}`)}</strong>
+                        {item.brand && <span className="product-image-queue__failed-brand">{item.brand}</span>}
+                        {summary && (
+                          <span className="product-image-queue__failed-badge">{summary}</span>
+                        )}
+                        <code className="product-image-queue__failed-code">{item.error}</code>
+                        {item.failedAt && (
+                          <time dateTime={item.failedAt}>
+                            {isRussian ? "Время ошибки: " : "Failed at: "}
+                            {new Date(item.failedAt).toLocaleString(isRussian ? "ru-RU" : "en-US", {
+                              dateStyle: "medium",
+                              timeStyle: "medium",
+                            })}
+                          </time>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            {visibleFailed < failedItems.length && (
+              <button
+                type="button"
+                className="product-image-queue__start"
+                onClick={() => setVisibleFailed((current) => current + 24)}
+              >
+                {isRussian ? "Показать ещё ошибки" : "Show more errors"} ({failedItems.length - visibleFailed})
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
       <section className="product-image-queue__gallery" aria-labelledby="generated-images-heading">
         <h3 id="generated-images-heading">{isRussian ? "Готовые изображения" : "Generated images"}</h3>
         <p>{isRussian ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе." : "Newest first. Publication completion time is shown in your time zone."}</p>

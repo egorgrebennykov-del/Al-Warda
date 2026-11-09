@@ -11,6 +11,7 @@ import {
 import { sendGuestInquiryEmail } from "./emailService.js";
 import {
   getProductImageQueueStatus,
+  deleteFailedProductItems,
 } from "./productImageQueueAdmin.js";
 import { handleQogitaWorker } from "./qogitaWorker.js";
 import { handleProductImageActions } from "./productImageActions.js";
@@ -141,6 +142,9 @@ export default {
 
     if (method === "GET" && pathname === "/api/admin/product-images/status") {
       return getProductImageQueueStatus(request, env);
+    }
+    if ((method === "POST" || method === "DELETE") && pathname === "/api/admin/product-images/failed") {
+      return deleteFailedProductItems(request, env);
     }
     if (pathname === "/api/admin/product-images/actions") {
       return handleProductImageActions(request, env);

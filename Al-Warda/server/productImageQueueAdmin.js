@@ -257,6 +257,7 @@ export async function getProductImageQueueStatus(request, env) {
     const today = new Date(nowMs).toISOString().slice(0, 10);
     const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
     const images = [];
+    const failedItems = [];
     const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
     let eligible = 0;
     let attemptedToday = 0;
@@ -273,6 +274,7 @@ export async function getProductImageQueueStatus(request, env) {
         }
       }
       const job = info.imageGeneration || {};
+      const replacementJob = info.imageGenerationReplacement || {};
       const imageUrl = job.imageUrl || row.image;
       if (job.status === "completed" && typeof imageUrl === "string" &&
           (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
@@ -289,10 +291,26 @@ export async function getProductImageQueueStatus(request, env) {
       if (job.attemptedOn === today) {
         attemptedToday++;
       }
+      if (status === "failed" || replacementJob.status === "failed") {
+        const activeFail = status === "failed" ? job : replacementJob;
+        failedItems.push({
+          id: row.id,
+          name: row.name || "",
+          brand: row.brand || "",
+          rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+          error: typeof activeFail.error === "string" && activeFail.error.trim()
+            ? activeFail.error.trim()
+            : "Unknown generation error",
+          failedAt: validIsoTimestamp(activeFail.failedAt),
+          attemptedOn: typeof activeFail.attemptedOn === "string" ? activeFail.attemptedOn : null,
+        });
+      }
     }
 
     images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
       (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
+    failedItems.sort((a, b) => (b.failedAt ? Date.parse(b.failedAt) : -Infinity) -
+      (a.failedAt ? Date.parse(a.failedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
     const { accounts, schedule } = buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs);
     return json({
       total: eligible,
@@ -301,6 +319,7 @@ export async function getProductImageQueueStatus(request, env) {
       utcDay: today,
       accounts,
       schedule,
+      failedItems,
       images,
     });
   } catch (error) {
@@ -308,5 +327,66 @@ export async function getProductImageQueueStatus(request, env) {
       return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
     }
     return json({ error: error.message || "Could not load queue status" }, 500);
+  }
+}
+
+export async function deleteFailedProductItems(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+    if (!body || !Array.isArray(body.ids) || body.ids.length === 0) {
+      return json({ error: "Select at least one failed product ID to delete" }, 400);
+    }
+
+    const uniqueIds = [];
+    const seen = new Set();
+    for (const rawId of body.ids) {
+      const id = String(rawId ?? "").trim();
+      if (!/^\d{1,20}$/.test(id)) {
+        return json({ error: `Invalid product ID: ${id}` }, 400);
+      }
+      if (!seen.has(id)) {
+        seen.add(id);
+        uniqueIds.push(id);
+      }
+    }
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const chunkSize = 200;
+    for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+      const chunk = uniqueIds.slice(i, i + chunkSize);
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("id", `in.(${chunk.join(",")})`);
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          Prefer: "return=minimal",
+        },
+      });
+      if (!response.ok) {
+        const details = (await response.text()).slice(0, 300);
+        throw new Error(`Could not delete records from stocks (${response.status}): ${details}`);
+      }
+    }
+
+    return json({
+      deletedCount: uniqueIds.length,
+      ids: uniqueIds,
+    });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not delete failed items" }, 500);
   }
 }

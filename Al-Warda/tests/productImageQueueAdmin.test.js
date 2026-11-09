@@ -1,15 +1,22 @@
 import { afterEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { getProductImageQueueStatus } from "../server/productImageQueueAdmin.js";
+import {
+  getProductImageQueueStatus,
+  deleteFailedProductItems,
+} from "../server/productImageQueueAdmin.js";
 
 const originalFetch = globalThis.fetch;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function request(path, cookie = "") {
+function request(path, cookie = "", options = {}) {
   return new Request(`https://shop.example${path}`, {
-    headers: cookie ? { cookie } : {},
+    ...options,
+    headers: {
+      ...(cookie ? { cookie } : {}),
+      ...(options.headers || {}),
+    },
   });
 }
 
@@ -54,7 +61,7 @@ describe("product image queue admin API", () => {
     assert.equal(fetched, false);
   });
 
-  it("checks the database role and reports status counts and daily attempts", async () => {
+  it("checks the database role and reports status counts, daily attempts, and failed items", async () => {
     const today = new Date().toISOString().slice(0, 10);
     const calls = [];
     globalThis.fetch = async (input) => {
@@ -65,7 +72,21 @@ describe("product image queue admin API", () => {
       }
       return Response.json([
         { id: 1, info: { rawImage: "https://img.qogita.com/1.jpg", imageGeneration: { status: "completed" } } },
-        { id: 2, info: { rawImage: "https://img.qogita.com/2.jpg", imageGeneration: { status: "failed", attemptedOn: today, estimatedNeurons: 110 } } },
+        {
+          id: 2,
+          name: "Rose EDP",
+          brand: "Al Haramain",
+          info: {
+            rawImage: "https://img.qogita.com/2.jpg",
+            imageGeneration: {
+              status: "failed",
+              attemptedOn: today,
+              error: "Workers AI request failed (400): code 3030",
+              failedAt: "2026-11-08T15:30:00Z",
+              estimatedNeurons: 110,
+            },
+          },
+        },
         { id: 3, info: { rawImage: "https://img.qogita.com/3.jpg" } },
       ]);
     };
@@ -85,6 +106,10 @@ describe("product image queue admin API", () => {
     assert.equal(body.accounts.length, 5);
     assert.equal(body.schedule.waitingImages, 2);
     assert.equal(body.schedule.hasWaitingImages, true);
+    assert.equal(body.failedItems.length, 1);
+    assert.equal(body.failedItems[0].id, 2);
+    assert.equal(body.failedItems[0].name, "Rose EDP");
+    assert.match(body.failedItems[0].error, /3030/);
     assert.deepEqual(calls, ["/rest/v1/user", "/rest/v1/stocks"]);
   });
 
@@ -148,5 +173,34 @@ describe("product image queue admin API", () => {
     assert.ok(fifth.remainingMs > 3600 * 1000);
     assert.equal(body.schedule.allAccountsAvailable, false);
     assert.equal(body.schedule.autoStartReady, false);
+  });
+
+  it("allows privileged users to delete single or multiple failed items from stocks DB", async () => {
+    const deletedQueries = [];
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "DELETE") {
+        deletedQueries.push(url.searchParams.get("id"));
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+
+    const res = await deleteFailedProductItems(
+      request("/api/admin/product-images/failed", userCookie(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: ["5292", "5293", "5292", 4986] }),
+      }),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+    const payload = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(payload.deletedCount, 3);
+    assert.deepEqual(payload.ids, ["5292", "5293", "4986"]);
+    assert.deepEqual(deletedQueries, ["in.(5292,5293,4986)"]);
   });
 });

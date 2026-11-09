@@ -27,6 +27,7 @@ import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getAra
 import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
 import {
   getProductImageQueueStatus,
+  deleteFailedProductItems,
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
@@ -167,6 +168,17 @@ const server = createServer(async (req, res) => {
   if (req.method === "GET" && pathname === "/api/admin/product-images/status") {
     const response = await getProductImageQueueStatus(req, process.env);
     respond(res, response.status, await response.json(), req);
+    return;
+  }
+
+  if ((req.method === "POST" || req.method === "DELETE") && pathname === "/api/admin/product-images/failed") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await deleteFailedProductItems(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
     return;
   }
 
