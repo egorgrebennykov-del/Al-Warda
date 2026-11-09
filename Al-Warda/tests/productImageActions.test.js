@@ -57,6 +57,7 @@ test("start and stop require a privileged user (no Qogita session) and send scop
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 409);
   assert.equal((await handleProductImageActions(action({ action: "stop" }), env)).status, 202);
   assert.ok(calls.some((call) => call.url.endsWith("/123/cancel")));
+  assert.equal((await handleProductImageActions(action({ action: "sync" }), env)).status, 200);
 });
 
 test("requests without a user cookie are rejected and do not need a Qogita session", async () => {

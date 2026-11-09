@@ -595,6 +595,37 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
         self.assertIn("flagged", update.call_args.args[3]["imageGeneration"]["error"].lower())
 
+    def test_complete_committed_images_publishes_matching_local_files(self):
+        image = b"local-committed-png-data"
+        digest = hashlib.sha256(image).hexdigest()
+        image_url = f"/assets/img/generated-products/{digest}.png"
+        publishing_row = {
+            "id": 201,
+            "name": "Amber Oud",
+            "info": {"imageGeneration": {"status": "publishing", "imageUrl": image_url}},
+        }
+        stale_processing_row = {
+            "id": 202,
+            "name": "Stale Item",
+            "info": {"imageGeneration": {"status": "processing", "startedAt": "2026-11-09T10:00:00+00:00"}},
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir)
+            (path / f"{digest}.png").write_bytes(image)
+            with patch.object(queue, "GENERATED_DIR", path), \
+                 patch.object(queue, "fetch_stock_rows", return_value=[publishing_row, stale_processing_row]), \
+                 patch.object(queue, "patch_stock") as update_mock:
+                completed = queue.complete_committed_images(object(), "https://db.example")
+            self.assertEqual(completed, 1)
+            # Check completed row call
+            call_201 = [c for c in update_mock.call_args_list if c.args[2]["id"] == 201][0]
+            self.assertEqual(call_201.args[3]["imageGeneration"]["status"], "completed")
+            self.assertEqual(call_201.kwargs["image"], image_url)
+            # Check reset processing row call
+            call_202 = [c for c in update_mock.call_args_list if c.args[2]["id"] == 202][0]
+            self.assertEqual(call_202.args[3]["imageGeneration"]["status"], "pending")
+            self.assertNotIn("startedAt", call_202.args[3]["imageGeneration"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -548,3 +548,68 @@ export async function deleteFailedProductItems(request, env) {
     return json({ error: error.message || "Could not delete failed items" }, 500);
   }
 }
+
+export async function syncCommittedPublishedStocks(env) {
+  try {
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const rows = await fetchAllStocks(env, key);
+    const publishingRows = rows.filter((r) => {
+      const job = r.info?.imageGeneration;
+      const rep = r.info?.imageGenerationReplacement;
+      return (job?.status === "publishing" && job?.imageUrl) || (rep?.status === "publishing" && rep?.imageUrl);
+    });
+    if (!publishingRows.length) return 0;
+
+    let synced = 0;
+    for (const row of publishingRows) {
+      const info = row.info || {};
+      const jobKey = info.imageGeneration?.status === "publishing" ? "imageGeneration" : "imageGenerationReplacement";
+      const job = info[jobKey] || {};
+      const imageUrl = job.imageUrl;
+      if (!imageUrl) continue;
+
+      try {
+        const checkRes = await fetch(`https://al-warda.egor-grebennykov.workers.dev${imageUrl}`, {
+          method: "HEAD",
+        });
+        const isOk = checkRes.ok && (checkRes.headers.get("content-type") || "").includes("image");
+        if (isOk) {
+          const updatedInfo = structuredClone(info);
+          const updatedJob = structuredClone(job);
+          updatedJob.status = "completed";
+          updatedJob.completedAt = updatedJob.completedAt || new Date().toISOString();
+          delete updatedJob.error;
+          delete updatedJob.failedAt;
+
+          updatedInfo.imageGeneration = updatedJob;
+          if (jobKey === "imageGenerationReplacement") {
+            delete updatedInfo[jobKey];
+          }
+
+          const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+          patchUrl.searchParams.set("id", `eq.${row.id}`);
+          const patchRes = await fetch(patchUrl, {
+            method: "PATCH",
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              "Content-Type": "application/json; charset=utf-8",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({
+              info: updatedInfo,
+              image: imageUrl,
+            }),
+          });
+          if (patchRes.ok) synced++;
+        }
+      } catch {
+        // Continue if network check fails
+      }
+    }
+    return synced;
+  } catch {
+    return 0;
+  }
+}

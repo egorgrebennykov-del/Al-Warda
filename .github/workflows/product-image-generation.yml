@@ -81,14 +81,15 @@ jobs:
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/setup-python@v6
-        if: steps.schedule_gate.outputs.should_run == 'true'
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: requirements.txt
       - name: Install image processing dependencies
-        if: steps.schedule_gate.outputs.should_run == 'true'
         run: python -m pip install -r requirements.txt
+      - name: Finish previously deployed images
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: python Al-Warda/scripts/generate_product_images.py --complete-committed
       - name: Configure segmentation model directory
         if: steps.schedule_gate.outputs.should_run == 'true'
         run: echo "U2NET_HOME=$RUNNER_TEMP/al-warda-u2net" >> "$GITHUB_ENV"
@@ -98,9 +99,6 @@ jobs:
         with:
           path: ${{ runner.temp }}/al-warda-u2net
           key: u2net-8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491
-      - name: Finish previously deployed images
-        if: steps.schedule_gate.outputs.should_run == 'true'
-        run: python Al-Warda/scripts/generate_product_images.py --publish-only
       - name: Process queued products
         if: steps.schedule_gate.outputs.should_run == 'true'
         env:
@@ -153,7 +151,7 @@ jobs:
       - name: Verify deployment and complete queue items
         id: verify
         if: ${{ always() && steps.publish.outcome == 'success' }}
-        run: python Al-Warda/scripts/generate_product_images.py --publish-only
+        run: python Al-Warda/scripts/generate_product_images.py --complete-committed
       - name: Remove replaced generated images
         if: ${{ always() && steps.verify.outcome == 'success' }}
         run: |

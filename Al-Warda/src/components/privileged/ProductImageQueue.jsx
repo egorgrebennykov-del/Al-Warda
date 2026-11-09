@@ -156,7 +156,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
       setActionMessage(action === "start"
         ? (isRussian ? "Запуск отправлен в GitHub Actions." : "Workflow dispatch accepted.")
-        : (isRussian ? "Запрошена остановка. Уже созданные, но не опубликованные файлы могут потребовать повторной обработки." : "Cancellation requested. Unpublished files may need to be regenerated."));
+        : (isRussian ? "Запрошена остановка. Все сгенерированные к этому моменту изображения будут сохранены и добавлены на сайт." : "Stop requested. All images generated up to this moment will be saved and published to the website."));
       await loadRuns();
     } catch (err) {
       setRunsLoaded(false);

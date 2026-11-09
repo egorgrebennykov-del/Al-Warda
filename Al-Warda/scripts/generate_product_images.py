@@ -9,6 +9,7 @@ import io
 import json
 import os
 import re
+import signal
 import sys
 import tempfile
 import time
@@ -1038,6 +1039,89 @@ def is_awaiting_publication(job):
     )
 
 
+def complete_committed_images(session, supabase_url):
+    rows = fetch_stock_rows(session, supabase_url)
+    completed_count = 0
+    reset_count = 0
+    for row in rows:
+        info = row.get("info") or {}
+        job_key = "imageGeneration"
+        job = image_generation(info)
+        is_awaiting = is_awaiting_publication(job)
+        if not is_awaiting:
+            job_key = "imageGenerationReplacement"
+            job = info.get(job_key) or {}
+            is_awaiting = is_awaiting_publication(job)
+
+        if not is_awaiting:
+            for jk in ("imageGeneration", "imageGenerationReplacement"):
+                current_j = info.get(jk) or {}
+                if current_j.get("status") == "processing":
+                    updated_info = dict(info)
+                    updated_j = dict(current_j)
+                    updated_j["status"] = "pending"
+                    updated_j.pop("startedAt", None)
+                    updated_info[jk] = updated_j
+                    try:
+                        patch_stock(session, supabase_url, row, updated_info)
+                        reset_count += 1
+                        print(f"RESET STALE PROCESSING {row['id']}: returned to pending", flush=True)
+                    except Exception as err:
+                        print(f"Warning: could not reset {row['id']}: {err}", flush=True)
+            continue
+
+        image_url = job.get("imageUrl", "")
+        match = re.fullmatch(r"/assets/img/generated-products/([a-f0-9]{64})\.png", image_url)
+        if not match:
+            continue
+        local_path = GENERATED_DIR / f"{match.group(1)}.png"
+        if not local_path.is_file():
+            continue
+        if hashlib.sha256(local_path.read_bytes()).hexdigest() != match.group(1):
+            continue
+
+        updated_info = dict(info)
+        updated_job = dict(job)
+        updated_job.update({
+            "status": "completed",
+            "completedAt": utc_now().isoformat(),
+        })
+        updated_job.pop("error", None)
+        updated_job.pop("failedAt", None)
+
+        previous = updated_info.get("imageGeneration") or {}
+        old_url = previous.get("imageUrl") or row.get("image")
+        retired = updated_info.get("retiredGeneratedImages")
+        retired = list(retired) if isinstance(retired, list) else []
+        if job_key == "imageGenerationReplacement" and old_url and old_url != image_url:
+            if old_url not in retired:
+                retired.append(old_url)
+        if retired:
+            updated_info["retiredGeneratedImages"] = retired
+        updated_info["imageGeneration"] = updated_job
+        if job_key == "imageGenerationReplacement":
+            del updated_info[job_key]
+
+        if not updated_info.get("descriptionRu") or not updated_info.get("descriptionEn"):
+            try:
+                desc_result = generate_ai_perfume_description(requests, row, updated_info)
+                if desc_result:
+                    updated_info["descriptionRu"] = desc_result["descriptionRu"]
+                    updated_info["descriptionEn"] = desc_result["descriptionEn"]
+                    updated_info["description"] = desc_result["descriptionRu"]
+                    updated_info["descriptionAiGenerated"] = True
+                    updated_info["descriptionModel"] = desc_result.get("aiModel")
+            except Exception:
+                pass
+
+        patch_stock(session, supabase_url, row, updated_info, image=image_url)
+        print(f"COMPLETED COMMITTED {row['id']}: {image_url}", flush=True)
+        completed_count += 1
+
+    print(f"Finished completing committed images: {completed_count} completed, {reset_count} reset.", flush=True)
+    return completed_count
+
+
 def mark_unpublished_failed(session, supabase_url, image_paths):
     urls = set()
     for path in image_paths:
@@ -1140,6 +1224,8 @@ def main():
         help="Maximum number of products to attempt in this run",
     )
     parser.add_argument("--publish-only", action="store_true")
+    parser.add_argument("--complete-committed", action="store_true",
+                        help="Immediately complete all committed images in Supabase")
     parser.add_argument("--cleanup-replaced", action="store_true")
     parser.add_argument("--delete-selected", action="store_true")
     parser.add_argument("--mark-unpublished-failed", metavar="PATH_LIST")
@@ -1190,11 +1276,19 @@ def main():
             )
         print(f"should_run={'true' if status['should_run'] else 'false'}", flush=True)
         return
-    if args.publish_only or args.cleanup_replaced or args.delete_selected or args.mark_unpublished_failed:
+    if (
+        args.publish_only
+        or args.complete_committed
+        or args.cleanup_replaced
+        or args.delete_selected
+        or args.mark_unpublished_failed
+    ):
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
         if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
             raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
-        if args.mark_unpublished_failed:
+        if args.complete_committed:
+            complete_committed_images(make_session(), supabase_url)
+        elif args.mark_unpublished_failed:
             paths = Path(args.mark_unpublished_failed).read_text(encoding="utf-8").splitlines()
             mark_unpublished_failed(make_session(), supabase_url, paths)
         elif args.delete_selected:
@@ -1241,7 +1335,26 @@ def main():
     completed = 0
     failed = 0
     configuration_failure = False
+    stop_requested = False
+
+    def handle_stop_signal(signum, frame):
+        nonlocal stop_requested
+        print(
+            f"\nReceived termination signal ({signum}). Finishing queue gracefully and publishing generated images...",
+            flush=True,
+        )
+        stop_requested = True
+
+    try:
+        signal.signal(signal.SIGINT, handle_stop_signal)
+        signal.signal(signal.SIGTERM, handle_stop_signal)
+    except (ValueError, AttributeError):
+        pass
+
     for row in candidates[:args.max_images]:
+        if stop_requested:
+            print("Stopping product queue processing per termination signal. Proceeding to publish...", flush=True)
+            break
         try:
             url = process_product(
                 session,
@@ -1256,6 +1369,9 @@ def main():
             )
             completed += 1
             print(f"AWAITING DEPLOYMENT {row['id']}: {url}")
+        except KeyboardInterrupt:
+            print("\nKeyboardInterrupt caught. Stopping batch and proceeding to publish...", flush=True)
+            break
         except WorkersDailyQuotaExceeded as error:
             failed += 1
             configuration_failure = True

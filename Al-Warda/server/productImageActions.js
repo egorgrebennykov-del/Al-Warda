@@ -1,4 +1,4 @@
-import { requirePrivilegedUser } from "./productImageQueueAdmin.js";
+import { requirePrivilegedUser, syncCommittedPublishedStocks } from "./productImageQueueAdmin.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
 const API = "https://api.github.com/repos/egorgrebennykov-del/Al-Warda";
@@ -96,6 +96,10 @@ export async function handleProductImageActions(request, env) {
       if (!runs.length) return json({ error: "No active image generation run" }, 409);
       for (const run of runs) await github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" });
       return json({ message: "Cancellation requested", count: runs.length }, 202);
+    }
+    if (body.action === "sync") {
+      const count = await syncCommittedPublishedStocks(env);
+      return json({ message: "Sync completed", synced: count }, 200);
     }
     if (body.action === "delete") {
       if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 400 ||
