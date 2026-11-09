@@ -376,7 +376,7 @@
   border-radius: 18px !important;
   overflow: hidden !important;
   border: 2px solid #e5c07b !important;
-  background: radial-gradient(circle at 50% 36%, #3a2816 0%, #1e150d 60%, #0d0a08 100%) !important;
+  background: linear-gradient(180deg, #2b1f14 0%, #15100b 60%, #0d0a08 100%) !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), 0 0 26px rgba(212, 175, 55, 0.45), inset 0 0 16px rgba(212, 175, 55, 0.2) !important;
   padding: 0;
   position: relative;
@@ -387,16 +387,7 @@
 }
 
 .warda-companion-dock__character .warda-character__aura {
-  inset: -10%;
-  border-radius: 24px;
-  background: radial-gradient(
-    circle,
-    rgba(212, 175, 55, 0.35) 0%,
-    rgba(212, 175, 55, 0.15) 50%,
-    transparent 78%
-  );
-  filter: blur(16px);
-  pointer-events: none;
+  display: none !important;
 }
 
 .warda-companion-dock__character .warda-character__image {
@@ -404,10 +395,10 @@
   height: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover !important;
-  object-position: center 16% !important;
+  object-position: center bottom !important;
   border-radius: 16px;
   transform: none;
-  filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.35));
+  filter: none !important;
   -webkit-mask-image: none !important;
   mask-image: none !important;
 }
