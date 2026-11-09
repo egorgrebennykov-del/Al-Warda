@@ -668,14 +668,9 @@ export default function Featured() {
                     />
                     <span className="warda-combination-custom-check" aria-hidden="true" />
                     <span className="warda-combination-label-text">
-                      {language === "ru" ? "Комбинация нот (искать всё выбранное вместе)" : "Notes combination (match all selected together)"}
+                      {language === "ru" ? "Комбинация" : "Combination"}
                     </span>
                   </label>
-                  <p className="warda-combination-explanation">
-                    {language === "ru"
-                      ? "Без галочки: покажет духи хотя бы с одной из выбранных нот. С галочкой: только те, в которых есть все отмеченные ноты одновременно."
-                      : "Unchecked: shows perfumes containing any of selected notes. Checked: only perfumes that contain all chosen notes simultaneously."}
-                  </p>
                 </div>
                 <div className="warda-pills-wrap">
                   {POPULAR_NOTES.map((note) => {
