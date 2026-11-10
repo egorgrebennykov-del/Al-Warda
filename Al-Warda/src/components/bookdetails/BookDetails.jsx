@@ -41,6 +41,19 @@ export default function BookDetails() {
   });
 
   useEffect(() => {
+    const s = searchParams.get("sample");
+    if (["1ml", "2ml", "5ml", "10ml"].includes(s)) {
+      setSelectedVolume(s);
+    } else if (!s) {
+      setSelectedVolume("full");
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [targetId]);
+
+  useEffect(() => {
     if (!isLightboxOpen) return;
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -82,7 +95,9 @@ export default function BookDetails() {
 
   const isSet = perfume ? isPerfumeSet(perfume) : false;
   const isDecantable = perfume ? isDecantablePerfume(perfume) : false;
-  const activeSampleConfig = isDecantable && selectedVolume !== "full"
+  const hasSampleParam = Boolean(searchParams.get("sample"));
+  const allowSamples = !isSet && (isDecantable || hasSampleParam);
+  const activeSampleConfig = allowSamples && selectedVolume !== "full"
     ? SAMPLE_VOLUMES.find((v) => v.key === selectedVolume)
     : null;
   const displayPrice = activeSampleConfig
@@ -92,6 +107,17 @@ export default function BookDetails() {
     ? `${isRu ? activeSampleConfig.labelRu : activeSampleConfig.labelEn} (${isRu ? activeSampleConfig.descRu : activeSampleConfig.descEn})`
     : (perfume?.volume || "100 мл");
   const fullBottleVol = (perfume?.volume || "").match(/\d+\s*(?:ml|мл)/i)?.[0]?.replace(/ml/i, isRu ? " мл" : " ml") || (isRu ? "100 мл" : "100 ml");
+
+  const handleSelectVolume = (vol) => {
+    setSelectedVolume(vol);
+    const newParams = new URLSearchParams(searchParams);
+    if (vol === "full") {
+      newParams.delete("sample");
+    } else {
+      newParams.set("sample", vol);
+    }
+    navigate(`?${newParams.toString()}`, { replace: true, preventScrollReset: true });
+  };
 
   const handleAddToCart = async () => {
     if (!perfume) return;
@@ -259,7 +285,7 @@ export default function BookDetails() {
             </div>
 
             {/* FORMAT / VOLUME SELECTOR: INLINE ROW UNDER PRICE (ASCENDING ORDER) */}
-            {isDecantable && (
+            {allowSamples && (
               <div className="warda-details-volumes" role="radiogroup" aria-label={isRu ? "Выбор объема" : "Select volume"}>
                 <div className="warda-details-volume-pills">
                   {SAMPLE_VOLUMES.map((sv) => {
@@ -269,7 +295,7 @@ export default function BookDetails() {
                         key={sv.key}
                         type="button"
                         className={`warda-volume-pill ${selectedVolume === sv.key ? "active" : ""}`}
-                        onClick={() => setSelectedVolume(sv.key)}
+                        onClick={() => handleSelectVolume(sv.key)}
                         role="radio"
                         aria-checked={selectedVolume === sv.key}
                       >
@@ -281,7 +307,7 @@ export default function BookDetails() {
                   <button
                     type="button"
                     className={`warda-volume-pill ${selectedVolume === "full" ? "active" : ""}`}
-                    onClick={() => setSelectedVolume("full")}
+                    onClick={() => handleSelectVolume("full")}
                     role="radio"
                     aria-checked={selectedVolume === "full"}
                   >

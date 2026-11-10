@@ -4,6 +4,7 @@ import {
   getPerfumes,
   getPerfumeUrl,
   isPerfumeSet,
+  isDecantablePerfume,
   SAMPLE_VOLUMES,
   getSamplePrice,
   createSampleCartItem,
@@ -118,7 +119,7 @@ export default function Sets() {
 
     // Filter by type (tab)
     if (selectedType === "samples") {
-      result = result.filter((item) => !isPerfumeSet(item));
+      result = result.filter((item) => !isPerfumeSet(item) && isDecantablePerfume(item));
     } else if (selectedType === "discovery") {
       result = result.filter((item) => isPerfumeSet(item) && isDiscoveryOrMiniSet(item));
     } else if (selectedType === "gift") {
@@ -129,7 +130,7 @@ export default function Sets() {
     if (selectedVolume === "sets") {
       result = result.filter((item) => isPerfumeSet(item));
     } else if (["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)) {
-      result = result.filter((item) => !isPerfumeSet(item));
+      result = result.filter((item) => !isPerfumeSet(item) && isDecantablePerfume(item));
     }
 
     // Filter by brand
@@ -242,11 +243,9 @@ export default function Sets() {
   const handleCardClick = (perfume, volKey) => {
     const isSet = isPerfumeSet(perfume);
     const baseUrl = getPerfumeUrl(perfume);
-    if (isSet) {
-      navigate(baseUrl);
-    } else {
-      navigate(`${baseUrl}?sample=${volKey}`);
-    }
+    const targetUrl = isSet ? baseUrl : `${baseUrl}?sample=${volKey || "1ml"}`;
+    navigate(targetUrl);
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const resetFilters = () => {
@@ -524,6 +523,7 @@ export default function Sets() {
                             onClick={(e) => {
                               e.stopPropagation();
                               setCardVolumes((prev) => ({ ...prev, [perfume.id]: sv.key }));
+                              handleCardClick(perfume, sv.key);
                             }}
                             title={`${isRu ? sv.labelRu : sv.labelEn} — ${isRu ? sv.descRu : sv.descEn}`}
                           >

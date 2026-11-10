@@ -1639,7 +1639,15 @@ export function getCachedPerfumes() {
 
 export async function getPerfumeById(id, options = {}) {
   if (!id) return null;
-  const clean = String(id).toLowerCase().trim();
+  let clean = String(id).toLowerCase().trim();
+
+  if (clean.includes("?")) {
+    clean = clean.split("?")[0];
+  }
+
+  // Strip sample- prefix and -Xml suffix if present (e.g. "sample-dropship-6291108735411-5ml" -> "dropship-6291108735411" or "lattafa-yara-4217-5ml" -> "lattafa-yara-4217")
+  clean = clean.replace(/^sample-/, "").replace(/-(?:1|2|5|10)ml$/i, "");
+
   const all = await getPerfumes(options);
 
   // 1. Direct ID, slug, dropshipId, or GTIN match
@@ -1666,12 +1674,26 @@ export async function getPerfumeById(id, options = {}) {
     if (found) return ensurePerfumeEnrichment(found);
   }
 
-  // 3. Extract trailing stock ID (e.g. "lattafa-yara-4217" -> "4217")
+  // 3. Extract trailing stock ID (e.g. "lattafa-yara-4217" -> "4217" or "stock-4217")
+  const trailingStock = clean.match(/stock-(\d+)$/i);
+  if (trailingStock) {
+    found = all.find(
+      (p) =>
+        String(p.id).toLowerCase() === trailingStock[1] ||
+        String(p.id).toLowerCase() === `stock-${trailingStock[1]}` ||
+        String(p.slug).toLowerCase() === `stock-${trailingStock[1]}` ||
+        String(p.gtin) === trailingStock[1]
+    );
+    if (found) return ensurePerfumeEnrichment(found);
+  }
+
   const trailingNum = clean.match(/-(\d+)$/);
   if (trailingNum) {
     found = all.find(
       (p) =>
-        p.id === trailingNum[1] ||
+        String(p.id).toLowerCase() === trailingNum[1] ||
+        String(p.id).toLowerCase() === `stock-${trailingNum[1]}` ||
+        String(p.slug).toLowerCase() === `stock-${trailingNum[1]}` ||
         String(p.gtin) === trailingNum[1] ||
         p.dropshipId?.toLowerCase() === `dropship-${trailingNum[1]}`
     );
