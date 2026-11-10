@@ -332,3 +332,37 @@ test("currency and language lists in Header are sorted alphabetically", () => {
   const curCodes = [...headerCode.matchAll(/code:\s*["']([A-Z]{3})["']/g)].map((m) => m[1]);
   assert.deepEqual(curCodes, ["EUR", "HUF", "RON"]);
 });
+
+
+test("formatVolume correctly localizes volume units (мл for ru/bg, ml for ro/en/hu/el)", async () => {
+  const { formatVolume } = await import("../src/utils/localization.js");
+
+  // Romanian (ro)
+  assert.equal(formatVolume("100 мл EDP", "ro"), "100 ml EDP");
+  assert.equal(formatVolume("100 мл / 3.4 FL.OZ.", "ro"), "100 ml / 3.4 FL.OZ.");
+  assert.equal(formatVolume("5 × 2 мл", "ro"), "5 × 2 ml");
+  assert.equal(formatVolume(100, "ro"), "100 ml");
+  assert.equal(formatVolume("100", "ro"), "100 ml");
+  assert.equal(formatVolume("100мл", "ro"), "100 ml");
+
+  // English (en)
+  assert.equal(formatVolume("100 мл EDP", "en"), "100 ml EDP");
+  assert.equal(formatVolume("100 мл", "en"), "100 ml");
+
+  // Hungarian (hu)
+  assert.equal(formatVolume("100 мл EDP", "hu"), "100 ml EDP");
+  assert.equal(formatVolume("100 мл", "hu"), "100 ml");
+
+  // Greek (el)
+  assert.equal(formatVolume("100 мл EDP", "el"), "100 ml EDP");
+  assert.equal(formatVolume("100 мл", "el"), "100 ml");
+
+  // Bulgarian (bg)
+  assert.equal(formatVolume("100 ml EDP", "bg"), "100 мл EDP");
+  assert.equal(formatVolume("100 ml", "bg"), "100 мл");
+
+  // Russian (ru)
+  assert.equal(formatVolume("100 ml EDP", "ru"), "100 мл EDP");
+  assert.equal(formatVolume("100 ml", "ru"), "100 мл");
+  assert.equal(formatVolume("100 мл EDP", "ru"), "100 мл EDP");
+});

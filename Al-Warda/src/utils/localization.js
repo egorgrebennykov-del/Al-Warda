@@ -546,14 +546,22 @@ export function getLocalizedVolumeOption(volOption, language = "ru") {
  * Format volume string or number with proper unit (мл for ru/bg, ml for en/hu/el/ro)
  */
 export function formatVolume(volumeStrOrMl, language = "ru") {
-  if (!volumeStrOrMl) return "";
+  if (volumeStrOrMl == null || volumeStrOrMl === "") return "";
   const lang = String(language || "ru").toLowerCase();
   const unit = (lang === "ru" || lang === "bg") ? "мл" : "ml";
+
   if (typeof volumeStrOrMl === "number") {
     return `${volumeStrOrMl} ${unit}`;
   }
-  const str = String(volumeStrOrMl);
-  return str.replace(/\bml\b/gi, unit).replace(/\bмл\b/gi, unit);
+  const trimmed = String(volumeStrOrMl).trim();
+  if (!trimmed) return "";
+  if (/^\d+(?:[.,]\d+)?$/.test(trimmed)) {
+    return `${trimmed} ${unit}`;
+  }
+
+  return trimmed
+    .replace(/(\d)\s*(?:ml|мл)(?![a-zA-Zа-яА-ЯёЁ0-9])/gi, `$1 ${unit}`)
+    .replace(/(^|[^a-zA-Zа-яА-ЯёЁ0-9])(?:ml|мл)(?![a-zA-Zа-яА-ЯёЁ0-9])/gi, `$1${unit}`);
 }
 
 /**

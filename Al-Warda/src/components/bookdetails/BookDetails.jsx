@@ -158,7 +158,7 @@ export default function BookDetails() {
   const rawBottleVol = isSet
     ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || t("details.discoverySet"))
     : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "100 ml");
-  const fullBottleVol = isSet ? rawBottleVol : formatVolume(rawBottleVol, language);
+  const fullBottleVol = formatVolume(rawBottleVol, language);
 
   const handleSelectVolume = (vol) => {
     setSelectedVolume(vol);
@@ -555,7 +555,7 @@ export default function BookDetails() {
                 <span className="warda-spec-lbl">{isSet ? t("details.included") : t("details.gender")}</span>
                 <span className="warda-spec-val">
                   {isSet
-                    ? (perfume.volume || "4 × 10 ml")
+                    ? formatVolume(perfume.volume || "4 × 10 ml", language)
                     : getLocalizedGender(perfume.gender, language)}
                 </span>
               </div>
