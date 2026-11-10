@@ -390,29 +390,17 @@ test("processWardaChat understands desire queries like 'хочу чтото с �
   assert.equal(result.books[0].id, "orientica-berries-1", "Top match should be the berry perfume");
 });
 
-test("isDecantablePerfume and getSamplePrice enforce monotonicity: larger volume costs more, samples never exceed bottle", async () => {
-  const { getSamplePrice, isDecantablePerfume } = await import("../utils/perfumes.js");
+test("isDecantablePerfume returns false as Al-Warda does not decant perfumes", async () => {
+  const { isDecantablePerfume, getSamplePrice } = await import("../utils/perfumes.js");
 
-  // 1. In cheap products, small oils, or deodorants, decants are not offered
+  // Al-Warda sells only genuine factory-sealed products directly from Qogita; no decanting
   assert.equal(isDecantablePerfume({ name: "Al Haramain Black Oudh Parfum", price: 2.77, volume: "15 мл" }), false);
   assert.equal(isDecantablePerfume({ name: "Ajmal Aristocrat Her 1.5ml", price: 0.52, volume: "1.5 мл" }), false);
   assert.equal(isDecantablePerfume({ name: "Nabeel Master Ocean Deo Spray 200 Ml", price: 2.71, volume: "200 мл" }), false);
+  assert.equal(isDecantablePerfume({ name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" }), false);
 
-  // 2. Full bottles >= 15 EUR are decantable
-  assert.equal(isDecantablePerfume({ name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" }), true);
-
-  // 3. Strict monotonicity for all prices: 1ml < 2ml < 5ml < 10ml < full bottle
-  for (const p of [15, 18, 20, 25, 30, 45, 60, 100, 250]) {
-    const p1 = getSamplePrice(p, "1ml");
-    const p2 = getSamplePrice(p, "2ml");
-    const p5 = getSamplePrice(p, "5ml");
-    const p10 = getSamplePrice(p, "10ml");
-
-    assert.ok(p1 < p2, `1ml (${p1}) should be strictly less than 2ml (${p2}) for bottle ${p}`);
-    assert.ok(p2 < p5, `2ml (${p2}) should be strictly less than 5ml (${p5}) for bottle ${p}`);
-    assert.ok(p5 < p10, `5ml (${p5}) should be strictly less than 10ml (${p10}) for bottle ${p}`);
-    assert.ok(p10 < p, `10ml (${p10}) should be strictly less than bottle price (${p})`);
-  }
+  // Price helper returns genuine bottle price
+  assert.equal(getSamplePrice(29.90), 29.90);
 });
 
 test("getPerfumeById resolves sample URLs, sample- prefixed IDs and stock IDs", async () => {
@@ -447,10 +435,10 @@ test("isPerfumeSet, inferSetItems and ensurePerfumeEnrichment correctly handle d
   assert.equal(items[3].name, "Amber Oud White Edition");
 });
 
-test("getDefaultPerfumeVolumeOption defaults to second largest volume >= 10ml when volume can be changed", async () => {
+test("getDefaultPerfumeVolumeOption returns genuine Qogita bottle volume and price", async () => {
   const { getDefaultPerfumeVolumeOption, getDefaultCatalogPrice } = await import("../utils/perfumes.js");
 
-  // 1. User example: perfume with sizes 100ml, 50ml, and 10ml -> defaults to 50ml price
+  // 1. Perfume bottle with price 60
   const multiBottle = {
     name: "Luxury Oud",
     price: 60,
@@ -458,37 +446,32 @@ test("getDefaultPerfumeVolumeOption defaults to second largest volume >= 10ml wh
     availableSizes: [
       { ml: 100, price: 60 },
       { ml: 50, price: 35 },
-      { ml: 10, price: 15 },
     ],
   };
   const multiOpt = getDefaultPerfumeVolumeOption(multiBottle);
-  assert.equal(multiOpt.ml, 50);
-  assert.equal(multiOpt.price, 35);
-  assert.equal(multiOpt.isSecondLargest, true);
-  assert.equal(getDefaultCatalogPrice(multiBottle), 35);
+  assert.equal(multiOpt.ml, 100);
+  assert.equal(multiOpt.price, 60);
+  assert.equal(getDefaultCatalogPrice(multiBottle), 60);
 
-  // 2. Decantable perfume: 100ml bottle + decants (10ml, 5ml, 2ml, 1ml) -> second largest is 10ml
+  // 2. Standard perfume: 100ml bottle -> returns full price from Qogita
   const asad = { name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" };
   const asadOpt = getDefaultPerfumeVolumeOption(asad);
-  assert.equal(asadOpt.ml, 10);
-  assert.equal(asadOpt.key, "10ml");
-  assert.equal(asadOpt.isSecondLargest, true);
-  assert.equal(asadOpt.price, 18.9);
-  assert.equal(getDefaultCatalogPrice(asad), 18.9);
+  assert.equal(asadOpt.ml, 100);
+  assert.equal(asadOpt.key, "full");
+  assert.equal(asadOpt.price, 29.90);
+  assert.equal(getDefaultCatalogPrice(asad), 29.90);
 
-  // 3. Perfume where volume CANNOT be changed (non-decantable deodorant) -> returns standard full price
+  // 3. Deodorant -> returns standard full price
   const deo = { name: "Nabeel Deo Spray 200ml", price: 2.71, volume: "200ml" };
   const deoOpt = getDefaultPerfumeVolumeOption(deo);
   assert.equal(deoOpt.ml, 200);
   assert.equal(deoOpt.price, 2.71);
-  assert.equal(deoOpt.isSecondLargest, false);
   assert.equal(getDefaultCatalogPrice(deo), 2.71);
 
   // 4. Discovery Set -> returns set price
   const set = { name: "Amber Oud Discovery Set 4x10ml", price: 29.90, volume: "4x10ml", isSet: true };
   const setOpt = getDefaultPerfumeVolumeOption(set);
   assert.equal(setOpt.price, 29.90);
-  assert.equal(setOpt.isSecondLargest, false);
 });
 
 test("extractVolumeFromName and ensurePerfumeEnrichment accurately extract explicit volume (e.g. 1.5ml sample)", async () => {
@@ -599,31 +582,12 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
   );
 });
 
-test("samples page defaults to minimum available sample volume (1ml) when multiple sample sizes are available", async () => {
-  const { SAMPLE_VOLUMES, getSamplePrice, isDecantablePerfume } = await import("../utils/perfumes.js");
-
-  // Sample volumes list order and keys
-  assert.ok(SAMPLE_VOLUMES.length >= 3);
-  const minVol = SAMPLE_VOLUMES.reduce((min, cur) => cur.ml < min.ml ? cur : min, SAMPLE_VOLUMES[0]);
-  assert.equal(minVol.key, "1ml");
-  assert.equal(minVol.ml, 1);
-
-  // Price for minimum volume (1ml) is lower than 5ml and 10ml
-  const price1ml = getSamplePrice(35, "1ml");
-  const price2ml = getSamplePrice(35, "2ml");
-  const price5ml = getSamplePrice(35, "5ml");
-  const price10ml = getSamplePrice(35, "10ml");
-
-  assert.ok(price1ml < price2ml);
-  assert.ok(price2ml < price5ml);
-  assert.ok(price5ml < price10ml);
-
-  // Default volume selection on samples page when selectedVolume filter is "all"
-  const selectedVolume = "all";
-  const defaultVol = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
-    ? selectedVolume
-    : (SAMPLE_VOLUMES[0]?.key || "1ml");
-  assert.equal(defaultVol, "1ml");
+test("Al-Warda catalog strictly operates on genuine Qogita products with no decanting", async () => {
+  const { isDecantablePerfume, getDefaultPerfumeVolumeOption } = await import("../utils/perfumes.js");
+  assert.equal(isDecantablePerfume({ name: "Lattafa Khamrah 100ml", price: 28.5 }), false);
+  const opt = getDefaultPerfumeVolumeOption({ name: "Lattafa Khamrah 100ml", price: 28.5, volume: "100 мл" });
+  assert.equal(opt.price, 28.5);
+  assert.equal(opt.ml, 100);
 });
 
 test("resolveRequestLanguage accurately detects query language across supported languages", () => {

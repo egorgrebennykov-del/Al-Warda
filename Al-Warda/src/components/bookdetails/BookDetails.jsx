@@ -6,13 +6,9 @@ import {
   getHarmoniousNotes,
   isPerfumeSet,
   inferSetItems,
-  isDecantablePerfume,
-  SAMPLE_VOLUMES,
-  getSamplePrice,
-  createSampleCartItem,
-  getDefaultPerfumeVolumeOption,
   getPerfumeGtin,
   getQogitaProductUrl,
+  getPerfumeVolumeOptions,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
@@ -53,24 +49,11 @@ export default function BookDetails() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
-  const [selectedVolume, setSelectedVolume] = useState(() => {
-    const s = searchParams.get("sample");
-    return ["1ml", "2ml", "5ml", "10ml"].includes(s) ? s : "full";
-  });
+  const [selectedVolume, setSelectedVolume] = useState("full");
 
   useEffect(() => {
-    const s = searchParams.get("sample");
-    if (["1ml", "2ml", "5ml", "10ml"].includes(s)) {
-      setSelectedVolume(s);
-    } else if (!s && perfume) {
-      const def = getDefaultPerfumeVolumeOption(perfume);
-      if (def.isSecondLargest && def.isSample) {
-        setSelectedVolume(def.key);
-      } else {
-        setSelectedVolume("full");
-      }
-    }
-  }, [searchParams, perfume]);
+    setSelectedVolume("full");
+  }, [perfume]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -121,42 +104,33 @@ export default function BookDetails() {
   const qogitaUrl = isPriv && (perfume || enrichedPerfume) ? getQogitaProductUrl(perfume || enrichedPerfume) : null;
   const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
   const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
-  const isDecantable = enrichedPerfume ? isDecantablePerfume(enrichedPerfume) : false;
-  const hasSampleParam = Boolean(searchParams.get("sample"));
-  const allowSamples = !isSet && (isDecantable || hasSampleParam);
-  const activeSampleConfig = allowSamples && selectedVolume !== "full"
-    ? SAMPLE_VOLUMES.find((v) => v.key === selectedVolume)
-    : null;
-  const displayPrice = activeSampleConfig
-    ? getSamplePrice(perfume?.price, activeSampleConfig.key)
-    : Number(perfume?.price || 0);
-  const displayVolume = activeSampleConfig
-    ? `${formatVolume(activeSampleConfig.ml, language)} (${getLocalizedSampleDesc(activeSampleConfig.key, language)})`
-    : formatVolume(enrichedPerfume?.volume || "100 ml", language);
   const rawBottleVol = isSet
     ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || t("details.discoverySet"))
     : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "100 ml");
   const fullBottleVol = formatVolume(rawBottleVol, language);
 
+  const hasMultipleSizes = Array.isArray(perfume?.availableSizes) && perfume.availableSizes.length > 1;
+  const perfumeVolumeOptions = hasMultipleSizes ? getPerfumeVolumeOptions(perfume) : [];
+  const selectedSizeOpt = hasMultipleSizes
+    ? perfumeVolumeOptions.find((o) => o.key === selectedVolume) || perfumeVolumeOptions[0]
+    : null;
+  const displayPrice = selectedSizeOpt ? selectedSizeOpt.price : Number(perfume?.price || 0);
+  const displayVolume = selectedSizeOpt
+    ? formatVolume(selectedSizeOpt.ml, language)
+    : fullBottleVol;
+
   const handleSelectVolume = (vol) => {
     setSelectedVolume(vol);
-    const newParams = new URLSearchParams(searchParams);
-    if (vol === "full") {
-      newParams.delete("sample");
-    } else {
-      newParams.set("sample", vol);
-    }
-    navigate(`?${newParams.toString()}`, { replace: true, preventScrollReset: true });
   };
 
   const handleAddToCart = async () => {
     if (!perfume) return;
     try {
-      const currentVolKey = activeSampleConfig ? activeSampleConfig.key : null;
-      const currentlyInCart = isInCart(perfume, activeSampleConfig ? activeSampleConfig.key : "full");
+      const volKey = selectedSizeOpt ? selectedSizeOpt.key : "full";
+      const currentlyInCart = isInCart(perfume, volKey);
       await toggleCart(perfume, {
-        volKey: currentVolKey,
-        isSample: Boolean(activeSampleConfig),
+        volKey,
+        isSample: false,
         quantity,
         language,
       });
@@ -416,37 +390,26 @@ export default function BookDetails() {
               </div>
             )}
 
-            {/* FORMAT / VOLUME SELECTOR: INLINE ROW ABOVE PRICE (ASCENDING ORDER) */}
-            <div className="warda-details-volumes" role="radiogroup" aria-label={t("details.selectVolume")}>
-              <div className="warda-details-volume-pills">
-                {allowSamples && SAMPLE_VOLUMES.map((sv) => {
-                  const sPrice = getSamplePrice(perfume.price, sv.key);
-                  return (
+            {/* FORMAT / VOLUME SELECTOR: ONLY DISPLAYED IF MULTIPLE SIZES EXIST IN QOGITA */}
+            {hasMultipleSizes && (
+              <div className="warda-details-volumes" role="radiogroup" aria-label={t("details.selectVolume")}>
+                <div className="warda-details-volume-pills">
+                  {perfumeVolumeOptions.map((opt) => (
                     <button
-                      key={sv.key}
+                      key={opt.key}
                       type="button"
-                      className={`warda-volume-pill ${selectedVolume === sv.key ? "active" : ""}`}
-                      onClick={() => handleSelectVolume(sv.key)}
+                      className={`warda-volume-pill ${selectedVolume === opt.key ? "active" : ""}`}
+                      onClick={() => handleSelectVolume(opt.key)}
                       role="radio"
-                      aria-checked={selectedVolume === sv.key}
+                      aria-checked={selectedVolume === opt.key}
                     >
-                      <span className="warda-volume-pill__title">{formatVolume(sv.ml, language)}</span>
-                      <span className="warda-volume-pill__price">{formatPrice(sPrice)}</span>
+                      <span className="warda-volume-pill__title">{formatVolume(opt.ml, language)}</span>
+                      <span className="warda-volume-pill__price">{formatPrice(opt.price)}</span>
                     </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  className={`warda-volume-pill ${selectedVolume === "full" || !allowSamples ? "active" : ""}`}
-                  onClick={() => handleSelectVolume("full")}
-                  role="radio"
-                  aria-checked={selectedVolume === "full" || !allowSamples}
-                >
-                  <span className="warda-volume-pill__title">{fullBottleVol}</span>
-                  <span className="warda-volume-pill__price">{formatPrice(perfume.price)}</span>
-                </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="warda-details-price-row">
               <span className="warda-details-price">{formatPrice(displayPrice)}</span>
@@ -580,7 +543,7 @@ export default function BookDetails() {
               </div>
 
               {(() => {
-                const inCart = isInCart(perfume, activeSampleConfig ? activeSampleConfig.key : "full");
+                const inCart = isInCart(perfume, selectedSizeOpt ? selectedSizeOpt.key : "full");
                 return (
                   <button
                     type="button"

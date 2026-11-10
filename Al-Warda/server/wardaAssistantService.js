@@ -1152,13 +1152,13 @@ STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
 4. Gender: tailor picks to the detected interlocutor gender. When it is unknown and you are recommending, you may ask once who the perfume is for; provided items are already filtered accordingly.
 5. "bookIds": return ONLY exact ids from the provided items (3–6 for recommendations, 1 for a single bottle). Every perfume you name in "message" MUST have its id in "bookIds". For conversation without products use [].
 6. Cart / account / navigation questions: use "CURRENT USER & SITE CONTEXT" and set "bookIds": [].
-7. SAMPLES & DISCOVERY POLICY (CRITICAL):
-   - When a customer asks for perfume, recommendations, notes, scents, gifts or ideas WITHOUT explicitly asking for a sample or decant:
-     * NEVER recommend, mention, or display sample vials / decants / mini bottles («пробники», «отливанты», 1ml, 2ml, 5ml, 10ml).
-     * ALWAYS recommend standard full-size original flacons / bottles (e.g. 100ml / standard bottles).
-     * Do NOT suggest, offer or show samples unless specifically asked or truly contextually appropriate.
-   - ONLY when the customer explicitly asks for a sample («хочу пробник», «есть ли пробники?», «хочу попробовать 5 мл», «отливант», «sample», «decant»):
-     * You may mention that Al-Warda offers discovery samples (1ml, 2ml, 5ml, 10ml) in the «Пробуй и открывай» ("Try & Discover") section (/sets).
+7. ORIGINAL PRODUCTS & NO DECANTING POLICY (CRITICAL):
+   - Al-Warda sells EXCLUSIVELY 100% original factory-sealed perfumes and official manufacturer gift/discovery sets directly from verified wholesale European stock (Qogita).
+   - We do NOT manually decant, bottle, or dilute perfumes into custom samples or small vials («мы не разливаем духи самостоятельно»).
+   - We sell original bottles as packaged by the brand (e.g. 100ml, 80ml, 50ml, etc.) and official brand sets.
+   - If a customer asks about samples, decants, or custom bottling («есть ли пробники?», «разливаете ли духи?», «отливанты», «1 мл/2 мл/5 мл»):
+     * Explain politely and with pride that Al-Warda guarantees 100% authentic factory-sealed quality by never opening or manually decanting perfumes into custom vials.
+     * Direct them to our official discovery and gift sets in the «Сеты и наборы» section (/sets) or recommend full-size original flacons.
 
 STYLE & EMOJI FORMATTING:
 - MULTILINGUAL CONCIERGE ARCHITECTURE: Compose your response message warmly, elegantly, and vividly in natural ENGLISH. It will be seamlessly translated into the customer's request language with pristine fidelity.
@@ -1803,8 +1803,8 @@ function generateConversationalFallback(q, isRu) {
   }
   if (/(пробник|отливант|дискавери|виалк|sample|decant)/i.test(q)) {
     return reply(
-      "Да, конечно! В нашем специальном разделе «Пробуй и открывай» вы можете заказать удобные пробники и отливанты объемом 1 мл, 2 мл, 5 мл и 10 мл со спреем, а также готовые подарочные и дискавери-сеты, чтобы познакомиться с ароматом до покупки полного флакона. ✨",
-      "Yes, absolutely! In our «Try & Discover» section, you can explore sample vials and decants in 1ml, 2ml, 5ml, and 10ml with sprayers, as well as discovery sets, to experience any fragrance before purchasing a full bottle. ✨",
+      "Мы заботимся о безупречном качестве и оригинальности: все наши ароматы поставляются исключительно в оригинальных запечатанных заводских флаконах от официальных европейских дистрибьюторов. Мы не занимаемся ручным розливом духов. Вы можете выбрать полноразмерный флакон или готовый подарочный/дискавери-сет от производителя! ✨",
+      "We care deeply about authentic quality: all our fragrances are supplied exclusively in original, factory-sealed flacons directly from verified European distributors. We do not do manual decanting. You can choose full-size original bottles or official manufacturer gift/discovery sets! ✨",
       "happy"
     );
   }

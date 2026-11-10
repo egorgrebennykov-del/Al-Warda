@@ -5,11 +5,8 @@ import {
   getCachedPerfumes,
   getPerfumeUrl,
   isPerfumeSet,
-  isDecantablePerfume,
-  SAMPLE_VOLUMES,
-  getSamplePrice,
-  createSampleCartItem,
   hasCompletedGeneratedImage,
+  parseVolumeMl,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -24,6 +21,17 @@ import "./Sets.css";
 function isDiscoveryOrMiniSet(item) {
   const txt = `${item?.name || ""} ${item?.title || ""}`.toLowerCase();
   return /\b(discovery|mini|travel|sample|\d+\s*[x×]\s*[1-9]\d?\s*ml|pen\s*spray|pack\s+of)\b/i.test(txt);
+}
+
+function isMiniatureOrSample(item) {
+  const vol = parseVolumeMl(item?.name) || parseVolumeMl(item?.volume);
+  if (vol && vol < 30) return true;
+  const txt = `${item?.name || ""} ${item?.title || ""}`.toLowerCase();
+  return /\b(miniature|travel|sample|vial|миниатюр|пробник)\b/i.test(txt);
+}
+
+function isSetOrDiscoveryProduct(item) {
+  return isPerfumeSet(item) || isDiscoveryOrMiniSet(item) || isMiniatureOrSample(item);
 }
 
 function getSetBadgeLabel(item, language = "ru", t) {
@@ -146,34 +154,29 @@ export default function Sets() {
     };
   }, []);
 
+  const allSetItems = useMemo(() => {
+    return allItems.filter(isSetOrDiscoveryProduct);
+  }, [allItems]);
+
   const availableBrands = useMemo(() => {
     const map = new Map();
-    for (const item of allItems) {
+    for (const item of allSetItems) {
       const b = (item.brand || "").trim();
       if (b) map.set(b, (map.get(b) || 0) + 1);
     }
     return Array.from(map.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([brand]) => brand);
-  }, [allItems]);
+  }, [allSetItems]);
 
   const filteredItems = useMemo(() => {
-    let result = [...allItems];
+    let result = [...allSetItems];
 
     // Filter by type (tab)
-    if (selectedType === "samples") {
-      result = result.filter((item) => !isPerfumeSet(item) && isDecantablePerfume(item));
-    } else if (selectedType === "discovery") {
-      result = result.filter((item) => isPerfumeSet(item) && isDiscoveryOrMiniSet(item));
+    if (selectedType === "discovery") {
+      result = result.filter(isDiscoveryOrMiniSet);
     } else if (selectedType === "gift") {
       result = result.filter((item) => isPerfumeSet(item) && !isDiscoveryOrMiniSet(item));
-    }
-
-    // Filter by volume
-    if (selectedVolume === "sets") {
-      result = result.filter((item) => isPerfumeSet(item));
-    } else if (["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)) {
-      result = result.filter((item) => !isPerfumeSet(item) && isDecantablePerfume(item));
     }
 
     // Filter by brand
@@ -207,38 +210,20 @@ export default function Sets() {
     }
 
     // Sort items
-    const volForSort = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
-      ? selectedVolume
-      : (SAMPLE_VOLUMES[0]?.key || "1ml");
     if (sortBy === "price-asc") {
-      result.sort((a, b) => {
-        const isSetA = isPerfumeSet(a);
-        const isSetB = isPerfumeSet(b);
-        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, volForSort);
-        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, volForSort);
-        return priceA - priceB;
-      });
+      result.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
     } else if (sortBy === "price-desc") {
-      result.sort((a, b) => {
-        const isSetA = isPerfumeSet(a);
-        const isSetB = isPerfumeSet(b);
-        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, volForSort);
-        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, volForSort);
-        return priceB - priceA;
-      });
+      result.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
     } else if (sortBy === "popular") {
       result.sort((a, b) => {
-        const isSetA = isPerfumeSet(a);
-        const isSetB = isPerfumeSet(b);
-        // Sets and featured perfumes get priority in Try & Discover
         const scoreA =
-          (isSetA ? 40 : 0) +
+          (isPerfumeSet(a) ? 40 : 0) +
           (a.isBestSeller ? 50 : 0) +
           (a.isFeatured ? 25 : 0) +
           (Number(a.rating) || 4.5) * 10 +
           (Number(a.reviewsCount) || 0);
         const scoreB =
-          (isSetB ? 40 : 0) +
+          (isPerfumeSet(b) ? 40 : 0) +
           (b.isBestSeller ? 50 : 0) +
           (b.isFeatured ? 25 : 0) +
           (Number(b.rating) || 4.5) * 10 +
@@ -248,7 +233,7 @@ export default function Sets() {
     }
 
     return result;
-  }, [allItems, selectedType, selectedVolume, selectedBrand, selectedGender, searchQuery, sortBy]);
+  }, [allSetItems, selectedType, selectedBrand, selectedGender, searchQuery, sortBy]);
 
   // Reset visible count when filters change
   useEffect(() => {
@@ -259,26 +244,23 @@ export default function Sets() {
     return filteredItems.slice(0, visibleCount);
   }, [filteredItems, visibleCount]);
 
-  const handleAddToCartItem = async (perfume, volKey, e) => {
+  const handleAddToCartItem = async (perfume, e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const isSet = isPerfumeSet(perfume);
-    const itemKey = isSet ? perfume.id : `${perfume.id}-${volKey}`;
-    const checkVol = isSet ? "full" : volKey;
-    const currentlyInCart = isInCart(perfume, checkVol);
+    const currentlyInCart = isInCart(perfume, "full");
 
     try {
       await toggleCart(perfume, {
-        volKey: isSet ? null : volKey,
-        isSample: !isSet,
+        volKey: "full",
+        isSample: false,
         language,
       });
 
       if (!currentlyInCart) {
-        setAddedIds((prev) => ({ ...prev, [itemKey]: true }));
+        setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
         setTimeout(() => {
-          setAddedIds((prev) => ({ ...prev, [itemKey]: false }));
+          setAddedIds((prev) => ({ ...prev, [perfume.id]: false }));
         }, 2200);
       }
     } catch (err) {
@@ -286,13 +268,10 @@ export default function Sets() {
     }
   };
 
-  const handleCardClick = (perfume, volKey) => {
+  const handleCardClick = (perfume) => {
     const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
     sessionStorage.setItem(scrollKey, String(window.scrollY));
-    const isSet = isPerfumeSet(perfume);
-    const baseUrl = getPerfumeUrl(perfume);
-    const targetUrl = isSet ? baseUrl : `${baseUrl}?sample=${volKey || "1ml"}`;
-    navigate(targetUrl);
+    navigate(getPerfumeUrl(perfume));
   };
 
   const resetFilters = () => {
@@ -355,7 +334,6 @@ export default function Sets() {
           <div className="warda-sets-tabs" role="tablist">
             {[
               { id: "all", label: t("sets.tabAll"), icon: "ri-apps-2-line" },
-              { id: "samples", label: t("sets.tabSamples"), icon: "ri-flask-line" },
               { id: "discovery", label: t("sets.tabDiscovery"), icon: "ri-magic-line" },
               { id: "gift", label: t("sets.tabGift"), icon: "ri-gift-line" },
             ].map((tab) => (
@@ -393,20 +371,7 @@ export default function Sets() {
             </div>
 
             <div className="warda-sets-selects">
-              {/* VOLUME FILTER */}
-              <select
-                className="warda-sort-select"
-                value={selectedVolume}
-                onChange={(e) => setSelectedVolume(e.target.value)}
-                aria-label={t("featured.volume")}
-              >
-                <option value="all">{t("sets.volAll")}</option>
-                <option value="1ml">{t("sets.vol1ml")}</option>
-                <option value="2ml">{t("sets.vol2ml")}</option>
-                <option value="5ml">{t("sets.vol5ml")}</option>
-                <option value="10ml">{t("sets.vol10ml")}</option>
-                <option value="sets">{t("sets.volSets")}</option>
-              </select>
+              
 
               {/* BRAND FILTER */}
               {availableBrands.length > 1 && (
@@ -492,43 +457,24 @@ export default function Sets() {
         <>
           <div className="warda-shop-grid">
             {visibleItems.map((perfume) => {
-              const isSet = isPerfumeSet(perfume);
-              const defaultVol = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
-                ? selectedVolume
-                : (SAMPLE_VOLUMES[0]?.key || "1ml");
-              const activeVol = cardVolumes[perfume.id] || defaultVol;
-              const sampleCfg = !isSet
-                ? SAMPLE_VOLUMES.find((v) => v.key === activeVol) || SAMPLE_VOLUMES[0]
-                : null;
-              const currentPrice = isSet
-                ? Number(perfume.price)
-                : getSamplePrice(perfume.price, activeVol);
-              const rawVolLabel = sampleCfg ? (sampleCfg.labelEn || sampleCfg.key) : "";
-              const volLabel = formatVolume(rawVolLabel, language);
-              const itemKey = isSet ? perfume.id : `${perfume.id}-${activeVol}`;
+              const itemKey = perfume.id;
               const isAdded = Boolean(addedIds[itemKey]);
+              const inCart = isInCart(perfume, "full");
 
               return (
                 <OrnateCard
                   key={itemKey}
                   className="warda-perfume-card warda-set-card"
-                  onClick={() => handleCardClick(perfume, activeVol)}
+                  onClick={() => handleCardClick(perfume)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && handleCardClick(perfume, activeVol)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCardClick(perfume)}
                 >
                   <div className="warda-perfume-card__media">
-                    {isSet ? (
-                      <span className="warda-set-card__badge">
-                        <i className="ri-gift-2-fill" />
-                        {getSetBadgeLabel(perfume, language, t)}
-                      </span>
-                    ) : (
-                      <span className="warda-sample-card__badge">
-                        <i className="ri-flask-fill" />
-                        {`${t("sets.badgeSample")} • ${volLabel}`}
-                      </span>
-                    )}
+                    <span className="warda-set-card__badge">
+                      <i className={isDiscoveryOrMiniSet(perfume) ? "ri-sparkling-fill" : "ri-gift-2-fill"} />
+                      {getSetBadgeLabel(perfume, language, t)}
+                    </span>
 
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
@@ -553,62 +499,34 @@ export default function Sets() {
                     </h3>
                     <p className="warda-perfume-card__notes">{perfume.brand || "Al-Warda"}</p>
 
-                    {/* INTERACTIVE VOLUME SWITCHER FOR SAMPLES */}
-                    {!isSet && (
-                      <div className="warda-card-volumes" onClick={(e) => e.stopPropagation()}>
-                        {SAMPLE_VOLUMES.map((sv) => (
-                          <button
-                            key={sv.key}
-                            type="button"
-                            className={`warda-card-vol-pill ${activeVol === sv.key ? "active" : ""}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCardVolumes((prev) => ({ ...prev, [perfume.id]: sv.key }));
-                              handleCardClick(perfume, sv.key);
-                            }}
-                            title={`${formatVolume(sv.labelEn || sv.key, language)} — ${getLocalizedSampleDesc(sv.key, language)}`}
-                          >
-                            {formatVolume(sv.labelEn || sv.key, language)}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
                     <div className="warda-perfume-card__price">
-                      {formatPrice(currentPrice)}
+                      {formatPrice(perfume.price)}
                     </div>
                   </div>
 
                   <div className="warda-perfume-card__action">
-                    {(() => {
-                      const inCart = isInCart(perfume, isSet ? "full" : activeVol);
-                      return (
-                        <button
-                          type="button"
-                          className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
-                          onClick={(e) => handleAddToCartItem(perfume, activeVol, e)}
-                          aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
-                          title={inCart ? t("featured.remove") : undefined}
-                        >
-                          {inCart ? (
-                            <>
-                              <span className="warda-btn__text-normal">
-                                {isSet ? t("featured.inBag") : `${t("featured.inBag").replace("✓", "").trim()} (${volLabel}) ✓`}
-                              </span>
-                              <span className="warda-btn__text-hover">
-                                {t("featured.remove")}
-                              </span>
-                            </>
-                          ) : isAdded ? (
-                            t("featured.added")
-                          ) : isSet ? (
-                            t("featured.addToCart")
-                          ) : (
-                            `${t("featured.addToCart")} (${volLabel})`
-                          )}
-                        </button>
-                      );
-                    })()}
+                    <button
+                      type="button"
+                      className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
+                      onClick={(e) => handleAddToCartItem(perfume, e)}
+                      aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                      title={inCart ? t("featured.remove") : undefined}
+                    >
+                      {inCart ? (
+                        <>
+                          <span className="warda-btn__text-normal">
+                            {t("featured.inBag")}
+                          </span>
+                          <span className="warda-btn__text-hover">
+                            {t("featured.remove")}
+                          </span>
+                        </>
+                      ) : isAdded ? (
+                        t("featured.added")
+                      ) : (
+                        t("featured.addToCart")
+                      )}
+                    </button>
                   </div>
                 </OrnateCard>
               );
