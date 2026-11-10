@@ -62,12 +62,12 @@ export default function CurrencyProvider({ children }) {
   };
 
   // Rule: when switching to Hungarian (hu) or Romanian (ro), currency must automatically become leu (RON)
-  // Rule: when switching to English (en), Bulgarian (bg) or Greek (el), default currency is Euro (EUR)
+  // Rule: when switching to Russian (ru), English (en), Bulgarian (bg) or Greek (el), default currency is Euro (EUR)
   useEffect(() => {
     if ((language === "hu" || language === "ro") && prevLangRef.current !== language) {
       setCurrency("RON");
     } else if (
-      (language === "en" || language === "bg" || language === "el") &&
+      (language === "ru" || language === "en" || language === "bg" || language === "el") &&
       prevLangRef.current !== language
     ) {
       setCurrency("EUR");

@@ -115,7 +115,7 @@ test("Language to default currency switching rule works correctly", () => {
     if ((lang === "hu" || lang === "ro") && prevLang !== lang) {
       return "RON";
     }
-    if ((lang === "en" || lang === "bg" || lang === "el") && prevLang !== lang) {
+    if ((lang === "ru" || lang === "en" || lang === "bg" || lang === "el") && prevLang !== lang) {
       return "EUR";
     }
     return currentCurrency;
@@ -123,6 +123,12 @@ test("Language to default currency switching rule works correctly", () => {
 
   // Switching from Russian to Hungarian sets RON
   assert.equal(getAutoCurrencyForLanguage("hu", "ru", "EUR"), "RON");
+
+  // Switching from Romanian to Russian sets EUR
+  assert.equal(getAutoCurrencyForLanguage("ru", "ro", "RON"), "EUR");
+
+  // Switching from Hungarian to Russian sets EUR
+  assert.equal(getAutoCurrencyForLanguage("ru", "hu", "RON"), "EUR");
 
   // Switching from English to Romanian sets RON
   assert.equal(getAutoCurrencyForLanguage("ro", "en", "EUR"), "RON");
@@ -132,6 +138,9 @@ test("Language to default currency switching rule works correctly", () => {
 
   // Staying on Romanian keeps RON
   assert.equal(getAutoCurrencyForLanguage("ro", "ro", "RON"), "RON");
+
+  // Staying on Russian keeps EUR
+  assert.equal(getAutoCurrencyForLanguage("ru", "ru", "EUR"), "EUR");
 
   // Switching from Romanian to English sets EUR
   assert.equal(getAutoCurrencyForLanguage("en", "ro", "RON"), "EUR");
