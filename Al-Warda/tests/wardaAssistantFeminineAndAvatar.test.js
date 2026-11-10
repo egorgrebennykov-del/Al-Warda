@@ -766,3 +766,25 @@ test("translateWardaDialog translates conversation history when user switches la
   assert.ok(result.translations[0].content.toLowerCase().includes("vanilla"));
   assert.ok(result.translations[1].content.includes("Afnan") || result.translations[1].content.includes("24"));
 });
+
+test("formatTextWithCurrency dynamically formats assistant recommendation prices to active currency", async () => {
+  const { formatTextWithCurrency } = await import("../server/wardaAssistantService.js");
+
+  const assistantMessage = "Подобрала для вас изысканный аромат «Afnan Souvenir Floral Bouquet» (24.09\u00A0€). Также доступны пробники от 3.50–12.00\u00A0€!";
+
+  // 1. Without formatPriceFn (fallback/default EUR)
+  const defaultText = formatTextWithCurrency(assistantMessage);
+  assert.ok(defaultText.includes("24.09\u00A0€"));
+
+  // 2. Format to RON (Romanian Leu)
+  const formatRon = (eur) => `${(eur * 5.343).toFixed(2)} lei`;
+  const ronText = formatTextWithCurrency(assistantMessage, formatRon);
+  assert.ok(ronText.includes("128.71 lei"));
+  assert.ok(ronText.includes("18.70 lei – 64.12 lei"));
+
+  // 3. Format to HUF (Hungarian Forint)
+  const formatHuf = (eur) => `${Math.round(eur * 362.99)} Fr`;
+  const hufText = formatTextWithCurrency(assistantMessage, formatHuf);
+  assert.ok(hufText.includes("8744 Fr") || hufText.includes("8 744 Fr"));
+  assert.ok(hufText.includes("1270 Fr – 4356 Fr") || hufText.includes("1 270 Fr – 4 356 Fr"));
+});

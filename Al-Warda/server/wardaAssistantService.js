@@ -1022,6 +1022,35 @@ export function capitalizeReligionNames(text) {
   return res;
 }
 
+
+export function formatTextWithCurrency(text, formatPriceFn) {
+  if (!text || typeof text !== "string") return text;
+  if (typeof formatPriceFn !== "function") return text;
+
+  const splitRegex = /(\d+(?:[.,]\d+)?\s*[-–—]\s*\d+(?:[.,]\d+)?\u00A0€|\d+(?:[.,]\d+)?\u00A0€)/gu;
+  return text
+    .split(splitRegex)
+    .map((part) => {
+      const rangeMatch = part.match(/^(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\u00A0€$/u);
+      if (rangeMatch) {
+        const p1 = parseFloat(rangeMatch[1].replace(",", "."));
+        const p2 = parseFloat(rangeMatch[2].replace(",", "."));
+        return !isNaN(p1) && !isNaN(p2)
+          ? `${formatPriceFn(p1)} – ${formatPriceFn(p2)}`
+          : part;
+      }
+
+      const singleMatch = part.match(/^(\d+(?:[.,]\d+)?)\u00A0€$/u);
+      if (singleMatch) {
+        const p = parseFloat(singleMatch[1].replace(",", "."));
+        return !isNaN(p) ? formatPriceFn(p) : part;
+      }
+
+      return part;
+    })
+    .join("");
+}
+
 export function formatAssistantSpeech(content) {
   if (!content || typeof content !== "string") return "";
 

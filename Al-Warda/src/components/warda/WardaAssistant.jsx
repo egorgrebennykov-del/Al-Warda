@@ -68,13 +68,37 @@ export function formatAssistantSpeech(content) {
   return text.trim();
 }
 
+export function formatTextWithCurrency(text, formatPriceFn) {
+  if (!text || typeof text !== "string") return text;
+  if (typeof formatPriceFn !== "function") return text;
+  const splitRegex = /(\d+(?:[.,]\d+)?\s*[-–—]\s*\d+(?:[.,]\d+)?\u00A0€|\d+(?:[.,]\d+)?\u00A0€)/gu;
+  return text
+    .split(splitRegex)
+    .map((part) => {
+      const rangeMatch = part.match(/^(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\u00A0€$/u);
+      if (rangeMatch) {
+        const p1 = parseFloat(rangeMatch[1].replace(",", "."));
+        const p2 = parseFloat(rangeMatch[2].replace(",", "."));
+        return !isNaN(p1) && !isNaN(p2) ? `${formatPriceFn(p1)} – ${formatPriceFn(p2)}` : part;
+      }
+      const singleMatch = part.match(/^(\d+(?:[.,]\d+)?)\u00A0€$/u);
+      if (singleMatch) {
+        const p = parseFloat(singleMatch[1].replace(",", "."));
+        return !isNaN(p) ? formatPriceFn(p) : part;
+      }
+      return part;
+    })
+    .join("");
+}
+
 export function renderFormattedAssistantText(text) {
   if (!text || typeof text !== "string") return text;
-  // Match formatted prices (e.g. "24.09 €" or "24 €" with nbsp) to wrap in an unbreakable inline tag
-  const parts = text.split(/(\d+(?:[.,]\d+)?\u00A0€)/gu);
+  // Match formatted prices in EUR (€), RON (lei), or HUF (Fr)
+  const priceRegex = /(\d+(?:[.,]\d+)?\s*(?:\u00A0)?(?:€|lei|Fr)\b|€\s*(?:\u00A0)?\d+(?:[.,]\d+)?)/gu;
+  const parts = text.split(priceRegex);
   if (parts.length === 1) return text;
   return parts.map((part, idx) => {
-    if (/^\d+(?:[.,]\d+)?\u00A0€$/u.test(part)) {
+    if (priceRegex.test(part)) {
       return (
         <span key={idx} className="warda-price-tag">
           {part}
@@ -87,7 +111,7 @@ export function renderFormattedAssistantText(text) {
 
 export default function WardaAssistant() {
   const { language, t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { currency, formatPrice } = useCurrency();
   const confirm = useConfirm();
   const customAlert = useAlert();
   const navigate = useNavigate();
@@ -121,6 +145,21 @@ export default function WardaAssistant() {
   // Initialize messages from sessionStorage or default welcome
   const [messages, setMessages] = useState(() => {
     try {
+      const savedLang = sessionStorage.getItem(DIALOG_LANG_KEY);
+      if (savedLang && savedLang !== language) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.setItem(DIALOG_LANG_KEY, language);
+        return [
+          {
+            id: "msg-welcome",
+            role: "assistant",
+            content: t("assistant.welcome"),
+            emotion: "greeting",
+            timestamp: getNowIso(),
+            books: [],
+          },
+        ];
+      }
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -151,10 +190,8 @@ export default function WardaAssistant() {
   }, [messages]);
 
   // Track which language the current dialog is written in
-  const [isTranslating, setIsTranslating] = useState(false);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
-  const translateRequestRef = useRef(0);
   const dialogLanguageRef = useRef(
     (() => {
       try {
@@ -165,79 +202,32 @@ export default function WardaAssistant() {
     })(),
   );
 
-  // When the interface language changes, translate the whole dialog via Gemini
+  // When the interface language changes, restart the dialogue from scratch in the new language
   useEffect(() => {
     if (dialogLanguageRef.current === language) return;
-    const targetLanguage = language;
-    const requestId = ++translateRequestRef.current;
-    const current = messagesRef.current;
-    const hasUserMessages = current.some((m) => m.role === "user");
-
-    const finish = () => {
-      dialogLanguageRef.current = targetLanguage;
-      try {
-        sessionStorage.setItem(DIALOG_LANG_KEY, targetLanguage);
-      } catch {
-        // Ignore sessionStorage errors
-      }
-    };
-
-    // Fresh dialog with only the welcome message: swap it locally, no API call needed
-    if (!hasUserMessages) {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.role === "assistant" ? { ...m, content: t("assistant.welcome") } : m,
-        ),
-      );
-      finish();
-      return;
+    dialogLanguageRef.current = language;
+    try {
+      sessionStorage.setItem(DIALOG_LANG_KEY, language);
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore sessionStorage errors
     }
 
-    const toTranslate = current
-      .filter((m) => typeof m.content === "string" && m.content.trim())
-      .map((m) => ({ id: m.id, content: m.content }));
-
-    setIsTranslating(true);
-    fetch("/api/warda-translate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ messages: toTranslate, targetLanguage }),
-    })
-      .then((res) => (res.ok ? res.json() : { translations: [] }))
-      .catch(async () => {
-        // Local dev fallback: call the service directly
-        try {
-          const { translateWardaDialog } = await import(
-            "../../../server/wardaAssistantService"
-          );
-          return await translateWardaDialog({ messages: toTranslate, targetLanguage });
-        } catch {
-          return { translations: [] };
-        }
-      })
-      .then((data) => {
-        if (requestId !== translateRequestRef.current) return;
-        const map = new Map(
-          (Array.isArray(data?.translations) ? data.translations : []).map((tr) => [
-            tr.id,
-            tr.content,
-          ]),
-        );
-        if (map.size > 0) {
-          // Only message texts change — book cards, URLs and links stay exactly the same
-          setMessages((prev) =>
-            prev.map((m) => (map.has(m.id) ? { ...m, content: map.get(m.id) } : m)),
-          );
-          finish();
-        }
-      })
-      .finally(() => {
-        if (requestId === translateRequestRef.current) {
-          setIsTranslating(false);
-        }
-      });
+    setMessages([
+      {
+        id: generateId("msg"),
+        role: "assistant",
+        content: t("assistant.welcome"),
+        emotion: "greeting",
+        timestamp: getNowIso(),
+        books: [],
+      },
+    ]);
+    setEmotion("greeting");
+    setExpandedMsgIds(new Set());
+    setInput("");
+    setIsExpanded(false);
   }, [language, t]);
-
   // Scroll to bottom on new messages
   useEffect(() => {
     if (isOpen) {
@@ -402,7 +392,7 @@ export default function WardaAssistant() {
 
   const handleSendMessage = async (textToSend) => {
     const queryText = (textToSend || input).trim();
-    if (!queryText || loading || isTranslating) return;
+    if (!queryText || loading) return;
 
     setInput("");
     setIsExpanded(false);
@@ -845,7 +835,7 @@ export default function WardaAssistant() {
                       >
                         <p className="warda-msg-text">
                           {msg.role === "assistant"
-                            ? renderFormattedAssistantText(formatAssistantSpeech(msg.content))
+                            ? renderFormattedAssistantText(formatTextWithCurrency(formatAssistantSpeech(msg.content), formatPrice))
                             : msg.content}
                         </p>
 
