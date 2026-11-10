@@ -59,6 +59,31 @@ class ProductImageGenerationTests(unittest.TestCase):
                 pool.generate("session", b"source")
             self.assertEqual(generate.call_count, 1)
 
+    def test_account_pool_record_limit_updates_limited_at_on_all_branches(self):
+        accounts = [("primary", "id-0", "token-0")]
+        now1 = datetime(2026, 11, 10, 12, 0, 0, tzinfo=timezone.utc)
+        pool1 = queue.ImageAccountPool(accounts, persist_quotas=True)
+        pool1.record_limit("primary", now=now1)
+        quotas1 = pool1.export_quotas()
+        self.assertEqual(quotas1["primary"]["limitedAt"], now1.isoformat())
+        self.assertEqual(quotas1["primary"]["availableAt"], (now1 + timedelta(hours=24)).isoformat())
+
+        now2 = datetime(2026, 11, 11, 12, 5, 0, tzinfo=timezone.utc)
+        pool2 = queue.ImageAccountPool(accounts, quotas=quotas1, persist_quotas=True)
+        pool2.record_limit("primary", now=now2)
+        quotas2 = pool2.export_quotas()
+        self.assertEqual(quotas2["primary"]["limitedAt"], now2.isoformat())
+        self.assertEqual(quotas2["primary"]["availableAt"], (now2 + timedelta(minutes=30)).isoformat())
+
+        now3 = datetime(2026, 11, 11, 13, 0, 0, tzinfo=timezone.utc)
+        pool3 = queue.ImageAccountPool(accounts, quotas=quotas2, persist_quotas=True)
+        pool3.record_success("primary", now=now3)
+        now4 = datetime(2026, 11, 11, 13, 10, 0, tzinfo=timezone.utc)
+        pool3.record_limit("primary", now=now4)
+        quotas3 = pool3.export_quotas()
+        self.assertEqual(quotas3["primary"]["limitedAt"], now4.isoformat())
+        self.assertEqual(quotas3["primary"]["availableAt"], (now4 + timedelta(hours=24)).isoformat())
+
     def test_auto_requires_five_distinct_confirmed_accounts(self):
         environ = {"CLOUDFLARE_IMAGE_ACCOUNT": "auto"}
         for index, (_, (id_key, token_key, free_key)) in enumerate(queue.ACCOUNT_ENV.items()):

@@ -612,8 +612,15 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                   )}
                   {acc.limitedAt && (
                     <div>
-                      <span>{isRussian ? "Лимит исчерпан:" : "Limit reached:"}</span>{" "}
-                      <time dateTime={acc.limitedAt}>{formatDateTime(acc.limitedAt, isRussian)}</time>
+                      <span>
+                        {acc.isAvailable
+                          ? (isRussian ? "Предыдущий лимит:" : "Previous limit:")
+                          : (isRussian ? "Лимит исчерпан:" : "Limit reached:")}
+                      </span>{" "}
+                      <time dateTime={acc.limitedAt}>
+                        {formatDateTime(acc.limitedAt, isRussian)}
+                        {acc.isAvailable && (isRussian ? " (восстановлен)" : " (restored)")}
+                      </time>
                     </div>
                   )}
                 </div>

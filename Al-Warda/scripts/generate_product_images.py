@@ -188,8 +188,8 @@ class ImageAccountPool:
         now_dt = now or utc_now()
         entry = dict(self.quotas.get(name) or {})
         existing_avail = parse_iso_datetime(entry.get("availableAt"))
+        entry["limitedAt"] = now_dt.isoformat()
         if self.generated_in_run.get(name, 0) > 0 or existing_avail is None:
-            entry["limitedAt"] = now_dt.isoformat()
             entry["availableAt"] = (now_dt + timedelta(hours=24)).isoformat()
             entry.pop("partialAvailableAt", None)
         elif now_dt >= existing_avail:
