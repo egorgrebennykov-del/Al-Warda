@@ -7,7 +7,13 @@ const DELETE_WORKFLOW = "product-image-delete.yml";
 const ACTIVE_STATUSES = new Set(["queued", "in_progress", "requested", "waiting", "pending"]);
 
 function json(body, status = 200) {
-  return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
 }
 
 async function github(env, path, options = {}) {

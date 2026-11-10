@@ -122,7 +122,8 @@ function jsonResponse(body, status = 200) {
 
 export default {
   async fetch(request, env, ctx) {
-    syncProcessEnv(env);
+    try {
+      syncProcessEnv(env);
 
     if (request.method.toUpperCase() === "OPTIONS") {
       return new Response(null, {
@@ -361,6 +362,13 @@ export default {
       return response;
     }
 
-    return new Response("Not found", { status: 404 });
+      return new Response("Not found", { status: 404 });
+    } catch (err) {
+      console.error("Worker unhandled fetch error:", err);
+      return jsonResponse({
+        error: err?.message || "Internal server error",
+        code: "INTERNAL_SERVER_ERROR"
+      }, 500);
+    }
   },
 };

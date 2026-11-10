@@ -112,7 +112,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const loadRuns = useCallback(async () => {
     try {
       const response = await fetchActions();
-      if (!response.headers.get("content-type")?.includes("application/json")) {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        if ([502, 503, 504].includes(response.status)) {
+          throw new Error(isRussian
+            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+        }
         throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
       }
       const payload = await response.json();
@@ -154,7 +160,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, count: Number(count), account, regenerateCompleted }),
       });
-      if (!response.headers.get("content-type")?.includes("application/json")) {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        if ([502, 503, 504].includes(response.status)) {
+          throw new Error(isRussian
+            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+        }
         throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
       }
       const payload = await response.json();
@@ -176,7 +188,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       const response = await fetch("/api/admin/product-images/status", {
         credentials: "same-origin",
       });
-      if (!response.headers.get("content-type")?.includes("application/json")) {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        if ([502, 503, 504].includes(response.status)) {
+          throw new Error(isRussian
+            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+        }
         throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
       }
       const payload = await response.json();
@@ -465,7 +483,8 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         </button>
       </div>
       {actionError && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
-        {actionError}
+        <span>{actionError}</span>
+        <button type="button" style={{ marginLeft: "0.5rem", padding: "0.2rem 0.6rem", fontSize: "0.8rem", cursor: "pointer", borderRadius: "4px" }} onClick={() => { loadRuns(); loadStatus(); }}>{isRussian ? "Обновить статус" : "Retry"}</button>
         {needsQogita && onOpenQogita && <button type="button" onClick={onOpenQogita}>{isRussian ? "Открыть Qogita B2B" : "Open Qogita B2B"}</button>}
       </div>}
       {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
@@ -483,7 +502,10 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           ? (isRussian ? " — возможен частичный результат, проверьте журнал" : " — partial results possible, check the log")
           : ""}
       </a>)}
-      {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">{error}</div>}
+      {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
+        <span>{error}</span>
+        <button type="button" style={{ marginLeft: "0.5rem", padding: "0.2rem 0.6rem", fontSize: "0.8rem", cursor: "pointer", borderRadius: "4px" }} onClick={() => { loadRuns(); loadStatus(); }}>{isRussian ? "Обновить статус" : "Retry"}</button>
+      </div>}
       {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
 
       {status && <>
