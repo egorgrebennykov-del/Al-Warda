@@ -74,6 +74,140 @@ function describeErrorSummary(errorText = "", isRussian = true) {
   return null;
 }
 
+function GalleryImageItem({
+  image,
+  isRussian,
+  isSelected,
+  isDisabled,
+  onToggleSelect,
+  onRequeue,
+  onManualConfig,
+}) {
+  const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "raw" | "failed"
+  const rawCandidate = image.rawImage || image.image;
+
+  const [lastImageUrl, setLastImageUrl] = useState(image.imageUrl);
+  if (image.imageUrl !== lastImageUrl) {
+    setLastImageUrl(image.imageUrl);
+    setImgStatus("initial");
+  }
+
+  const currentSrc = imgStatus === "raw" ? rawCandidate : image.imageUrl;
+
+  const handleImageError = () => {
+    if (imgStatus === "initial" && rawCandidate && rawCandidate !== image.imageUrl) {
+      setImgStatus("raw");
+    } else {
+      setImgStatus("failed");
+    }
+  };
+
+  return (
+    <article
+      className={`product-image-queue__gallery-item ${
+        imgStatus === "failed" ? "product-image-queue__gallery-item--failed" : ""
+      }`}
+      key={image.id}
+    >
+      <div className="product-image-queue__gallery-item-header">
+        <label>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            disabled={isDisabled}
+            onChange={onToggleSelect}
+          />
+          {isRussian ? "Выбрать" : "Select"}
+        </label>
+        {imgStatus === "raw" && (
+          <span
+            className="product-image-queue__raw-badge"
+            title={
+              isRussian
+                ? "Сгенерированный файл недоступен, показано исходное фото поставщика"
+                : "Generated file unavailable, showing supplier photo"
+            }
+          >
+            <i className="ri-camera-lens-line" />
+            {isRussian ? "Исходное фото" : "Raw photo"}
+          </span>
+        )}
+      </div>
+
+      <div className="product-image-queue__gallery-thumb-wrap">
+        {imgStatus === "failed" ? (
+          <div
+            className="product-image-queue__gallery-placeholder"
+            title={
+              isRussian
+                ? "Файл изображения недоступен или ещё не опубликован"
+                : "Image file unavailable or still publishing"
+            }
+          >
+            <i className="ri-image-broken-line" />
+            <span className="product-image-queue__broken-badge">
+              <i className="ri-error-warning-line" />
+              {isRussian ? "Файл недоступен" : "Image missing"}
+            </span>
+            <span className="product-image-queue__broken-hint">
+              {isRussian ? "Файл не опубликован или удалён" : "Not published or missing"}
+            </span>
+          </div>
+        ) : (
+          <a href={currentSrc} target="_blank" rel="noopener noreferrer">
+            <img
+              src={currentSrc}
+              alt={image.name || (isRussian ? "Изображение товара" : "Product image")}
+              loading="lazy"
+              onError={handleImageError}
+            />
+          </a>
+        )}
+      </div>
+
+      <strong>{image.name || (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}</strong>
+      {image.brand && <span>{image.brand}</span>}
+      {image.completedAt ? (
+        <time dateTime={image.completedAt}>
+          {new Date(image.completedAt).toLocaleString(isRussian ? "ru-RU" : "en-US", {
+            dateStyle: "medium",
+            timeStyle: "medium",
+          })}
+        </time>
+      ) : (
+        <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>
+      )}
+
+      {imgStatus === "failed" && (
+        <div className="product-image-queue__gallery-item-actions">
+          <button
+            type="button"
+            className="product-image-queue__gallery-btn"
+            onClick={() => onRequeue(image.id)}
+            title={
+              isRussian
+                ? "Вернуть в очередь для повторной генерации"
+                : "Return to queue for regeneration"
+            }
+          >
+            <i className="ri-refresh-line" />
+            {isRussian ? "В ожидание" : "To pending"}
+          </button>
+          <button
+            type="button"
+            className="product-image-queue__gallery-btn"
+            onClick={() => onManualConfig(image)}
+            title={isRussian ? "Настроить вручную и загрузить фото" : "Manual setup and photo upload"}
+          >
+            <i className="ri-settings-3-line" />
+            {isRussian ? "Настроить" : "Manual setup"}
+          </button>
+        </div>
+      )}
+    </article>
+  );
+}
+
 export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const isRussian = language === "ru";
   const [status, setStatus] = useState(null);
@@ -848,30 +982,27 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           <p>{isRussian ? "Можно удалить до 400 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления." : "Delete up to 400 site-hosted images at a time. Wait for generation or the previous deletion to finish."}</p>
           <div className="product-image-queue__gallery-grid">
             {status.images.slice(0, visibleImages).map((image) => (
-              <article className="product-image-queue__gallery-item" key={image.id}>
-                <label>
-                  <input type="checkbox" checked={selectedImages[image.id] === image.imageUrl}
-                    disabled={!/^\d{1,20}$/.test(String(image.id)) || !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl)}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setSelectedImages((current) => {
-                        const next = { ...current };
-                        if (checked) next[image.id] = image.imageUrl;
-                        else delete next[image.id];
-                        return next;
-                      });
-                    }} />
-                  {isRussian ? "Выбрать" : "Select"}
-                </label>
-                <a href={image.imageUrl} target="_blank" rel="noopener noreferrer">
-                  <img src={image.imageUrl} alt={image.name || (isRussian ? "Изображение товара" : "Product image")} loading="lazy" />
-                </a>
-                <strong>{image.name || (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}</strong>
-                {image.brand && <span>{image.brand}</span>}
-                {image.completedAt
-                  ? <time dateTime={image.completedAt}>{new Date(image.completedAt).toLocaleString(isRussian ? "ru-RU" : "en-US", { dateStyle: "medium", timeStyle: "medium" })}</time>
-                  : <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>}
-              </article>
+              <GalleryImageItem
+                key={image.id}
+                image={image}
+                isRussian={isRussian}
+                isSelected={selectedImages[image.id] === image.imageUrl}
+                isDisabled={
+                  !/^\d{1,20}$/.test(String(image.id)) ||
+                  !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl)
+                }
+                onToggleSelect={(e) => {
+                  const checked = e.target.checked;
+                  setSelectedImages((current) => {
+                    const next = { ...current };
+                    if (checked) next[image.id] = image.imageUrl;
+                    else delete next[image.id];
+                    return next;
+                  });
+                }}
+                onRequeue={(id) => requeueFailed([id])}
+                onManualConfig={(item) => setManualConfigItem(item)}
+              />
             ))}
           </div>
           {visibleImages < status.images.length && <button type="button" className="product-image-queue__start" onClick={() => setVisibleImages((count) => count + 24)}>

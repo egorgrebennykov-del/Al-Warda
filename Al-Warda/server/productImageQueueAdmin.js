@@ -280,7 +280,18 @@ export async function getProductImageQueueStatus(request, env) {
           (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
         const completedAt = typeof job.completedAt === "string" && Number.isFinite(Date.parse(job.completedAt))
           ? job.completedAt : null;
-        images.push({ id: row.id, name: row.name, brand: row.brand, imageUrl, completedAt });
+        images.push({
+          id: row.id,
+          name: row.name,
+          brand: row.brand,
+          price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+          currency: row.currency || info.currency || "EUR",
+          image: row.image || null,
+          imageUrl,
+          rawImage: typeof info.rawImage === "string" ? info.rawImage : (typeof row.image === "string" ? row.image : null),
+          info,
+          completedAt,
+        });
       }
       if (!hasRawImage(info)) continue;
       eligible++;
@@ -377,12 +388,8 @@ export async function requeueFailedProductItems(request, env) {
       const rows = await result.json();
       for (const row of rows) {
         const info = row.info && typeof row.info === "object" ? { ...row.info } : {};
-        if (info.imageGeneration?.status === "failed") {
-          info.imageGeneration = { status: "pending" };
-        }
-        if (info.imageGenerationReplacement?.status === "failed") {
-          delete info.imageGenerationReplacement;
-        }
+        info.imageGeneration = { status: "pending" };
+        delete info.imageGenerationReplacement;
         const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
         patchUrl.searchParams.set("id", `eq.${row.id}`);
         const patch = await fetch(patchUrl, {
