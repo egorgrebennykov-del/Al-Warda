@@ -582,3 +582,31 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
   );
 });
 
+test("samples page defaults to minimum available sample volume (1ml) when multiple sample sizes are available", async () => {
+  const { SAMPLE_VOLUMES, getSamplePrice, isDecantablePerfume } = await import("../utils/perfumes.js");
+
+  // Sample volumes list order and keys
+  assert.ok(SAMPLE_VOLUMES.length >= 3);
+  const minVol = SAMPLE_VOLUMES.reduce((min, cur) => cur.ml < min.ml ? cur : min, SAMPLE_VOLUMES[0]);
+  assert.equal(minVol.key, "1ml");
+  assert.equal(minVol.ml, 1);
+
+  // Price for minimum volume (1ml) is lower than 5ml and 10ml
+  const price1ml = getSamplePrice(35, "1ml");
+  const price2ml = getSamplePrice(35, "2ml");
+  const price5ml = getSamplePrice(35, "5ml");
+  const price10ml = getSamplePrice(35, "10ml");
+
+  assert.ok(price1ml < price2ml);
+  assert.ok(price2ml < price5ml);
+  assert.ok(price5ml < price10ml);
+
+  // Default volume selection on samples page when selectedVolume filter is "all"
+  const selectedVolume = "all";
+  const defaultVol = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
+    ? selectedVolume
+    : (SAMPLE_VOLUMES[0]?.key || "1ml");
+  assert.equal(defaultVol, "1ml");
+});
+
+

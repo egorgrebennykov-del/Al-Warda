@@ -175,7 +175,9 @@ export default function Sets() {
     }
 
     // Sort items
-    const volForSort = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume) ? selectedVolume : "10ml";
+    const volForSort = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
+      ? selectedVolume
+      : (SAMPLE_VOLUMES[0]?.key || "1ml");
     if (sortBy === "price-asc") {
       result.sort((a, b) => {
         const isSetA = isPerfumeSet(a);
@@ -469,7 +471,7 @@ export default function Sets() {
               const isSet = isPerfumeSet(perfume);
               const defaultVol = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
                 ? selectedVolume
-                : "10ml";
+                : (SAMPLE_VOLUMES[0]?.key || "1ml");
               const activeVol = cardVolumes[perfume.id] || defaultVol;
               const sampleCfg = !isSet
                 ? SAMPLE_VOLUMES.find((v) => v.key === activeVol) || SAMPLE_VOLUMES[0]
