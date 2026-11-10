@@ -687,7 +687,7 @@
    VOLUME & SAMPLE FORMAT SELECTOR (FULL BOTTLE OR 1ml, 2ml, 5ml, 10ml)
    ------------------------------------------------------------- */
 .warda-details-volumes {
-  margin: 0.85rem 0 1.25rem;
+  margin: 0.85rem 0 0.75rem;
   padding: 0;
   background: transparent;
   border: none;
@@ -754,7 +754,7 @@
 
 @media (max-width: 680px) {
   .warda-details-volumes {
-    margin: 0.7rem 0 1rem;
+    margin: 0.6rem 0 0.6rem;
   }
   .warda-details-volume-pills {
     gap: 0.4rem;
