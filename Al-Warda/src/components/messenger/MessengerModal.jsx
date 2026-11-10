@@ -409,7 +409,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   : "Al-Warda Customer Support"}
               </h3>
               <p className="warda-messenger-subtitle">
-                {adminName} • {language === "ru" ? "в сети" : "online"}
+                <span className="warda-messenger-online-text">
+                  {language === "ru" ? "Администратор на связи" : "Administrator online"}
+                </span>
               </p>
             </div>
           </div>
@@ -595,7 +597,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                       >
                         {!isUser && (
                           <div className="inquiry-msg-sender">
-                            {msg.senderName || adminName}
+                            {language === "ru" ? "Администратор" : "Administrator"}
                           </div>
                         )}
                         <div className="inquiry-msg-text">{msg.text}</div>
@@ -810,8 +812,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   </h4>
                   <p>
                     {language === "ru"
-                      ? `Текущий специалист: ${adminName}`
-                      : `Current specialist: ${adminName}`}
+                      ? "Диалог со службой поддержки"
+                      : "Support dialogue"}
                   </p>
                 </div>
                 <button

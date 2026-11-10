@@ -1,4 +1,7 @@
-/* Al-Warda Messenger Styles */
+/* ==========================================================================
+   AL-WARDA MESSENGER & LIVE SUPPORT MODAL STYLES
+   Theme: Royal Obsidian & Golden Luxury, matching the Al-Warda Brand
+   ========================================================================== */
 
 .warda-messenger-overlay {
   position: fixed;
@@ -10,10 +13,10 @@
   justify-content: flex-end;
   align-items: flex-end;
   padding-right: 24px;
-  padding-bottom: 165px; /* Appears vertically above the AI assistant button and tooltip */
+  padding-bottom: 24px;
   padding-left: 20px;
   padding-top: 20px;
-  animation: wardaFadeIn 0.2s ease-out;
+  animation: wardaFadeIn 0.25s ease-out;
 }
 
 @keyframes wardaFadeIn {
@@ -27,20 +30,22 @@
 
 .warda-messenger-container {
   pointer-events: auto;
-  width: 380px;
+  width: 395px;
   max-width: calc(100vw - 32px);
-  height: 520px;
-  max-height: calc(100vh - 195px);
-  background: var(--body-color, #ffffff);
-  border-radius: 20px;
+  height: 580px;
+  max-height: calc(100vh - 48px);
+  background: #0d0a08;
+  border-radius: 22px;
   box-shadow:
-    0 16px 36px -8px rgba(0, 0, 0, 0.22),
-    0 0 1px 1px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--border-color, #e2e8f0);
+    0 25px 60px rgba(0, 0, 0, 0.95),
+    0 0 35px rgba(212, 175, 55, 0.2),
+    inset 0 0 1px 1px rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: wardaSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+  animation: wardaSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes wardaSlideUp {
@@ -56,15 +61,16 @@
 
 /* Header */
 .warda-messenger-header {
-  padding: 14px 18px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  color: #ffffff;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(20, 15, 11, 0.98) 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  color: #f3e5ab;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top-left-radius: 19px;
-  border-top-right-radius: 19px;
-  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
+  border-top-left-radius: 21px;
+  border-top-right-radius: 21px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .warda-messenger-admin-info {
@@ -75,44 +81,69 @@
 
 .warda-messenger-avatar {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at center, #2e2316 0%, #15100a 70%, #0d0a08 100%);
+  border: 1.5px solid #e5c07b;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  color: #ffffff;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #e5c07b;
+  flex-shrink: 0;
 }
 
 .warda-messenger-online-dot {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 11px;
-  height: 11px;
-  background-color: #22c55e;
-  border: 2px solid #ffffff;
+  width: 10px;
+  height: 10px;
+  background-color: #2ed573;
+  border: 2px solid #0d0a08;
   border-radius: 50%;
+  box-shadow: 0 0 6px #2ed573;
 }
 
 .warda-messenger-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
   margin: 0;
-  line-height: 1.2;
-  color: #ffffff;
+  line-height: 1.25;
+  color: #f3e5ab;
+  text-transform: uppercase;
 }
 
 .warda-messenger-subtitle {
-  font-size: 12px;
+  font-size: 0.74rem;
   margin: 2px 0 0 0;
-  color: rgba(255, 255, 255, 0.85);
+  color: #a69882;
+  letter-spacing: 0.03em;
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.warda-messenger-online-text {
+  color: #2ed573;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
+}
+
+.warda-messenger-online-text::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #2ed573;
+  box-shadow: 0 0 4px #2ed573;
 }
 
 .warda-messenger-header-actions {
@@ -126,12 +157,12 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: #f3e5ab;
   padding: 4px 10px;
   border-radius: 14px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -139,75 +170,81 @@
 }
 
 .warda-messenger-history-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(212, 175, 55, 0.24);
+  color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
 }
 
 .warda-messenger-history-btn i {
-  font-size: 13px;
+  font-size: 12px;
+  color: #e5c07b;
 }
 
 .warda-messenger-close-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   width: 32px;
   height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #f3e5ab;
   font-size: 18px;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    transform 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
 }
 
 .warda-messenger-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(212, 175, 55, 0.25);
+  color: #ffffff;
   transform: scale(1.05);
 }
 
-/* Guest Form */
+/* Guest Identification Form */
 .warda-messenger-guest-form {
-  padding: 24px 20px;
+  padding: 26px 22px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   height: 100%;
   box-sizing: border-box;
-  background: var(--container-color, #ffffff);
+  background: #0d0a08;
 }
 
 .warda-messenger-guest-intro {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .warda-messenger-guest-icon {
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.1);
-  color: #4f46e5;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(20, 15, 10, 0.9) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  color: #e5c07b;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 26px;
   margin: 0 auto 12px auto;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
 }
 
 .warda-messenger-guest-intro h4 {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--title-color, #1e293b);
-  margin: 0 0 6px 0;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #f3e5ab;
+  margin: 0 0 8px 0;
 }
 
 .warda-messenger-guest-intro p {
-  font-size: 13px;
-  color: var(--text-color, #64748b);
+  font-size: 0.84rem;
+  color: #a69882;
   line-height: 1.5;
   margin: 0;
 }
@@ -219,37 +256,41 @@
 
 .warda-messenger-field label {
   display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--title-color, #334155);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin-bottom: 6px;
 }
 
 .warda-messenger-field input {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color, #cbd5e1);
-  background: var(--body-color, #ffffff);
-  color: var(--title-color, #1e293b);
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: #14100c;
+  color: #f5eedc;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .warda-messenger-field input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: #d4af37;
+  background: #1a1510;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
 }
 
 .warda-messenger-error {
   font-size: 12px;
-  color: #ef4444;
-  margin-bottom: 12px;
-  background: #fef2f2;
+  color: #ff6b6b;
+  margin-bottom: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .warda-messenger-submit-btn {
@@ -258,19 +299,22 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #4f46e5;
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   border: none;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 13px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .warda-messenger-submit-btn:hover {
-  background: #4338ca;
+  background: linear-gradient(135deg, #e5c07b 0%, #c59b27 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
 }
 
 /* Chat Body */
@@ -279,28 +323,38 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  background: var(--container-color, #ffffff);
+  background: #0d0a08;
 }
 
 .warda-messenger-guest-banner {
-  background: rgba(99, 102, 241, 0.08);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  background: rgba(212, 175, 55, 0.08);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   padding: 6px 14px;
   font-size: 11px;
-  color: #4f46e5;
+  color: #f3e5ab;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+.warda-messenger-guest-banner i {
+  color: #d4af37;
+  margin-right: 4px;
+}
+
 .warda-messenger-change-email-btn {
   background: none;
   border: none;
-  color: #4f46e5;
+  color: #d4af37;
   text-decoration: underline;
   font-size: 11px;
   cursor: pointer;
   padding: 0;
+  transition: color 0.15s ease;
+}
+
+.warda-messenger-change-email-btn:hover {
+  color: #f3e5ab;
 }
 
 /* Messages container */
@@ -308,29 +362,44 @@
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+}
+
+.warda-messenger-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.warda-messenger-messages::-webkit-scrollbar-thumb {
+  background-color: rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
 }
 
 .warda-messenger-loading,
 .warda-messenger-empty {
   margin: auto;
   text-align: center;
-  color: var(--text-color, #64748b);
+  color: #a69882;
   padding: 24px 16px;
 }
 
 .warda-messenger-empty-icon {
-  font-size: 36px;
-  color: #a5b4fc;
-  margin-bottom: 8px;
+  font-size: 38px;
+  color: #d4af37;
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4));
+  margin-bottom: 10px;
 }
 
 .warda-messenger-empty p {
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
+  color: #a69882;
   margin: 0;
+  max-width: 290px;
 }
 
 .inquiry-msg-row {
@@ -362,25 +431,26 @@
   align-items: center !important;
   gap: 6px !important;
   padding: 4px 12px !important;
-  background-color: rgba(79, 70, 229, 0.08) !important;
-  border: 1px solid rgba(79, 70, 229, 0.2) !important;
+  background-color: rgba(212, 175, 55, 0.08) !important;
+  border: 1px solid rgba(212, 175, 55, 0.25) !important;
   border-radius: 16px !important;
   font-size: 11.5px !important;
-  color: #4f46e5 !important;
+  color: #f3e5ab !important;
   text-align: center !important;
   line-height: 1.4 !important;
 }
 
 .inquiry-msg-system-badge i {
   font-size: 13px !important;
+  color: #e5c07b !important;
 }
 
 .inquiry-msg-bubble {
   max-width: 82% !important;
   padding: 10px 14px !important;
-  border-radius: 16px !important;
+  border-radius: 18px !important;
   font-size: 13.5px !important;
-  line-height: 1.45 !important;
+  line-height: 1.5 !important;
   word-break: normal !important;
   overflow-wrap: break-word !important;
   position: relative !important;
@@ -390,13 +460,14 @@
 .inquiry-msg-row--user .inquiry-msg-bubble {
   margin-left: auto !important;
   margin-right: 0 !important;
-  background: #4f46e5 !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%) !important;
+  color: #0d0a08 !important;
+  font-weight: 500 !important;
   border-bottom-right-radius: 4px !important;
-  border-bottom-left-radius: 16px !important;
-  border-top-right-radius: 16px !important;
-  border-top-left-radius: 16px !important;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+  border-bottom-left-radius: 18px !important;
+  border-top-right-radius: 18px !important;
+  border-top-left-radius: 18px !important;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3) !important;
   word-break: normal !important;
   overflow-wrap: anywhere !important;
 }
@@ -404,13 +475,14 @@
 .inquiry-msg-row--admin .inquiry-msg-bubble {
   margin-right: auto !important;
   margin-left: 0 !important;
-  background: var(--body-color, #f1f5f9) !important;
-  color: var(--title-color, #1e293b) !important;
-  border: 1px solid var(--border-color, #e2e8f0) !important;
+  background: #19140e !important;
+  color: #f5eedc !important;
+  border: 1px solid rgba(212, 175, 55, 0.28) !important;
   border-bottom-left-radius: 4px !important;
-  border-bottom-right-radius: 16px !important;
-  border-top-right-radius: 16px !important;
-  border-top-left-radius: 16px !important;
+  border-bottom-right-radius: 18px !important;
+  border-top-right-radius: 18px !important;
+  border-top-left-radius: 18px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
   word-break: normal !important;
   overflow-wrap: break-word !important;
 }
@@ -418,8 +490,10 @@
 .inquiry-msg-sender {
   font-size: 11px !important;
   font-weight: 700 !important;
-  color: #6366f1 !important;
+  letter-spacing: 0.05em;
+  color: #e5c07b !important;
   margin-bottom: 4px !important;
+  text-transform: uppercase !important;
 }
 
 .inquiry-msg-text {
@@ -457,10 +531,10 @@
   justify-content: center !important;
   margin: 4px auto 2px auto !important;
   padding: 2px 14px !important;
-  background: rgba(255, 255, 255, 0.18) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: rgba(13, 10, 8, 0.16) !important;
+  border: 1px solid rgba(13, 10, 8, 0.3) !important;
   border-radius: 10px !important;
-  color: #ffffff !important;
+  color: #0d0a08 !important;
   cursor: pointer !important;
   font-size: 1.15rem !important;
   line-height: 1 !important;
@@ -471,18 +545,18 @@
 }
 
 .inquiry-msg-row--admin .inquiry-msg-expand-btn {
-  background: rgba(99, 102, 241, 0.1) !important;
-  border-color: rgba(99, 102, 241, 0.2) !important;
-  color: #4f46e5 !important;
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+  color: #f3e5ab !important;
 }
 
 .inquiry-msg-expand-btn:hover {
   transform: translateY(1px) !important;
-  background: rgba(255, 255, 255, 0.32) !important;
 }
 
 .inquiry-msg-row--admin .inquiry-msg-expand-btn:hover {
-  background: rgba(99, 102, 241, 0.2) !important;
+  background: rgba(212, 175, 55, 0.22) !important;
+  color: #ffffff !important;
 }
 
 .inquiry-msg-meta {
@@ -495,30 +569,28 @@
 
 .inquiry-msg-time {
   font-size: 10px !important;
-  opacity: 0.75 !important;
+  opacity: 0.8 !important;
 }
 
 .inquiry-msg-row--user .inquiry-msg-time {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(13, 10, 8, 0.75) !important;
 }
 
 .inquiry-msg-row--admin .inquiry-msg-time {
-  color: var(--text-color, #64748b) !important;
+  color: #8c7c68 !important;
 }
 
 .inquiry-msg-email-badge {
-  color: #4f46e5 !important;
+  color: #d4af37 !important;
   font-size: 12px !important;
   display: inline-flex !important;
 }
 
-
-
 /* Footer / Input */
 .warda-messenger-footer {
   padding: 10px 14px;
-  border-top: 1px solid var(--border-color, #e2e8f0);
-  background: var(--container-color, #ffffff);
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  background: #0d0a08;
   display: flex;
   align-items: flex-end;
   gap: 8px;
@@ -530,31 +602,32 @@
 
 .warda-messenger-footer--expanded {
   padding: 12px 14px;
-  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.4);
 }
 
 .warda-messenger-input {
   flex: 1;
-  border: 1px solid var(--border-color, #cbd5e1);
-  background: var(--body-color, #f8fafc);
-  color: var(--title-color, #1e293b);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: #14100c;
+  color: #f5eedc;
   border-radius: 20px;
   padding: 9px 14px;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.4;
   outline: none;
   resize: none;
   height: 40px;
   max-height: 180px;
   font-family: inherit;
-  transition: border-color 0.2s, height 0.2s ease, border-radius 0.2s;
+  transition: border-color 0.2s, height 0.2s ease, border-radius 0.2s, background 0.2s;
   pointer-events: auto !important;
   box-sizing: border-box;
 }
 
 .warda-messenger-input:focus {
-  border-color: #4f46e5;
-  background: var(--body-color, #ffffff);
+  border-color: #d4af37;
+  background: #1a1510;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .warda-messenger-input.expanded {
@@ -571,12 +644,12 @@
 }
 
 .warda-messenger-expand-btn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(79, 70, 229, 0.1);
-  color: #4f46e5;
-  border: 1px solid rgba(79, 70, 229, 0.2);
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.25);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -587,24 +660,24 @@
 }
 
 .warda-messenger-expand-btn:hover {
-  background: #4f46e5;
-  color: #ffffff;
+  background: #d4af37;
+  color: #0d0a08;
   transform: scale(1.08);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.35);
 }
 
 .warda-messenger-expand-btn.active {
-  background: #4f46e5;
-  color: #ffffff;
+  background: #d4af37;
+  color: #0d0a08;
 }
 
 .warda-messenger-expand-btn.active:hover {
-  background: #4338ca;
+  background: #e5c07b;
 }
 
 .warda-messenger-send-btn {
-  background: #4f46e5;
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   border: none;
   width: 38px;
   height: 38px;
@@ -613,32 +686,34 @@
   align-items: center;
   justify-content: center;
   font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
   z-index: 15;
   pointer-events: auto !important;
-  transition:
-    background 0.15s,
-    transform 0.15s;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .warda-messenger-send-btn:hover:not(:disabled) {
-  background: #4338ca;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, #e5c07b 0%, #c59b27 100%);
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.5);
 }
 
 .warda-messenger-send-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .warda-messenger-send-error {
   padding: 10px 14px;
-  background-color: #fef2f2;
-  color: #991b1b;
-  border-top: 1px solid #fee2e2;
-  border-bottom: 1px solid #fee2e2;
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border-top: 1px solid rgba(239, 68, 68, 0.25);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.25);
   font-size: 12px;
   line-height: 1.45;
   display: flex;
@@ -648,10 +723,10 @@
 }
 
 .warda-messenger-send-error--warda {
-  background: linear-gradient(135deg, #f7f3ff 0%, #efe7fd 100%);
-  color: #4c1d95;
-  border-top-color: #e9d5ff;
-  border-bottom-color: #e9d5ff;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(20, 15, 11, 0.95) 100%);
+  color: #f3e5ab;
+  border-top-color: rgba(212, 175, 55, 0.25);
+  border-bottom-color: rgba(212, 175, 55, 0.25);
 }
 
 .warda-messenger-send-error i {
@@ -662,7 +737,7 @@
 }
 
 .warda-messenger-send-error--warda i {
-  color: #7952b3;
+  color: #d4af37;
 }
 
 .warda-messenger-send-error-content {
@@ -682,21 +757,21 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  background: linear-gradient(135deg, #7952b3 0%, #9d7cd8 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   border: none;
   border-radius: 14px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(121, 82, 179, 0.35);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .warda-messenger-ask-warda-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(121, 82, 179, 0.5);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.5);
 }
 
 .warda-messenger-send-error-close {
@@ -724,7 +799,7 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: var(--title-color);
+  color: var(--title-color, #f5eedc);
   font-size: 1.25rem;
   display: inline-flex;
   align-items: center;
@@ -733,12 +808,12 @@
 }
 
 .nav__messenger-btn:hover {
-  color: var(--first-color);
+  color: #d4af37;
 }
 
 /* Nav Messenger Button Attention Animation (Triggered by Al-Warda referral) */
 .nav__messenger-btn--attention {
-  color: #8b5cf6 !important;
+  color: #d4af37 !important;
   position: relative;
   z-index: 2;
 }
@@ -753,9 +828,9 @@
   margin-top: -16px;
   margin-left: -16px;
   border-radius: 50%;
-  border: 2px solid #8b5cf6;
-  background: rgba(139, 92, 246, 0.2);
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.6);
+  border: 2px solid #d4af37;
+  background: rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.6);
   animation: messengerPulseRing 1.8s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
   pointer-events: none;
 }
@@ -768,9 +843,9 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #a855f7;
-  border: 2px solid var(--body-color, #ffffff);
-  box-shadow: 0 0 8px #a855f7;
+  background: #e5c07b;
+  border: 2px solid #0d0a08;
+  box-shadow: 0 0 8px #d4af37;
   animation: messengerBeaconBlink 0.9s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -779,7 +854,7 @@
   display: inline-block;
   animation: messengerAttentionWobble 2s ease-in-out infinite;
   transform-origin: 50% 20%;
-  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.7));
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.7));
 }
 
 .nav__messenger-btn--attention .nav__badge-count {
@@ -839,18 +914,18 @@
   100% {
     transform: scale(1.25);
     opacity: 1;
-    box-shadow: 0 0 12px #c084fc, 0 0 6px #a855f7;
+    box-shadow: 0 0 12px #f3e5ab, 0 0 6px #d4af37;
   }
 }
 
 @keyframes messengerBadgePulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
   }
   100% {
     transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.9);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.9);
   }
 }
 
@@ -858,10 +933,10 @@
   position: absolute;
   top: -2px;
   right: -4px;
-  background-color: #ef4444;
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
@@ -869,27 +944,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--body-color, #ffffff);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-@media screen and (max-width: 480px) {
-  .warda-messenger-overlay {
-    padding-right: 12px;
-    padding-left: 12px;
-    padding-bottom: 145px;
-    padding-top: 12px;
-  }
-  .warda-messenger-container {
-    width: 100%;
-    height: 480px;
-    max-width: 100%;
-    max-height: calc(100vh - 165px);
-    border-radius: 18px;
-  }
-  .warda-messenger-header {
-    border-radius: 17px 17px 0 0;
-  }
+  border: 2px solid #0d0a08;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
 }
 
 /* User / Guest Transfer History Modal */
@@ -899,8 +955,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(13, 10, 8, 0.75);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -911,10 +967,10 @@
 }
 
 .warda-messenger-transfer-modal {
-  background: var(--container-color, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 16px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+  background: #0d0a08;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(212, 175, 55, 0.2);
   width: 100%;
   max-width: 360px;
   max-height: 85%;
@@ -924,21 +980,33 @@
   animation: wardaScaleIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+@keyframes wardaScaleIn {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .warda-messenger-transfer-modal-header {
   padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
-  background: var(--body-color, #f8fafc);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(20, 15, 11, 0.95) 100%);
 }
 
 .warda-messenger-transfer-icon {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(79, 70, 229, 0.1);
-  color: #4f46e5;
+  background: rgba(212, 175, 55, 0.12);
+  color: #e5c07b;
+  border: 1px solid rgba(212, 175, 55, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -953,37 +1021,39 @@
 
 .warda-messenger-transfer-title-group h4 {
   margin: 0;
+  font-family: var(--second-font, 'Cinzel', serif);
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--title-color, #1e293b);
+  color: #f3e5ab;
+  letter-spacing: 0.04em;
 }
 
 .warda-messenger-transfer-title-group p {
   margin: 2px 0 0 0;
   font-size: 11.5px;
-  color: var(--text-color, #64748b);
+  color: #a69882;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .warda-messenger-transfer-close {
-  background: none;
-  border: none;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   cursor: pointer;
-  color: var(--text-color, #64748b);
-  font-size: 1.25rem;
-  padding: 2px;
+  color: #f3e5ab;
+  font-size: 1.15rem;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 50%;
   transition: all 0.15s ease;
 }
 
 .warda-messenger-transfer-close:hover {
-  background: var(--border-color, #e2e8f0);
-  color: var(--title-color, #1e293b);
+  background: rgba(212, 175, 55, 0.25);
+  color: #ffffff;
 }
 
 .warda-messenger-transfer-modal-body {
@@ -1017,8 +1087,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #4f46e5;
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -1030,14 +1100,14 @@
   width: 2px;
   flex: 1;
   min-height: 22px;
-  background: #cbd5e1;
+  background: rgba(212, 175, 55, 0.25);
   margin-top: 4px;
 }
 
 .warda-messenger-transfer-info {
   flex: 1;
-  background: var(--body-color, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
+  background: #14100c;
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -1048,66 +1118,240 @@
   gap: 6px;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--title-color, #1e293b);
+  color: #f5eedc;
 }
 
 .warda-messenger-transfer-route i {
-  color: #4f46e5;
+  color: #d4af37;
   font-size: 12px;
 }
 
 .warda-messenger-transfer-admin-from {
-  color: var(--text-color, #64748b);
+  color: #a69882;
 }
 
 .warda-messenger-transfer-admin-to {
-  color: #4f46e5;
+  color: #e5c07b;
 }
 
 .warda-messenger-transfer-time {
   display: block;
   font-size: 11px;
-  color: var(--text-color, #94a3b8);
+  color: #8c7c68;
   margin-top: 3px;
 }
 
 .warda-messenger-transfer-reason {
   margin-top: 5px;
   font-size: 11.5px;
-  color: var(--title-color, #334155);
-  background: rgba(79, 70, 229, 0.06);
+  color: #f3e5ab;
+  background: rgba(212, 175, 55, 0.08);
   padding: 4px 8px;
   border-radius: 6px;
-  border-left: 2px solid #4f46e5;
+  border-left: 2px solid #d4af37;
 }
 
 .warda-messenger-transfer-empty {
   text-align: center;
   font-size: 12.5px;
-  color: var(--text-color, #64748b);
+  color: #a69882;
   margin: 10px 0;
 }
 
 .warda-messenger-transfer-modal-footer {
   padding: 10px 16px;
-  border-top: 1px solid var(--border-color, #e2e8f0);
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
   display: flex;
   justify-content: flex-end;
-  background: var(--body-color, #f8fafc);
+  background: #14100c;
 }
 
 .warda-messenger-transfer-close-btn {
-  background: #4f46e5;
-  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #0d0a08;
   border: none;
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .warda-messenger-transfer-close-btn:hover {
-  background: #4338ca;
+  background: linear-gradient(135deg, #e5c07b 0%, #c59b27 100%);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Mobile Responsive Optimizations
+   ========================================================================== */
+
+/* Mobile Portrait (< 820px) */
+@media screen and (max-width: 819px) {
+  .warda-messenger-overlay {
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    bottom: calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px));
+    left: 14px;
+    right: 14px;
+    padding: 0;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .warda-messenger-container {
+    width: 100%;
+    max-width: 410px;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 20px;
+    pointer-events: auto;
+  }
+
+  .warda-messenger-header {
+    border-radius: 19px 19px 0 0;
+    padding: 12px 16px;
+  }
+
+  .warda-messenger-title {
+    font-size: 0.9rem;
+  }
+
+  .warda-messenger-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .warda-messenger-messages {
+    padding: 12px 14px;
+  }
+
+  .warda-messenger-input {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+  }
+}
+
+/* Mobile Landscape (Horizontal Phone) */
+@media (orientation: landscape) and (max-height: 550px),
+       (max-width: 950px) and (orientation: landscape) and (max-height: 600px) {
+  .warda-messenger-overlay {
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+    left: calc(env(safe-area-inset-left, 0px) + 12px);
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .warda-messenger-container {
+    width: 100%;
+    max-width: 560px;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 18px;
+    pointer-events: auto;
+  }
+
+  .warda-messenger-header {
+    padding: 8px 14px;
+    border-radius: 17px 17px 0 0;
+  }
+
+  .warda-messenger-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .warda-messenger-title {
+    font-size: 0.85rem;
+  }
+
+  .warda-messenger-subtitle {
+    font-size: 0.68rem;
+  }
+
+  .warda-messenger-close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .warda-messenger-messages {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .inquiry-msg-bubble {
+    padding: 7px 11px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.4 !important;
+    border-radius: 14px !important;
+  }
+
+  .warda-messenger-footer {
+    padding: 6px 10px;
+  }
+
+  .warda-messenger-footer--expanded {
+    padding: 6px 10px 8px;
+  }
+
+  .warda-messenger-input {
+    height: 36px;
+    padding: 6px 12px;
+    font-size: 15px !important;
+  }
+
+  .warda-messenger-expand-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+
+  .warda-messenger-send-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .warda-messenger-guest-form {
+    padding: 12px 18px;
+  }
+
+  .warda-messenger-guest-intro {
+    margin-bottom: 12px;
+  }
+
+  .warda-messenger-guest-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .warda-messenger-guest-intro h4 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .warda-messenger-guest-intro p {
+    font-size: 0.74rem;
+  }
+
+  .warda-messenger-field {
+    margin-bottom: 10px;
+  }
+
+  .warda-messenger-field input {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .warda-messenger-submit-btn {
+    padding: 9px;
+    font-size: 13px;
+  }
 }
