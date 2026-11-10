@@ -1,6 +1,9 @@
 .warda-perfume-card.ornate-card {
   padding: 0 0 1.25rem !important;
   border-color: transparent !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .warda-perfume-card .card-ornament {
@@ -65,6 +68,13 @@
 .warda-perfume-card .warda-perfume-card__action {
   box-sizing: border-box;
   padding-inline: 1rem;
+}
+
+@media (max-width: 768px) {
+  .warda-perfume-card .warda-perfume-card__info,
+  .warda-perfume-card .warda-perfume-card__action {
+    padding-inline: 0.35rem !important;
+  }
 }
 
 .search__card.search__card {

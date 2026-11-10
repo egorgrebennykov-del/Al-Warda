@@ -9,6 +9,8 @@
   flex-direction: column;
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   overflow: visible;
+  min-width: 0;
+  max-width: 100%;
 }
 
 @media (hover: hover) and (pointer: fine) and (min-width: 769px) {
@@ -36,6 +38,10 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Corner bracket positioning */

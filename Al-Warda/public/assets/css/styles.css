@@ -54,12 +54,17 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 #root {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 body,
@@ -73,6 +78,8 @@ body {
   background-color: var(--body-color);
   color: var(--text-color);
   transition: background-color 0.4s;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 input,
@@ -1920,6 +1927,12 @@ html, body {
   .container {
     margin-inline: 1rem;
   }
+
+@media screen and (max-width: 480px) {
+  .container {
+    margin-inline: 0.65rem !important;
+  }
+}
 
   .section {
     padding-block: 4.5rem 1rem;
