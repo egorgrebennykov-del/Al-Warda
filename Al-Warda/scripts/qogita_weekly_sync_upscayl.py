@@ -352,6 +352,24 @@ def extract_volume(name):
         return f"{ml} мл / {num_oz:g} FL.OZ."
     return "100 мл / 3.4 FL.OZ."
 
+def strip_volume_from_name(name):
+    if not name or not isinstance(name, str):
+        return name or ""
+    s = name
+    s = re.sub(r'\(?\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\s*/\s*\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|oz\.?)\)?', ' ', s, flags=re.I)
+    s = re.sub(r'\b\d+\s*[xX×*]\s*\d+(?:[.,]\d+)?\s*(?:ml|мл)\b', ' ', s, flags=re.I)
+    s = re.sub(r'\bsize[:\s]+\d+(?:[.,]\d+)?\s*(?:ml|мл|oz|fl\.?\s*oz\.?|ounce)\b', ' ', s, flags=re.I)
+    s = re.sub(r'\b\d+(?:[.,]\d+)?\s*(?:ml|мл|milliliters?|millilitres?|миллилитр(?:ов|а)?)\b', ' ', s, flags=re.I)
+    s = re.sub(r'\b\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)\b', ' ', s, flags=re.I)
+    s = re.sub(r'\(\s*\)', ' ', s)
+    s = re.sub(r'\[\s*\]', ' ', s)
+    s = re.sub(r'\s*-\s*-\s*', ' - ', s)
+    s = re.sub(r'\s+([,.])\s*', r'\1 ', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    s = re.sub(r'^[-–—,/:;|]+\s*', '', s)
+    s = re.sub(r'\s*[-–—,/:;|]+$', '', s).strip()
+    return s
+
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -430,10 +448,11 @@ def sync_to_supabase(perfumes_list):
         ):
             image = previous["image"]
         rich = build_rich_bilingual_enrichment(p["name"], p.get("brand") or "Al-Warda")
+        clean_perfume_name = strip_volume_from_name(p["name"])
         record = {
             "slug": slug,
-            "name": p["name"],
-            "title": p["name"],
+            "name": clean_perfume_name,
+            "title": clean_perfume_name,
             "brand": p.get("brand") or "Al-Warda",
             "category": p.get("category") or rich["category"],
             "price": float(p.get("price") or 25.0),
@@ -583,10 +602,12 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         print(f"[{brand}] Fetched {len(items)} in-stock items from Qogita")
 
         for item in items:
-            name = item.get("name")
+            name_raw = item.get("name")
             raw_img = item.get("imageUrl")
-            if not name or not raw_img:
+            if not name_raw or not raw_img:
                 continue
+
+            name = strip_volume_from_name(name_raw)
 
             amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0)
 

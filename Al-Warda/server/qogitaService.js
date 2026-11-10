@@ -275,6 +275,22 @@ export function extractQogitaPriceForMov(qogitaItem, targetMov = 500) {
   };
 }
 
+export function stripVolumeFromName(name) {
+  if (!name || typeof name !== "string") return name || "";
+  let s = name;
+  s = s.replace(/\(?\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\s*\/\s*\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|oz\.?)\)?/gi, " ");
+  s = s.replace(/\b\d+\s*[xX×*]\s*\d+(?:[.,]\d+)?\s*(?:ml|мл)\b/gi, " ");
+  s = s.replace(/\bsize[:\s]+\d+(?:[.,]\d+)?\s*(?:ml|мл|oz|fl\.?\s*oz\.?|ounce)\b/gi, " ");
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:ml|мл|milliliters?|millilitres?|миллилитр(?:ов|а)?)\b/gi, " ");
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)\b/gi, " ");
+  s = s.replace(/\(\s*\)/g, " ").replace(/\[\s*\]/g, " ");
+  s = s.replace(/\s*-\s*-\s*/g, " - ");
+  s = s.replace(/\s+([,.])\s*/g, "$1 ");
+  s = s.replace(/\s+/g, " ").trim();
+  s = s.replace(/^[-–—,/:;|]+\s*/, "").replace(/\s*[-–—,/:;|]+$/, "").trim();
+  return s;
+}
+
 /**
  * Map Qogita product to Al-Warda dropship perfume schema
  * Fixed price directly in EUR (no dynamic markup formula)
@@ -320,12 +336,13 @@ export function mapQogitaProductToPerfume(qogitaItem) {
   const nameClean = (name || "").toLowerCase().trim();
   const mapMoq = Number((gtin && minOrderMap.byGtin?.[gtin]) || minOrderMap.byName?.[nameClean] || 1) || 1;
   const resolvedMinOrder = rawUnit > 1 ? rawUnit : (mapMoq > 1 ? mapMoq : rawUnit);
+  const cleanDisplayName = stripVolumeFromName(name);
 
   return {
     id: slug,
     slug: slug,
-    name: name,
-    title: name,
+    name: cleanDisplayName,
+    title: cleanDisplayName,
     brand: brand,
     category: "oud",
     notesSummary: brand,

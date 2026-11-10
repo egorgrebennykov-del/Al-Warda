@@ -268,3 +268,40 @@ test("getPerfumeMinOrder and applyMinOrderFilter accurately enforce MOQ and excl
   assert.ok(filteredUpTo4.some((p) => p.name.includes("Abaq Oud")));
   assert.ok(!filteredUpTo4.some((p) => p.name.includes("Yara")));
 });
+
+test("stripVolumeFromName cleanly removes volume specifications from perfume names", async () => {
+  const { stripVolumeFromName, ensurePerfumeEnrichment } = await import("../utils/perfumes.js");
+
+  assert.equal(
+    stripVolumeFromName("Afnan Supremacy Pink Eau De Parfum 100ml Spray For Women"),
+    "Afnan Supremacy Pink Eau De Parfum Spray For Women"
+  );
+  assert.equal(
+    stripVolumeFromName("Lattafa Yara 100ml EDP"),
+    "Lattafa Yara EDP"
+  );
+  assert.equal(
+    stripVolumeFromName("Fragrance World Intense Man Deluxe Edition Eau De Parfum Spray for Men 3.4 Ounce"),
+    "Fragrance World Intense Man Deluxe Edition Eau De Parfum Spray for Men"
+  );
+  assert.equal(
+    stripVolumeFromName("Al Haramain Amber Oud Discovery Set 4x10ml"),
+    "Al Haramain Amber Oud Discovery Set"
+  );
+  assert.equal(
+    stripVolumeFromName("Zimaya Cult Eau De Parfum Spray Unisex 3.4 Oz 100 Ml"),
+    "Zimaya Cult Eau De Parfum Spray Unisex"
+  );
+  assert.equal(
+    stripVolumeFromName("Afnan 9 PM 100ml EDP"),
+    "Afnan 9 PM EDP"
+  );
+
+  // ensurePerfumeEnrichment automatically applies stripping while preserving bottle volume
+  const enriched = ensurePerfumeEnrichment({
+    id: "test-1",
+    name: "Afnan Supremacy Pink Eau De Parfum 100ml Spray For Women",
+  });
+  assert.equal(enriched.name, "Afnan Supremacy Pink Eau De Parfum Spray For Women");
+  assert.ok(enriched.volume.includes("100 мл"), "Bottle volume should still be correctly extracted");
+});

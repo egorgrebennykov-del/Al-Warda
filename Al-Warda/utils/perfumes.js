@@ -1338,6 +1338,44 @@ export function extractVolumeFromName(name, fallbackVolume = null) {
   return fallbackVolume;
 }
 
+export function stripVolumeFromName(name, preserveSetMultiplier = false) {
+  if (!name || typeof name !== "string") return name || "";
+
+  let s = name;
+
+  // 1. Remove composite/dual volume mentions like "100ml / 3.4 FL.OZ." or "(100 ml / 3.4 fl oz)"
+  s = s.replace(/\(?\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\s*\/\s*\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|oz\.?)\)?/gi, " ");
+
+  // 2. Remove multi-piece set volume like "4x10ml", "4 x 10 ml", "5x2ml", "4x25ml", "3*25ml" (unless preserving set multiplier)
+  if (!preserveSetMultiplier) {
+    s = s.replace(/\b\d+\s*[xX×*]\s*\d+(?:[.,]\d+)?\s*(?:ml|мл)\b/gi, " ");
+  }
+
+  // 3. Remove "size 100 ml" or "size: 100ml"
+  s = s.replace(/\bsize[:\s]+\d+(?:[.,]\d+)?\s*(?:ml|мл|oz|fl\.?\s*oz\.?|ounce)\b/gi, " ");
+
+  // 4. Remove standard ml: 100ml, 100 ml, 100мл, 100 мл, 1.5ml, 150ml
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:ml|мл|milliliters?|millilitres?|миллилитр(?:ов|а)?)\b/gi, " ");
+
+  // 5. Remove ounce/fl oz: 3.4 oz, 3.4 fl oz, 3.4 fl. oz., 34 oz, 3.4 ounce, 3.4 ounces, 0.67 fl oz, 2.5 oz, 25oz
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)\b/gi, " ");
+
+  // 6. Clean dangling parentheses like "()" or "( )" or "[]"
+  s = s.replace(/\(\s*\)/g, " ").replace(/\[\s*\]/g, " ");
+
+  // 7. Clean up duplicate or trailing dashes/slashes
+  s = s.replace(/\s*-\s*-\s*/g, " - ");
+  s = s.replace(/\s+([,.])\s*/g, "$1 ");
+
+  // 8. Normalize spaces
+  s = s.replace(/\s+/g, " ").trim();
+
+  // 9. Remove trailing or leading punctuation leftovers e.g. "Perfume -", "- Perfume", "Perfume,"
+  s = s.replace(/^[-–—,/:;|]+\s*/, "").replace(/\s*[-–—,/:;|]+$/, "").trim();
+
+  return s;
+}
+
 export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
   const isSet = isPerfumeSet(p);
@@ -1447,10 +1485,12 @@ export function ensurePerfumeEnrichment(p) {
     ? (p.concentration && (p.concentration.includes("Набор") || p.concentration.includes("Set")) ? p.concentration : "Набор миниатюр (Set)")
     : (p.concentration || "Eau De Parfum");
 
+  const cleanName = isSet ? name : stripVolumeFromName(name);
+
   return {
     ...p,
-    name,
-    title: name,
+    name: cleanName,
+    title: cleanName,
     isSet,
     setItems,
     volume: resolvedVolume,
@@ -1556,11 +1596,14 @@ export async function fetchPerfumesFromSupabase() {
           const descEn = info.descriptionEn || "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
           const generatedImage = info.imageGeneration.imageUrl || r.image;
 
+          const rawPerfumeName = r.name || r.title;
+          const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
+
           const perfumeObj = {
             id: String(r.id),
             slug: `stock-${r.id}`,
-            name: r.name || r.title,
-            title: r.name || r.title,
+            name: cleanPerfumeName,
+            title: cleanPerfumeName,
             brand: r.brand || "Al-Warda",
             category: catSlug,
             categoryRu: info.category || "Восточные",
@@ -1572,7 +1615,7 @@ export async function fetchPerfumesFromSupabase() {
             price: Number(r.price) || 29.99,
             currency: r.currency || "EUR",
             priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
-            volume: extractVolumeFromName(r.name || r.title, info.volume || r.volume || "100 мл / 3.4 FL.OZ."),
+            volume: extractVolumeFromName(rawPerfumeName, info.volume || r.volume || "100 мл / 3.4 FL.OZ."),
             concentration: info.concentration || r.concentration || "Eau De Parfum",
             gender: info.gender || r.gender || "Унисекс",
             genderRu: info.gender || r.gender || "Унисекс",
