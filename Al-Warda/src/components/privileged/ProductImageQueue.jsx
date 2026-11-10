@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
+import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductImageQueue.css";
 
 async function fetchActions(options = {}) {
@@ -97,6 +98,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [visibleFailed, setVisibleFailed] = useState(24);
   const [selectedFailed, setSelectedFailed] = useState({});
   const [deletingFailed, setDeletingFailed] = useState(false);
+  const [manualConfigItem, setManualConfigItem] = useState(null);
   const confirm = useConfirm();
 
   useEffect(() => {
@@ -685,6 +687,21 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                   ? `Вернуть в ожидание (${selectedFailedIds.length})`
                   : `Return to pending (${selectedFailedIds.length})`}
               </button>
+              {selectedFailedIds.length === 1 && (
+                <button
+                  type="button"
+                  className="product-image-queue__start product-image-queue__start--manual"
+                  disabled={busy || deletingFailed}
+                  onClick={() => {
+                    const target = failedItems.find((i) => String(i.id) === selectedFailedIds[0]);
+                    if (target) setManualConfigItem(target);
+                  }}
+                  title={isRussian ? "Ручная настройка выбранного товара" : "Manual setup for selected item"}
+                >
+                  <i className="ri-settings-3-line" />
+                  {isRussian ? "Ручная настройка (1)" : "Manual setup (1)"}
+                </button>
+              )}
               <button
                 type="button"
                 className="product-image-queue__start product-image-queue__start--danger"
@@ -742,6 +759,16 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                       >
                         <i className="ri-refresh-line" />
                         {isRussian ? "В ожидание" : "To pending"}
+                      </button>
+                      <button
+                        type="button"
+                        className="product-image-queue__failed-manual-one"
+                        disabled={busy || deletingFailed}
+                        onClick={() => setManualConfigItem(item)}
+                        title={isRussian ? "Ручная настройка и добавление фото" : "Manual setup and photo upload"}
+                      >
+                        <i className="ri-settings-3-line" />
+                        {isRussian ? "Ручная настройка" : "Manual setup"}
                       </button>
                       <button
                         type="button"
@@ -853,6 +880,23 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         </>}
       </section>
       </>}
+
+      {manualConfigItem && (
+        <ProductManualConfigModal
+          item={manualConfigItem}
+          language={language}
+          onClose={() => setManualConfigItem(null)}
+          onSaved={async (result) => {
+            setManualConfigItem(null);
+            setActionMessage(
+              isRussian
+                ? `Товар #${result.id} успешно настроен вручную, отправлен в базу данных и опубликован!`
+                : `Product #${result.id} manually configured, saved to database, and published!`,
+            );
+            await loadStatus();
+          }}
+        />
+      )}
     </section>
   );
 }

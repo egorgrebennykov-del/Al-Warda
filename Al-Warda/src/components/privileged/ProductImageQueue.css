@@ -554,3 +554,38 @@
 .product-image-queue__failed-requeue-one:hover:not(:disabled) {
   background: #f5efe5;
 }
+
+
+.product-image-queue__failed-manual-one {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #c9a463;
+  border-radius: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #724c16;
+  background: #fdf8ef;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-image-queue__failed-manual-one:hover:not(:disabled) {
+  background: #f7ebce;
+  border-color: #b38b45;
+  color: #4b3009;
+}
+
+.product-image-queue__failed-manual-one:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.product-image-queue__start--manual {
+  background: #b58934;
+}
+
+.product-image-queue__start--manual:hover:not(:disabled) {
+  background: #9a7327;
+}

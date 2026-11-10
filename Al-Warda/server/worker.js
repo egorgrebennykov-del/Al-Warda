@@ -13,6 +13,7 @@ import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
   requeueFailedProductItems,
+  saveManualProductItem,
   getSiteSettings,
   saveSiteSettings,
 } from "./productImageQueueAdmin.js";
@@ -95,9 +96,10 @@ function enrichPerfumeObj(p) {
 function completedProductPhoto(perfume) {
   const generation = perfume?.info?.imageGeneration;
   const image = generation?.imageUrl || perfume?.image;
+  const isManual = Boolean(perfume?.info?.manual || generation?.manual);
   if (
     generation?.status !== "completed" ||
-    !isGeneratedProductImage(image)
+    (!isGeneratedProductImage(image) && !isManual)
   ) {
     return null;
   }
@@ -152,6 +154,9 @@ export default {
     }
     if (method === "POST" && pathname === "/api/admin/product-images/requeue") {
       return requeueFailedProductItems(request, env);
+    }
+    if (method === "POST" && pathname === "/api/admin/product-images/manual-save") {
+      return saveManualProductItem(request, env);
     }
     if (pathname === "/api/admin/settings" && method === "GET") return getSiteSettings(request, env);
     if (pathname === "/api/admin/settings" && method === "POST") return saveSiteSettings(request, env);

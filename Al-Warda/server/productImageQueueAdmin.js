@@ -297,7 +297,11 @@ export async function getProductImageQueueStatus(request, env) {
           id: row.id,
           name: row.name || "",
           brand: row.brand || "",
+          price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+          currency: row.currency || info.currency || "EUR",
+          image: row.image || null,
           rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+          info,
           error: typeof activeFail.error === "string" && activeFail.error.trim()
             ? activeFail.error.trim()
             : "Unknown generation error",
@@ -611,5 +615,191 @@ export async function syncCommittedPublishedStocks(env) {
     return synced;
   } catch {
     return 0;
+  }
+}
+
+export async function saveManualProductItem(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+
+    const id = body.id;
+    if (id === undefined || id === null || id === "") {
+      return json({ error: "Product ID is required" }, 400);
+    }
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json; charset=utf-8",
+    };
+
+    // 1. Fetch current row
+    const fetchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+    fetchUrl.searchParams.set("id", `eq.${id}`);
+    fetchUrl.searchParams.set("select", "id,name,brand,price,currency,image,info");
+    const getRes = await fetch(fetchUrl, { headers });
+    if (!getRes.ok) {
+      throw new Error(`Failed to load product ${id} from database (${getRes.status})`);
+    }
+    const rows = await getRes.json();
+    const existingRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : {};
+    const existingInfo = existingRow.info && typeof existingRow.info === "object" ? { ...existingRow.info } : {};
+
+    // 2. Resolve image
+    let finalImageUrl = (typeof body.image === "string" ? body.image.trim() : "") ||
+      existingRow.image ||
+      (typeof existingInfo.rawImage === "string" ? existingInfo.rawImage : "");
+
+    // If base64 imageData provided, attempt to upload to Supabase Storage
+    const base64Data = (typeof body.imageData === "string" && body.imageData.startsWith("data:image/"))
+      ? body.imageData
+      : (typeof finalImageUrl === "string" && finalImageUrl.startsWith("data:image/") ? finalImageUrl : null);
+
+    if (base64Data) {
+      try {
+        const matches = base64Data.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+        if (matches) {
+          const rawExt = matches[1].toLowerCase();
+          const ext = rawExt === "jpeg" ? "jpg" : (rawExt === "svg+xml" ? "svg" : rawExt);
+          const binaryStr = atob(matches[2]);
+          const buffer = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            buffer[i] = binaryStr.charCodeAt(i);
+          }
+          const filename = `manual-${id}-${Date.now()}.${ext}`;
+          const storageUrl = `${baseUrl}/storage/v1/object/product-images/${filename}`;
+          const storageRes = await fetch(storageUrl, {
+            method: "POST",
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              "Content-Type": `image/${matches[1]}`,
+              "x-upsert": "true",
+            },
+            body: buffer,
+          });
+          if (storageRes.ok) {
+            finalImageUrl = `${baseUrl}/storage/v1/object/public/product-images/${filename}`;
+          } else {
+            finalImageUrl = base64Data;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn("Storage upload failed, keeping inline data URL:", uploadErr);
+        finalImageUrl = base64Data;
+      }
+    }
+
+    if (!finalImageUrl) {
+      return json({ error: "Product image is required" }, 400);
+    }
+
+    const cleanName = (body.name || existingRow.name || "").trim();
+    if (!cleanName) {
+      return json({ error: "Product name is required" }, 400);
+    }
+    const brand = (body.brand || existingRow.brand || "Al-Warda").trim();
+    const price = Number(body.price) > 0 ? Number(body.price) : (Number(existingRow.price) || 29.99);
+    const currency = body.currency || existingRow.currency || "EUR";
+
+    const topNotesRu = Array.isArray(body.topNotes)
+      ? body.topNotes
+      : String(body.topNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+    const heartNotesRu = Array.isArray(body.heartNotes)
+      ? body.heartNotes
+      : String(body.heartNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+    const baseNotesRu = Array.isArray(body.baseNotes)
+      ? body.baseNotes
+      : String(body.baseNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+
+    const topNotesEn = Array.isArray(body.topNotesEn)
+      ? body.topNotesEn
+      : (body.topNotesEn ? String(body.topNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : topNotesRu);
+    const heartNotesEn = Array.isArray(body.heartNotesEn)
+      ? body.heartNotesEn
+      : (body.heartNotesEn ? String(body.heartNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : heartNotesRu);
+    const baseNotesEn = Array.isArray(body.baseNotesEn)
+      ? body.baseNotesEn
+      : (body.baseNotesEn ? String(body.baseNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : baseNotesRu);
+
+    const updatedInfo = {
+      ...existingInfo,
+      category: body.categoryRu || body.category || existingInfo.category || "Восточные",
+      categorySlug: body.categorySlug || body.category || existingInfo.categorySlug || "oud",
+      categoryEn: body.categoryEn || existingInfo.categoryEn || "Oriental",
+      volume: body.volume || existingInfo.volume || "100 мл / 3.4 FL.OZ.",
+      concentration: body.concentration || existingInfo.concentration || "Eau De Parfum",
+      gender: body.gender || body.genderRu || existingInfo.gender || "Унисекс",
+      genderEn: body.genderEn || (body.gender === "Женский" ? "Women" : (body.gender === "Мужской" ? "Men" : "Unisex")),
+      longevity: body.longevity || existingInfo.longevity || "8–12 часов",
+      longevityEn: body.longevityEn || existingInfo.longevityEn || "8–12 hours",
+      sillage: body.sillage || existingInfo.sillage || "Выразительный, шлейфовый",
+      sillageEn: body.sillageEn || existingInfo.sillageEn || "Noticeable, alluring sillage",
+      notesSummary: body.notesSummary || body.notesSummaryRu || existingInfo.notesSummary || (topNotesRu.slice(0, 2).concat(heartNotesRu.slice(0, 1), baseNotesRu.slice(0, 2)).join(" · ")),
+      notesSummaryEn: body.notesSummaryEn || existingInfo.notesSummaryEn || body.notesSummary || (topNotesEn.slice(0, 2).concat(heartNotesEn.slice(0, 1), baseNotesEn.slice(0, 2)).join(" · ")),
+      notes: {
+        ru: { top: topNotesRu, heart: heartNotesRu, base: baseNotesRu },
+        en: { top: topNotesEn, heart: heartNotesEn, base: baseNotesEn },
+      },
+      descriptionRu: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
+      descriptionEn: body.descriptionEn || existingInfo.descriptionEn || "",
+      description: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
+      minOrderQuantity: 1,
+      inStock: body.inStock !== false,
+      manual: true,
+      imageGeneration: {
+        status: "completed",
+        imageUrl: finalImageUrl,
+        completedAt: new Date().toISOString(),
+        manual: true,
+        failed: false,
+        published: true,
+      },
+    };
+
+    delete updatedInfo.imageGenerationReplacement;
+
+    const patchPayload = {
+      name: cleanName,
+      brand,
+      price,
+      currency,
+      image: finalImageUrl,
+      info: updatedInfo,
+    };
+
+    const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+    patchUrl.searchParams.set("id", `eq.${id}`);
+    const patchRes = await fetch(patchUrl, {
+      method: "PATCH",
+      headers: { ...headers, Prefer: "return=representation" },
+      body: JSON.stringify(patchPayload),
+    });
+
+    if (!patchRes.ok) {
+      const errText = (await patchRes.text()).slice(0, 300);
+      throw new Error(`Failed to update product in database (${patchRes.status}): ${errText}`);
+    }
+
+    const updatedRows = await patchRes.json().catch(() => []);
+    return json({
+      ok: true,
+      id,
+      product: updatedRows[0] || { id, ...patchPayload },
+    });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not save product" }, 500);
   }
 }

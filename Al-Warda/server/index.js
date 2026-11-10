@@ -29,6 +29,7 @@ import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
   requeueFailedProductItems,
+  saveManualProductItem,
   getSiteSettings,
   saveSiteSettings,
 } from "./productImageQueueAdmin.js";
@@ -189,6 +190,17 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await requeueFailedProductItems(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/product-images/manual-save" && req.method === "POST") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await saveManualProductItem(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);

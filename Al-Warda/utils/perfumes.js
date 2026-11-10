@@ -32,8 +32,12 @@ function resolveCardImage(img, gtin, rawImage) {
 export function hasCompletedGeneratedImage(product) {
   const generation = product?.info?.imageGeneration;
   const image = generation?.imageUrl || product?.image;
+  if (!image || typeof image !== "string") return false;
+  if (generation?.status !== "completed") return false;
+  if (generation?.manual || product?.info?.manual) {
+    return true;
+  }
   return (
-    generation?.status === "completed" &&
     isGeneratedProductImage(image) &&
     (image.startsWith("/") || image.startsWith(`${SUPABASE_URL}/storage/v1/object/public/product-images/`))
   );

@@ -1,0 +1,712 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  ensurePerfumeEnrichment,
+  inferPerfumeProfile,
+  generateRichPerfumeDescriptions,
+  stripVolumeFromName,
+  extractVolumeFromName,
+} from "../../../utils/perfumes";
+import "./ProductManualConfigModal.css";
+
+const CATEGORY_OPTIONS = [
+  { slug: "oud", ru: "Древесные и Уд", en: "Oud & Leather" },
+  { slug: "oriental", ru: "Восточные", en: "Oriental" },
+  { slug: "floral", ru: "Цветочные и фруктовые", en: "Floral & Fruity" },
+  { slug: "gourmand", ru: "Гурманские и пряные", en: "Gourmand & Spicy" },
+  { slug: "spicy", ru: "Пряные и смолистые", en: "Spicy & Amber" },
+  { slug: "fresh", ru: "Свежие и акватические", en: "Fresh & Aquatic" },
+  { slug: "fougere", ru: "Фужерные", en: "Fougere" },
+  { slug: "sets", ru: "Подарочные наборы и сеты", en: "Discovery & Gift Sets" },
+];
+
+const GENDER_OPTIONS = [
+  { ru: "Унисекс", en: "Unisex" },
+  { ru: "Мужской", en: "Men" },
+  { ru: "Женский", en: "Women" },
+];
+
+export default function ProductManualConfigModal({
+  item,
+  onClose,
+  onSaved,
+  language = "ru",
+}) {
+  const isRussian = language === "ru";
+  const fileInputRef = useRef(null);
+
+  // Pre-fill initial state using existing product info and enrichment
+  const [initialData] = useState(() => {
+    const rawName = item?.name || item?.title || "";
+    const cleanName = stripVolumeFromName(rawName);
+    const enriched = ensurePerfumeEnrichment({
+      id: item?.id,
+      name: cleanName,
+      title: cleanName,
+      brand: item?.brand || "Al-Warda",
+      price: item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
+      image: item?.image || item?.rawImage || "",
+      rawImage: item?.rawImage || item?.info?.rawImage || null,
+      info: item?.info || {},
+      ...item?.info,
+    });
+
+    const explicitVol = extractVolumeFromName(rawName);
+    const volume = explicitVol || enriched.volume || item?.info?.volume || "100 мл / 3.4 FL.OZ.";
+
+    return {
+      name: cleanName,
+      brand: enriched.brand || item?.brand || "Al-Warda",
+      categorySlug: enriched.category || "oud",
+      categoryRu: enriched.categoryRu || "Восточные",
+      categoryEn: enriched.categoryEn || "Oriental",
+      volume,
+      concentration: enriched.concentration || item?.info?.concentration || "Eau De Parfum",
+      gender: enriched.gender || item?.info?.gender || "Унисекс",
+      genderEn: enriched.genderEn || (enriched.gender === "Женский" ? "Women" : (enriched.gender === "Мужской" ? "Men" : "Unisex")),
+      price: item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
+      longevity: enriched.longevity || "8–12 часов",
+      sillage: enriched.sillage || "Выразительный, шлейфовый",
+      notesSummaryRu: enriched.notesSummaryRu || enriched.notesSummary || "",
+      notesSummaryEn: enriched.notesSummaryEn || "",
+      topNotesRu: (enriched.topNotesRu || []).join(", "),
+      heartNotesRu: (enriched.heartNotesRu || []).join(", "),
+      baseNotesRu: (enriched.baseNotesRu || []).join(", "),
+      topNotesEn: (enriched.topNotesEn || []).join(", "),
+      heartNotesEn: (enriched.heartNotesEn || []).join(", "),
+      baseNotesEn: (enriched.baseNotesEn || []).join(", "),
+      descriptionRu: enriched.descriptionRu || enriched.description || "",
+      descriptionEn: enriched.descriptionEn || "",
+      image: item?.image || item?.rawImage || "",
+    };
+  });
+
+  const [name, setName] = useState(initialData.name);
+  const [brand, setBrand] = useState(initialData.brand);
+  const [categorySlug, setCategorySlug] = useState(initialData.categorySlug);
+  const [volume, setVolume] = useState(initialData.volume);
+  const [concentration, setConcentration] = useState(initialData.concentration);
+  const [gender, setGender] = useState(initialData.gender);
+  const [price, setPrice] = useState(initialData.price);
+  const [longevity, setLongevity] = useState(initialData.longevity);
+  const [sillage, setSillage] = useState(initialData.sillage);
+
+  const [notesSummaryRu, setNotesSummaryRu] = useState(initialData.notesSummaryRu);
+  const [notesSummaryEn, setNotesSummaryEn] = useState(initialData.notesSummaryEn);
+  const [topNotesRu, setTopNotesRu] = useState(initialData.topNotesRu);
+  const [heartNotesRu, setHeartNotesRu] = useState(initialData.heartNotesRu);
+  const [baseNotesRu, setBaseNotesRu] = useState(initialData.baseNotesRu);
+  const [topNotesEn, setTopNotesEn] = useState(initialData.topNotesEn);
+  const [heartNotesEn, setHeartNotesEn] = useState(initialData.heartNotesEn);
+  const [baseNotesEn, setBaseNotesEn] = useState(initialData.baseNotesEn);
+
+  const [descriptionRu, setDescriptionRu] = useState(initialData.descriptionRu);
+  const [descriptionEn, setDescriptionEn] = useState(initialData.descriptionEn);
+
+  const [image, setImage] = useState(initialData.image);
+  const [imageData, setImageData] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && !saving) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [saving, onClose]);
+
+  const handleCategoryChange = (slug) => {
+    setCategorySlug(slug);
+  };
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError(isRussian ? "Выберите файл изображения (PNG, JPG, WEBP)" : "Please select an image file (PNG, JPG, WEBP)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImageData(e.target.result);
+      setImage(e.target.result);
+      setError("");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleApplyUrl = () => {
+    if (!imageUrlInput.trim()) return;
+    setImage(imageUrlInput.trim());
+    setImageData(null);
+    setImageUrlInput("");
+    setError("");
+  };
+
+  // Re-generate notes and descriptions automatically
+  const handleRegenerateEnrichment = () => {
+    const currentCategory = CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0];
+    const profile = inferPerfumeProfile({
+      name,
+      brand,
+      category: categorySlug,
+    });
+
+    const nextTopRu = profile.ru.top.join(", ");
+    const nextHeartRu = profile.ru.heart.join(", ");
+    const nextBaseRu = profile.ru.base.join(", ");
+    const nextTopEn = profile.en.top.join(", ");
+    const nextHeartEn = profile.en.heart.join(", ");
+    const nextBaseEn = profile.en.base.join(", ");
+
+    setTopNotesRu(nextTopRu);
+    setHeartNotesRu(nextHeartRu);
+    setBaseNotesRu(nextBaseRu);
+    setTopNotesEn(nextTopEn);
+    setHeartNotesEn(nextHeartEn);
+    setBaseNotesEn(nextBaseEn);
+
+    const sumRu = [...profile.ru.top.slice(0, 2), ...profile.ru.heart.slice(0, 1), ...profile.ru.base.slice(0, 2)].join(" · ");
+    const sumEn = [...profile.en.top.slice(0, 2), ...profile.en.heart.slice(0, 1), ...profile.en.base.slice(0, 2)].join(" · ");
+    setNotesSummaryRu(sumRu);
+    setNotesSummaryEn(sumEn);
+
+    const generatedDescs = generateRichPerfumeDescriptions({
+      name,
+      brand,
+      category: categorySlug,
+      categoryRu: currentCategory.ru,
+      categoryEn: currentCategory.en,
+      genderRu: gender,
+      genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
+      longevityRu: longevity,
+      longevityEn: "8–12 hours",
+      topRu: profile.ru.top,
+      heartRu: profile.ru.heart,
+      baseRu: profile.ru.base,
+      topEn: profile.en.top,
+      heartEn: profile.en.heart,
+      baseEn: profile.en.base,
+    });
+
+    setDescriptionRu(generatedDescs.descriptionRu);
+    setDescriptionEn(generatedDescs.descriptionEn);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError(isRussian ? "Укажите название парфюма" : "Perfume name is required");
+      return;
+    }
+    if (!image && !imageData) {
+      setError(isRussian ? "Добавьте фото флакона (загрузите файл или укажите ссылку)" : "Please add a flacon image");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const currentCategory = CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0];
+      const payload = {
+        id: item.id,
+        name: name.trim(),
+        brand: brand.trim(),
+        category: currentCategory.ru,
+        categorySlug,
+        categoryEn: currentCategory.en,
+        volume: volume.trim(),
+        concentration: concentration.trim(),
+        gender,
+        genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
+        price: Number(price) || 29.99,
+        currency: "EUR",
+        longevity: longevity.trim(),
+        sillage: sillage.trim(),
+        notesSummary: notesSummaryRu.trim(),
+        notesSummaryEn: notesSummaryEn.trim(),
+        topNotes: topNotesRu,
+        heartNotes: heartNotesRu,
+        baseNotes: baseNotesRu,
+        topNotesEn: topNotesEn,
+        heartNotesEn: heartNotesEn,
+        baseNotesEn: baseNotesEn,
+        descriptionRu: descriptionRu.trim(),
+        descriptionEn: descriptionEn.trim(),
+        image,
+        imageData,
+        inStock: true,
+        minOrderQuantity: 1,
+      };
+
+      const response = await fetch("/api/admin/product-images/manual-save", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+
+      if (onSaved) {
+        onSaved(result);
+      }
+    } catch (err) {
+      setError(err.message || (isRussian ? "Не удалось сохранить товар в базу данных" : "Failed to save product"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="product-manual-modal__backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !saving) onClose();
+      }}
+    >
+      <div className="product-manual-modal" role="dialog" aria-modal="true">
+        <header className="product-manual-modal__header">
+          <div className="product-manual-modal__title-wrap">
+            <h2 className="product-manual-modal__title">
+              <i className="ri-settings-3-line" />
+              {isRussian ? "Панель создания и настройки товара" : "Manual Product Setup"}
+              <span className="product-manual-modal__badge">ID #{item?.id}</span>
+            </h2>
+            <p className="product-manual-modal__subtitle">
+              {isRussian
+                ? "Все поля уже заполнены на основе характеристик аромата. Вы можете отредактировать ноты, описание, цену и загрузить фото флакона."
+                : "All fields are pre-filled based on fragrance notes. Edit properties, descriptions, price, and upload a flacon photo."}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="product-manual-modal__close"
+            onClick={onClose}
+            disabled={saving}
+            aria-label={isRussian ? "Закрыть" : "Close"}
+          >
+            <i className="ri-close-line" />
+          </button>
+        </header>
+
+        <form onSubmit={handleSubmit} className="product-manual-modal__body">
+          {/* SECTION 1: Product Image */}
+          <div className="product-manual-modal__section">
+            <div className="product-manual-modal__section-header">
+              <h3 className="product-manual-modal__section-title">
+                <i className="ri-image-2-line" />
+                {isRussian ? "1. Фотография флакона" : "1. Flacon Visual"}
+              </h3>
+              {item?.rawImage && (
+                <button
+                  type="button"
+                  className="product-manual-modal__qogita-btn"
+                  onClick={() => {
+                    setImage(item.rawImage);
+                    setImageData(null);
+                  }}
+                  title={isRussian ? "Использовать исходное фото Qogita" : "Use original Qogita image"}
+                >
+                  <i className="ri-image-line" />
+                  {isRussian ? "Взять фото поставщика (Qogita)" : "Use Qogita Photo"}
+                </button>
+              )}
+            </div>
+
+            <div className="product-manual-modal__image-layout">
+              <div className="product-manual-modal__image-preview-wrap">
+                <div className={`product-manual-modal__image-preview ${image ? "product-manual-modal__image-preview--has-image" : ""}`}>
+                  {image ? (
+                    <img src={image} alt={name || "Preview"} />
+                  ) : (
+                    <div className="product-manual-modal__image-placeholder">
+                      <i className="ri-image-add-line" />
+                      <span>{isRussian ? "Нет изображения" : "No image selected"}</span>
+                    </div>
+                  )}
+                </div>
+                {image && (
+                  <button
+                    type="button"
+                    className="product-manual-modal__clear-btn"
+                    onClick={() => {
+                      setImage("");
+                      setImageData(null);
+                    }}
+                  >
+                    <i className="ri-delete-bin-line" />
+                    {isRussian ? "Удалить фото" : "Clear image"}
+                  </button>
+                )}
+              </div>
+
+              <div className="product-manual-modal__image-controls">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  style={{ display: "none" }}
+                  onChange={(e) => handleFile(e.target.files?.[0])}
+                />
+                <div
+                  className={`product-manual-modal__dropzone ${isDragging ? "product-manual-modal__dropzone--dragging" : ""}`}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleFile(file);
+                  }}
+                >
+                  <i className="ri-upload-cloud-2-line" />
+                  <p>{isRussian ? "Нажмите для выбора файла или перетащите сюда" : "Click to select or drag and drop image"}</p>
+                  <span>PNG, JPG, WEBP (рекомендуется прозрачный или чистый фон)</span>
+                </div>
+
+                <div className="product-manual-modal__field">
+                  <label>{isRussian ? "Или укажите прямую ссылку на фото:" : "Or provide direct image URL:"}</label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <input
+                      type="text"
+                      placeholder="https://example.com/perfume.png"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleApplyUrl();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="product-manual-modal__magic-btn"
+                      onClick={handleApplyUrl}
+                    >
+                      {isRussian ? "Применить" : "Apply"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: Core Information */}
+          <div className="product-manual-modal__section">
+            <h3 className="product-manual-modal__section-title">
+              <i className="ri-information-line" />
+              {isRussian ? "2. Основная информация о товаре" : "2. Core Information"}
+            </h3>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Название парфюма *" : "Perfume Name *"}</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={isRussian ? "Например: Khamrah Lattafa" : "e.g. Khamrah Lattafa"}
+                />
+              </div>
+
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Бренд *" : "Brand *"}</label>
+                <input
+                  type="text"
+                  required
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  placeholder="Lattafa, Afnan, Armaf..."
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-4">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Категория" : "Category"}</label>
+                <select
+                  value={categorySlug}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                >
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <option key={cat.slug} value={cat.slug}>
+                      {isRussian ? cat.ru : cat.en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Пол" : "Gender"}</label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g.ru} value={g.ru}>
+                      {isRussian ? g.ru : g.en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Объём флакона" : "Volume"}</label>
+                <input
+                  type="text"
+                  value={volume}
+                  onChange={(e) => setVolume(e.target.value)}
+                  placeholder="100 мл / 3.4 FL.OZ."
+                />
+              </div>
+
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Концентрация" : "Concentration"}</label>
+                <input
+                  type="text"
+                  value={concentration}
+                  onChange={(e) => setConcentration(e.target.value)}
+                  placeholder="Eau De Parfum"
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Цена в каталоге (€) *" : "Price in EUR *"}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  required
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
+
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Минимальный заказ (шт)" : "Minimum Order (MOQ)"}</label>
+                <input
+                  type="number"
+                  disabled
+                  value="1"
+                  title={isRussian ? "Минимальное количество заказа всегда 1 штука" : "Minimum order is 1 piece"}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 3: Fragrance Notes Pyramid */}
+          <div className="product-manual-modal__section">
+            <div className="product-manual-modal__section-header">
+              <h3 className="product-manual-modal__section-title">
+                <i className="ri-sparkling-2-line" />
+                {isRussian ? "3. Пирамида аромата и ноты" : "3. Fragrance Notes Pyramid"}
+              </h3>
+              <button
+                type="button"
+                className="product-manual-modal__magic-btn"
+                onClick={handleRegenerateEnrichment}
+                title={isRussian ? "Автоматически обновить ноты и описания по названию и бренду" : "Regenerate harmonious notes and descriptions"}
+              >
+                <i className="ri-magic-line" />
+                {isRussian ? "Перегенерировать ноты и описания" : "Regenerate with AI"}
+              </button>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Краткий аккорд нот (RU)" : "Notes Summary (RU)"}</label>
+                <input
+                  type="text"
+                  value={notesSummaryRu}
+                  onChange={(e) => setNotesSummaryRu(e.target.value)}
+                  placeholder="Бергамот · Дамасская роза · Белый мускус"
+                />
+              </div>
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Краткий аккорд нот (EN)" : "Notes Summary (EN)"}</label>
+                <input
+                  type="text"
+                  value={notesSummaryEn}
+                  onChange={(e) => setNotesSummaryEn(e.target.value)}
+                  placeholder="Bergamot · Damask Rose · White Musk"
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Верхние ноты (RU, через запятую)" : "Top Notes (RU, comma-separated)"}</label>
+                <input
+                  type="text"
+                  value={topNotesRu}
+                  onChange={(e) => setTopNotesRu(e.target.value)}
+                  placeholder="Шафран, Бергамот, Розовый перец"
+                />
+              </div>
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Верхние ноты (EN)" : "Top Notes (EN)"}</label>
+                <input
+                  type="text"
+                  value={topNotesEn}
+                  onChange={(e) => setTopNotesEn(e.target.value)}
+                  placeholder="Saffron, Bergamot, Pink Pepper"
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Ноты сердца (RU)" : "Heart Notes (RU)"}</label>
+                <input
+                  type="text"
+                  value={heartNotesRu}
+                  onChange={(e) => setHeartNotesRu(e.target.value)}
+                  placeholder="Дамасская роза, Уд, Золотая амбра"
+                />
+              </div>
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Ноты сердца (EN)" : "Heart Notes (EN)"}</label>
+                <input
+                  type="text"
+                  value={heartNotesEn}
+                  onChange={(e) => setHeartNotesEn(e.target.value)}
+                  placeholder="Damask Rose, Precious Oud, Golden Amber"
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Базовые ноты (RU)" : "Base Notes (RU)"}</label>
+                <input
+                  type="text"
+                  value={baseNotesRu}
+                  onChange={(e) => setBaseNotesRu(e.target.value)}
+                  placeholder="Белый мускус, Сандал, Мадагаскарская ваниль"
+                />
+              </div>
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Базовые ноты (EN)" : "Base Notes (EN)"}</label>
+                <input
+                  type="text"
+                  value={baseNotesEn}
+                  onChange={(e) => setBaseNotesEn(e.target.value)}
+                  placeholder="White Musk, Sandalwood, Madagascar Vanilla"
+                />
+              </div>
+            </div>
+
+            <div className="product-manual-modal__grid-2">
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Стойкость" : "Longevity"}</label>
+                <input
+                  type="text"
+                  value={longevity}
+                  onChange={(e) => setLongevity(e.target.value)}
+                  placeholder="8–12 часов"
+                />
+              </div>
+              <div className="product-manual-modal__field">
+                <label>{isRussian ? "Шлейф" : "Sillage"}</label>
+                <input
+                  type="text"
+                  value={sillage}
+                  onChange={(e) => setSillage(e.target.value)}
+                  placeholder="Выразительный, шлейфовый"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 4: Luxury Descriptions */}
+          <div className="product-manual-modal__section">
+            <h3 className="product-manual-modal__section-title">
+              <i className="ri-file-text-line" />
+              {isRussian ? "4. Описание парфюма" : "4. Perfume Descriptions"}
+            </h3>
+
+            <div className="product-manual-modal__field">
+              <label>{isRussian ? "Описание на русском (RU)" : "Description in Russian (RU)"}</label>
+              <textarea
+                rows={4}
+                value={descriptionRu}
+                onChange={(e) => setDescriptionRu(e.target.value)}
+                placeholder={isRussian ? "Подробное роскошное описание аромата Al-Warda..." : "Detailed luxury Russian description..."}
+              />
+            </div>
+
+            <div className="product-manual-modal__field">
+              <label>{isRussian ? "Описание на английском (EN)" : "Description in English (EN)"}</label>
+              <textarea
+                rows={4}
+                value={descriptionEn}
+                onChange={(e) => setDescriptionEn(e.target.value)}
+                placeholder="Detailed luxury English description..."
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "none" }}>
+            <button type="submit" tabIndex={-1} />
+          </div>
+        </form>
+
+        <footer className="product-manual-modal__footer">
+          {error && (
+            <div className="product-manual-modal__error" role="alert">
+              <i className="ri-error-warning-line" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="product-manual-modal__footer-actions">
+            <button
+              type="button"
+              className="product-manual-modal__cancel-btn"
+              onClick={onClose}
+              disabled={saving}
+            >
+              {isRussian ? "Отмена" : "Cancel"}
+            </button>
+            <button
+              type="button"
+              className="product-manual-modal__submit-btn"
+              disabled={saving}
+              onClick={handleSubmit}
+            >
+              {saving ? (
+                <>
+                  <i className="ri-loader-4-line ri-spin" />
+                  {isRussian ? "Отправка в БД..." : "Saving to DB..."}
+                </>
+              ) : (
+                <>
+                  <i className="ri-database-2-line" />
+                  {isRussian ? "Отправить в базу данных" : "Save to Database"}
+                </>
+              )}
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}

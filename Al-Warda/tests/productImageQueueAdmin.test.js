@@ -4,7 +4,9 @@ import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
   requeueFailedProductItems,
+  saveManualProductItem,
 } from "../server/productImageQueueAdmin.js";
+import { hasCompletedGeneratedImage } from "../utils/perfumes.js";
 
 const originalFetch = globalThis.fetch;
 
@@ -223,5 +225,91 @@ describe("product image queue admin API", () => {
     assert.equal(res.status, 200);
     assert.equal((await res.json()).requeuedCount, 1);
     assert.deepEqual(patched, [{ status: "pending" }]);
+  });
+
+  it("allows privileged users to manually configure a failed product, save it to DB, and mark completed", async () => {
+    let patchedBody = null;
+    let uploadedFile = null;
+
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      if (url.pathname.includes("/storage/v1/object/product-images/")) {
+        uploadedFile = { url: url.toString(), headers: init.headers };
+        return new Response(null, { status: 200 });
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "PATCH") {
+        patchedBody = JSON.parse(init.body);
+        return Response.json([{ id: 42, ...patchedBody }]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && (!init.method || init.method === "GET")) {
+        return Response.json([
+          {
+            id: 42,
+            name: "Yara Lattafa 100ml",
+            brand: "Lattafa",
+            price: 28.5,
+            currency: "EUR",
+            image: "https://img.qogita.com/yara-raw.jpg",
+            info: {
+              rawImage: "https://img.qogita.com/yara-raw.jpg",
+              imageGeneration: { status: "failed", error: "Flagged by AI safety filter" },
+            },
+          },
+        ]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+
+    const res = await saveManualProductItem(
+      request("/api/admin/product-images/manual-save", userCookie(), {
+        method: "POST",
+        body: JSON.stringify({
+          id: 42,
+          name: "Yara Lattafa",
+          brand: "Lattafa",
+          price: 32.0,
+          currency: "EUR",
+          category: "Восточные",
+          categorySlug: "oriental",
+          categoryEn: "Oriental",
+          volume: "100 мл / 3.4 FL.OZ.",
+          concentration: "Eau De Parfum",
+          gender: "Женский",
+          topNotes: ["Гелиотроп", "Орхидея", "Мандарин"],
+          heartNotes: ["Гурманский аккорд", "Тропические фрукты"],
+          baseNotes: ["Ваниль", "Сандал", "Мускус"],
+          descriptionRu: "Роскошный восточный аромат Yara от Lattafa.",
+          descriptionEn: "Exquisite oriental fragrance Yara by Lattafa.",
+          imageData: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        }),
+      }),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.id, 42);
+    assert.ok(uploadedFile);
+    assert.ok(uploadedFile.url.includes("/storage/v1/object/product-images/manual-42-"));
+    assert.equal(patchedBody.name, "Yara Lattafa");
+    assert.equal(patchedBody.brand, "Lattafa");
+    assert.equal(patchedBody.price, 32.0);
+    assert.equal(patchedBody.info.imageGeneration.status, "completed");
+    assert.equal(patchedBody.info.imageGeneration.manual, true);
+    assert.equal(patchedBody.info.imageGeneration.failed, false);
+    assert.ok(patchedBody.info.imageGeneration.imageUrl.includes("/storage/v1/object/public/product-images/manual-42-"));
+
+    // Verify hasCompletedGeneratedImage recognizes the manually configured product
+    assert.equal(
+      hasCompletedGeneratedImage({
+        image: patchedBody.image,
+        info: patchedBody.info,
+      }),
+      true,
+    );
   });
 });
