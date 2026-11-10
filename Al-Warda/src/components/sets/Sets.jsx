@@ -553,11 +553,6 @@ export default function Sets() {
 
                     <div className="warda-perfume-card__price">
                       {formatPrice(currentPrice)}
-                      {!isSet && (
-                        <span style={{ fontSize: "0.72rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
-                          / {volLabel}
-                        </span>
-                      )}
                     </div>
                   </div>
 

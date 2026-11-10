@@ -1334,11 +1334,6 @@ export default function Featured() {
                     </p>
                     <div className="warda-perfume-card__price">
                       {formatPrice(displayPrice)}
-                      {defaultOpt.isSecondLargest && (
-                        <span style={{ fontSize: "0.74rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
-                          / {language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn}
-                        </span>
-                      )}
                     </div>
                   </div>
 

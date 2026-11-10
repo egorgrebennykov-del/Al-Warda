@@ -945,11 +945,6 @@ export default function WardaAssistant() {
                                     <div className="warda-book-card__price-row">
                                       <span className="warda-book-card__price">
                                         {formatPrice(getDefaultPerfumeVolumeOption(book).price)}
-                                        {getDefaultPerfumeVolumeOption(book).isSecondLargest && (
-                                          <span style={{ fontSize: "0.72rem", color: "#a89882", marginLeft: "0.3rem" }}>
-                                            / {language === "ru" ? getDefaultPerfumeVolumeOption(book).labelRu : getDefaultPerfumeVolumeOption(book).labelEn}
-                                          </span>
-                                        )}
                                       </span>
                                     </div>
 
