@@ -7,6 +7,7 @@ import {
 } from "../../../utils/auth";
 import { useLanguage } from "../../context/languageContext";
 import { useAuth } from "../../context/AuthContext";
+import { useConfirm } from "../../context/ConfirmContext";
 import "./Profile.css";
 
 function TruncatedField({
@@ -141,6 +142,7 @@ function TruncatedField({
 export default function Profile() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { user, isLoggedIn: loggedIn, logout: authLogout, refreshUser } = useAuth();
   const [profile, setProfile] = useState(() => user);
   const [notice, setNotice] = useState(null);
@@ -158,7 +160,16 @@ export default function Profile() {
 
   if (!loggedIn) return <Navigate to="/login" replace />;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: t("auth.logoutConfirmTitle"),
+      message: t("auth.logoutConfirmMessage"),
+      confirmText: t("auth.logoutConfirmBtn"),
+      cancelText: t("auth.logoutCancelBtn"),
+      type: "warning",
+      icon: "ri-logout-box-r-line",
+    });
+    if (!confirmed) return;
     authLogout();
     navigate("/");
   };

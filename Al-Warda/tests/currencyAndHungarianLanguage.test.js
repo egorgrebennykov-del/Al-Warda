@@ -299,3 +299,24 @@ test("stripVolumeFromName cleanly removes volume specifications from perfume nam
   assert.equal(enriched.name, "Afnan Supremacy Pink Eau De Parfum Spray For Women");
   assert.ok(enriched.volume.includes("100 мл"), "Bottle volume should still be correctly extracted");
 });
+
+test("logout confirmation translations exist in all 6 languages and Header & Profile require confirmation", () => {
+  const languages = ["ru", "en", "hu", "bg", "el", "ro"];
+  for (const lang of languages) {
+    const dict = translations[lang];
+    assert.ok(dict, `Language ${lang} exists in translations`);
+    assert.ok(dict["auth.logoutConfirmTitle"], `${lang} has auth.logoutConfirmTitle`);
+    assert.ok(dict["auth.logoutConfirmMessage"], `${lang} has auth.logoutConfirmMessage`);
+    assert.ok(dict["auth.logoutConfirmBtn"], `${lang} has auth.logoutConfirmBtn`);
+    assert.ok(dict["auth.logoutCancelBtn"], `${lang} has auth.logoutCancelBtn`);
+  }
+
+  // Check that Header.jsx and Profile.jsx use confirm before authLogout
+  const headerCode = fs.readFileSync("Al-Warda/src/components/header/Header.jsx", "utf8");
+  assert.ok(headerCode.includes("const confirmed = await confirm"), "Header must ask for confirmation on logout");
+  assert.ok(headerCode.includes("if (!confirmed) return;"), "Header must abort logout if not confirmed");
+
+  const profileCode = fs.readFileSync("Al-Warda/src/components/profile/Profile.jsx", "utf8");
+  assert.ok(profileCode.includes("const confirmed = await confirm"), "Profile must ask for confirmation on logout");
+  assert.ok(profileCode.includes("if (!confirmed) return;"), "Profile must abort logout if not confirmed");
+});

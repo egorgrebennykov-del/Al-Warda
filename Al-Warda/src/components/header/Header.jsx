@@ -4,6 +4,7 @@ import { formatRoleName } from "../../../utils/auth";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
+import { useConfirm } from "../../context/ConfirmContext";
 import { fetchUserInquiry, fetchAdminUnreadCount } from "../../../utils/inquiries";
 import { getCartItemCount } from "../../../utils/cart";
 import "./Header.css";
@@ -31,6 +32,7 @@ const CURRENCY_LIST = [
 export default function Header({ theme, isLight, onSearch }) {
   const navigate = useNavigate();
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
+  const confirm = useConfirm();
   const { currency, setCurrency, toggleCurrency } = useCurrency();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -196,8 +198,17 @@ export default function Header({ theme, isLight, onSearch }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsDropdownOpen(false);
+    const confirmed = await confirm({
+      title: t("auth.logoutConfirmTitle"),
+      message: t("auth.logoutConfirmMessage"),
+      confirmText: t("auth.logoutConfirmBtn"),
+      cancelText: t("auth.logoutCancelBtn"),
+      type: "warning",
+      icon: "ri-logout-box-r-line",
+    });
+    if (!confirmed) return;
     authLogout();
     navigate("/");
   };
