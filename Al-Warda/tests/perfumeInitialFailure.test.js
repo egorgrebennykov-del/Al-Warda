@@ -14,8 +14,8 @@ test("a failed initial catalog request is not immediately repeated", async () =>
   };
   try {
     assert.deepEqual(await getPerfumes(), []);
-    assert.equal(calls.filter((url) => url.includes("/rest/v1/stocks")).length, 1);
-    assert.equal(calls.length, 2);
+    assert.equal(calls.filter((url) => url.includes("/rest/v1/stocks") && url.includes("order=id.asc")).length, 1);
+    assert.equal(calls.length, 3);
   } finally {
     globalThis.fetch = originalFetch;
   }

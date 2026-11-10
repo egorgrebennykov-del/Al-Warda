@@ -18,9 +18,9 @@ test("concurrent initial loads share requests and cached product navigation avoi
     const [catalog, product] = await Promise.all([getPerfumes(), getPerfumeById("test-7")]);
     assert.equal(catalog.length, 1);
     assert.equal(product.id, "7");
-    assert.equal(calls.length, 2);
+    assert.equal(calls.length, 3);
     assert.equal((await getPerfumeById("test-7")).id, "7");
-    assert.equal(calls.length, 2);
+    assert.equal(calls.length, 3);
   } finally {
     globalThis.fetch = originalFetch;
   }

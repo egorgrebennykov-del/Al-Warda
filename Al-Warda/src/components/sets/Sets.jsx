@@ -9,6 +9,7 @@ import {
   SAMPLE_VOLUMES,
   getSamplePrice,
   createSampleCartItem,
+  hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -88,7 +89,7 @@ export default function Sets() {
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
-          setAllItems(items || []);
+          setAllItems((items || []).filter(hasCompletedGeneratedImage));
           setLoading(false);
         }
       })
@@ -100,7 +101,9 @@ export default function Sets() {
     const timer = window.setInterval(() => {
       getPerfumes({ refresh: true })
         .then((items) => {
-          if (!cancelled && items?.length) setAllItems(items);
+          if (!cancelled && items?.length) {
+            setAllItems((items || []).filter(hasCompletedGeneratedImage));
+          }
         })
         .catch(() => {});
     }, 30000);
@@ -510,7 +513,8 @@ export default function Sets() {
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          e.currentTarget.hidden = true;
+                          const card = e.currentTarget.closest(".warda-perfume-card");
+                          if (card) card.style.display = "none";
                         }}
                       />
                     )}

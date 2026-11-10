@@ -9,6 +9,7 @@ import {
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
   parseVolumeMl,
+  hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -388,7 +389,8 @@ export default function Featured() {
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
-          setPerfumes(items);
+          const valid = (items || []).filter(hasCompletedGeneratedImage);
+          setPerfumes(valid);
           setLoading(false);
         }
       })
@@ -400,7 +402,10 @@ export default function Featured() {
     const timer = window.setInterval(() => {
       getPerfumes({ refresh: true })
         .then((items) => {
-          if (!cancelled) setPerfumes(items);
+          if (!cancelled) {
+            const valid = (items || []).filter(hasCompletedGeneratedImage);
+            setPerfumes(valid);
+          }
         })
         .catch((err) => console.warn("Could not refresh catalog:", err));
     }, 30000);
@@ -1307,7 +1312,8 @@ export default function Featured() {
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        e.currentTarget.hidden = true;
+                        const card = e.currentTarget.closest(".warda-perfume-card");
+                        if (card) card.style.display = "none";
                       }}
                     />
                   </div>

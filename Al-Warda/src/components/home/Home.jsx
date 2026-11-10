@@ -310,7 +310,8 @@ export default function Home() {
                     className="warda-perfume-card__img"
                     loading="lazy" decoding="async"
                     onError={(e) => {
-                      e.currentTarget.hidden = true;
+                      const card = e.currentTarget.closest(".warda-perfume-card");
+                      if (card) card.style.display = "none";
                     }}
                   />
                 </div>

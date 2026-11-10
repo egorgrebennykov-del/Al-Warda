@@ -18,6 +18,9 @@ describe("perfume image readiness", () => {
       if (url.pathname === "/api/qogita/arabian-perfumes") {
         return Response.json([]);
       }
+      if (url.searchParams.get("slug") === "eq.site-settings") {
+        return Response.json([]);
+      }
       assert.equal(url.pathname, "/rest/v1/stocks");
       assert.equal(url.searchParams.get("info->imageGeneration->>status"), "eq.completed");
       return Response.json([

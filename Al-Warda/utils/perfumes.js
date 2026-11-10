@@ -16,6 +16,7 @@ const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v4";
 
 function resolveCardImage(img, gtin, rawImage) {
   if (img && /^https:\/\//i.test(img)) return img;
+  if (img && isGeneratedProductImage(img)) return img;
   if (gtin) return `/assets/img/products/${gtin}.jpg?v=${PRODUCT_IMAGE_VERSION}`;
   if (img && img.startsWith("/assets/img/")) {
     return `${img.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`;
@@ -26,7 +27,7 @@ function resolveCardImage(img, gtin, rawImage) {
   return img || "";
 }
 
-function hasCompletedGeneratedImage(product) {
+export function hasCompletedGeneratedImage(product) {
   const generation = product?.info?.imageGeneration;
   const image = generation?.imageUrl || product?.image;
   return (
@@ -1427,10 +1428,7 @@ export function ensurePerfumeEnrichment(p) {
   const gtin = p.gtin || p.info?.gtin;
   let resolvedImg = "";
   if (hasCompletedGeneratedImage(p)) {
-    const rawGen = p.info.imageGeneration.imageUrl || p.image;
-    resolvedImg = rawGen && rawGen.startsWith("/assets/img/")
-      ? `${rawGen.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`
-      : rawGen;
+    resolvedImg = p.info?.imageGeneration?.imageUrl || p.image || "";
   } else {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
@@ -1491,7 +1489,7 @@ export async function fetchPerfumesFromSupabase() {
       const from = page * pageSize;
       const to = from + pageSize - 1;
       const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 4500) : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null;
       const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc&info->imageGeneration->>status=eq.completed`, {
         headers: {
           apikey: SUPABASE_KEY,
@@ -1628,23 +1626,6 @@ let memoryDropshipCache = null;
 
 export async function fetchDropshipArabianPerfumes(query = "") {
   try {
-    // 1. Fast edge static cache (resolves in ~15ms without cold-start API lag)
-    if (!query && typeof window !== "undefined") {
-      try {
-        const staticRes = await fetch("/data/cachedArabianPerfumes.json");
-        if (staticRes.ok) {
-          const staticData = await staticRes.json();
-          if (Array.isArray(staticData) && staticData.length > 0) {
-            const items = staticData.map(ensurePerfumeEnrichment);
-            memoryDropshipCache = items;
-            return items;
-          }
-        }
-      } catch {
-        // Fallback to API if static JSON is not accessible
-      }
-    }
-
     const res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
     if (res.ok) {
       const data = await res.json();
@@ -1699,10 +1680,12 @@ async function getPerfumesUnfiltered(options = {}) {
     const uniqueDropship = dropship.filter(
       (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
     );
-    return includeDropship ? [...base, ...uniqueDropship] : base;
+    const combined = includeDropship ? [...base, ...uniqueDropship] : base;
+    return combined.filter(hasCompletedGeneratedImage);
   }
 
-  return includeDropship ? [...base, ...dropship] : base;
+  const combined = includeDropship ? [...base, ...dropship] : base;
+  return combined.filter(hasCompletedGeneratedImage);
 }
 
 let memoryMinOrderSettings = { minOrderFrom: 0, minOrderTo: 0 };
@@ -1873,43 +1856,64 @@ export async function getPerfumeSets(options = {}) {
 
 export const INITIAL_BEST_SELLERS = [
   {
-    id: "dropship-6291108730515",
-    slug: "dropship-6291108730515",
-    name: "Lattafa Yara 100ml EDP",
-    brand: "Lattafa",
-    price: 12.95,
-    volume: "100 мл / 3.4 FL.OZ.",
-    image: "/assets/img/products/6291108730515.jpg?v=qogita-gemini-image-v3",
+    id: "4991",
+    slug: "stock-4991",
+    name: "Afnan Mirsaal Of Trust Eau De Parfum 90ml",
+    brand: "Afnan",
+    price: 34.50,
+    volume: "90 мл / 3.0 FL.OZ.",
+    image: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
+    fullCardImage: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
     rating: 4.9,
     reviewsCount: 38,
     isBestSeller: true,
     inStock: true,
+    info: {
+      imageGeneration: {
+        status: "completed",
+        imageUrl: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
+      },
+    },
   },
   {
-    id: "dropship-6291108737194",
-    slug: "dropship-6291108737194",
-    name: "Lattafa Khamrah 100ml EDP",
-    brand: "Lattafa",
-    price: 17.81,
+    id: "4998",
+    slug: "stock-4998",
+    name: "Afnan Rare Tiffany Eau De Parfum 100ml Spray",
+    brand: "Afnan",
+    price: 32.00,
     volume: "100 мл / 3.4 FL.OZ.",
-    image: "/assets/img/products/6291108737194.jpg?v=qogita-gemini-image-v3",
+    image: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
+    fullCardImage: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
     rating: 4.9,
     reviewsCount: 42,
     isBestSeller: true,
     inStock: true,
+    info: {
+      imageGeneration: {
+        status: "completed",
+        imageUrl: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
+      },
+    },
   },
   {
-    id: "dropship-6290360593661",
-    slug: "dropship-6290360593661",
-    name: "Lattafa Khamrah Qahwa 100ml EDP",
-    brand: "Lattafa",
-    price: 15.82,
+    id: "5005",
+    slug: "stock-5005",
+    name: "Afnan Supremacy Not Only Intense Eau De Parfum 100ml For Men",
+    brand: "Afnan",
+    price: 36.90,
     volume: "100 мл / 3.4 FL.OZ.",
-    image: "/assets/img/products/6290360593661.jpg?v=qogita-gemini-image-v3",
+    image: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
+    fullCardImage: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
     rating: 4.9,
     reviewsCount: 36,
     isBestSeller: true,
     inStock: true,
+    info: {
+      imageGeneration: {
+        status: "completed",
+        imageUrl: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
+      },
+    },
   },
 ].map((item) => ensurePerfumeEnrichment(item));
 

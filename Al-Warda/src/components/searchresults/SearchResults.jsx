@@ -6,6 +6,7 @@ import {
   isPerfumeSet,
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
+  hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -127,7 +128,7 @@ export default function SearchResults() {
     getPerfumes({ refresh: true })
       .then((all) => {
         if (cancelled) return;
-        setAllPerfumes(all);
+        setAllPerfumes((all || []).filter(hasCompletedGeneratedImage));
         setLoading(false);
       })
       .catch(() => {
@@ -136,7 +137,7 @@ export default function SearchResults() {
 
     const timer = window.setInterval(() => {
       getPerfumes({ refresh: true })
-        .then((all) => { if (!cancelled) setAllPerfumes(all); })
+        .then((all) => { if (!cancelled) setAllPerfumes((all || []).filter(hasCompletedGeneratedImage)); })
         .catch((err) => console.warn("Could not refresh search results:", err));
     }, 30000);
     return () => {
@@ -351,7 +352,8 @@ export default function SearchResults() {
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        e.currentTarget.hidden = true;
+                        const card = e.currentTarget.closest(".warda-perfume-card");
+                        if (card) card.style.display = "none";
                       }}
                     />
                     <div className="warda-perfume-card__sheen" />
