@@ -112,6 +112,7 @@ export function formatRoleName(role, language = "ru") {
     if (language === "bg") return "Разработчик";
     if (language === "hu") return "Fejlesztő";
     if (language === "el") return "Προγραμματιστής";
+    if (language === "ro") return "Dezvoltator";
     return "Developer";
   }
   if (norm === "admin") {
@@ -119,6 +120,7 @@ export function formatRoleName(role, language = "ru") {
     if (language === "bg") return "Администратор";
     if (language === "hu") return "Adminisztrátor";
     if (language === "el") return "Διαχειριστής";
+    if (language === "ro") return "Administrator";
     return "Admin";
   }
   if (norm === "vip") return "VIP";
@@ -126,6 +128,7 @@ export function formatRoleName(role, language = "ru") {
   if (language === "bg") return "Потребител";
   if (language === "hu") return "Felhasználó";
   if (language === "el") return "Χρήστης";
+  if (language === "ro") return "Utilizator";
   return "User";
 }
 
@@ -136,12 +139,14 @@ export function formatStatusName(status, language = "ru") {
     if (language === "bg") return "Привилегирован";
     if (language === "hu") return "Kiemelt";
     if (language === "el") return "Προνομιούχος";
+    if (language === "ro") return "Privilegiat";
     return "Privileged";
   }
   if (language === "ru") return "Юзер";
   if (language === "bg") return "Потребител";
   if (language === "hu") return "Felhasználó";
   if (language === "el") return "Χρήστης";
+  if (language === "ro") return "Utilizator";
   return "User";
 }
 

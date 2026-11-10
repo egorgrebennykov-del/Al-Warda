@@ -90,9 +90,29 @@ test("Greek language is registered in translations and has comprehensive key cov
   assert.equal(translations.el["privileged.title"], "Πίνακας Ελέγχου");
 });
 
+test("Romanian language is registered in translations and has comprehensive key coverage", () => {
+  assert.ok(translations.ro, "Romanian translation dictionary exists");
+  assert.ok(translations.ru, "Russian translation dictionary exists");
+
+  const ruKeys = Object.keys(translations.ru);
+  const roKeys = Object.keys(translations.ro);
+
+  // Romanian dictionary must cover all keys
+  assert.equal(roKeys.length, ruKeys.length, `Expected ${ruKeys.length} keys in Romanian, found ${roKeys.length}`);
+  for (const key of ruKeys) {
+    assert.ok(translations.ro[key] !== undefined, `Missing Romanian key: ${key}`);
+  }
+
+  // Verify key translations in Romanian
+  assert.equal(translations.ro["nav.home"], "Acasă");
+  assert.equal(translations.ro["nav.bookPicks"], "Colecție");
+  assert.equal(translations.ro["home.title"], "Parfumuri Orientale Autentice");
+  assert.equal(translations.ro["privileged.title"], "Panou de Control");
+});
+
 test("Language to default currency switching rule works correctly", () => {
   function getAutoCurrencyForLanguage(lang, prevLang, currentCurrency) {
-    if (lang === "hu" && prevLang !== "hu") {
+    if ((lang === "hu" || lang === "ro") && prevLang !== lang) {
       return "RON";
     }
     if ((lang === "en" || lang === "bg" || lang === "el") && prevLang !== lang) {
@@ -104,14 +124,23 @@ test("Language to default currency switching rule works correctly", () => {
   // Switching from Russian to Hungarian sets RON
   assert.equal(getAutoCurrencyForLanguage("hu", "ru", "EUR"), "RON");
 
-  // Switching from Hungarian to English sets EUR
-  assert.equal(getAutoCurrencyForLanguage("en", "hu", "RON"), "EUR");
+  // Switching from English to Romanian sets RON
+  assert.equal(getAutoCurrencyForLanguage("ro", "en", "EUR"), "RON");
 
-  // Switching from Hungarian to Bulgarian sets EUR
-  assert.equal(getAutoCurrencyForLanguage("bg", "hu", "RON"), "EUR");
+  // Switching from Greek to Romanian sets RON
+  assert.equal(getAutoCurrencyForLanguage("ro", "el", "HUF"), "RON");
 
-  // Switching from Hungarian to Greek sets EUR
-  assert.equal(getAutoCurrencyForLanguage("el", "hu", "RON"), "EUR");
+  // Staying on Romanian keeps RON
+  assert.equal(getAutoCurrencyForLanguage("ro", "ro", "RON"), "RON");
+
+  // Switching from Romanian to English sets EUR
+  assert.equal(getAutoCurrencyForLanguage("en", "ro", "RON"), "EUR");
+
+  // Switching from Romanian to Bulgarian sets EUR
+  assert.equal(getAutoCurrencyForLanguage("bg", "ro", "RON"), "EUR");
+
+  // Switching from Romanian to Greek sets EUR
+  assert.equal(getAutoCurrencyForLanguage("el", "ro", "RON"), "EUR");
 
   // Switching from Hungarian to English with HUF currency sets EUR
   assert.equal(getAutoCurrencyForLanguage("en", "hu", "HUF"), "EUR");

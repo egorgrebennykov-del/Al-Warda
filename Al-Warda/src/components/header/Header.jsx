@@ -333,7 +333,7 @@ export default function Header({ theme, isLight, onSearch }) {
                         >
                           <i className="ri-vip-crown-fill" style={{ color: "#ffd700" }} />
                           <span style={{ color: "#ffd700", fontWeight: 700 }}>
-                            {language === "ru" ? "Панель управления" : language === "hu" ? "Kezelőpanel" : language === "bg" ? "Контролен панел" : language === "el" ? "Πίνακας Ελέγχου" : "Privileged Panel"}
+                            {language === "ru" ? "Панель управления" : language === "hu" ? "Kezelőpanel" : language === "bg" ? "Контролен панел" : language === "el" ? "Πίνακας Ελέγχου" : language === "ro" ? "Panou de Control" : "Privileged Panel"}
                           </span>
                         </Link>
                       </li>
@@ -398,7 +398,9 @@ export default function Header({ theme, isLight, onSearch }) {
                     ? "Превключване на български"
                     : language === "bg"
                       ? "Αλλαγή στα ελληνικά"
-                      : "Переключить на русский"
+                      : language === "el"
+                        ? "Comută în limba română"
+                        : "Переключить на русский"
             }
           >
             {language.toUpperCase()}
@@ -410,10 +412,10 @@ export default function Header({ theme, isLight, onSearch }) {
             onClick={toggleCurrency}
             title={
               currency === "EUR"
-                ? (language === "ru" ? "Валюта: EUR (€) • Нажмите для смены" : language === "hu" ? "Pénznem: EUR (€) • Kattintson a váltáshoz" : language === "bg" ? "Валута: EUR (€) • Кликнете за смяна" : language === "el" ? "Νόμισμα: EUR (€) • Κάντε κλικ για αλλαγή" : "Currency: EUR (€) • Click to switch")
+                ? (language === "ru" ? "Валюта: EUR (€) • Нажмите для смены" : language === "hu" ? "Pénznem: EUR (€) • Kattintson a váltáshoz" : language === "bg" ? "Валута: EUR (€) • Кликнете за смяна" : language === "el" ? "Νόμισμα: EUR (€) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: EUR (€) • Click pentru schimbare" : "Currency: EUR (€) • Click to switch")
                 : currency === "RON"
-                  ? (language === "ru" ? "Валюта: RON (lei) • Нажмите для смены" : language === "hu" ? "Pénznem: RON (lei) • Kattintson a váltáshoz" : language === "bg" ? "Валута: RON (lei) • Кликнете за смяна" : language === "el" ? "Νόμισμα: RON (lei) • Κάντε κλικ για αλλαγή" : "Currency: RON (lei) • Click to switch")
-                  : (language === "ru" ? "Валюта: HUF (Fr) • Нажмите для смены" : language === "hu" ? "Pénznem: HUF (Fr) • Kattintson a váltáshoz" : language === "bg" ? "Валута: HUF (Fr) • Кликнете за смяна" : language === "el" ? "Νόμισμα: HUF (Fr) • Κάντε κλικ για αλλαγή" : "Currency: HUF (Fr) • Click to switch")
+                  ? (language === "ru" ? "Валюта: RON (lei) • Нажмите для смены" : language === "hu" ? "Pénznem: RON (lei) • Kattintson a váltáshoz" : language === "bg" ? "Валута: RON (lei) • Кликнете за смяна" : language === "el" ? "Νόμισμα: RON (lei) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: RON (lei) • Click pentru schimbare" : "Currency: RON (lei) • Click to switch")
+                  : (language === "ru" ? "Валюта: HUF (Fr) • Нажмите для смены" : language === "hu" ? "Pénznem: HUF (Fr) • Kattintson a váltáshoz" : language === "bg" ? "Валута: HUF (Fr) • Кликнете за смяна" : language === "el" ? "Νόμισμα: HUF (Fr) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: HUF (Fr) • Click pentru schimbare" : "Currency: HUF (Fr) • Click to switch")
             }
             aria-label={
               currency === "EUR" ? "Currency EUR (€)" : currency === "RON" ? "Currency RON (lei)" : "Currency HUF (Fr)"

@@ -10,10 +10,10 @@ function getInitialLanguage() {
   if (typeof document === "undefined") return "ru";
   try {
     const fromCookie = getCookie(COOKIE_KEY) || getCookie("language");
-    if (fromCookie === "ru" || fromCookie === "en" || fromCookie === "hu" || fromCookie === "bg" || fromCookie === "el") return fromCookie;
+    if (fromCookie === "ru" || fromCookie === "en" || fromCookie === "hu" || fromCookie === "bg" || fromCookie === "el" || fromCookie === "ro") return fromCookie;
 
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "ru" || saved === "en" || saved === "hu" || saved === "bg" || saved === "el") return saved;
+    if (saved === "ru" || saved === "en" || saved === "hu" || saved === "bg" || saved === "el" || saved === "ro") return saved;
   } catch {
     // Ignore storage/cookie errors
   }
@@ -39,6 +39,7 @@ export default function LanguageProvider({ children }) {
       if (current === "en") return "hu";
       if (current === "hu") return "bg";
       if (current === "bg") return "el";
+      if (current === "el") return "ro";
       return "ru";
     });
   };
