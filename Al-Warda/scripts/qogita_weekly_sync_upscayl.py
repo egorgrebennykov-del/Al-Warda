@@ -138,6 +138,15 @@ class QogitaSyncClient:
                 time.sleep(1.5)
         return None
 
+    def get_variant_offers(self, variant_fid):
+        if not variant_fid:
+            return []
+        url = f"{self.api_url}/buyers/variants/{requests.utils.quote(str(variant_fid))}/offers/"
+        res = self.get_with_retry(url)
+        if res is not None and res.status_code == 200:
+            return res.json().get("offers", [])
+        return []
+
     def fetch_brand_perfumes(self, brand_name, limit=None):
         items = []
         page = 1
@@ -201,7 +210,7 @@ class QogitaSyncClient:
         time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
-def extract_qogita_price_for_mov(item, target_mov=500.0):
+def extract_qogita_price_for_mov(item, target_mov=500.0, client=None):
     """
     Extract lowest price for minimum purchase MOV <= target_mov (default 500 EUR).
     Suppliers offer tiered pricing based on Minimum Order Value (MOV).
@@ -231,22 +240,44 @@ def extract_qogita_price_for_mov(item, target_mov=500.0):
                     if isinstance(t_list, list):
                         all_tiers.extend(t_list)
 
+    # If no tiers are present inline, fetch variant offers from Qogita API
+    if not all_tiers and client is not None:
+        fid = item.get("variantFid") or item.get("fid") or item.get("qid")
+        if not fid and item.get("productUrl"):
+            m = re.search(r'/products/([a-zA-Z0-9_-]+)/', item.get("productUrl"))
+            if m:
+                fid = m.group(1)
+        if fid:
+            offers_list = client.get_variant_offers(fid)
+            for off in offers_list:
+                if isinstance(off, dict):
+                    for key in ["tieredPrices", "tiered_prices"]:
+                        t_list = off.get(key)
+                        if isinstance(t_list, list):
+                            all_tiers.extend(t_list)
+
     eligible = []
+    lowest_overall = None
     for t in all_tiers:
         if not isinstance(t, dict):
             continue
         tier_mov = t.get("tierMov") or t.get("tier_mov") or {}
         mov_val = float(tier_mov.get("amount") if isinstance(tier_mov, dict) else (t.get("mov") or 0.0))
-        if mov_val <= target_mov:
-            tier_price = t.get("tierPrice") or t.get("tier_price") or {}
-            p_val = float(tier_price.get("amount") if isinstance(tier_price, dict) else (t.get("price") or t.get("amount") or 0.0))
-            cur = (tier_price.get("currency") if isinstance(tier_price, dict) else (t.get("currency") or "EUR")) or "EUR"
-            if p_val > 0:
+        tier_price = t.get("tierPrice") or t.get("tier_price") or {}
+        p_val = float(tier_price.get("amount") if isinstance(tier_price, dict) else (t.get("price") or t.get("amount") or 0.0))
+        cur = (tier_price.get("currency") if isinstance(tier_price, dict) else (t.get("currency") or "EUR")) or "EUR"
+        if p_val > 0:
+            if lowest_overall is None or p_val < lowest_overall[0]:
+                lowest_overall = (p_val, cur)
+            if mov_val <= target_mov:
                 eligible.append((p_val, cur))
 
     if eligible:
         eligible.sort(key=lambda x: x[0])
         return eligible[0][0], eligible[0][1]
+
+    if lowest_overall:
+        return lowest_overall[0], lowest_overall[1]
 
     price = item.get("price") or 25.0
     if isinstance(price, dict):
@@ -613,7 +644,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
             name = strip_volume_from_name(name_raw)
 
-            amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0)
+            amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0, client=client)
 
             gtin = item.get("gtin")
             name_clean = name.strip().lower()

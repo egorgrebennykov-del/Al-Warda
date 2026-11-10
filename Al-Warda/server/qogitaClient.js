@@ -134,8 +134,9 @@ export class QogitaClient {
     }
 
     if (res.status === 429) {
-      const retryAfter = res.headers.get("retry-after") || "60";
-      throw new Error(`Qogita Rate Limit Exceeded (429). Retry after ${retryAfter} seconds.`);
+      const retryAfterSec = parseInt(res.headers.get("retry-after") || "3", 10) || 3;
+      await new Promise((r) => setTimeout(r, Math.min(retryAfterSec, 15) * 1000));
+      return this.request(path, options, retryOnAuth);
     }
 
     if (res.status === 204) {

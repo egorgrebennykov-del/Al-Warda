@@ -4036,7 +4036,7 @@
     "brand": "Armaf",
     "category": "oud",
     "notesSummary": "Armaf",
-    "price": 15.08,
+    "price": 18.06,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -5695,7 +5695,7 @@
     "brand": "Armaf",
     "category": "oud",
     "notesSummary": "Armaf",
-    "price": 8.8,
+    "price": 8.76,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -7426,85 +7426,6 @@
     "descriptionEn": "Armaf Armaf Scentasy Matcha Magix Eau De Parfum Unisex 100 Milliliters is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
-    "id": "dropship-6294015183641",
-    "slug": "dropship-6294015183641",
-    "name": "Armaf Infinity Silver Eau De Parfum",
-    "title": "Armaf Infinity Silver Eau De Parfum",
-    "brand": "Armaf",
-    "category": "oud",
-    "notesSummary": "Armaf",
-    "price": 31.83,
-    "currency": "EUR",
-    "minOrderQuantity": 1,
-    "unit": 1,
-    "volume": "100ml / 3.4 FL.OZ.",
-    "concentration": "Eau de Parfum",
-    "gender": "Unisex",
-    "rating": 4.9,
-    "reviewsCount": 38,
-    "isBestSeller": false,
-    "isFeatured": true,
-    "inStock": true,
-    "isDropship": true,
-    "deliveryTime": "4–7 дней (прямая поставка)",
-    "image": "/assets/img/products/6294015183641.jpg?v=qogita-gemini-image-v3",
-    "fullCardImage": "/assets/img/products/6294015183641.jpg?v=qogita-gemini-image-v3",
-    "rawImage": "https://static.prod.qogita.com/files/images/variants/E7AkS9rLuKANZE86pMZ3zN.jpg",
-    "gtin": "6294015183641",
-    "origin": "Ближний Восток",
-    "originEn": "Middle East",
-    "categoryRu": "Восточные",
-    "categoryEn": "Oriental",
-    "topNotes": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotes": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotes": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesRu": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotesRu": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotesRu": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesEn": [
-      "Saffron",
-      "Bergamot",
-      "Pink Pepper"
-    ],
-    "heartNotesEn": [
-      "Damask Rose",
-      "Precious Oud",
-      "Amber"
-    ],
-    "baseNotesEn": [
-      "White Musk",
-      "Sandalwood",
-      "Madagascar Vanilla"
-    ],
-    "description": "Armaf Armaf Infinity Silver Eau De Parfum 105 Milliliters — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionRu": "Armaf Armaf Infinity Silver Eau De Parfum 105 Milliliters — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionEn": "Armaf Armaf Infinity Silver Eau De Parfum 105 Milliliters is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
-  },
-  {
     "id": "dropship-6294015155624",
     "slug": "dropship-6294015155624",
     "name": "Armaf Ego Exotic Eau De Parfum For Women",
@@ -7898,6 +7819,85 @@
     "description": "Armaf Armaf Miss Dazzling Eau De Parfum Spray 100ml — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionRu": "Armaf Armaf Miss Dazzling Eau De Parfum Spray 100ml — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionEn": "Armaf Armaf Miss Dazzling Eau De Parfum Spray 100ml is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
+    "id": "dropship-6294015168174",
+    "slug": "dropship-6294015168174",
+    "name": "Armaf Miss Grandeur Eau De Parfum Spray",
+    "title": "Armaf Miss Grandeur Eau De Parfum Spray",
+    "brand": "Armaf",
+    "category": "oud",
+    "notesSummary": "Armaf",
+    "price": 10.73,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/6294015168174.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/6294015168174.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/AfwT9Cwud22d3e2nbPDKFi.jpg",
+    "gtin": "6294015168174",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Armaf Armaf Miss Grandeur Eau De Parfum Spray 100ml — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Armaf Armaf Miss Grandeur Eau De Parfum Spray 100ml — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Armaf Armaf Miss Grandeur Eau De Parfum Spray 100ml is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
     "id": "dropship-6291100131716",
@@ -10593,7 +10593,7 @@
     "brand": "Al Haramain",
     "category": "oud",
     "notesSummary": "Al Haramain",
-    "price": 7.21,
+    "price": 9.3,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -11541,7 +11541,7 @@
     "brand": "Al Haramain",
     "category": "oud",
     "notesSummary": "Al Haramain",
-    "price": 48.97,
+    "price": 48.76,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -13595,7 +13595,7 @@
     "brand": "Ard Al Zaafaran",
     "category": "oud",
     "notesSummary": "Ard Al Zaafaran",
-    "price": 8.9,
+    "price": 8.87,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -13753,7 +13753,7 @@
     "brand": "Ard Al Zaafaran",
     "category": "oud",
     "notesSummary": "Ard Al Zaafaran",
-    "price": 7.3,
+    "price": 7.27,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -14148,7 +14148,7 @@
     "brand": "Ard Al Zaafaran",
     "category": "oud",
     "notesSummary": "Ard Al Zaafaran",
-    "price": 8.23,
+    "price": 8.19,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -15886,7 +15886,7 @@
     "brand": "Maison Alhambra",
     "category": "oud",
     "notesSummary": "Maison Alhambra",
-    "price": 11.06,
+    "price": 9.33,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -19994,7 +19994,7 @@
     "brand": "Afnan",
     "category": "oud",
     "notesSummary": "Afnan",
-    "price": 34.38,
+    "price": 41.49,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -20468,7 +20468,7 @@
     "brand": "Afnan",
     "category": "oud",
     "notesSummary": "Afnan",
-    "price": 18.46,
+    "price": 18.38,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -22206,7 +22206,7 @@
     "brand": "Afnan",
     "category": "oud",
     "notesSummary": "Afnan",
-    "price": 20.57,
+    "price": 20.63,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -24102,7 +24102,7 @@
     "brand": "Ajmal",
     "category": "oud",
     "notesSummary": "Ajmal",
-    "price": 12.39,
+    "price": 12.33,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -24339,7 +24339,7 @@
     "brand": "Ajmal",
     "category": "oud",
     "notesSummary": "Ajmal",
-    "price": 5.54,
+    "price": 5.52,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -25919,7 +25919,7 @@
     "brand": "Ajmal",
     "category": "oud",
     "notesSummary": "Ajmal",
-    "price": 9.95,
+    "price": 9.92,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -25998,7 +25998,7 @@
     "brand": "Ajmal",
     "category": "oud",
     "notesSummary": "Ajmal",
-    "price": 7.97,
+    "price": 7.94,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -37137,7 +37137,7 @@
     "brand": "Asdaaf",
     "category": "oud",
     "notesSummary": "Asdaaf",
-    "price": 8.59,
+    "price": 5.98,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -37453,7 +37453,7 @@
     "brand": "Asdaaf",
     "category": "oud",
     "notesSummary": "Asdaaf",
-    "price": 2.21,
+    "price": 2.14,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -38006,7 +38006,7 @@
     "brand": "Asdaaf",
     "category": "oud",
     "notesSummary": "Asdaaf",
-    "price": 8.07,
+    "price": 8.04,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -38638,7 +38638,7 @@
     "brand": "Asdaaf",
     "category": "oud",
     "notesSummary": "Asdaaf",
-    "price": 9.73,
+    "price": 9.7,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -39658,6 +39658,85 @@
     "descriptionEn": "Ayat Perfumes Ayat Perfumes Eau De Parfum Timeless Edition 100ml For Women And Men is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
+    "id": "dropship-5060908996923",
+    "slug": "dropship-5060908996923",
+    "name": "Ayat Perfumes Eau De Parfum Fancy Series From Dubai Oriental & Fruity Scent Unisex Fragrance Smoky Tobacco",
+    "title": "Ayat Perfumes Eau De Parfum Fancy Series From Dubai Oriental & Fruity Scent Unisex Fragrance Smoky Tobacco",
+    "brand": "Ayat Perfumes",
+    "category": "oud",
+    "notesSummary": "Ayat Perfumes",
+    "price": 8.96,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/5060908996923.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/5060908996923.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/nFbDHp8WsZ6BdfXqCubocp.jpg",
+    "gtin": "5060908996923",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Smoky Tobacco — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Smoky Tobacco — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Smoky Tobacco is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
     "id": "dropship-5060908997319",
     "slug": "dropship-5060908997319",
     "name": "Ayat Perfumes Majestic Eau De Parfum - Luxurious Women's Perfume",
@@ -39735,6 +39814,85 @@
     "description": "Ayat Perfumes Ayat Perfumes Majestic Eau De Parfum 100ml - Luxurious Women's Perfume — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionRu": "Ayat Perfumes Ayat Perfumes Majestic Eau De Parfum 100ml - Luxurious Women's Perfume — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionEn": "Ayat Perfumes Ayat Perfumes Majestic Eau De Parfum 100ml - Luxurious Women's Perfume is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
+    "id": "dropship-5060908996909",
+    "slug": "dropship-5060908996909",
+    "name": "Ayat Perfumes Eau De Parfum Fancy Series From Dubai Oriental & Fruity Scent Unisex Fragrance Amalfi Neroli",
+    "title": "Ayat Perfumes Eau De Parfum Fancy Series From Dubai Oriental & Fruity Scent Unisex Fragrance Amalfi Neroli",
+    "brand": "Ayat Perfumes",
+    "category": "oud",
+    "notesSummary": "Ayat Perfumes",
+    "price": 8.96,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/5060908996909.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/5060908996909.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/RYxNC6JsvaGknmiiezqRcB.jpg",
+    "gtin": "5060908996909",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Amalfi Neroli — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Amalfi Neroli — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Ayat Perfumes Ayat Perfumes Eau De Parfum Fancy Series 80ml From Dubai Oriental & Fruity Scent Unisex Fragrance Amalfi Neroli is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
     "id": "dropship-5060908997760",
@@ -40211,6 +40369,85 @@
     "descriptionEn": "Ayat Perfumes Eau De Parfum Feelings 100ml Ayat Perfumes Made In Dubai With Notes Of Rose Vanilla Oud Musk And Woody Edp Oriental For Women And Men is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
+    "id": "dropship-5060908999023",
+    "slug": "dropship-5060908999023",
+    "name": "Ayat Perfumes Kohinoor Diamond Series Luxury Unisex Eau De Parfum Arabian Oriental Scent",
+    "title": "Ayat Perfumes Kohinoor Diamond Series Luxury Unisex Eau De Parfum Arabian Oriental Scent",
+    "brand": "Ayat Perfumes",
+    "category": "oud",
+    "notesSummary": "Ayat Perfumes",
+    "price": 13.38,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/5060908999023.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/5060908999023.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/NqbYhxBmLLvFsKqzQkXULx.jpg",
+    "gtin": "5060908999023",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Ayat Perfumes Ayat Perfumes Kohinoor Diamond Series Luxury Unisex Eau De Parfum 100ml Arabian Oriental Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Ayat Perfumes Ayat Perfumes Kohinoor Diamond Series Luxury Unisex Eau De Parfum 100ml Arabian Oriental Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Ayat Perfumes Ayat Perfumes Kohinoor Diamond Series Luxury Unisex Eau De Parfum 100ml Arabian Oriental Scent is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
     "id": "dropship-5060908998040",
     "slug": "dropship-5060908998040",
     "name": "Ayat Perfumes Unisex Alcoholfree Perfume Oil Dubai Lovely Affair",
@@ -40446,6 +40683,85 @@
     "description": "Ayat Perfumes Ayat Perfumes Musk Emirates Eau De Parfum 30ml Original Gift Idea For Men And Women Miniature Fragrance Made In Dubai — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionRu": "Ayat Perfumes Ayat Perfumes Musk Emirates Eau De Parfum 30ml Original Gift Idea For Men And Women Miniature Fragrance Made In Dubai — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionEn": "Ayat Perfumes Ayat Perfumes Musk Emirates Eau De Parfum 30ml Original Gift Idea For Men And Women Miniature Fragrance Made In Dubai is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
+    "id": "dropship-5060908997142",
+    "slug": "dropship-5060908997142",
+    "name": "Ayat Perfumes Legacy Eau De Parfum Unisex Luxury Dubai Fragrance Elegant And Intense Scent For Men And Women",
+    "title": "Ayat Perfumes Legacy Eau De Parfum Unisex Luxury Dubai Fragrance Elegant And Intense Scent For Men And Women",
+    "brand": "Ayat Perfumes",
+    "category": "oud",
+    "notesSummary": "Ayat Perfumes",
+    "price": 14.48,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/5060908997142.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/5060908997142.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/gehgxBgDwUJWVGQKijydL8.jpg",
+    "gtin": "5060908997142",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum Unisex 100ml Luxury Dubai Fragrance Elegant And Intense Scent For Men And Women — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum Unisex 100ml Luxury Dubai Fragrance Elegant And Intense Scent For Men And Women — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum Unisex 100ml Luxury Dubai Fragrance Elegant And Intense Scent For Men And Women is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
     "id": "dropship-5060908999207",
@@ -41633,6 +41949,85 @@
     "descriptionEn": "Ayat Perfumes Ayat Perfumes Musk Emirates 30ml Edp Oriental Arab Original Gift Idea For Men And Women is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
+    "id": "dropship-5060908997128",
+    "slug": "dropship-5060908997128",
+    "name": "Ayat Perfumes Legacy Eau De Parfum Luxury Dubai Scent For Men",
+    "title": "Ayat Perfumes Legacy Eau De Parfum Luxury Dubai Scent For Men",
+    "brand": "Ayat Perfumes",
+    "category": "oud",
+    "notesSummary": "Ayat Perfumes",
+    "price": 14.48,
+    "currency": "EUR",
+    "minOrderQuantity": 1,
+    "unit": 1,
+    "volume": "100ml / 3.4 FL.OZ.",
+    "concentration": "Eau de Parfum",
+    "gender": "Unisex",
+    "rating": 4.9,
+    "reviewsCount": 38,
+    "isBestSeller": false,
+    "isFeatured": true,
+    "inStock": true,
+    "isDropship": true,
+    "deliveryTime": "4–7 дней (прямая поставка)",
+    "image": "/assets/img/products/5060908997128.jpg?v=qogita-gemini-image-v3",
+    "fullCardImage": "/assets/img/products/5060908997128.jpg?v=qogita-gemini-image-v3",
+    "rawImage": "https://static.prod.qogita.com/files/images/variants/JfMLZWezxuauGy6UTa6LTQ.jpg",
+    "gtin": "5060908997128",
+    "origin": "Ближний Восток",
+    "originEn": "Middle East",
+    "categoryRu": "Восточные",
+    "categoryEn": "Oriental",
+    "topNotes": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotes": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotes": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesRu": [
+      "Шафран",
+      "Бергамот",
+      "Розовый перец"
+    ],
+    "heartNotesRu": [
+      "Дамасская роза",
+      "Благородный уд",
+      "Амбра"
+    ],
+    "baseNotesRu": [
+      "Белый мускус",
+      "Сандал",
+      "Мадагаскарская ваниль"
+    ],
+    "topNotesEn": [
+      "Saffron",
+      "Bergamot",
+      "Pink Pepper"
+    ],
+    "heartNotesEn": [
+      "Damask Rose",
+      "Precious Oud",
+      "Amber"
+    ],
+    "baseNotesEn": [
+      "White Musk",
+      "Sandalwood",
+      "Madagascar Vanilla"
+    ],
+    "description": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum 100ml Luxury Dubai Scent For Men — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionRu": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum 100ml Luxury Dubai Scent For Men — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
+    "descriptionEn": "Ayat Perfumes Ayat Perfumes Legacy Eau De Parfum 100ml Luxury Dubai Scent For Men is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
+  },
+  {
     "id": "dropship-5060908997364",
     "slug": "dropship-5060908997364",
     "name": "Ayat Perfumes Prestige Complete Musk Collection Eau De Parfum Musk Fragrance Oils Cream 18g",
@@ -42342,164 +42737,6 @@
     "description": "Ayat Perfumes Ayat Perfumes Starlight Unisex Fragrance Luxury Dubaiinspired Perfume Diamond Series Exotic Peach Apple Blossom Pineapple Flower Musk Patchouli Longlasting Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionRu": "Ayat Perfumes Ayat Perfumes Starlight Unisex Fragrance Luxury Dubaiinspired Perfume Diamond Series Exotic Peach Apple Blossom Pineapple Flower Musk Patchouli Longlasting Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
     "descriptionEn": "Ayat Perfumes Ayat Perfumes Starlight Unisex Fragrance Luxury Dubaiinspired Perfume Diamond Series Exotic Peach Apple Blossom Pineapple Flower Musk Patchouli Longlasting Scent is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
-  },
-  {
-    "id": "dropship-5060908997982",
-    "slug": "dropship-5060908997982",
-    "name": "Ayat Perfumes Parfum Oil Alcoholfree Musk Unisex Oriental Arabic Oud Natural Amber Dubai Scent",
-    "title": "Ayat Perfumes Parfum Oil Alcoholfree Musk Unisex Oriental Arabic Oud Natural Amber Dubai Scent",
-    "brand": "Ayat Perfumes",
-    "category": "oud",
-    "notesSummary": "Ayat Perfumes",
-    "price": 7.37,
-    "currency": "EUR",
-    "minOrderQuantity": 1,
-    "unit": 1,
-    "volume": "100ml / 3.4 FL.OZ.",
-    "concentration": "Eau de Parfum",
-    "gender": "Unisex",
-    "rating": 4.9,
-    "reviewsCount": 38,
-    "isBestSeller": false,
-    "isFeatured": true,
-    "inStock": true,
-    "isDropship": true,
-    "deliveryTime": "4–7 дней (прямая поставка)",
-    "image": "/assets/img/products/5060908997982.jpg?v=qogita-gemini-image-v3",
-    "fullCardImage": "/assets/img/products/5060908997982.jpg?v=qogita-gemini-image-v3",
-    "rawImage": "https://static.prod.qogita.com/files/images/variants/G489n3FhfeUZJD6N42ChCD.jpg",
-    "gtin": "5060908997982",
-    "origin": "Ближний Восток",
-    "originEn": "Middle East",
-    "categoryRu": "Восточные",
-    "categoryEn": "Oriental",
-    "topNotes": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotes": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotes": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesRu": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotesRu": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotesRu": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesEn": [
-      "Saffron",
-      "Bergamot",
-      "Pink Pepper"
-    ],
-    "heartNotesEn": [
-      "Damask Rose",
-      "Precious Oud",
-      "Amber"
-    ],
-    "baseNotesEn": [
-      "White Musk",
-      "Sandalwood",
-      "Madagascar Vanilla"
-    ],
-    "description": "Ayat Perfumes Ayat Perfumes Parfum Oil 12ml Alcoholfree Musk Unisex Oriental Arabic Oud Natural Amber Dubai Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionRu": "Ayat Perfumes Ayat Perfumes Parfum Oil 12ml Alcoholfree Musk Unisex Oriental Arabic Oud Natural Amber Dubai Scent — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionEn": "Ayat Perfumes Ayat Perfumes Parfum Oil 12ml Alcoholfree Musk Unisex Oriental Arabic Oud Natural Amber Dubai Scent is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
-  },
-  {
-    "id": "dropship-5060908997494",
-    "slug": "dropship-5060908997494",
-    "name": "Eau De Parfum Arab Spray For Women Oriental Scent Jumraah",
-    "title": "Eau De Parfum Arab Spray For Women Oriental Scent Jumraah",
-    "brand": "Ayat Perfumes",
-    "category": "oud",
-    "notesSummary": "Ayat Perfumes",
-    "price": 6.4,
-    "currency": "EUR",
-    "minOrderQuantity": 1,
-    "unit": 1,
-    "volume": "100ml / 3.4 FL.OZ.",
-    "concentration": "Eau de Parfum",
-    "gender": "Unisex",
-    "rating": 4.9,
-    "reviewsCount": 38,
-    "isBestSeller": false,
-    "isFeatured": true,
-    "inStock": true,
-    "isDropship": true,
-    "deliveryTime": "4–7 дней (прямая поставка)",
-    "image": "/assets/img/products/5060908997494.jpg?v=qogita-gemini-image-v3",
-    "fullCardImage": "/assets/img/products/5060908997494.jpg?v=qogita-gemini-image-v3",
-    "rawImage": "https://static.prod.qogita.com/files/images/variants/3B3dKfoVhmwttzNhAcPGFH.jpg",
-    "gtin": "5060908997494",
-    "origin": "Ближний Восток",
-    "originEn": "Middle East",
-    "categoryRu": "Восточные",
-    "categoryEn": "Oriental",
-    "topNotes": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotes": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotes": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesRu": [
-      "Шафран",
-      "Бергамот",
-      "Розовый перец"
-    ],
-    "heartNotesRu": [
-      "Дамасская роза",
-      "Благородный уд",
-      "Амбра"
-    ],
-    "baseNotesRu": [
-      "Белый мускус",
-      "Сандал",
-      "Мадагаскарская ваниль"
-    ],
-    "topNotesEn": [
-      "Saffron",
-      "Bergamot",
-      "Pink Pepper"
-    ],
-    "heartNotesEn": [
-      "Damask Rose",
-      "Precious Oud",
-      "Amber"
-    ],
-    "baseNotesEn": [
-      "White Musk",
-      "Sandalwood",
-      "Madagascar Vanilla"
-    ],
-    "description": "Ayat Perfumes Eau De Parfum Arab Spray 50ml For Women Oriental Scent Jumraah — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionRu": "Ayat Perfumes Eau De Parfum Arab Spray 50ml For Women Oriental Scent Jumraah — роскошный селективный аромат с Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.",
-    "descriptionEn": "Ayat Perfumes Eau De Parfum Arab Spray 50ml For Women Oriental Scent Jumraah is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla."
   },
   {
     "id": "dropship-6290360375694",
@@ -43299,7 +43536,7 @@
     "brand": "French Avenue",
     "category": "oud",
     "notesSummary": "French Avenue",
-    "price": 17.53,
+    "price": 16.43,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -44326,7 +44563,7 @@
     "brand": "French Avenue",
     "category": "oud",
     "notesSummary": "French Avenue",
-    "price": 15.69,
+    "price": 12.53,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -45827,7 +46064,7 @@
     "brand": "French Avenue",
     "category": "oud",
     "notesSummary": "French Avenue",
-    "price": 17.49,
+    "price": 17.41,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -52937,7 +53174,7 @@
     "brand": "Rasasi",
     "category": "oud",
     "notesSummary": "Rasasi",
-    "price": 18.06,
+    "price": 18.1,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -57519,7 +57756,7 @@
     "brand": "Swiss Arabian",
     "category": "oud",
     "notesSummary": "Swiss Arabian",
-    "price": 27.08,
+    "price": 27.13,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -57835,7 +58072,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 11.67,
+    "price": 11.63,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -58546,7 +58783,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 9.03,
+    "price": 9,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -58783,7 +59020,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 9.63,
+    "price": 9.6,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -58862,7 +59099,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 17.79,
+    "price": 17.71,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -59020,7 +59257,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 11.07,
+    "price": 11.03,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -59731,7 +59968,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 10,
+    "price": 9.96,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -59968,7 +60205,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 9.26,
+    "price": 9.21,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -60442,7 +60679,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 10.49,
+    "price": 10.45,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -60916,7 +61153,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 8.31,
+    "price": 8.27,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -61311,7 +61548,7 @@
     "brand": "Zimaya",
     "category": "oud",
     "notesSummary": "Zimaya",
-    "price": 10.65,
+    "price": 10.61,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -70159,7 +70396,7 @@
     "brand": "Rayhaan",
     "category": "oud",
     "notesSummary": "Rayhaan",
-    "price": 16.11,
+    "price": 17.87,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -70712,7 +70949,7 @@
     "brand": "Rayhaan",
     "category": "oud",
     "notesSummary": "Rayhaan",
-    "price": 16.48,
+    "price": 14.56,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -71739,7 +71976,7 @@
     "brand": "Rayhaan",
     "category": "oud",
     "notesSummary": "Rayhaan",
-    "price": 21.38,
+    "price": 20.54,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -74030,7 +74267,7 @@
     "brand": "Orientica",
     "category": "oud",
     "notesSummary": "Orientica",
-    "price": 38.72,
+    "price": 38.24,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -74109,7 +74346,7 @@
     "brand": "Orientica",
     "category": "oud",
     "notesSummary": "Orientica",
-    "price": 49.54,
+    "price": 44.02,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -74267,7 +74504,7 @@
     "brand": "Orientica",
     "category": "oud",
     "notesSummary": "Orientica",
-    "price": 53.49,
+    "price": 53.57,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -75294,7 +75531,7 @@
     "brand": "Orientica",
     "category": "oud",
     "notesSummary": "Orientica",
-    "price": 55.1,
+    "price": 55.15,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -75373,7 +75610,7 @@
     "brand": "Orientica",
     "category": "oud",
     "notesSummary": "Orientica",
-    "price": 55.28,
+    "price": 55.34,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -81535,7 +81772,7 @@
     "brand": "Fragrance World",
     "category": "oud",
     "notesSummary": "Fragrance World",
-    "price": 11.64,
+    "price": 11.63,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -83984,7 +84221,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 8.55,
+    "price": 8.52,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -84221,7 +84458,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 8.08,
+    "price": 8.05,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -84616,7 +84853,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 8.98,
+    "price": 8.93,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -84774,7 +85011,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 9.73,
+    "price": 9.7,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -85643,7 +85880,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 11.67,
+    "price": 11.63,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -86591,7 +86828,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 14.59,
+    "price": 14.53,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,
@@ -87065,7 +87302,7 @@
     "brand": "Paris Corner",
     "category": "oud",
     "notesSummary": "Paris Corner",
-    "price": 9.73,
+    "price": 9.7,
     "currency": "EUR",
     "minOrderQuantity": 1,
     "unit": 1,

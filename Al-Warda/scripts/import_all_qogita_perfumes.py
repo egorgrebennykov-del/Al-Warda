@@ -17,6 +17,7 @@ from scripts.qogita_weekly_sync_upscayl import (
     sync_to_supabase,
     save_enriched_stocks,
     build_rich_bilingual_enrichment,
+    extract_qogita_price_for_mov,
 )
 
 def extract_volume(name):
@@ -110,13 +111,7 @@ for brand in ARABIAN_BRANDS:
         if not name:
             continue
 
-        price = item.get("price") or 25.0
-        if isinstance(price, dict):
-            amount = float(price.get("amount") or 25.0)
-            currency = price.get("currency") or "EUR"
-        else:
-            amount = float(price or 25.0)
-            currency = "EUR"
+        amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0, client=client)
 
         gtin = item.get("gtin")
         h = hashlib.md5((raw_img or name).encode("utf-8")).hexdigest()

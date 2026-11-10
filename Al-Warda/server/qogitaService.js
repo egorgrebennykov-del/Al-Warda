@@ -253,6 +253,7 @@ export function extractQogitaPriceForMov(qogitaItem, targetMov = 500) {
       return {
         amount: Math.round(bestAmount * 100) / 100,
         currency: best.tierPrice?.currency || best.currency || "EUR",
+        hasEligibleTier: true,
       };
     }
   }
@@ -272,7 +273,55 @@ export function extractQogitaPriceForMov(qogitaItem, targetMov = 500) {
   return {
     amount: Math.round(amount * 100) / 100,
     currency,
+    hasEligibleTier: false,
   };
+}
+
+/**
+ * Async price resolver: if tieredPrices are not in the product search result,
+ * queries /buyers/variants/{fid}/offers/ to find the lowest price for MOV <= targetMov.
+ */
+export async function resolveQogitaPriceForMov(qogitaItem, targetMov = 500, client = qogitaClient) {
+  const direct = extractQogitaPriceForMov(qogitaItem, targetMov);
+  if (direct.hasEligibleTier) {
+    return direct;
+  }
+
+  let fid = qogitaItem.variantFid || qogitaItem.qid;
+  if (!fid && qogitaItem.productUrl) {
+    const match = qogitaItem.productUrl.match(/\/products\/([a-zA-Z0-9_-]+)\//);
+    if (match) fid = match[1];
+  }
+
+  if (client && fid) {
+    try {
+      const offersData = await client.getVariantOffers(fid);
+      const offers = Array.isArray(offersData) ? offersData : (offersData?.offers || []);
+      const eligible = [];
+      for (const off of offers) {
+        for (const t of (off.tieredPrices || off.tiered_prices || [])) {
+          const mov = parseFloat(t.tierMov?.amount ?? t.mov ?? t.tier_mov?.amount ?? 0);
+          const price = parseFloat(t.tierPrice?.amount ?? t.price ?? t.amount ?? 0);
+          if (mov <= targetMov && price > 0) {
+            eligible.push({ price, currency: t.tierPrice?.currency || "EUR", mov });
+          }
+        }
+      }
+      if (eligible.length > 0) {
+        eligible.sort((a, b) => a.price - b.price);
+        return {
+          amount: Math.round(eligible[0].price * 100) / 100,
+          currency: eligible[0].currency,
+          hasEligibleTier: true,
+          mov: eligible[0].mov,
+        };
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return direct;
 }
 
 export function stripVolumeFromName(name) {
