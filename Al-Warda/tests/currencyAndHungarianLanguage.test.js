@@ -320,3 +320,15 @@ test("logout confirmation translations exist in all 6 languages and Header & Pro
   assert.ok(profileCode.includes("const confirmed = await confirm"), "Profile must ask for confirmation on logout");
   assert.ok(profileCode.includes("if (!confirmed) return;"), "Profile must abort logout if not confirmed");
 });
+
+test("currency and language lists in Header are sorted alphabetically", () => {
+  const headerCode = fs.readFileSync(path.resolve(__dirname, "../src/components/header/Header.jsx"), "utf8");
+  
+  // Extract LANGUAGES codes (2 lowercase letters)
+  const langCodes = [...headerCode.matchAll(/code:\s*["']([a-z]{2})["']/g)].map((m) => m[1]);
+  assert.deepEqual(langCodes, ["bg", "el", "en", "hu", "ro", "ru"]);
+
+  // Extract CURRENCY_LIST codes (3 uppercase letters)
+  const curCodes = [...headerCode.matchAll(/code:\s*["']([A-Z]{3})["']/g)].map((m) => m[1]);
+  assert.deepEqual(curCodes, ["EUR", "HUF", "RON"]);
+});

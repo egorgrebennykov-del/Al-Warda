@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { formatRoleName } from "../../../utils/auth";
 import { useLanguage } from "../../context/languageContext";
@@ -14,19 +14,19 @@ const MessengerModal = lazy(() => import("../messenger/MessengerModal"));
 const navClass = ({ isActive }) =>
   isActive ? "nav__link active-link" : "nav__link";
 
-const LANGUAGES = [
-  { code: "ru", label: "Русский", short: "RU" },
-  { code: "en", label: "English", short: "EN" },
-  { code: "hu", label: "Magyar", short: "HU" },
+export const LANGUAGES = [
   { code: "bg", label: "Български", short: "BG" },
   { code: "el", label: "Ελληνικά", short: "EL" },
+  { code: "en", label: "English", short: "EN" },
+  { code: "hu", label: "Magyar", short: "HU" },
   { code: "ro", label: "Română", short: "RO" },
+  { code: "ru", label: "Русский", short: "RU" },
 ];
 
-const CURRENCY_LIST = [
+export const CURRENCY_LIST = [
   { code: "EUR", symbol: "€", nameKey: "currency.eur" },
-  { code: "RON", symbol: "lei", nameKey: "currency.ron" },
   { code: "HUF", symbol: "Fr", nameKey: "currency.huf" },
+  { code: "RON", symbol: "lei", nameKey: "currency.ron" },
 ];
 
 export default function Header({ theme, isLight, onSearch }) {
@@ -38,6 +38,18 @@ export default function Header({ theme, isLight, onSearch }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+
+  const sortedCurrencies = useMemo(() => {
+    return [...CURRENCY_LIST].sort((a, b) => {
+      const nameA = t(a.nameKey) || a.code;
+      const nameB = t(b.nameKey) || b.code;
+      return nameA.localeCompare(nameB, language, { sensitivity: "base" });
+    });
+  }, [t, language]);
+
+  const sortedLanguages = useMemo(() => {
+    return [...LANGUAGES].sort((a, b) => a.short.localeCompare(b.short));
+  }, []);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const profileMenuRef = useRef(null);
@@ -474,7 +486,7 @@ export default function Header({ theme, isLight, onSearch }) {
                   {t("nav.selectLanguage")}
                 </div>
                 <ul className="warda-nav__dropdown-list" role="none">
-                  {LANGUAGES.map((item) => {
+                  {sortedLanguages.map((item) => {
                     const isSelected = language === item.code;
                     return (
                       <li key={item.code} role="none">
@@ -523,7 +535,7 @@ export default function Header({ theme, isLight, onSearch }) {
                   {t("nav.selectCurrency")}
                 </div>
                 <ul className="warda-nav__dropdown-list" role="none">
-                  {CURRENCY_LIST.map((item) => {
+                  {sortedCurrencies.map((item) => {
                     const isSelected = currency === item.code;
                     return (
                       <li key={item.code} role="none">
