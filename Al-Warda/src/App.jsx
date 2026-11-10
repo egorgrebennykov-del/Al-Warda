@@ -5,6 +5,7 @@ import {
   Navigate,
   useLocation,
   useNavigate,
+  useNavigationType,
 } from "react-router";
 import Footer from "./components/footer/Footer";
 import Header from "./components/header/Header";
@@ -136,11 +137,35 @@ function App() {
   const [announcements, setAnnouncements] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const navigationType = useNavigationType();
   const shouldRestoreScroll = Boolean(
     location.state?.restoreCartScroll ||
     location.state?.restoreDiscountScroll ||
     location.state?.restoreHomeScroll,
   );
+
+  // Continuously record scroll position on browsable listing pages so Back button restores exact scroll position
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const path = window.location.pathname;
+          if (!path.startsWith("/perfume")) {
+            const currentY = window.scrollY;
+            if (currentY > 0) {
+              const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+              sessionStorage.setItem(scrollKey, String(currentY));
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -181,6 +206,29 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // When returning via Back button (POP navigation):
+    if (navigationType === "POP") {
+      const path = location.pathname || "";
+      if (!path.startsWith("/perfume")) {
+        const scrollKey = `warda_scroll_${location.pathname}${location.search}`;
+        const savedY = Number(sessionStorage.getItem(scrollKey));
+        if (Number.isFinite(savedY) && savedY > 0) {
+          let attempts = 0;
+          const tryRestore = () => {
+            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrollableHeight >= savedY || attempts > 25) {
+              window.scrollTo({ top: savedY, behavior: "instant" });
+            } else {
+              attempts++;
+              requestAnimationFrame(tryRestore);
+            }
+          };
+          requestAnimationFrame(tryRestore);
+          return;
+        }
+      }
+    }
+
     if (shouldRestoreScroll) return;
     // Do not force scroll-to-top when switching tabs inside /privileged, /priviledged, /admin, or /orders
     const path = location.pathname || "";
@@ -191,7 +239,7 @@ function App() {
       return;
     }
     window.scrollTo(0, 0);
-  }, [location.pathname, shouldRestoreScroll, location.state]);
+  }, [location.pathname, location.search, navigationType, shouldRestoreScroll, location.state]);
 
   useEffect(() => {
     document.body.classList.toggle("dark-theme", !lightTheme);

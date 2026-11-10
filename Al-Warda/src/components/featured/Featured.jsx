@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { getPerfumes, getCategories, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
+import { getPerfumes, getCachedPerfumes, getCategories, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -359,12 +359,19 @@ export default function Featured() {
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
-  const [perfumes, setPerfumes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [perfumes, setPerfumes] = useState(() => getCachedPerfumes() || []);
+  const [loading, setLoading] = useState(() => (getCachedPerfumes() || []).length === 0);
   const [categories] = useState(() => [...getCategories(), ...EXTRA_FILTER_CATEGORIES]);
   const [addedIds, setAddedIds] = useState({});
 
-  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
+  const [visibleLimit, setVisibleLimit] = useState(() => {
+    const saved = Number(sessionStorage.getItem("warda_visible_featured"));
+    return Number.isFinite(saved) && saved >= PAGE_SIZE ? saved : PAGE_SIZE;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("warda_visible_featured", String(visibleLimit));
+  }, [visibleLimit]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const sentinelRef = useRef(null);
 
@@ -1247,10 +1254,20 @@ export default function Featured() {
                 <OrnateCard
                   key={perfume.id}
                   className="warda-perfume-card"
-                  onClick={() => navigate(productUrl)}
+                  onClick={() => {
+                    const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+                    sessionStorage.setItem(scrollKey, String(window.scrollY));
+                    navigate(productUrl);
+                  }}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && navigate(productUrl)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+                      sessionStorage.setItem(scrollKey, String(window.scrollY));
+                      navigate(productUrl);
+                    }
+                  }}
                 >
                   <div className="warda-perfume-card__media">
                     {isPerfumeSet(perfume) && (

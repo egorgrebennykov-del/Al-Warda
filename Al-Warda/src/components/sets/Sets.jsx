@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import {
   getPerfumes,
+  getCachedPerfumes,
   getPerfumeUrl,
   isPerfumeSet,
   isDecantablePerfume,
@@ -51,11 +52,18 @@ export default function Sets() {
   const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
 
-  const [allItems, setAllItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allItems, setAllItems] = useState(() => getCachedPerfumes() || []);
+  const [loading, setLoading] = useState(() => (getCachedPerfumes() || []).length === 0);
   const [addedIds, setAddedIds] = useState({});
   const [cardVolumes, setCardVolumes] = useState({});
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [visibleCount, setVisibleCount] = useState(() => {
+    const saved = Number(sessionStorage.getItem("warda_visible_sets"));
+    return Number.isFinite(saved) && saved >= PAGE_SIZE ? saved : PAGE_SIZE;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("warda_visible_sets", String(visibleCount));
+  }, [visibleCount]);
 
   const [selectedType, setSelectedType] = useState(() => searchParams.get("type") || "all");
   const [selectedVolume, setSelectedVolume] = useState(() => searchParams.get("volume") || "all");
@@ -241,11 +249,12 @@ export default function Sets() {
   };
 
   const handleCardClick = (perfume, volKey) => {
+    const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+    sessionStorage.setItem(scrollKey, String(window.scrollY));
     const isSet = isPerfumeSet(perfume);
     const baseUrl = getPerfumeUrl(perfume);
     const targetUrl = isSet ? baseUrl : `${baseUrl}?sample=${volKey || "1ml"}`;
     navigate(targetUrl);
-    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const resetFilters = () => {

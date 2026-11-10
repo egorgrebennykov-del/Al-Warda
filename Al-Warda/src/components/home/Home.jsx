@@ -133,6 +133,8 @@ export default function Home() {
   };
 
   const handleProductClick = (perfume) => {
+    const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+    sessionStorage.setItem(scrollKey, String(window.scrollY));
     navigate(getPerfumeUrl(perfume));
   };
 

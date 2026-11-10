@@ -297,12 +297,22 @@ export default function SearchResults() {
                 <OrnateCard
                   key={perfume.id}
                   className="warda-perfume-card"
-                  onClick={() => navigate(getPerfumeUrl(perfume))}
+                  onClick={() => {
+                    const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+                    sessionStorage.setItem(scrollKey, String(window.scrollY));
+                    navigate(getPerfumeUrl(perfume));
+                  }}
                   onMouseMove={handleCardMouseMove}
                   onMouseLeave={handleCardMouseLeave}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && navigate(getPerfumeUrl(perfume))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
+                      sessionStorage.setItem(scrollKey, String(window.scrollY));
+                      navigate(getPerfumeUrl(perfume));
+                    }
+                  }}
                 >
                   <div className="warda-perfume-card__media">
                     {isPerfumeSet(perfume) && (
