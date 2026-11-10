@@ -11,6 +11,7 @@ import {
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { OrnateCard } from "../common/OrnateCard";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
@@ -77,6 +78,7 @@ const PAGE_SIZE = 21;
 
 export default function SearchResults() {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { isInCart, toggleCart } = useCartState();
@@ -381,7 +383,7 @@ export default function SearchResults() {
                       )}
                     </p>
                     <div className="warda-perfume-card__price">
-                      €{displayPrice.toFixed(2)}
+                      {formatPrice(displayPrice)}
                       {defaultOpt.isSecondLargest && (
                         <span style={{ fontSize: "0.74rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
                           / {isRu ? defaultOpt.labelRu : defaultOpt.labelEn}

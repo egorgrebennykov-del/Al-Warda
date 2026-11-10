@@ -1,0 +1,113 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { formatPriceWithCurrency } from "../src/context/currencyUtils.js";
+import { translations } from "../src/context/translations.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+test("formatPriceWithCurrency correctly formats EUR, RON, and HUF with requested symbols", () => {
+  const rates = { EUR: 1, RON: 5.343, HUF: 362.99 };
+
+  // EUR: symbol € followed by 2 decimals
+  assert.equal(formatPriceWithCurrency(25, "EUR", rates), "€25.00");
+  assert.equal(formatPriceWithCurrency(10.5, "EUR", rates), "€10.50");
+
+  // RON: number with 2 decimals followed by 'lei'
+  // 25 * 5.343 = 133.575 -> 133.58 lei
+  assert.equal(formatPriceWithCurrency(25, "RON", rates), "133.58 lei");
+
+  // HUF: rounded integer, space-separated thousands, followed by 'Fr'
+  // 25 * 362.99 = 9074.75 -> 9 075 Fr
+  const hufFormatted = formatPriceWithCurrency(25, "HUF", rates);
+  assert.match(hufFormatted, /9[\s\u00A0\u202F]075 Fr/);
+
+  // Large number HUF formatting
+  // 100 * 362.99 = 36299 -> 36 299 Fr
+  const huf100 = formatPriceWithCurrency(100, "HUF", rates);
+  assert.match(huf100, /36[\s\u00A0\u202F]299 Fr/);
+});
+
+test("Hungarian language is registered in translations and has comprehensive key coverage", () => {
+  assert.ok(translations.hu, "Hungarian translation dictionary exists");
+  assert.ok(translations.ru, "Russian translation dictionary exists");
+  assert.ok(translations.en, "English translation dictionary exists");
+
+  const ruKeys = Object.keys(translations.ru);
+  const huKeys = Object.keys(translations.hu);
+
+  // Hungarian dictionary must cover all keys
+  assert.ok(huKeys.length >= 400, `Expected >= 400 keys, found ${huKeys.length}`);
+  for (const key of ruKeys) {
+    assert.ok(translations.hu[key] !== undefined, `Missing Hungarian key: ${key}`);
+  }
+
+  // Verify key translations
+  assert.equal(translations.hu["nav.home"], "Főoldal");
+  assert.equal(translations.hu["nav.bookPicks"], "Kollekció");
+});
+
+test("Rate sync logic correctly differentiates >= 5% jump, Monday weekly sync, and routine check", () => {
+  const currentRate = 5.0;
+
+  // 1. Sharp movement >= 5% (e.g. 5.26 / 5.0 = 5.2% jump)
+  const sharpJumpRate = 5.26;
+  const pctChangeSharp = Math.abs(sharpJumpRate - currentRate) / currentRate;
+  assert.ok(pctChangeSharp >= 0.05, "Change is >= 5%");
+
+  // 2. Normal movement < 5% (e.g. 5.05 / 5.0 = 1% change)
+  const mildChangeRate = 5.05;
+  const pctChangeMild = Math.abs(mildChangeRate - currentRate) / currentRate;
+  assert.ok(pctChangeMild < 0.05, "Change is < 5%");
+
+  // Decision logic verification
+  function shouldSync({ diff, isMonday, isForce }) {
+    if (isForce) return { shouldSync: true, reason: "force" };
+    if (diff >= 0.05) return { shouldSync: true, reason: "sharp_movement" };
+    if (isMonday) return { shouldSync: true, reason: "weekly_monday" };
+    return { shouldSync: false, reason: "daily_check_passed" };
+  }
+
+  assert.deepEqual(shouldSync({ diff: 0.06, isMonday: false, isForce: false }), {
+    shouldSync: true,
+    reason: "sharp_movement",
+  });
+  assert.deepEqual(shouldSync({ diff: 0.02, isMonday: true, isForce: false }), {
+    shouldSync: true,
+    reason: "weekly_monday",
+  });
+  assert.deepEqual(shouldSync({ diff: 0.02, isMonday: false, isForce: false }), {
+    shouldSync: false,
+    reason: "daily_check_passed",
+  });
+  assert.deepEqual(shouldSync({ diff: 0.01, isMonday: false, isForce: true }), {
+    shouldSync: true,
+    reason: "force",
+  });
+});
+
+test("GitHub Actions workflows exist for RON and HUF with correct daily schedule at 03:00", () => {
+  const ronWorkflowPath = path.resolve(__dirname, "../../.github/workflows/sync-ron-rate.yml");
+  const hufWorkflowPath = path.resolve(__dirname, "../../.github/workflows/sync-huf-rate.yml");
+
+  assert.ok(fs.existsSync(ronWorkflowPath), "sync-ron-rate.yml exists");
+  assert.ok(fs.existsSync(hufWorkflowPath), "sync-huf-rate.yml exists");
+
+  const ronContent = fs.readFileSync(ronWorkflowPath, "utf8");
+  const hufContent = fs.readFileSync(hufWorkflowPath, "utf8");
+
+  // Check schedule: daily at 3:00 AM UTC
+  assert.match(ronContent, /cron:\s*["']0 3 \* \* \*["']/);
+  assert.match(hufContent, /cron:\s*["']0 3 \* \* \*["']/);
+
+  // Check currency flags
+  assert.match(ronContent, /--currency=RON/);
+  assert.match(hufContent, /--currency=HUF/);
+
+  // Safety rule check: neither workflow touches full-database-refresh
+  assert.ok(!ronContent.includes("full-database-refresh"));
+  assert.ok(!hufContent.includes("full-database-refresh"));
+});

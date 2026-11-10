@@ -1,0 +1,56 @@
+name: "Sync HUF Exchange Rate (Hungarian Forint)"
+
+on:
+  schedule:
+    # Runs daily at 03:00 UTC (checks rate daily, syncs weekly on Monday or on >= 5% jump)
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force price synchronization regardless of day or percentage change"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: currency-sync-huf
+  cancel-in-progress: false
+
+jobs:
+  sync-huf:
+    name: Check & Sync Hungarian Forint Rate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Execute HUF Rate Sync Check
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          node scripts/sync_currency_rate.js --currency=HUF $FORCE_FLAG
+
+      - name: Commit and push exchange rate updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action [HUF Currency Sync]"
+          git add src/data/currencyRates.json public/data/currencyRates.json server/data/currencyRates.json Al-Warda/src/data/currencyRates.json Al-Warda/public/data/currencyRates.json Al-Warda/server/data/currencyRates.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No exchange rate changes to commit."
+          else
+            git commit -m "chore(currency): sync HUF exchange rate (Hungarian Forint) [skip ci]"
+            git push origin main
+          fi

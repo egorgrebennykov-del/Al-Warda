@@ -1,6 +1,7 @@
 {
   "name": "al-warda-root",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "npm --prefix Al-Warda install && npm --prefix Al-Warda run build",
     "sync-stocks": "node Al-Warda/scripts/sync-stocks-supabase.js",

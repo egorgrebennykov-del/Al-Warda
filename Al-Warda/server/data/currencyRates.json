@@ -1,0 +1,53 @@
+{
+  "base": "EUR",
+  "rates": {
+    "EUR": 1,
+    "RON": 5.343,
+    "HUF": 362.99
+  },
+  "lastUpdated": "2026-11-10T14:43:40.380Z",
+  "currencies": {
+    "EUR": {
+      "code": "EUR",
+      "symbol": "€",
+      "name": "Euro",
+      "nameRu": "Евро",
+      "nameEn": "Euro",
+      "nameHu": "Euró",
+      "rate": 1,
+      "decimals": 2,
+      "symbolPosition": "after"
+    },
+    "RON": {
+      "code": "RON",
+      "symbol": "lei",
+      "name": "Romanian Leu",
+      "nameRu": "Румынский лей",
+      "nameEn": "Romanian Leu",
+      "nameHu": "Román lej",
+      "rate": 5.343,
+      "lastSyncRate": 5.343,
+      "lastChecked": "2026-11-10T15:01:17.269Z",
+      "decimals": 2,
+      "symbolPosition": "after",
+      "latestObservedRate": 5.3442,
+      "observationDate": "2026-11-10"
+    },
+    "HUF": {
+      "code": "HUF",
+      "symbol": "Fr",
+      "name": "Hungarian Forint",
+      "nameRu": "Венгерский форинт",
+      "nameEn": "Hungarian Forint",
+      "nameHu": "Magyar forint",
+      "rate": 362.99,
+      "lastSyncRate": 362.99,
+      "lastChecked": "2026-11-10T15:01:58.737Z",
+      "decimals": 0,
+      "symbolPosition": "after",
+      "latestObservedRate": 362.99,
+      "observationDate": "2026-11-09",
+      "lastSyncDate": "2026-11-10T14:43:40.380Z"
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { formatRoleName } from "../../../utils/auth";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
 import { fetchUserInquiry, fetchAdminUnreadCount } from "../../../utils/inquiries";
 import { getCartItemCount } from "../../../utils/cart";
@@ -15,6 +16,7 @@ const navClass = ({ isActive }) =>
 export default function Header({ theme, isLight, onSearch }) {
   const navigate = useNavigate();
   const { language, toggleLanguage, t } = useLanguage();
+  const { currency, toggleCurrency } = useCurrency();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -331,7 +333,7 @@ export default function Header({ theme, isLight, onSearch }) {
                         >
                           <i className="ri-vip-crown-fill" style={{ color: "#ffd700" }} />
                           <span style={{ color: "#ffd700", fontWeight: 700 }}>
-                            {language === "ru" ? "Панель управления" : "Privileged Panel"}
+                            {language === "ru" ? "Панель управления" : language === "hu" ? "Kezelőpanel" : "Privileged Panel"}
                           </span>
                         </Link>
                       </li>
@@ -387,9 +389,33 @@ export default function Header({ theme, isLight, onSearch }) {
             type="button"
             className="warda-nav__lang-btn"
             onClick={toggleLanguage}
-            title={language === "ru" ? "Switch to English" : "Переключить на русский"}
+            title={
+              language === "ru"
+                ? "Switch to English"
+                : language === "en"
+                  ? "Váltás magyarra"
+                  : "Переключить на русский"
+            }
           >
-            {language === "ru" ? "RU" : "EN"}
+            {language.toUpperCase()}
+          </button>
+
+          <button
+            type="button"
+            className="warda-nav__currency-btn"
+            onClick={toggleCurrency}
+            title={
+              currency === "EUR"
+                ? (language === "ru" ? "Валюта: EUR (€) • Нажмите для смены" : language === "hu" ? "Pénznem: EUR (€) • Kattintson a váltáshoz" : "Currency: EUR (€) • Click to switch")
+                : currency === "RON"
+                  ? (language === "ru" ? "Валюта: RON (lei) • Нажмите для смены" : language === "hu" ? "Pénznem: RON (lei) • Kattintson a váltáshoz" : "Currency: RON (lei) • Click to switch")
+                  : (language === "ru" ? "Валюта: HUF (Fr) • Нажмите для смены" : language === "hu" ? "Pénznem: HUF (Fr) • Kattintson a váltáshoz" : "Currency: HUF (Fr) • Click to switch")
+            }
+            aria-label={
+              currency === "EUR" ? "Currency EUR (€)" : currency === "RON" ? "Currency RON (lei)" : "Currency HUF (Fr)"
+            }
+          >
+            {currency === "EUR" ? "€" : currency === "RON" ? "lei" : "Fr"}
           </button>
         </div>
       </nav>

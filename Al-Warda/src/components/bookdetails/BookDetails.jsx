@@ -19,6 +19,7 @@ import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
@@ -28,6 +29,7 @@ export default function BookDetails() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
   const { user, isPrivileged: isPrivContext } = useAuth();
@@ -392,7 +394,7 @@ export default function BookDetails() {
                       aria-checked={selectedVolume === sv.key}
                     >
                       <span className="warda-volume-pill__title">{isRu ? sv.labelRu : sv.labelEn}</span>
-                      <span className="warda-volume-pill__price">€{sPrice.toFixed(2)}</span>
+                      <span className="warda-volume-pill__price">{formatPrice(sPrice)}</span>
                     </button>
                   );
                 })}
@@ -404,13 +406,13 @@ export default function BookDetails() {
                   aria-checked={selectedVolume === "full" || !allowSamples}
                 >
                   <span className="warda-volume-pill__title">{fullBottleVol}</span>
-                  <span className="warda-volume-pill__price">€{Number(perfume.price).toFixed(2)}</span>
+                  <span className="warda-volume-pill__price">{formatPrice(perfume.price)}</span>
                 </button>
               </div>
             </div>
 
             <div className="warda-details-price-row">
-              <span className="warda-details-price">€{displayPrice.toFixed(2)}</span>
+              <span className="warda-details-price">{formatPrice(displayPrice)}</span>
               {perfume.inStock === false && <span className="warda-stock-status">{language === "ru" ? "Под заказ" : "Pre-order"}</span>}
             </div>
 

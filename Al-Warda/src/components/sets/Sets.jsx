@@ -14,6 +14,7 @@ import {
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import "../featured/Featured.css";
 import "../common/ProductCardImages.css";
@@ -50,6 +51,7 @@ export default function Sets() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
 
@@ -550,7 +552,7 @@ export default function Sets() {
                     )}
 
                     <div className="warda-perfume-card__price">
-                      €{currentPrice.toFixed(2)}
+                      {formatPrice(currentPrice)}
                       {!isSet && (
                         <span style={{ fontSize: "0.72rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
                           / {volLabel}

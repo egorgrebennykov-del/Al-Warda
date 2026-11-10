@@ -10,6 +10,7 @@ import {
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import LargeAnnouncementRoulette from "../announcements/LargeAnnouncementRoulette";
 import { fetchActiveAnnouncements } from "../../../utils/announcements";
@@ -20,6 +21,7 @@ import "../common/ProductCardImages.css";
 export default function Home() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const { isInCart, toggleCart } = useCartState();
   const [bestSellers, setBestSellers] = useState(INITIAL_BEST_SELLERS);
   const [categories] = useState(() => getCategories());
@@ -327,7 +329,7 @@ export default function Home() {
                     )}
                   </p>
                   <div className="warda-perfume-card__price">
-                    €{displayPrice.toFixed(2)}
+                    {formatPrice(displayPrice)}
                     {defaultOpt.isSecondLargest && (
                       <span style={{ fontSize: "0.74rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
                         / {language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn}

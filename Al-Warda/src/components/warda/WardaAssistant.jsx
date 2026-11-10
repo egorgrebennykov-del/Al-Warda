@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import WardaCharacter from "./WardaCharacter";
 import BookImage from "../common/BookImage";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -86,6 +87,7 @@ export function renderFormattedAssistantText(text) {
 
 export default function WardaAssistant() {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const confirm = useConfirm();
   const customAlert = useAlert();
   const navigate = useNavigate();
@@ -935,7 +937,7 @@ export default function WardaAssistant() {
                                     )}
                                     <div className="warda-book-card__price-row">
                                       <span className="warda-book-card__price">
-                                        €{getDefaultPerfumeVolumeOption(book).price.toFixed(2)}
+                                        {formatPrice(getDefaultPerfumeVolumeOption(book).price)}
                                         {getDefaultPerfumeVolumeOption(book).isSecondLargest && (
                                           <span style={{ fontSize: "0.72rem", color: "#a89882", marginLeft: "0.3rem" }}>
                                             / {language === "ru" ? getDefaultPerfumeVolumeOption(book).labelRu : getDefaultPerfumeVolumeOption(book).labelEn}

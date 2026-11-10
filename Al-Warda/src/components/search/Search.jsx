@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import "./Search.css";
@@ -28,6 +29,7 @@ const QUICK_TAGS = [
 
 export default function Search({ show, onClose }) {
   const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [query, setQuery] = useState("");
   const [allPerfumes, setAllPerfumes] = useState([]);
   const [matchingPerfumes, setMatchingPerfumes] = useState([]);
@@ -251,7 +253,7 @@ export default function Search({ show, onClose }) {
                       <span className="search__card-brand">{p.brand || "Al-Warda"}</span>
                       <h4 className="search__card-title">{p.name}</h4>
                       <p className="search__card-notes">{p.notesSummary}</p>
-                      <div className="search__card-price">€{p.price}</div>
+                      <div className="search__card-price">{formatPrice(p.price)}</div>
                     </div>
 
                     {/* Action Button */}

@@ -22,6 +22,7 @@ import {
 import BookImage from "../common/BookImage";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useAuth } from "../../context/AuthContext";
 import PhoneInput from "../common/PhoneInput";
@@ -60,6 +61,8 @@ function formatPrice(price, currency, language) {
 
 export default function Checkout() {
   const { language, t } = useLanguage();
+  const { currency, formatPrice: currencyFormatPrice } = useCurrency();
+  const formatPrice = (price) => currencyFormatPrice(price);
   const { user, isLoggedIn: loggedIn } = useAuth();
   const confirm = useConfirm();
   const navigate = useNavigate();
@@ -480,6 +483,7 @@ export default function Checkout() {
       await createOrderInProgress({
         userId: user?.id || null,
         orderNumber,
+        currency,
         items,
         address: finalOrderAddress,
         itemsSubtotal,

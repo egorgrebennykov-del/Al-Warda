@@ -115,6 +115,7 @@
 .warda-nav__right { display: flex; align-items: center; gap: 0.35rem; }
 .warda-nav__action-btn,
 .warda-nav__lang-btn,
+.warda-nav__currency-btn,
 .warda-nav__menu-toggle {
   position: relative;
   display: inline-flex;
@@ -135,8 +136,22 @@
 .warda-nav__action-btn:hover,
 .warda-nav__action-btn--active,
 .warda-nav__lang-btn:hover,
+.warda-nav__currency-btn:hover,
 .warda-nav__menu-toggle:hover { background: #29231d; color: #f5dfb9; border-color: #514638; }
 .warda-nav__lang-btn { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; }
+.warda-nav__currency-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.28);
+  background: rgba(212, 175, 55, 0.08);
+}
+.warda-nav__currency-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #f3e5ab;
+  border-color: rgba(212, 175, 55, 0.55);
+}
 .warda-nav__menu-toggle { display: none; }
 .warda-nav__action-btn--pulse { background: #4a3825; }
 .warda-nav__badge {
@@ -278,13 +293,15 @@
   .warda-nav__right { gap: 0 !important; }
   .warda-nav__action-btn,
   .warda-nav__lang-btn,
+  .warda-nav__currency-btn,
   .warda-nav__menu-toggle {
     width: 32px;
     height: 38px;
     font-size: 1.1rem;
   }
-  .warda-nav__lang-btn {
-    font-size: 0.68rem;
+  .warda-nav__lang-btn,
+  .warda-nav__currency-btn {
+    font-size: 0.65rem;
   }
   .warda-nav__crest-img {
     width: 46px;

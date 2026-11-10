@@ -5,6 +5,7 @@ import { getCurrentOrders, getCompletedOrders } from "../../../utils/orders";
 import BookImage from "../common/BookImage";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import "./Orders.css";
 
 function formatPrice(price, currency, language) {
@@ -34,6 +35,8 @@ function formatDate(dateString, language) {
 
 export default function Orders({ defaultTab = "current" }) {
   const { language, t } = useLanguage();
+  const { currency, formatPrice: currencyFormatPrice } = useCurrency();
+  const formatPrice = (price) => currencyFormatPrice(price);
   const location = useLocation();
   const navigate = useNavigate();
   const { tab } = useParams();

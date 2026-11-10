@@ -6,6 +6,7 @@ import {
   updateQuantity,
 } from "../../../utils/cart";
 import { useLanguage } from "../../context/languageContext";
+import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
 import "./Cart.css";
 
@@ -33,6 +34,7 @@ function formatPerfumeCount(count, language = "ru") {
 
 export default function Cart({ onSearch }) {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const location = useLocation();
   const { user } = useAuth();
   const [items, setItems] = useState([]);
@@ -179,10 +181,10 @@ export default function Cart({ onSearch }) {
 
                 <div className="cart__price-block">
                   <strong className="cart__price" style={{ color: "#d4af37" }}>
-                    {formatPrice(unitPrice * quantity, "EUR", language)}
+                    {formatPrice(unitPrice * quantity)}
                   </strong>
                   <small className="cart__unit-price" style={{ color: "#8c7e6c" }}>
-                    {formatPrice(unitPrice, "EUR", language)} {language === "ru" ? "/ шт." : "each"}
+                    {formatPrice(unitPrice)} {language === "ru" ? "/ шт." : "each"}
                   </small>
                 </div>
 
@@ -212,7 +214,7 @@ export default function Cart({ onSearch }) {
                 {language === "ru" ? "Итого к оплате:" : "Total Amount:"}
               </span>
               <div style={{ fontFamily: "var(--second-font)", fontSize: "1.8rem", color: "#d4af37", fontWeight: "600" }}>
-                {formatPrice(totalPrice, "EUR", language)}
+                {formatPrice(totalPrice)}
               </div>
             </div>
             <Link to="/checkout" className="warda-btn">
