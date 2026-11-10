@@ -267,6 +267,34 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
         "descriptionEn": desc_en,
     }
 
+def extract_volume(name):
+    if not name:
+        return "100 мл / 3.4 FL.OZ."
+    m_set = re.search(r'(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
+    if m_set:
+        count = m_set.group(1)
+        per = m_set.group(2).replace(',', '.')
+        return f"{count} × {per} мл"
+    m_ml = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
+    if m_ml:
+        val = m_ml.group(1).replace(',', '.')
+        num = float(val)
+        num_str = f"{num:g}"
+        oz = num * 0.033814
+        return f"{num_str} мл / {oz:.1f} FL.OZ."
+    m_oz = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)', name, re.I)
+    if m_oz:
+        val = m_oz.group(1).replace(',', '.')
+        num_oz = float(val)
+        if num_oz == 34: num_oz = 3.4
+        ml = round(num_oz * 29.5735)
+        for std in [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]:
+            if abs(ml - std) <= 3:
+                ml = std
+                break
+        return f"{ml} мл / {num_oz:g} FL.OZ."
+    return "100 мл / 3.4 FL.OZ."
+
 # Sync Supabase
 def sync_to_supabase(perfumes_list):
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -371,7 +399,7 @@ def sync_to_supabase(perfumes_list):
                 "longevityEn": "10–14 hours",
                 "sillage": "Заметный, притягательный",
                 "sillageEn": "Noticeable, alluring sillage",
-                "volume": "100 мл EDP",
+                "volume": extract_volume(p.get("name") or p.get("title") or ""),
                 "concentration": "Eau de Parfum",
                 "gtin": p.get("gtin") or "",
                 "minOrderQuantity": int(p.get("minOrderQuantity") or 1),
@@ -616,7 +644,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         "longevityEn": "10–14 hours",
                         "sillage": "Заметный, притягательный",
                         "sillageEn": "Noticeable, alluring sillage",
-                        "volume": "100 мл EDP",
+                        "volume": extract_volume(p.get("name") or p.get("title") or ""),
                         "gtin": gtin or "",
                         "minOrderQuantity": min_order,
                         "unit": min_order,

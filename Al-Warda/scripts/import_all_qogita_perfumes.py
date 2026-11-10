@@ -19,6 +19,34 @@ from scripts.qogita_weekly_sync_upscayl import (
     build_rich_bilingual_enrichment,
 )
 
+def extract_volume(name):
+    if not name:
+        return "100 мл / 3.4 FL.OZ."
+    m_set = re.search(r'(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
+    if m_set:
+        count = m_set.group(1)
+        per = m_set.group(2).replace(',', '.')
+        return f"{count} × {per} мл"
+    m_ml = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
+    if m_ml:
+        val = m_ml.group(1).replace(',', '.')
+        num = float(val)
+        num_str = f"{num:g}"
+        oz = num * 0.033814
+        return f"{num_str} мл / {oz:.1f} FL.OZ."
+    m_oz = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)', name, re.I)
+    if m_oz:
+        val = m_oz.group(1).replace(',', '.')
+        num_oz = float(val)
+        if num_oz == 34: num_oz = 3.4
+        ml = round(num_oz * 29.5735)
+        for std in [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]:
+            if abs(ml - std) <= 3:
+                ml = std
+                break
+        return f"{ml} мл / {num_oz:g} FL.OZ."
+    return "100 мл / 3.4 FL.OZ."
+
 print("=" * 65)
 print("AL-WARDA - FULL CATALOG IMPORT FROM QOGITA FOR ALL BRANDS")
 print("=" * 65)
@@ -159,7 +187,7 @@ for brand in ARABIAN_BRANDS:
                     "longevityEn": "10–14 hours",
                     "sillage": "Заметный, шлейфовый",
                     "sillageEn": "Noticeable, alluring sillage",
-                    "volume": "100 мл EDP",
+                    "volume": extract_volume(p.get("name") or p.get("title") or ""),
                     "description": rich["descriptionRu"],
                     "descriptionRu": rich["descriptionRu"],
                     "descriptionEn": rich["descriptionEn"],

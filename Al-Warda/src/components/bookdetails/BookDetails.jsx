@@ -100,9 +100,10 @@ export default function BookDetails() {
     };
   }, [targetId]);
 
-  const isSet = perfume ? isPerfumeSet(perfume) : false;
-  const setItems = perfume?.setItems || (isSet ? inferSetItems(perfume?.name, perfume?.brand) : null);
-  const isDecantable = perfume ? isDecantablePerfume(perfume) : false;
+  const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
+  const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
+  const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
+  const isDecantable = enrichedPerfume ? isDecantablePerfume(enrichedPerfume) : false;
   const hasSampleParam = Boolean(searchParams.get("sample"));
   const allowSamples = !isSet && (isDecantable || hasSampleParam);
   const activeSampleConfig = allowSamples && selectedVolume !== "full"
@@ -113,10 +114,11 @@ export default function BookDetails() {
     : Number(perfume?.price || 0);
   const displayVolume = activeSampleConfig
     ? `${isRu ? activeSampleConfig.labelRu : activeSampleConfig.labelEn} (${isRu ? activeSampleConfig.descRu : activeSampleConfig.descEn})`
-    : (perfume?.volume || "100 мл");
-  const fullBottleVol = isSet
-    ? (perfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || perfume?.volume || (isRu ? "Набор" : "Set"))
-    : ((perfume?.volume || "").match(/\d+(\.\d+)?\s*(?:ml|мл|fl\.?\s*oz)/i)?.[0]?.replace(/ml/i, isRu ? " мл" : " ml") || perfume?.volume || (isRu ? "100 мл" : "100 ml"));
+    : (isRu ? (enrichedPerfume?.volume || "100 мл").replace(/ml/gi, "мл") : (enrichedPerfume?.volume || "100 ml").replace(/мл/gi, "ml"));
+  const rawBottleVol = isSet
+    ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || (isRu ? "Набор" : "Set"))
+    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || (isRu ? "100 мл" : "100 ml"));
+  const fullBottleVol = isRu ? rawBottleVol.replace(/ml/gi, "мл") : rawBottleVol.replace(/мл/gi, "ml");
 
   const handleSelectVolume = (vol) => {
     setSelectedVolume(vol);
@@ -177,7 +179,6 @@ export default function BookDetails() {
     );
   }
 
-  const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
   const notesFallback = enrichedPerfume ? getHarmoniousNotes(enrichedPerfume) : null;
 
   const topNotes = (isRu

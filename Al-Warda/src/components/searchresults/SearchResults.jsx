@@ -315,7 +315,7 @@ export default function SearchResults() {
               const displayPrice = defaultOpt.price;
               const displayVolume = defaultOpt.isSecondLargest
                 ? (isRu ? defaultOpt.labelRu : defaultOpt.labelEn)
-                : (perfume.volume ? perfume.volume.split("/")[0].trim() : "");
+                : (perfume.volume ? (isRu ? perfume.volume.split("/")[0].trim().replace(/ml/gi, "мл") : perfume.volume.split("/")[0].trim().replace(/мл/gi, "ml")) : "");
               return (
                 <OrnateCard
                   key={perfume.id}

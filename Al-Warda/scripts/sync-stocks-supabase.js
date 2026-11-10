@@ -293,8 +293,33 @@ function detectCategoryAndNotes(name, brand, gender) {
 }
 
 function extractVolume(name) {
-  const match = name.match(/(\d+)\s*(ml|мл)/i);
-  if (match) return `${match[1]} мл / ${(Number(match[1]) * 0.0338).toFixed(1)} FL.OZ.`;
+  if (!name || typeof name !== "string") return "100 мл / 3.4 FL.OZ.";
+  const multMatch = name.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (multMatch) {
+    const per = multMatch[2].replace(",", ".");
+    return `${multMatch[1]} × ${per} мл`;
+  }
+  const mlMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (mlMatch) {
+    const val = mlMatch[1].replace(",", ".");
+    const num = parseFloat(val);
+    const numStr = Number.isInteger(num) ? String(num) : String(num);
+    const oz = (num * 0.033814).toFixed(1);
+    return `${numStr} мл / ${oz} FL.OZ.`;
+  }
+  const ozMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
+  if (ozMatch) {
+    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
+    if (ozVal === 34) ozVal = 3.4;
+    let ml = Math.round(ozVal * 29.5735);
+    for (const std of [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]) {
+      if (Math.abs(ml - std) <= 3) {
+        ml = std;
+        break;
+      }
+    }
+    return `${ml} мл / ${ozVal} FL.OZ.`;
+  }
   return "100 мл / 3.4 FL.OZ.";
 }
 

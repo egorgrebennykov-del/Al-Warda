@@ -473,3 +473,39 @@ test("getDefaultPerfumeVolumeOption defaults to second largest volume >= 10ml wh
   assert.equal(setOpt.price, 29.90);
   assert.equal(setOpt.isSecondLargest, false);
 });
+
+test("extractVolumeFromName and ensurePerfumeEnrichment accurately extract explicit volume (e.g. 1.5ml sample)", async () => {
+  const { extractVolumeFromName, ensurePerfumeEnrichment, getDefaultPerfumeVolumeOption, parseVolumeMl } = await import("../utils/perfumes.js");
+
+  // Sample with decimal volume
+  assert.equal(parseVolumeMl("1.5ml"), 1.5);
+  assert.equal(parseVolumeMl("1,5 мл"), 1.5);
+  assert.equal(parseVolumeMl("Ajmal Amber Wood Eau de Parfum Sample 1.5ml"), 1.5);
+
+  const sampleRaw = {
+    id: "dropship-6293708104680",
+    name: "Ajmal Amber Wood Eau de Parfum Sample 1.5ml",
+    price: 0.79,
+    volume: "100ml / 3.4 FL.OZ.", // bad legacy database default
+    info: {
+      volume: "100 мл EDP",
+    },
+  };
+
+  const enriched = ensurePerfumeEnrichment(sampleRaw);
+  assert.ok(enriched.volume.startsWith("1.5 мл"));
+
+  const opt = getDefaultPerfumeVolumeOption(enriched);
+  assert.equal(opt.ml, 1.5);
+  assert.equal(opt.labelRu, "1.5 мл");
+  assert.equal(opt.labelEn, "1.5 ml");
+  assert.equal(opt.price, 0.79);
+  assert.equal(opt.isSample, true);
+  assert.equal(opt.canChangeVolume, false);
+
+  // Non-100ml flacons
+  assert.equal(parseVolumeMl("Lattafa Atlas 55ml EDP"), 55);
+  assert.equal(parseVolumeMl("Armaf Club De Nuit Intense Man 105ml EDT"), 105);
+  assert.equal(extractVolumeFromName("Lattafa Ana Abiyedh 60ml EDP"), "60 мл / 2.0 FL.OZ.");
+  assert.equal(extractVolumeFromName("Afnan 9pm Discovery Set 5x2ml"), "5 × 2 мл");
+});

@@ -1297,6 +1297,44 @@ export function inferSetItems(perfumeName = "", brand = "") {
   return null;
 }
 
+export function extractVolumeFromName(name, fallbackVolume = null) {
+  if (!name || typeof name !== "string") return fallbackVolume;
+
+  // 1. Multi-item discovery sets: e.g. 5x2ml, 4 x 10 ml, 3*25ml
+  const multMatch = name.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (multMatch) {
+    const per = multMatch[2].replace(",", ".");
+    return `${multMatch[1]} × ${per} мл`;
+  }
+
+  // 2. Explicit ml in name: e.g. 1.5ml, 1,5 ml, 15ml, 50ml, 60ml, 105ml
+  const mlMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (mlMatch) {
+    const val = mlMatch[1].replace(",", ".");
+    const num = parseFloat(val);
+    const numStr = Number.isInteger(num) ? String(num) : String(num);
+    const oz = (num * 0.033814).toFixed(1);
+    return `${numStr} мл / ${oz} FL.OZ.`;
+  }
+
+  // 3. Fl oz in name: e.g. 3.4 Fl Oz, 2.7 Fl Oz, 34 Fl Oz (typo for 3.4)
+  const ozMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
+  if (ozMatch) {
+    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
+    if (ozVal === 34) ozVal = 3.4;
+    let ml = Math.round(ozVal * 29.5735);
+    for (const std of [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]) {
+      if (Math.abs(ml - std) <= 3) {
+        ml = std;
+        break;
+      }
+    }
+    return `${ml} мл / ${ozVal} FL.OZ.`;
+  }
+
+  return fallbackVolume;
+}
+
 export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
   const isSet = isPerfumeSet(p);
@@ -1397,17 +1435,11 @@ export function ensurePerfumeEnrichment(p) {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
 
-  let resolvedVolume = p.volume || p.info?.volume;
-  if (!resolvedVolume || resolvedVolume === "100 мл") {
-    const multVolMatch = name.match(/(\d+)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(ml|мл)/i);
-    if (multVolMatch) {
-      resolvedVolume = `${multVolMatch[1]} × ${multVolMatch[2]} мл`;
-    } else {
-      const nameVolMatch = name.match(/(\d+(?:\.\d+)?)\s*(ml|мл|fl\.?\s*oz)/i);
-      resolvedVolume = nameVolMatch
-        ? `${nameVolMatch[1]} ${nameVolMatch[2].toLowerCase().includes("fl") ? "fl.oz" : "мл"}`
-        : (p.volume || p.info?.volume || "100 мл");
-    }
+  const explicitVolFromName = extractVolumeFromName(name);
+  const rawVol = p.volume || p.info?.volume;
+  let resolvedVolume = explicitVolFromName;
+  if (!resolvedVolume) {
+    resolvedVolume = rawVol ? String(rawVol).trim() : "100 мл / 3.4 FL.OZ.";
   }
 
   const setItems = p.setItems || p.info?.setItems || (isSet ? inferSetItems(name, brand) : null);
@@ -1535,7 +1567,7 @@ export async function fetchPerfumesFromSupabase() {
             price: Number(r.price) || 29.99,
             currency: r.currency || "EUR",
             priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
-            volume: info.volume || r.volume || "100ml / 3.4 FL.OZ.",
+            volume: extractVolumeFromName(r.name || r.title, info.volume || r.volume || "100 мл / 3.4 FL.OZ."),
             concentration: info.concentration || r.concentration || "Eau De Parfum",
             gender: info.gender || r.gender || "Унисекс",
             genderRu: info.gender || r.gender || "Унисекс",
@@ -1925,10 +1957,19 @@ export function getCategories() {
 export function parseVolumeMl(val) {
   if (val == null) return null;
   if (typeof val === "number" && Number.isFinite(val) && val > 0) return val;
-  const match = String(val).match(/(\d+(?:\.\d+)?)\s*(?:ml|мл)/i);
-  if (match) return parseFloat(match[1]);
-  const numMatch = String(val).match(/^\s*(\d+(?:\.\d+)?)\s*$/);
-  if (numMatch) return parseFloat(numMatch[1]);
+  const str = String(val);
+  const multMatch = str.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (multMatch) return parseFloat(multMatch[2].replace(",", "."));
+  const match = str.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (match) return parseFloat(match[1].replace(",", "."));
+  const ozMatch = str.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
+  if (ozMatch) {
+    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
+    if (ozVal === 34) ozVal = 3.4;
+    return Math.round(ozVal * 29.5735);
+  }
+  const numMatch = str.match(/^\s*(\d+(?:[.,]\d+)?)\s*$/);
+  if (numMatch) return parseFloat(numMatch[1].replace(",", "."));
   return null;
 }
 
@@ -1956,15 +1997,18 @@ export function getPerfumeVolumeOptions(perfume) {
     }
   }
 
-  const bottleMl = parseVolumeMl(perfume.volume || perfume.name) || 100;
+  const bottleMl = parseVolumeMl(perfume.name) || parseVolumeMl(perfume.volume) || 100;
   if (!optionsMap.has(bottleMl)) {
+    const rawBottleLabel = (perfume.volume && parseVolumeMl(perfume.volume) === bottleMl)
+      ? perfume.volume.split("/")[0].trim()
+      : `${bottleMl} мл`;
     optionsMap.set(bottleMl, {
       ml: bottleMl,
       key: "full",
       price: Number(perfume.price || 0),
-      labelRu: (perfume.volume || `${bottleMl} мл`).split("/")[0].trim(),
-      labelEn: (perfume.volume || `${bottleMl} ml`).split("/")[0].trim(),
-      isSample: false,
+      labelRu: rawBottleLabel.replace(/ml/gi, "мл"),
+      labelEn: rawBottleLabel.replace(/мл/gi, "ml"),
+      isSample: bottleMl < 30,
     });
   }
 
@@ -2008,14 +2052,17 @@ export function getDefaultPerfumeVolumeOption(perfume) {
   const canChangeVolume = canDecant || hasMultipleSizes;
 
   if (!canChangeVolume) {
-    const bottleMl = parseVolumeMl(perfume.volume || perfume.name) || 100;
+    const bottleMl = parseVolumeMl(perfume.name) || parseVolumeMl(perfume.volume) || 100;
+    const rawBottleLabel = (perfume.volume && parseVolumeMl(perfume.volume) === bottleMl)
+      ? perfume.volume.split("/")[0].trim()
+      : `${bottleMl} мл`;
     return {
       price: Number(perfume.price || 0),
       ml: bottleMl,
       key: "full",
-      labelRu: (perfume.volume || `${bottleMl} мл`).split("/")[0].trim(),
-      labelEn: (perfume.volume || `${bottleMl} ml`).split("/")[0].trim(),
-      isSample: false,
+      labelRu: rawBottleLabel.replace(/ml/gi, "мл"),
+      labelEn: rawBottleLabel.replace(/мл/gi, "ml"),
+      isSample: bottleMl < 30,
       isSecondLargest: false,
       canChangeVolume: false,
     };
@@ -2030,14 +2077,15 @@ export function getDefaultPerfumeVolumeOption(perfume) {
     };
   }
 
+  const fallbackBottleMl = parseVolumeMl(perfume.name) || parseVolumeMl(perfume.volume) || 100;
   return {
     ...(options[0] || {
       price: Number(perfume.price || 0),
-      ml: 100,
+      ml: fallbackBottleMl,
       key: "full",
-      labelRu: "100 мл",
-      labelEn: "100 ml",
-      isSample: false,
+      labelRu: `${fallbackBottleMl} мл`,
+      labelEn: `${fallbackBottleMl} ml`,
+      isSample: fallbackBottleMl < 30,
     }),
     isSecondLargest: false,
     canChangeVolume: true,

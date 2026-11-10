@@ -8,6 +8,7 @@ import {
   isPerfumeSet,
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
+  parseVolumeMl,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -273,9 +274,7 @@ const VOLUME_OPTIONS = [
 
 function getPerfumeMl(p) {
   if (!p) return 100;
-  const raw = `${p.info?.volume || ""} ${p.volume || ""} ${p.name || ""} ${p.title || ""}`;
-  const m = raw.match(/(\d+)\s*(?:ml|мл)/i);
-  return m ? parseInt(m[1], 10) : 100;
+  return parseVolumeMl(p.name) || parseVolumeMl(p.volume) || parseVolumeMl(p.info?.volume) || 100;
 }
 
 // Always 4 items per row -> page size multiple of 4 (e.g. 24 = 6 full rows)
@@ -1273,7 +1272,7 @@ export default function Featured() {
               const displayPrice = defaultOpt.price;
               const displayVolume = defaultOpt.isSecondLargest
                 ? (language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn)
-                : (perfume.volume ? perfume.volume.split("/")[0].trim() : "");
+                : (perfume.volume ? (language === "ru" ? perfume.volume.split("/")[0].trim().replace(/ml/gi, "мл") : perfume.volume.split("/")[0].trim().replace(/мл/gi, "ml")) : "");
               return (
                 <OrnateCard
                   key={perfume.id}
