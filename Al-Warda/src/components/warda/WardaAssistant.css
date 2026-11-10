@@ -393,7 +393,7 @@
 @media (max-width: 819px) {
   .warda-assistant-root.warda-assistant-root--open {
     top: calc(env(safe-area-inset-top, 0px) + 16px);
-    bottom: calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px)) !important;
     left: 14px;
     right: 14px;
     display: flex;
@@ -1398,4 +1398,271 @@
 .warda-companion-dock,
 .warda-companion-dock__character-box {
   overflow: visible;
+}
+
+/* ==========================================================================
+   Mobile Landscape (Horizontal Phone) Optimization
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 550px),
+       (max-width: 950px) and (orientation: landscape) and (max-height: 600px) {
+  .warda-assistant-root.warda-assistant-root--open {
+    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+    left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+  }
+
+  .warda-assistant-root--open .warda-window-wrapper {
+    width: 100% !important;
+    max-width: 860px !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    pointer-events: auto !important;
+  }
+
+  /* Side character companion dock in landscape */
+  .warda-assistant-root--open .warda-companion-dock {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin-bottom: 2px !important;
+    flex-shrink: 0 !important;
+    width: 124px !important;
+    z-index: 3 !important;
+    pointer-events: none !important;
+  }
+
+  .warda-companion-dock__character-box::before {
+    height: 126px !important;
+    border-radius: 18px !important;
+  }
+
+  .warda-companion-dock__character {
+    width: 116px !important;
+    height: 116px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 14px !important;
+    padding: 4px 5px 2px 5px !important;
+  }
+
+  .warda-companion-dock__character .warda-character__image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    object-position: center bottom !important;
+    transform: scale(0.96) !important;
+    transform-origin: center bottom !important;
+    border-radius: 10px !important;
+  }
+
+  .warda-companion-dock__name-tag {
+    padding: 3px 12px !important;
+    margin-top: -8px !important;
+    min-width: 105px !important;
+  }
+
+  .warda-companion-dock__name {
+    font-size: 0.74rem !important;
+  }
+
+  .warda-companion-dock__status {
+    font-size: 0.62rem !important;
+  }
+
+  /* Main chat panel stretched to available landscape height */
+  .warda-assistant-root--open .warda-chat-panel {
+    flex: 1 1 0% !important;
+    width: auto !important;
+    max-width: 580px !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 18px !important;
+    pointer-events: auto !important;
+  }
+
+  /* Compact header */
+  .warda-chat-header {
+    padding: 8px 14px !important;
+  }
+
+  .warda-chat-header__info {
+    gap: 8px !important;
+  }
+
+  .warda-chat-header__avatar-wrap {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .warda-chat-header__title {
+    font-size: 0.85rem !important;
+  }
+
+  .warda-chat-header__subtitle {
+    font-size: 0.68rem !important;
+  }
+
+  .warda-header-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1rem !important;
+  }
+
+  /* Smooth scrollable chat body */
+  .warda-chat-body {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+
+  .warda-msg-row {
+    gap: 8px !important;
+  }
+
+  .warda-msg-avatar {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .warda-msg-bubble {
+    padding: 7px 11px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.4 !important;
+    border-radius: 14px !important;
+  }
+
+  .warda-msg-row--assistant {
+    max-width: 92% !important;
+  }
+
+  .warda-msg-row--user {
+    max-width: 82% !important;
+  }
+
+  /* Compact perfume cards inside messages */
+  .warda-books-container {
+    margin-top: 8px !important;
+    padding-top: 6px !important;
+    gap: 6px !important;
+  }
+
+  .warda-book-card {
+    padding: 6px 8px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .warda-book-card__cover-wrap {
+    width: 48px !important;
+    height: 60px !important;
+    border-radius: 8px !important;
+  }
+
+  .warda-book-card__title {
+    font-size: 0.78rem !important;
+    -webkit-line-clamp: 1 !important;
+  }
+
+  .warda-book-card__author {
+    font-size: 0.68rem !important;
+  }
+
+  .warda-book-card__price {
+    font-size: 0.82rem !important;
+  }
+
+  .warda-book-card__actions {
+    gap: 4px !important;
+  }
+
+  .warda-book-card__btn-cart {
+    padding: 3px 8px !important;
+    font-size: 0.7rem !important;
+    height: 24px !important;
+  }
+
+  .warda-book-card__btn-view {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* Compact questions bar in landscape */
+  .warda-questions-bar {
+    padding: 3px 0 !important;
+  }
+
+  .warda-questions-track {
+    gap: 6px !important;
+    padding: 2px 10px !important;
+  }
+
+  .warda-question-chip {
+    padding: 4px 9px !important;
+    font-size: 0.72rem !important;
+    border-radius: 12px !important;
+    max-width: 220px !important;
+  }
+
+  /* Compact input footer in landscape */
+  .warda-chat-footer {
+    padding: 6px 10px !important;
+  }
+
+  .warda-chat-footer.footer-expanded {
+    padding: 6px 10px 8px !important;
+  }
+
+  .warda-chat-input-form {
+    min-height: 38px !important;
+    padding: 2px 4px 2px 12px !important;
+    border-radius: 20px !important;
+  }
+
+  .warda-chat-textarea {
+    font-size: 16px !important;
+    line-height: 20px !important;
+    height: 20px !important;
+    min-height: 20px !important;
+    max-height: 56px !important;
+  }
+
+  .warda-chat-send {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Floating trigger button in landscape when closed */
+  .warda-assistant-root:not(.warda-assistant-root--open) {
+    right: calc(env(safe-area-inset-right, 0px) + 14px) !important;
+    bottom: calc(var(--mobile-tabbar-height, 4rem) + 10px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .warda-trigger-btn {
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+
+/* On very narrow landscape screens (< 620px), hide companion dock so chat has full width */
+@media (orientation: landscape) and (max-height: 550px) and (max-width: 619px) {
+  .warda-assistant-root--open .warda-companion-dock {
+    display: none !important;
+  }
+
+  .warda-assistant-root--open .warda-chat-panel {
+    max-width: 100% !important;
+  }
 }
