@@ -6,8 +6,10 @@
 .warda-messenger-overlay {
   position: fixed;
   inset: 0;
-  pointer-events: none;
-  background-color: transparent;
+  pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 10005;
   display: flex;
   justify-content: flex-end;
@@ -1190,14 +1192,11 @@
 /* Mobile Portrait (< 820px) */
 @media screen and (max-width: 819px) {
   .warda-messenger-overlay {
-    top: calc(env(safe-area-inset-top, 0px) + 16px);
-    bottom: calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px));
-    left: 14px;
-    right: 14px;
-    padding: 0;
+    inset: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 14px calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px)) 14px;
     align-items: flex-end;
     justify-content: center;
-    pointer-events: none;
+    pointer-events: auto;
   }
 
   .warda-messenger-container {
@@ -1235,14 +1234,11 @@
 @media (orientation: landscape) and (max-height: 550px),
        (max-width: 950px) and (orientation: landscape) and (max-height: 600px) {
   .warda-messenger-overlay {
-    top: calc(env(safe-area-inset-top, 0px) + 8px);
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
-    left: calc(env(safe-area-inset-left, 0px) + 12px);
-    right: calc(env(safe-area-inset-right, 0px) + 12px);
-    padding: 0;
+    inset: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) calc(env(safe-area-inset-right, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 8px) calc(env(safe-area-inset-left, 0px) + 12px);
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    pointer-events: auto;
   }
 
   .warda-messenger-container {

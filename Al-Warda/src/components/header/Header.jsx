@@ -158,7 +158,8 @@ export default function Header({ theme, isLight, onSearch }) {
   };
 
   return (
-    <header className="header warda-header" id="header">
+    <>
+      <header className="header warda-header" id="header">
       <nav className="nav container warda-nav">
         <button
           type="button"
@@ -274,7 +275,13 @@ export default function Header({ theme, isLight, onSearch }) {
               type="button"
               className={`warda-nav__action-btn ${adminAttention ? "warda-nav__action-btn--pulse" : ""}`}
               onClick={() => {
-                setIsMessengerOpen((prev) => !prev);
+                setIsMessengerOpen((prev) => {
+                  const next = !prev;
+                  if (next) {
+                    window.dispatchEvent(new CustomEvent("warda-open-messenger"));
+                  }
+                  return next;
+                });
                 setAdminAttention(false);
               }}
               title="Fragrance Concierge"
@@ -432,16 +439,17 @@ export default function Header({ theme, isLight, onSearch }) {
         <span className="warda-header__line-gap"></span>
         <span className="warda-header__line-half warda-header__line-half--right"></span>
       </div>
-
-      {isMessengerOpen && (
-        <Suspense fallback={null}>
-          <MessengerModal
-            isOpen={isMessengerOpen}
-            onClose={() => setIsMessengerOpen(false)}
-            onUnreadChange={(cnt) => setUnreadCount(cnt)}
-          />
-        </Suspense>
-      )}
     </header>
+
+    {isMessengerOpen && (
+      <Suspense fallback={null}>
+        <MessengerModal
+          isOpen={isMessengerOpen}
+          onClose={() => setIsMessengerOpen(false)}
+          onUnreadChange={(cnt) => setUnreadCount(cnt)}
+        />
+      </Suspense>
+    )}
+  </>
   );
 }

@@ -321,11 +321,18 @@ export default function WardaAssistant() {
       }
     };
 
+    const handleCloseForAdmin = () => {
+      setIsOpen(false);
+      setEmotion("greeting");
+    };
+
     window.addEventListener("open-warda-assistant", handleTrigger);
     window.addEventListener("warda-offer-help", handleOfferHelp);
+    window.addEventListener("warda-open-messenger", handleCloseForAdmin);
     return () => {
       window.removeEventListener("open-warda-assistant", handleTrigger);
       window.removeEventListener("warda-offer-help", handleOfferHelp);
+      window.removeEventListener("warda-open-messenger", handleCloseForAdmin);
     };
   }, []);
 

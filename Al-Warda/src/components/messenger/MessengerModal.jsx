@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { getCookieUser, isLoggedIn, getProfile } from "../../../utils/auth";
 import {
   getOrCreateInquiry,
@@ -386,10 +387,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+  if (typeof document === "undefined") return null;
 
   const adminName = inquiry?.interlocutors_info?.adminName || "Администратор";
 
-  return (
+  const modalNode = (
     <div className="warda-messenger-overlay" onClick={onClose}>
       <div
         className="warda-messenger-container"
@@ -880,4 +882,6 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       </div>
     </div>
   );
+
+  return createPortal(modalNode, document.body);
 }
