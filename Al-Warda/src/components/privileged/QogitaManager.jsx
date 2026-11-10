@@ -195,7 +195,7 @@ export default function QogitaManager({ language = "ru" }) {
     setOffersLoading(true);
     try {
       const res = await getQogitaVariantOffers(variant.fid);
-      setVariantOffers(res.results || []);
+      setVariantOffers(res.offers || res.results || (Array.isArray(res) ? res : []));
     } catch (err) {
       showNotice(err.message || "Не удалось загрузить предложения", "error");
       setVariantOffers([]);
@@ -852,29 +852,64 @@ export default function QogitaManager({ language = "ru" }) {
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    {variantOffers.map((offer) => (
-                      <div key={offer.qid} className="qogita-offer-row">
-                        <div>
-                          <div style={{ fontWeight: 600 }}>Поставщик: {offer.supplierAlias}</div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--text-color-light, #a0a0ab)" }}>
-                            В наличии: {offer.quantityAvailable} шт. &bull; Мин. партия: {offer.minimumOrderQuantity || 1} шт.
-                            {offer.leadTimeDays ? ` &bull; Доставка: ${offer.leadTimeDays} дн.` : ""}
-                          </div>
-                        </div>
+                    {variantOffers.map((offer) => {
+                      const tiered = Array.isArray(offer.tieredPrices) ? offer.tieredPrices : [];
+                      const tier500 = tiered.find((t) => parseFloat(t.tierMov?.amount || 0) <= 500) || tiered[tiered.length - 1];
+                      const displayPrice = tier500?.tierPrice?.amount || offer.price?.amount || "—";
+                      const displayCurrency = tier500?.tierPrice?.currency || offer.price?.currency || "EUR";
+                      const sellerName = offer.seller || offer.supplierAlias || "Qogita Supplier";
+                      const qty = offer.inventory ?? offer.quantityAvailable ?? 0;
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                          <span className="qogita-offer-price">
-                            {offer.price?.amount} {offer.price?.currency || "EUR"}
-                          </span>
-                          <button
-                            className="qogita-btn qogita-btn--primary qogita-btn--sm"
-                            onClick={() => handleAddToCart(offer.qid, offer.minimumOrderQuantity || 1)}
-                          >
-                            <i className="ri-add-line" /> В корзину
-                          </button>
+                      return (
+                        <div key={offer.qid} className="qogita-offer-row" style={{ flexDirection: "column", alignItems: "stretch", gap: "0.5rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontWeight: 600 }}>Поставщик: {sellerName}</div>
+                              <div style={{ fontSize: "0.78rem", color: "var(--text-color-light, #a0a0ab)" }}>
+                                В наличии: {qty} шт. &bull; Мин. партия: {offer.unit || offer.minimumOrderQuantity || 1} шт.
+                                {offer.leadTimeDays ? ` &bull; Доставка: ${offer.leadTimeDays} дн.` : ""}
+                              </div>
+                            </div>
+
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                              <span className="qogita-offer-price" title="Цена на минимальную закупку (MOV ≤ €500)">
+                                {displayPrice} {displayCurrency}
+                              </span>
+                              <button
+                                className="qogita-btn qogita-btn--primary qogita-btn--sm"
+                                onClick={() => handleAddToCart(offer.qid, offer.unit || offer.minimumOrderQuantity || 1)}
+                              >
+                                <i className="ri-add-line" /> В корзину
+                              </button>
+                            </div>
+                          </div>
+
+                          {tiered.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", paddingTop: "0.3rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)", fontSize: "0.74rem" }}>
+                              {tiered.map((t, tidx) => {
+                                const movAmt = parseFloat(t.tierMov?.amount || 0);
+                                const isCurrentTier = movAmt <= 500;
+                                return (
+                                  <span
+                                    key={tidx}
+                                    style={{
+                                      padding: "2px 6px",
+                                      borderRadius: "4px",
+                                      background: isCurrentTier ? "rgba(46, 204, 113, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                                      color: isCurrentTier ? "#2ecc71" : "#a0a0ab",
+                                      border: isCurrentTier ? "1px solid rgba(46, 204, 113, 0.4)" : "1px solid transparent",
+                                    }}
+                                  >
+                                    MOV €{movAmt.toLocaleString()}: <strong>{t.tierPrice?.amount} {t.tierPrice?.currency || "EUR"}</strong>
+                                    {isCurrentTier && " ★"}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

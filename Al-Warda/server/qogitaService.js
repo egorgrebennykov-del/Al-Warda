@@ -194,16 +194,61 @@ export function isArabianPerfume(item) {
 }
 
 /**
- * Map Qogita product to Al-Warda dropship perfume schema
- * Fixed price directly in EUR (no dynamic markup formula)
+ * Extract lowest price for minimum purchase MOV <= targetMov (default 500 EUR)
+ * On Qogita, suppliers define tiered prices by Minimum Order Value (MOV):
+ * e.g., MOV 15,000 -> 14.10, MOV 1,500 -> 14.12, MOV 500 -> 14.21.
+ * Standard wholesale orders use the lowest unit price from the <= 500 EUR MOV tier.
  */
-export function mapQogitaProductToPerfume(qogitaItem) {
-  const gtin = qogitaItem.gtin || "";
-  const name = qogitaItem.name || "Unknown Fragrance";
-  const brand = qogitaItem.brand || qogitaItem.brandName || "Arabian Perfume";
-  const slug = `dropship-${(qogitaItem.qid || gtin || name).toString().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+export function extractQogitaPriceForMov(qogitaItem, targetMov = 500) {
+  let allTiers = [];
 
-  // Direct wholesale price in EUR
+  // 1. Direct tiered prices on item
+  if (Array.isArray(qogitaItem.tieredPrices)) {
+    allTiers.push(...qogitaItem.tieredPrices);
+  }
+  if (Array.isArray(qogitaItem.tiered_prices)) {
+    allTiers.push(...qogitaItem.tiered_prices);
+  }
+
+  // 2. Tiers within variants
+  if (Array.isArray(qogitaItem.variants)) {
+    for (const v of qogitaItem.variants) {
+      if (Array.isArray(v.tieredPrices)) allTiers.push(...v.tieredPrices);
+      if (Array.isArray(v.tiered_prices)) allTiers.push(...v.tiered_prices);
+    }
+  }
+
+  // 3. Tiers within offers
+  if (Array.isArray(qogitaItem.offers)) {
+    for (const off of qogitaItem.offers) {
+      if (Array.isArray(off.tieredPrices)) allTiers.push(...off.tieredPrices);
+      if (Array.isArray(off.tiered_prices)) allTiers.push(...off.tiered_prices);
+    }
+  }
+
+  // Filter tiers where tier MOV <= targetMov
+  const eligible = allTiers.filter((t) => {
+    const movVal = parseFloat(t.tierMov?.amount ?? t.mov ?? t.tier_mov?.amount ?? 0);
+    return movVal <= targetMov;
+  });
+
+  if (eligible.length > 0) {
+    eligible.sort((a, b) => {
+      const pa = parseFloat(a.tierPrice?.amount ?? a.amount ?? a.tier_price?.amount ?? 999999);
+      const pb = parseFloat(b.tierPrice?.amount ?? b.amount ?? b.tier_price?.amount ?? 999999);
+      return pa - pb;
+    });
+    const best = eligible[0];
+    const bestAmount = parseFloat(best.tierPrice?.amount ?? best.amount ?? best.tier_price?.amount ?? 0);
+    if (bestAmount > 0) {
+      return {
+        amount: Math.round(bestAmount * 100) / 100,
+        currency: best.tierPrice?.currency || best.currency || "EUR",
+      };
+    }
+  }
+
+  // Fallback to top-level price if no eligible tier is found
   let amount = 0;
   let currency = "EUR";
   if (qogitaItem.price && qogitaItem.price.amount) {
@@ -214,6 +259,27 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     currency = qogitaItem.variants[0].lowestOfferPrice.currency || "EUR";
   }
   if (!amount || isNaN(amount)) amount = 19.90;
+
+  return {
+    amount: Math.round(amount * 100) / 100,
+    currency,
+  };
+}
+
+/**
+ * Map Qogita product to Al-Warda dropship perfume schema
+ * Fixed price directly in EUR (no dynamic markup formula)
+ */
+export function mapQogitaProductToPerfume(qogitaItem) {
+  const gtin = qogitaItem.gtin || "";
+  const name = qogitaItem.name || "Unknown Fragrance";
+  const brand = qogitaItem.brand || qogitaItem.brandName || "Arabian Perfume";
+  const slug = `dropship-${(qogitaItem.qid || gtin || name).toString().toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  // Direct wholesale price in EUR (lowest price for MOV <= 500 EUR)
+  const priceInfo = extractQogitaPriceForMov(qogitaItem, 500);
+  const amount = priceInfo.amount;
+  const currency = priceInfo.currency;
 
   const rawImageUrl =
     qogitaItem.imageUrl ||
@@ -470,6 +536,7 @@ export function getWebhookLogs() {
 export default {
   handleInboundWebhook,
   getWebhookLogs,
+  extractQogitaPriceForMov,
   mapQogitaProductToPerfume,
   isArabianPerfume,
   getArabianDropshipPerfumes,

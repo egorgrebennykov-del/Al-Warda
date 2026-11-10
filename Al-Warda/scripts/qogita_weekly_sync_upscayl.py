@@ -200,6 +200,62 @@ class QogitaSyncClient:
         time.sleep(0.2)
         return items if (not limit or limit <= 0) else items[:limit]
 
+def extract_qogita_price_for_mov(item, target_mov=500.0):
+    """
+    Extract lowest price for minimum purchase MOV <= target_mov (default 500 EUR).
+    Suppliers offer tiered pricing based on Minimum Order Value (MOV).
+    Standard procurement selects the lowest unit price from the <= 500 EUR MOV tier.
+    """
+    all_tiers = []
+    for key in ["tieredPrices", "tiered_prices"]:
+        t_list = item.get(key)
+        if isinstance(t_list, list):
+            all_tiers.extend(t_list)
+
+    variants = item.get("variants") or []
+    if isinstance(variants, list):
+        for v in variants:
+            if isinstance(v, dict):
+                for key in ["tieredPrices", "tiered_prices"]:
+                    t_list = v.get(key)
+                    if isinstance(t_list, list):
+                        all_tiers.extend(t_list)
+
+    offers = item.get("offers") or []
+    if isinstance(offers, list):
+        for off in offers:
+            if isinstance(off, dict):
+                for key in ["tieredPrices", "tiered_prices"]:
+                    t_list = off.get(key)
+                    if isinstance(t_list, list):
+                        all_tiers.extend(t_list)
+
+    eligible = []
+    for t in all_tiers:
+        if not isinstance(t, dict):
+            continue
+        tier_mov = t.get("tierMov") or t.get("tier_mov") or {}
+        mov_val = float(tier_mov.get("amount") if isinstance(tier_mov, dict) else (t.get("mov") or 0.0))
+        if mov_val <= target_mov:
+            tier_price = t.get("tierPrice") or t.get("tier_price") or {}
+            p_val = float(tier_price.get("amount") if isinstance(tier_price, dict) else (t.get("price") or t.get("amount") or 0.0))
+            cur = (tier_price.get("currency") if isinstance(tier_price, dict) else (t.get("currency") or "EUR")) or "EUR"
+            if p_val > 0:
+                eligible.append((p_val, cur))
+
+    if eligible:
+        eligible.sort(key=lambda x: x[0])
+        return eligible[0][0], eligible[0][1]
+
+    price = item.get("price") or 25.0
+    if isinstance(price, dict):
+        amount = float(price.get("amount") or 25.0)
+        currency = price.get("currency") or "EUR"
+    else:
+        amount = float(price or 25.0)
+        currency = "EUR"
+    return amount, currency
+
 def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
     nm_lower = f"{name} {brand}".lower()
     if any(w in nm_lower for w in ["fresh", "aqua", "marine", "ice", "cool", "blue", "bleu", "ocean", "sea", "hawas"]):
@@ -522,13 +578,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             if not name or not raw_img:
                 continue
 
-            price = item.get("price") or 25.0
-            if isinstance(price, dict):
-                amount = float(price.get("amount") or 25.0)
-                currency = price.get("currency") or "EUR"
-            else:
-                amount = float(price or 25.0)
-                currency = "EUR"
+            amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0)
 
             gtin = item.get("gtin")
             min_order = int(item.get("unit") or 1)
