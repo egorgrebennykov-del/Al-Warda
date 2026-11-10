@@ -1,5 +1,6 @@
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
 import { isGeneratedProductImage } from "./generatedProductImage.js";
+import QOGITA_PRODUCTS_MAP from "../src/data/qogitaProductsMap.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -2198,7 +2199,7 @@ export function getPerfumeGtin(perfume) {
 }
 
 export function getQogitaProductUrl(perfume) {
-  if (!perfume) return "https://www.qogita.com/categories/";
+  if (!perfume) return "https://www.qogita.com/brands/";
 
   // 1. Explicit direct product URL if available
   const explicitUrl =
@@ -2215,20 +2216,60 @@ export function getQogitaProductUrl(perfume) {
     return explicitUrl;
   }
 
-  // 2. GTIN / EAN barcode search on Qogita
+  const name = (perfume.name || perfume.title || "").trim();
+  const brand = (perfume.brand || perfume.info?.brand || "").trim();
+  const normName = slugifyPerfumeName(name);
+
+  // 2. Direct match by exact slug in Qogita products map
+  if (QOGITA_PRODUCTS_MAP && QOGITA_PRODUCTS_MAP[normName]) {
+    return `https://www.qogita.com/products/${QOGITA_PRODUCTS_MAP[normName]}/${normName}/`;
+  }
+
+  // 3. Match by key perfume name words
+  if (QOGITA_PRODUCTS_MAP && normName) {
+    const stopWords = new Set([
+      "eau", "de", "parfum", "edp", "edt", "spray", "for", "men", "women",
+      "unisex", "fragrance", "perfume", "extrait", "ml", "oz", "100ml", "50ml",
+      "90ml", "80ml", "60ml", "отливант", "пробник", "набор"
+    ]);
+    const nameWords = normName.split("-").filter((w) => w && !stopWords.has(w));
+
+    if (nameWords.length > 0) {
+      let bestSlug = null;
+      let bestId = null;
+      let bestScore = 0;
+
+      for (const [slug, id] of Object.entries(QOGITA_PRODUCTS_MAP)) {
+        const slugWords = slug.split("-");
+        let score = 0;
+        for (const w of nameWords) {
+          if (slugWords.includes(w)) score++;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestSlug = slug;
+          bestId = id;
+        }
+      }
+
+      if (bestScore >= 2 && bestSlug && bestId) {
+        return `https://www.qogita.com/products/${bestId}/${bestSlug}/`;
+      }
+    }
+  }
+
+  // 4. GTIN wholesale search link for buyer account
   const gtin = getPerfumeGtin(perfume);
   if (gtin) {
-    return `https://www.qogita.com/categories/?search=${encodeURIComponent(gtin)}`;
+    return `https://www.qogita.com/account/catalog/?search=${encodeURIComponent(gtin)}`;
   }
 
-  // 3. Fallback to brand + name search query on Qogita
-  const brand = (perfume.brand || "").trim();
-  const name = (perfume.name || perfume.title || "").trim();
-  const query = [brand, name].filter(Boolean).join(" ");
-  if (query) {
-    return `https://www.qogita.com/categories/?search=${encodeURIComponent(query)}`;
+  // 5. Brand page fallback on Qogita
+  if (brand) {
+    const brandSlug = slugifyPerfumeName(brand);
+    return `https://www.qogita.com/brands/${brandSlug}/`;
   }
 
-  return "https://www.qogita.com/categories/";
+  return "https://www.qogita.com/brands/";
 }
 

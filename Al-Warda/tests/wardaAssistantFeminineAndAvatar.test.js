@@ -529,7 +529,7 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
     gtin: "6291108730515",
   };
   assert.equal(getPerfumeGtin(p1), "6291108730515");
-  assert.equal(getQogitaProductUrl(p1), "https://www.qogita.com/categories/?search=6291108730515");
+  assert.equal(getQogitaProductUrl(p1), "https://www.qogita.com/products/27W8QZ/lattafa-yara-100ml-edp/");
 
   // 3. GTIN inferred from dropship slug/id
   const p2 = {
@@ -538,7 +538,7 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
     brand: "Lattafa",
   };
   assert.equal(getPerfumeGtin(p2), "6291108737194");
-  assert.equal(getQogitaProductUrl(p2), "https://www.qogita.com/categories/?search=6291108737194");
+  assert.equal(getQogitaProductUrl(p2), "https://www.qogita.com/products/YKOV26/lattafa-khamrah-100ml-edp/");
 
   // 4. Sample perfume derived from bottle
   const p3 = {
@@ -547,7 +547,7 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
     brand: "Lattafa",
   };
   assert.equal(getPerfumeGtin(p3), "6291108737194");
-  assert.equal(getQogitaProductUrl(p3), "https://www.qogita.com/categories/?search=6291108737194");
+  assert.equal(getQogitaProductUrl(p3), "https://www.qogita.com/products/YKOV26/lattafa-khamrah-100ml-edp/");
 
   // 5. Explicit Qogita URL
   const p4 = {
@@ -567,7 +567,18 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
   assert.equal(getPerfumeGtin(p5), "");
   assert.equal(
     getQogitaProductUrl(p5),
-    "https://www.qogita.com/categories/?search=Al%20Haramain%20Amber%20Oud%20Discovery%20Set"
+    "https://www.qogita.com/products/4d22afe5141c40eda90ef76b853c2130/al-haramain-amber-oud-bleu-edition-3-pc-gift-set-for-unisex-luxury-cologne/"
+  );
+
+  // 7. Generic unknown perfume fallback to brand
+  const p6 = {
+    id: "unknown-perfume",
+    name: "Xyz Unique Unknown Fragrance 12345",
+    brand: "Al Haramain",
+  };
+  assert.equal(
+    getQogitaProductUrl(p6),
+    "https://www.qogita.com/brands/al-haramain/"
   );
 });
 

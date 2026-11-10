@@ -353,6 +353,18 @@ export default function BookDetails() {
                     <i className="ri-external-link-line" />
                     <span>{isRu ? "Товар в Qogita ↗" : "View on Qogita ↗"}</span>
                   </a>
+                  {perfumeGtin && (
+                    <a
+                      href={`https://www.qogita.com/account/catalog/?search=${encodeURIComponent(perfumeGtin)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="warda-privileged-panel-btn"
+                      title={isRu ? "Поиск по штрихкоду GTIN в оптовом кабинете Qogita" : "Search by GTIN in Qogita wholesale catalog"}
+                    >
+                      <i className="ri-search-line" />
+                      <span>{isRu ? "Оптовый кабинет ↗" : "Wholesale Portal ↗"}</span>
+                    </a>
+                  )}
                   <Link
                     to="/privileged/qogita"
                     className="warda-privileged-panel-btn"
