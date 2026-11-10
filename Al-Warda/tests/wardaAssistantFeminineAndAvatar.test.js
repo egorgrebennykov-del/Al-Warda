@@ -509,3 +509,65 @@ test("extractVolumeFromName and ensurePerfumeEnrichment accurately extract expli
   assert.equal(extractVolumeFromName("Lattafa Ana Abiyedh 60ml EDP"), "60 мл / 2.0 FL.OZ.");
   assert.equal(extractVolumeFromName("Afnan 9pm Discovery Set 5x2ml"), "5 × 2 мл");
 });
+
+test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product page links for privileged users", async () => {
+  const { getPerfumeGtin, getQogitaProductUrl } = await import("../utils/perfumes.js");
+  const { isPrivileged } = await import("../utils/auth.js");
+
+  // 1. Privileged status verification
+  assert.equal(isPrivileged({ status: "privileged", role: "admin" }), true);
+  assert.equal(isPrivileged({ status: "privileged" }), true);
+  assert.equal(isPrivileged({ role: "privileged" }), true);
+  assert.equal(isPrivileged({ role: "user" }), false);
+  assert.equal(isPrivileged(null), false);
+
+  // 2. Direct GTIN property
+  const p1 = {
+    id: "lattafa-yara",
+    name: "Lattafa Yara 100ml EDP",
+    brand: "Lattafa",
+    gtin: "6291108730515",
+  };
+  assert.equal(getPerfumeGtin(p1), "6291108730515");
+  assert.equal(getQogitaProductUrl(p1), "https://www.qogita.com/categories/?search=6291108730515");
+
+  // 3. GTIN inferred from dropship slug/id
+  const p2 = {
+    id: "dropship-6291108737194",
+    name: "Lattafa Khamrah 100ml EDP",
+    brand: "Lattafa",
+  };
+  assert.equal(getPerfumeGtin(p2), "6291108737194");
+  assert.equal(getQogitaProductUrl(p2), "https://www.qogita.com/categories/?search=6291108737194");
+
+  // 4. Sample perfume derived from bottle
+  const p3 = {
+    id: "sample-dropship-6291108737194-5ml",
+    name: "Lattafa Khamrah (Отливант 5 мл)",
+    brand: "Lattafa",
+  };
+  assert.equal(getPerfumeGtin(p3), "6291108737194");
+  assert.equal(getQogitaProductUrl(p3), "https://www.qogita.com/categories/?search=6291108737194");
+
+  // 5. Explicit Qogita URL
+  const p4 = {
+    id: "custom-perfume",
+    name: "Niche Elixir",
+    brand: "Lattafa",
+    productUrl: "https://www.qogita.com/products/lattafa-niche-elixir/",
+  };
+  assert.equal(getQogitaProductUrl(p4), "https://www.qogita.com/products/lattafa-niche-elixir/");
+
+  // 6. Name and brand fallback query
+  const p5 = {
+    id: "set-amber-oud",
+    name: "Amber Oud Discovery Set",
+    brand: "Al Haramain",
+  };
+  assert.equal(getPerfumeGtin(p5), "");
+  assert.equal(
+    getQogitaProductUrl(p5),
+    "https://www.qogita.com/categories/?search=Al%20Haramain%20Amber%20Oud%20Discovery%20Set"
+  );
+});
+

@@ -15,6 +15,7 @@ import {
   deleteQogitaWebhook,
   sendQogitaTestWebhook,
 } from "../../utils/qogitaApi";
+import { getQogitaProductUrl } from "../../../utils/perfumes";
 import "./QogitaManager.css";
 
 const EXPORTS_STORAGE_KEY = "qogita-product-export-ids";
@@ -712,22 +713,39 @@ export default function QogitaManager({ language = "ru" }) {
 
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                         {variants.length > 0 ? (
-                          variants.map((v) => (
-                            <button
-                              key={v.fid || v.name}
+                          <>
+                            {variants.map((v) => (
+                              <button
+                                key={v.fid || v.name}
+                                className="qogita-btn qogita-btn--secondary qogita-btn--sm"
+                                onClick={() => handleViewOffers(v, item.name, itemImg)}
+                                style={{ justifyContent: "space-between" }}
+                              >
+                                <span>{v.name || "Объем"}</span>
+                                <span style={{ color: "#d4af37" }}>
+                                  {v.lowestOfferPrice ? `${v.lowestOfferPrice.amount} ${v.lowestOfferPrice.currency}` : "Офферы"} &rarr;
+                                </span>
+                              </button>
+                            ))}
+                            <a
                               className="qogita-btn qogita-btn--secondary qogita-btn--sm"
-                              onClick={() => handleViewOffers(v, item.name, itemImg)}
-                              style={{ justifyContent: "space-between" }}
+                              href={getQogitaProductUrl(item)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ marginTop: "0.25rem", justifyContent: "center" }}
                             >
-                              <span>{v.name || "Объем"}</span>
-                              <span style={{ color: "#d4af37" }}>
-                                {v.lowestOfferPrice ? `${v.lowestOfferPrice.amount} ${v.lowestOfferPrice.currency}` : "Офферы"} &rarr;
-                              </span>
-                            </button>
-                          ))
+                              <i className="ri-external-link-line" /> {language === "ru" ? "Товар на сайте Qogita ↗" : "View on Qogita ↗"}
+                            </a>
+                          </>
                         ) : (
-                          <a className="qogita-btn qogita-btn--secondary qogita-btn--sm" href={/^https:\/\/www\.qogita\.com\/products\//.test(item.productUrl || "") ? item.productUrl : "https://www.qogita.com/categories/"} target="_blank" rel="noopener noreferrer">
-                            Открыть предложения в Qogita
+                          <a
+                            className="qogita-btn qogita-btn--secondary qogita-btn--sm"
+                            href={getQogitaProductUrl(item)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ justifyContent: "center" }}
+                          >
+                            <i className="ri-external-link-line" /> {language === "ru" ? "Открыть товар в Qogita ↗" : "Open product in Qogita ↗"}
                           </a>
                         )}
                       </div>
@@ -800,12 +818,27 @@ export default function QogitaManager({ language = "ru" }) {
                       <div style={{ color: "#d4af37", fontSize: "0.9rem" }}>Вариант: {selectedVariant.name}</div>
                     </div>
                   </div>
-                  <button
-                    className="qogita-btn qogita-btn--secondary qogita-btn--sm"
-                    onClick={() => setSelectedVariant(null)}
-                  >
-                    <i className="ri-close-line" />
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <a
+                      className="qogita-btn qogita-btn--primary qogita-btn--sm"
+                      href={getQogitaProductUrl({
+                        ...selectedVariant,
+                        name: selectedVariant.productName,
+                        gtin: selectedVariant.gtin,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={language === "ru" ? "Открыть товар в Qogita" : "Open product in Qogita"}
+                    >
+                      <i className="ri-external-link-line" /> {language === "ru" ? "В Qogita ↗" : "On Qogita ↗"}
+                    </a>
+                    <button
+                      className="qogita-btn qogita-btn--secondary qogita-btn--sm"
+                      onClick={() => setSelectedVariant(null)}
+                    >
+                      <i className="ri-close-line" />
+                    </button>
+                  </div>
                 </div>
 
                 {offersLoading ? (

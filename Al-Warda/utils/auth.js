@@ -411,7 +411,8 @@ export async function login(email, password) {
 }
 
 export function getCookieUser() {
-  const pair = document.cookie.split("; ").find((c) => c.startsWith("user="));
+  if (typeof document === "undefined") return null;
+  const pair = document.cookie?.split("; ")?.find((c) => c.startsWith("user="));
   if (!pair) return null;
   try {
     return JSON.parse(decodeURIComponent(pair.slice(5)));
@@ -421,7 +422,9 @@ export function getCookieUser() {
 }
 
 export function logout() {
-  document.cookie = "user=; max-age=0; path=/; SameSite=Lax";
+  if (typeof document !== "undefined") {
+    document.cookie = "user=; max-age=0; path=/; SameSite=Lax";
+  }
 }
 
 export async function getProfile() {

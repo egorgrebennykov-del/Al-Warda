@@ -2165,3 +2165,66 @@ export function getDefaultPerfumeVolumeOption(perfume) {
 export function getDefaultCatalogPrice(perfume) {
   return getDefaultPerfumeVolumeOption(perfume).price;
 }
+
+export function getPerfumeGtin(perfume) {
+  if (!perfume) return "";
+  const direct =
+    perfume.gtin ||
+    perfume.barcode ||
+    perfume.ean ||
+    perfume.info?.gtin ||
+    perfume.info?.barcode ||
+    perfume.info?.ean;
+  if (direct && /^\d{8,14}$/.test(String(direct).trim())) {
+    return String(direct).trim();
+  }
+  const idStr = String(perfume.id || perfume.slug || "");
+  const fromId = idStr.match(/(?:dropship-)?(\d{8,14})/i);
+  if (fromId) return fromId[1];
+
+  for (const imgKey of ["image", "fullCardImage", "rawImage"]) {
+    const val = perfume[imgKey] || perfume.info?.[imgKey];
+    if (typeof val === "string") {
+      const fromImg = val.match(/\/(\d{8,14})\.(?:jpg|jpeg|png|webp)/i);
+      if (fromImg) return fromImg[1];
+    }
+  }
+
+  return "";
+}
+
+export function getQogitaProductUrl(perfume) {
+  if (!perfume) return "https://www.qogita.com/categories/";
+
+  // 1. Explicit direct product URL if available
+  const explicitUrl =
+    perfume.qogitaUrl ||
+    perfume.qogita_url ||
+    perfume.productUrl ||
+    perfume.product_url ||
+    perfume.info?.qogitaUrl ||
+    perfume.info?.qogita_url ||
+    perfume.info?.productUrl ||
+    perfume.info?.product_url;
+
+  if (explicitUrl && typeof explicitUrl === "string" && /^https?:\/\//i.test(explicitUrl)) {
+    return explicitUrl;
+  }
+
+  // 2. GTIN / EAN barcode search on Qogita
+  const gtin = getPerfumeGtin(perfume);
+  if (gtin) {
+    return `https://www.qogita.com/categories/?search=${encodeURIComponent(gtin)}`;
+  }
+
+  // 3. Fallback to brand + name search query on Qogita
+  const brand = (perfume.brand || "").trim();
+  const name = (perfume.name || perfume.title || "").trim();
+  const query = [brand, name].filter(Boolean).join(" ");
+  if (query) {
+    return `https://www.qogita.com/categories/?search=${encodeURIComponent(query)}`;
+  }
+
+  return "https://www.qogita.com/categories/";
+}
+

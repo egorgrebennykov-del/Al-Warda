@@ -11,8 +11,12 @@ import {
   getSamplePrice,
   createSampleCartItem,
   getDefaultPerfumeVolumeOption,
+  getPerfumeGtin,
+  getQogitaProductUrl,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
+import { useAuth } from "../../context/AuthContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
@@ -26,6 +30,8 @@ export default function BookDetails() {
   const { language } = useLanguage();
   const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
+  const { user, isPrivileged: isPrivContext } = useAuth();
+  const isPriv = Boolean(isPrivContext || checkIsPrivileged(user));
 
   const idFromQuery = searchParams.get("url") || searchParams.get("q") || searchParams.get("id");
   const targetId = bookId || idFromQuery || "raghba";
@@ -101,6 +107,8 @@ export default function BookDetails() {
   }, [targetId]);
 
   const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
+  const perfumeGtin = isPriv && (perfume || enrichedPerfume) ? getPerfumeGtin(perfume || enrichedPerfume) : "";
+  const qogitaUrl = isPriv && (perfume || enrichedPerfume) ? getQogitaProductUrl(perfume || enrichedPerfume) : null;
   const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
   const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
   const isDecantable = enrichedPerfume ? isDecantablePerfume(enrichedPerfume) : false;
@@ -230,6 +238,20 @@ export default function BookDetails() {
             <span className="warda-breadcrumb-sep">/</span>
             <span className="warda-breadcrumb-current">{perfume.name}</span>
           </div>
+
+          {isPriv && qogitaUrl && (
+            <a
+              href={qogitaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="warda-privileged-top-badge"
+              title={isRu ? "Открыть страницу товара в Qogita (новое окно)" : "Open product page on Qogita (new tab)"}
+            >
+              <i className="ri-shield-star-line" />
+              <span>Qogita ↗</span>
+              {perfumeGtin && <span className="warda-privileged-gtin-label">{perfumeGtin}</span>}
+            </a>
+          )}
         </div>
 
         <div className="warda-details-grid">
@@ -293,6 +315,55 @@ export default function BookDetails() {
               <span className="warda-rating-num">{perfume.rating} / 5.0</span>
               <span className="warda-reviews-count">({perfume.reviewsCount} {language === "ru" ? "отзывов" : "reviews"})</span>
             </div>
+
+            {/* PRIVILEGED ACCESS: DIRECT QOGITA WHOLESALE PRODUCT LINK */}
+            {isPriv && qogitaUrl && (
+              <div className="warda-privileged-product-bar">
+                <div className="warda-privileged-product-info">
+                  <span className="warda-privileged-icon-wrap">
+                    <i className="ri-shield-star-fill" />
+                  </span>
+                  <div className="warda-privileged-text-group">
+                    <div className="warda-privileged-title-row">
+                      <span className="warda-privileged-badge">
+                        {isRu ? "Привилегированный доступ" : "Privileged Access"}
+                      </span>
+                      {perfumeGtin && (
+                        <span className="warda-privileged-gtin-tag">
+                          GTIN: {perfumeGtin}
+                        </span>
+                      )}
+                    </div>
+                    <span className="warda-privileged-desc">
+                      {isRu
+                        ? "Прямой переход на страницу этого товара в оптовом каталоге Qogita"
+                        : "Direct link to this product in the Qogita wholesale catalog"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="warda-privileged-actions">
+                  <a
+                    href={qogitaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="warda-privileged-qogita-btn"
+                    title={isRu ? "Открыть страницу товара в Qogita" : "Open product page on Qogita"}
+                  >
+                    <i className="ri-external-link-line" />
+                    <span>{isRu ? "Товар в Qogita ↗" : "View on Qogita ↗"}</span>
+                  </a>
+                  <Link
+                    to="/privileged/qogita"
+                    className="warda-privileged-panel-btn"
+                    title={isRu ? "Открыть панель управления Qogita" : "Open wholesale management panel"}
+                  >
+                    <i className="ri-dashboard-3-line" />
+                    <span>{isRu ? "Оптовая панель" : "Wholesale panel"}</span>
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* FORMAT / VOLUME SELECTOR: INLINE ROW ABOVE PRICE (ASCENDING ORDER) */}
             <div className="warda-details-volumes" role="radiogroup" aria-label={isRu ? "Выбор объема" : "Select volume"}>

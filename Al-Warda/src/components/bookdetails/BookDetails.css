@@ -865,3 +865,226 @@
   font-size: 0.85rem;
   line-height: 1.4;
 }
+
+/* ============================================================
+ * PRIVILEGED PRODUCT ACCESS: QOGITA LINK & SHORTCUTS
+ * ============================================================ */
+
+.warda-privileged-top-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 999px;
+  color: #f7ede2;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  margin-left: auto;
+}
+
+.warda-privileged-top-badge:hover {
+  background: #d4af37;
+  color: #080605;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+  transform: translateY(-1px);
+}
+
+.warda-privileged-top-badge i {
+  color: #d4af37;
+  font-size: 1rem;
+}
+
+.warda-privileged-top-badge:hover i {
+  color: #080605;
+}
+
+.warda-privileged-gtin-label {
+  font-family: monospace;
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  color: #e5c985;
+}
+
+.warda-privileged-top-badge:hover .warda-privileged-gtin-label {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
+
+.warda-privileged-product-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0.5rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(28, 22, 16, 0.95), rgba(15, 12, 9, 0.98));
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 16px rgba(212, 175, 55, 0.04);
+  position: relative;
+}
+
+.warda-privileged-product-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #f7ede2, #d4af37);
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.warda-privileged-product-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 240px;
+}
+
+.warda-privileged-icon-wrap {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4af37;
+  font-size: 1.2rem;
+}
+
+.warda-privileged-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.warda-privileged-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.warda-privileged-badge {
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d4af37;
+}
+
+.warda-privileged-gtin-tag {
+  font-family: monospace;
+  font-size: 0.74rem;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #f7ede2;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+
+.warda-privileged-desc {
+  font-size: 0.78rem;
+  color: #a89882;
+  line-height: 1.35;
+}
+
+.warda-privileged-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.warda-privileged-qogita-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  color: #080605 !important;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.warda-privileged-qogita-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.55);
+}
+
+.warda-privileged-qogita-btn i {
+  font-size: 1rem;
+}
+
+.warda-privileged-panel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #e5c985 !important;
+  font-family: var(--second-font, 'Cinzel', serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.warda-privileged-panel-btn:hover {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: #d4af37;
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .warda-privileged-top-badge {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .warda-privileged-product-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+  }
+  .warda-privileged-actions {
+    width: 100%;
+  }
+  .warda-privileged-qogita-btn,
+  .warda-privileged-panel-btn {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.78rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
