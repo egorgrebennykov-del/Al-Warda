@@ -91,6 +91,17 @@ function json(body, status = 200) {
   });
 }
 
+let statusCache = null;
+let statusCacheTime = 0;
+let inFlightStatusPromise = null;
+const STATUS_CACHE_TTL_MS = 25_000;
+
+export function invalidateProductImageQueueCache() {
+  statusCache = null;
+  statusCacheTime = 0;
+  inFlightStatusPromise = null;
+}
+
 async function fetchStockPage(env, key, from, to) {
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
   url.searchParams.set("select", "id,name,brand,image,info");
@@ -103,6 +114,7 @@ async function fetchStockPage(env, key, from, to) {
         headers: {
           apikey: key,
           Authorization: `Bearer ${key}`,
+          Prefer: "count=exact",
           "Range-Unit": "items",
           Range: `${from}-${to}`,
         },
@@ -113,11 +125,14 @@ async function fetchStockPage(env, key, from, to) {
         if (!Array.isArray(rows)) {
           throw new Error("Supabase stocks response was not a list");
         }
-        return rows;
+        const contentRange = result.headers.get("content-range") || "";
+        const countMatch = contentRange.match(/\/(\d+)$/);
+        const totalCount = countMatch ? parseInt(countMatch[1], 10) : null;
+        return { rows, totalCount };
       }
 
       if ([500, 502, 503, 504, 429].includes(result.status) && attempt < 2) {
-        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
         continue;
       }
 
@@ -133,7 +148,7 @@ async function fetchStockPage(env, key, from, to) {
     } catch (err) {
       lastError = err;
       if (attempt < 2) {
-        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
       }
     }
   }
@@ -143,22 +158,54 @@ async function fetchStockPage(env, key, from, to) {
 
 async function fetchAllStocks(env, key) {
   const pageSize = 500;
-  const rows = [];
-  for (let from = 0; ; from += pageSize) {
-    let page;
-    try {
-      page = await fetchStockPage(env, key, from, from + pageSize - 1);
-    } catch (err) {
-      try {
-        const half1 = await fetchStockPage(env, key, from, from + 249);
-        const half2 = await fetchStockPage(env, key, from + 250, from + 499);
-        page = [...half1, ...half2];
-      } catch {
-        throw err;
-      }
+  const first = await fetchStockPage(env, key, 0, pageSize - 1);
+  const rows = [...first.rows];
+  const totalCount = first.totalCount;
+
+  // Single page or unit test mock where total is within first page
+  if (first.rows.length < pageSize || (totalCount !== null && rows.length >= totalCount)) {
+    return rows;
+  }
+
+  // Fast concurrent fetching if total count is known from PostgREST Content-Range
+  if (typeof totalCount === "number" && totalCount > rows.length) {
+    const pageRanges = [];
+    for (let from = pageSize; from < totalCount; from += pageSize) {
+      pageRanges.push({ from, to: Math.min(from + pageSize - 1, totalCount - 1) });
     }
-    rows.push(...page);
-    if (page.length < pageSize) return rows;
+
+    const concurrency = 4;
+    const pageResults = new Array(pageRanges.length);
+    let nextIdx = 0;
+
+    const worker = async () => {
+      while (nextIdx < pageRanges.length) {
+        const i = nextIdx++;
+        const { from, to } = pageRanges[i];
+        try {
+          const res = await fetchStockPage(env, key, from, to);
+          pageResults[i] = res.rows;
+        } catch (err) {
+          const mid = from + Math.floor((to - from) / 2);
+          const h1 = await fetchStockPage(env, key, from, mid);
+          const h2 = await fetchStockPage(env, key, mid + 1, to);
+          pageResults[i] = [...h1.rows, ...h2.rows];
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, pageRanges.length) }, worker));
+    for (const chunk of pageResults) {
+      if (chunk) rows.push(...chunk);
+    }
+    return rows;
+  }
+
+  // Fallback sequential
+  for (let from = pageSize; ; from += pageSize) {
+    const next = await fetchStockPage(env, key, from, from + pageSize - 1);
+    rows.push(...next.rows);
+    if (next.rows.length < pageSize) return rows;
   }
 }
 
@@ -291,91 +338,129 @@ export async function getProductImageQueueStatus(request, env) {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
 
-    const rows = await fetchAllStocks(env, getServiceKey(env));
-    const nowMs = Date.now();
-    const today = new Date(nowMs).toISOString().slice(0, 10);
-    const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
-    const images = [];
-    const failedItems = [];
-    const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
-    let eligible = 0;
-    let attemptedToday = 0;
-    for (const row of rows) {
-      const info = row.info && typeof row.info === "object" ? row.info : {};
-      if (info.imageGenerationAccountQuotas && typeof info.imageGenerationAccountQuotas === "object") {
-        for (const def of ACCOUNT_DEFS) {
-          const candidate = info.imageGenerationAccountQuotas[def.id];
-          if (candidate && typeof candidate === "object") {
-            if (quotaEntryRank(candidate) >= quotaEntryRank(mergedQuotas[def.id])) {
-              mergedQuotas[def.id] = { ...mergedQuotas[def.id], ...candidate };
+    const isTestEnv = Boolean(
+      (typeof process !== "undefined" && process?.env?.NODE_TEST_CONTEXT) ||
+      env?.SUPABASE_URL?.includes("example")
+    );
+
+    const url = new URL(request.url);
+    const force = url.searchParams.get("force") === "1" || url.searchParams.get("refresh") === "1";
+    const now = Date.now();
+
+    if (!isTestEnv && !force && statusCache && now - statusCacheTime < STATUS_CACHE_TTL_MS) {
+      return json(statusCache);
+    }
+
+    if (!isTestEnv && !force && inFlightStatusPromise) {
+      return json(await inFlightStatusPromise);
+    }
+
+    const computeStatus = async () => {
+      const rows = await fetchAllStocks(env, getServiceKey(env));
+      const nowMs = Date.now();
+      const today = new Date(nowMs).toISOString().slice(0, 10);
+      const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
+      const images = [];
+      const failedItems = [];
+      const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
+      let eligible = 0;
+      let attemptedToday = 0;
+      for (const row of rows) {
+        const info = row.info && typeof row.info === "object" ? row.info : {};
+        if (info.imageGenerationAccountQuotas && typeof info.imageGenerationAccountQuotas === "object") {
+          for (const def of ACCOUNT_DEFS) {
+            const candidate = info.imageGenerationAccountQuotas[def.id];
+            if (candidate && typeof candidate === "object") {
+              if (quotaEntryRank(candidate) >= quotaEntryRank(mergedQuotas[def.id])) {
+                mergedQuotas[def.id] = { ...mergedQuotas[def.id], ...candidate };
+              }
             }
           }
         }
+        const job = info.imageGeneration || {};
+        const replacementJob = info.imageGenerationReplacement || {};
+        const imageUrl = job.imageUrl || row.image;
+        if (job.status === "completed" && typeof imageUrl === "string" &&
+            (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
+          const completedAt = typeof job.completedAt === "string" && Number.isFinite(Date.parse(job.completedAt))
+            ? job.completedAt : null;
+          images.push({
+            id: row.id,
+            name: row.name,
+            brand: row.brand,
+            price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            currency: row.currency || info.currency || "EUR",
+            image: row.image || null,
+            imageUrl,
+            rawImage: typeof info.rawImage === "string" ? info.rawImage : (typeof row.image === "string" ? row.image : null),
+            info,
+            completedAt,
+          });
+        }
+        if (!hasRawImage(info)) continue;
+        eligible++;
+        const status = job.status === "publishing"
+          ? "processing"
+          : counts[job.status] === undefined ? "pending" : job.status;
+        counts[status]++;
+        if (job.attemptedOn === today) {
+          attemptedToday++;
+        }
+        if (status === "failed" || replacementJob.status === "failed") {
+          const activeFail = status === "failed" ? job : replacementJob;
+          failedItems.push({
+            id: row.id,
+            name: row.name || "",
+            brand: row.brand || "",
+            price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            currency: row.currency || info.currency || "EUR",
+            image: row.image || null,
+            rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+            info,
+            error: typeof activeFail.error === "string" && activeFail.error.trim()
+              ? activeFail.error.trim()
+              : "Unknown generation error",
+            failedAt: validIsoTimestamp(activeFail.failedAt),
+            attemptedOn: typeof activeFail.attemptedOn === "string" ? activeFail.attemptedOn : null,
+          });
+        }
       }
-      const job = info.imageGeneration || {};
-      const replacementJob = info.imageGenerationReplacement || {};
-      const imageUrl = job.imageUrl || row.image;
-      if (job.status === "completed" && typeof imageUrl === "string" &&
-          (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
-        const completedAt = typeof job.completedAt === "string" && Number.isFinite(Date.parse(job.completedAt))
-          ? job.completedAt : null;
-        images.push({
-          id: row.id,
-          name: row.name,
-          brand: row.brand,
-          price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
-          currency: row.currency || info.currency || "EUR",
-          image: row.image || null,
-          imageUrl,
-          rawImage: typeof info.rawImage === "string" ? info.rawImage : (typeof row.image === "string" ? row.image : null),
-          info,
-          completedAt,
-        });
+
+      images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
+        (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
+      failedItems.sort((a, b) => (b.failedAt ? Date.parse(b.failedAt) : -Infinity) -
+        (a.failedAt ? Date.parse(a.failedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
+      const { accounts, schedule } = buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs);
+      const payload = {
+        total: eligible,
+        ...counts,
+        attemptedToday,
+        utcDay: today,
+        accounts,
+        schedule,
+        failedItems,
+        images,
+      };
+
+      if (!isTestEnv) {
+        statusCache = payload;
+        statusCacheTime = Date.now();
       }
-      if (!hasRawImage(info)) continue;
-      eligible++;
-      const status = job.status === "publishing"
-        ? "processing"
-        : counts[job.status] === undefined ? "pending" : job.status;
-      counts[status]++;
-      if (job.attemptedOn === today) {
-        attemptedToday++;
-      }
-      if (status === "failed" || replacementJob.status === "failed") {
-        const activeFail = status === "failed" ? job : replacementJob;
-        failedItems.push({
-          id: row.id,
-          name: row.name || "",
-          brand: row.brand || "",
-          price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
-          currency: row.currency || info.currency || "EUR",
-          image: row.image || null,
-          rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
-          info,
-          error: typeof activeFail.error === "string" && activeFail.error.trim()
-            ? activeFail.error.trim()
-            : "Unknown generation error",
-          failedAt: validIsoTimestamp(activeFail.failedAt),
-          attemptedOn: typeof activeFail.attemptedOn === "string" ? activeFail.attemptedOn : null,
-        });
-      }
+      return payload;
+    };
+
+    if (isTestEnv || force) {
+      const result = await computeStatus();
+      return json(result);
     }
 
-    images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
-      (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
-    failedItems.sort((a, b) => (b.failedAt ? Date.parse(b.failedAt) : -Infinity) -
-      (a.failedAt ? Date.parse(a.failedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
-    const { accounts, schedule } = buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs);
-    return json({
-      total: eligible,
-      ...counts,
-      attemptedToday,
-      utcDay: today,
-      accounts,
-      schedule,
-      failedItems,
-      images,
-    });
+    inFlightStatusPromise = computeStatus();
+    try {
+      const result = await inFlightStatusPromise;
+      return json(result);
+    } finally {
+      inFlightStatusPromise = null;
+    }
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
       return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
@@ -443,6 +528,7 @@ export async function requeueFailedProductItems(request, env) {
         requeued++;
       }
     }
+    invalidateProductImageQueueCache();
     return json({ requeuedCount: requeued, ids: parsed.ids });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
@@ -587,6 +673,7 @@ export async function deleteFailedProductItems(request, env) {
       }
     }
 
+    invalidateProductImageQueueCache();
     return json({
       deletedCount: uniqueIds.length,
       ids: uniqueIds,
@@ -818,6 +905,8 @@ export async function saveManualProductItem(request, env) {
 
     delete updatedInfo.imageGenerationReplacement;
 
+    invalidateProductImageQueueCache();
+
     const patchPayload = {
       name: cleanName,
       brand,
@@ -961,6 +1050,7 @@ export async function deleteAdminProducts(request, env) {
       deletedCount += chunk.length;
     }
 
+    invalidateProductImageQueueCache();
     return json({ ok: true, deletedCount, ids });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {

@@ -508,6 +508,21 @@
   animation: product-image-queue-spin 0.6s linear infinite;
 }
 
+.product-image-queue__loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2.2rem 1.25rem;
+  color: #684d35;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #fdfaf6;
+  border: 1px dashed #dec9ac;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+}
+
 .product-image-queue__gallery h3 {
   margin: 0;
   color: #24201c;

@@ -320,9 +320,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     }
   };
 
-  const loadStatus = useCallback(async () => {
+  const loadStatus = useCallback(async (options = {}) => {
+    const force = Boolean(options?.force);
     try {
-      const response = await fetch("/api/admin/product-images/status", {
+      const url = force ? "/api/admin/product-images/status?force=1" : "/api/admin/product-images/status";
+      const response = await fetch(url, {
         credentials: "same-origin",
       });
       const contentType = response.headers.get("content-type") || "";
@@ -355,7 +357,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       ));
       setError("");
     } catch (loadError) {
-      setStatus(null);
+      setStatus((current) => current);
       setError(loadError.message || (isRussian ? "Не удалось загрузить очередь" : "Could not load queue"));
     } finally {
       setLoading(false);
@@ -368,7 +370,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     setActionError("");
     setError("");
     try {
-      await Promise.allSettled([loadRuns(), loadStatus()]);
+      await Promise.allSettled([loadRuns(), loadStatus({ force: true })]);
     } finally {
       setRefreshing(false);
     }
@@ -415,7 +417,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           ? `Удалено записей из базы данных: ${payload.deletedCount ?? ids.length}.`
           : `Deleted records from database: ${payload.deletedCount ?? ids.length}.`,
       );
-      await loadStatus();
+      await loadStatus({ force: true });
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -453,7 +455,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           ? `Возвращено в ожидание: ${payload.requeuedCount ?? ids.length}.`
           : `Returned to pending: ${payload.requeuedCount ?? ids.length}.`,
       );
-      await loadStatus();
+      await loadStatus({ force: true });
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -495,7 +497,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       setActionMessage(isRussian
         ? "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
         : "Deletion queued in GitHub Actions. The list will update after it runs.");
-      await loadStatus();
+      await loadStatus({ force: true });
       await loadRuns();
     } catch (err) {
       setActionError(err.message);
@@ -505,20 +507,26 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     }
   };
 
+  const deleting = deletionSubmitting || deletionPending || deletions.some((run) => run.status !== "completed");
+  const hasActiveTasks = runs.some((run) => run.status !== "completed") || deleting || busy;
+
   useEffect(() => {
-    const initialLoad = window.setTimeout(loadStatus, 0);
-    const timer = window.setInterval(loadStatus, 15000);
-    const actionsLoad = window.setTimeout(loadRuns, 0);
-    const actionsTimer = window.setInterval(loadRuns, 15000);
+    const initialLoad = window.setTimeout(() => {
+      loadStatus();
+      loadRuns();
+    }, 0);
+
+    const intervalMs = hasActiveTasks ? 15000 : 45000;
+    const timer = window.setInterval(() => {
+      loadStatus();
+      loadRuns();
+    }, intervalMs);
+
     return () => {
       window.clearTimeout(initialLoad);
       window.clearInterval(timer);
-      window.clearTimeout(actionsLoad);
-      window.clearInterval(actionsTimer);
     };
-  }, [loadStatus, loadRuns]);
-
-  const deleting = deletionSubmitting || deletionPending || deletions.some((run) => run.status !== "completed");
+  }, [loadStatus, loadRuns, hasActiveTasks]);
   const selectableImages = (status?.images || []).filter(
     (image) => /^\d{1,20}$/.test(String(image.id)) && /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl),
   );
@@ -691,7 +699,12 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           )}
         </button>
       </div>}
-      {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
+      {loading && !status && (
+        <div className="product-image-queue__loading-state" role="status">
+          <span className="product-image-queue__btn-spinner" aria-hidden="true" />
+          <span>{isRussian ? "Загрузка очереди..." : "Loading queue..."}</span>
+        </div>
+      )}
 
       {status && <>
       <div className="product-image-queue__progress-heading">
@@ -1073,7 +1086,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
                 ? `Товар #${result.id} успешно настроен вручную, отправлен в базу данных и опубликован!`
                 : `Product #${result.id} manually configured, saved to database, and published!`,
             );
-            await loadStatus();
+            await loadStatus({ force: true });
           }}
         />
       )}
