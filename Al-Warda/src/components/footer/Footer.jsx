@@ -72,7 +72,7 @@ export default function Footer() {
             </li>
             <li>
               <Link to="/sets" className="footer__link">
-                {isRu ? "Try & Discover (Сеты и пробники)" : "Try & Discover (Sets & Samples)"}
+                {isRu ? "Пробуй и открывай (Сеты и пробники)" : "Try & Discover (Sets & Samples)"}
               </Link>
             </li>
             <li>

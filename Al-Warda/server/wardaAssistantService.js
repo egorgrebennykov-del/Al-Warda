@@ -967,7 +967,7 @@ STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
      * ALWAYS recommend standard full-size original flacons / bottles (e.g. 100ml / standard bottles).
      * Do NOT suggest, offer or show samples unless specifically asked or truly contextually appropriate.
    - ONLY when the customer explicitly asks for a sample («хочу пробник», «есть ли пробники?», «хочу попробовать 5 мл», «отливант», «sample», «decant»):
-     * You may mention that Al-Warda offers discovery samples (1ml, 2ml, 5ml, 10ml) in the "Try & Discover" section.
+     * You may mention that Al-Warda offers discovery samples (1ml, 2ml, 5ml, 10ml) in the «Пробуй и открывай» ("Try & Discover") section (/sets).
 
 STYLE & EMOJI FORMATTING:
 - Reply in the exact language of the customer's last message (Russian or English; other languages are fine if the customer uses them).
@@ -1119,7 +1119,7 @@ export function stripUnsolicitedSampleMentions(message = "", sampleRequested = f
     const sLower = s.toLowerCase();
     const isSamplePitch =
       /\b(пробник\w*|отливант\w*|виалк\w*|атомайзер\w*|семпл\w*|сэмпл\w*|sample\w*|decant\w*|1\s*мл|2\s*мл|5\s*мл|10\s*мл)\b/i.test(sLower) &&
-      /\b(заказать|купить|попробовать|доступн\w*|представлен\w*|выбрать|формат\w*|раздел\w*|коллекци\w*|try & discover|order|try|available)\b/i.test(sLower);
+      /\b(заказать|купить|попробовать|доступн\w*|представлен\w*|выбрать|формат\w*|раздел\w*|коллекци\w*|try & discover|пробуй и открывай|order|try|available)\b/i.test(sLower);
     return !isSamplePitch;
   });
 
@@ -1549,7 +1549,7 @@ function generateConversationalFallback(q, isRu) {
   }
   if (/(пробник|отливант|дискавери|виалк|sample|decant)/i.test(q)) {
     return reply(
-      "Да, конечно! В нашем специальном разделе «Try & Discover» вы можете заказать удобные пробники и отливанты объемом 1 мл, 2 мл, 5 мл и 10 мл со спреем, а также готовые подарочные и дискавери-сеты, чтобы познакомиться с ароматом до покупки полного флакона. ✨",
+      "Да, конечно! В нашем специальном разделе «Пробуй и открывай» вы можете заказать удобные пробники и отливанты объемом 1 мл, 2 мл, 5 мл и 10 мл со спреем, а также готовые подарочные и дискавери-сеты, чтобы познакомиться с ароматом до покупки полного флакона. ✨",
       "Yes, absolutely! In our «Try & Discover» section, you can explore sample vials and decants in 1ml, 2ml, 5ml, and 10ml with sprayers, as well as discovery sets, to experience any fragrance before purchasing a full bottle. ✨",
       "happy"
     );

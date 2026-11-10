@@ -270,10 +270,10 @@ export default function Sets() {
       <div className="warda-sets-hero">
         <span className="warda-sets-eyebrow">
           <i className="ri-compass-3-line" />
-          {isRu ? "ЗНАКОМСТВО С АРОМАТАМИ • TRY & DISCOVER" : "FRAGRANCE DISCOVERY • TRY & DISCOVER"}
+          {isRu ? "ЗНАКОМСТВО С АРОМАТАМИ • ПРОБУЙ И ОТКРЫВАЙ" : "FRAGRANCE DISCOVERY • TRY & DISCOVER"}
         </span>
         <h1 className="warda-shop-title">
-          {isRu ? "Try & Discover • Сеты и Пробники" : "Try & Discover • Sets & Samples"}
+          {isRu ? "Пробуй и открывай • Сеты и Пробники" : "Try & Discover • Sets & Samples"}
         </h1>
         <p className="warda-shop-subtitle">
           {isRu
@@ -432,7 +432,7 @@ export default function Sets() {
 
       {loading ? (
         <div className="warda-loading">
-          {isRu ? "Загрузка коллекции Try & Discover..." : "Loading Try & Discover collection..."}
+          {isRu ? "Загрузка коллекции «Пробуй и открывай»..." : "Loading Try & Discover collection..."}
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="warda-empty">

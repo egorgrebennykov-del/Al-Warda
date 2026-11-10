@@ -294,7 +294,7 @@ export default function About() {
           </Link>
           <Link to="/sets" className="warda-btn warda-about-cta__btn-secondary">
             <i className="ri-flask-line" />
-            <span>{isRu ? "TRY & DISCOVER" : "TRY & DISCOVER"}</span>
+            <span>{isRu ? "ПРОБУЙ И ОТКРЫВАЙ" : "TRY & DISCOVER"}</span>
           </Link>
           <button
             type="button"
