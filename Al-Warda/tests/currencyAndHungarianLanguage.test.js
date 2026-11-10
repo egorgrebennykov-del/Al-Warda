@@ -70,12 +70,32 @@ test("Bulgarian language is registered in translations and has comprehensive key
   assert.equal(translations.bg["privileged.title"], "Контролен панел");
 });
 
+test("Greek language is registered in translations and has comprehensive key coverage", () => {
+  assert.ok(translations.el, "Greek translation dictionary exists");
+  assert.ok(translations.ru, "Russian translation dictionary exists");
+
+  const ruKeys = Object.keys(translations.ru);
+  const elKeys = Object.keys(translations.el);
+
+  // Greek dictionary must cover all keys
+  assert.equal(elKeys.length, ruKeys.length, `Expected ${ruKeys.length} keys in Greek, found ${elKeys.length}`);
+  for (const key of ruKeys) {
+    assert.ok(translations.el[key] !== undefined, `Missing Greek key: ${key}`);
+  }
+
+  // Verify key translations in Greek
+  assert.equal(translations.el["nav.home"], "Αρχική");
+  assert.equal(translations.el["nav.bookPicks"], "Συλλογή");
+  assert.equal(translations.el["home.title"], "Αυθεντικά Ανατολίτικα Αρώματα");
+  assert.equal(translations.el["privileged.title"], "Πίνακας Ελέγχου");
+});
+
 test("Language to default currency switching rule works correctly", () => {
   function getAutoCurrencyForLanguage(lang, prevLang, currentCurrency) {
     if (lang === "hu" && prevLang !== "hu") {
       return "RON";
     }
-    if (lang === "bg" && prevLang !== "bg") {
+    if ((lang === "bg" || lang === "el") && prevLang !== lang) {
       return "EUR";
     }
     return currentCurrency;
@@ -86,6 +106,15 @@ test("Language to default currency switching rule works correctly", () => {
 
   // Switching from Hungarian to Bulgarian sets EUR
   assert.equal(getAutoCurrencyForLanguage("bg", "hu", "RON"), "EUR");
+
+  // Switching from Hungarian to Greek sets EUR
+  assert.equal(getAutoCurrencyForLanguage("el", "hu", "RON"), "EUR");
+
+  // Switching from English to Greek sets EUR
+  assert.equal(getAutoCurrencyForLanguage("el", "en", "HUF"), "EUR");
+
+  // Staying on Greek keeps EUR
+  assert.equal(getAutoCurrencyForLanguage("el", "el", "EUR"), "EUR");
 
   // Switching from English to Bulgarian sets EUR
   assert.equal(getAutoCurrencyForLanguage("bg", "en", "HUF"), "EUR");
