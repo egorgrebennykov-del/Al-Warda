@@ -164,57 +164,115 @@ export function showValidationTooltip(element, customMessage) {
   }, 6000);
 }
 
+const VALIDATION_STRINGS = {
+  valueMissing: {
+    ru: "Заполните это поле.",
+    en: "Please fill out this field.",
+    hu: "Kérjük, töltse ki ezt a mezőt.",
+    bg: "Моля, попълнете това поле.",
+    el: "Παρακαλώ συμπληρώστε αυτό το πεδίο.",
+    ro: "Vă rugăm să completați acest câmp.",
+  },
+  emailMissingAt: {
+    ru: (v) => `Адрес электронной почты должен содержать символ "@". В адресе "${v}" отсутствует символ "@".`,
+    en: (v) => `Please include an '@' in the email address. '${v}' is missing an '@'.`,
+    hu: (v) => `Kérjük, adjon meg '@' jelet az e-mail címben. A(z) '${v}' címből hiányzik a '@'.`,
+    bg: (v) => `Имейл адресът трябва да съдържа символа „@“. В „${v}“ липсва „@“.`,
+    el: (v) => `Η διεύθυνση email πρέπει να περιέχει '@'. Το '${v}' δεν περιέχει '@'.`,
+    ro: (v) => `Adresa de email trebuie să conțină simbolul „@”. În „${v}” lipsește simbolul „@”.`,
+  },
+  emailInvalid: {
+    ru: "Введите корректный адрес электронной почты.",
+    en: "Please enter a valid email address.",
+    hu: "Kérjük, adjon meg érvényes e-mail címet.",
+    bg: "Моля, въведете валиден имейл адрес.",
+    el: "Παρακαλώ εισάγετε έγκυρη διεύθυνση email.",
+    ro: "Vă rugăm să introduceți o adresă de email validă.",
+  },
+  urlInvalid: {
+    ru: "Введите правильный URL-адрес.",
+    en: "Please enter a valid URL.",
+    hu: "Kérjük, adjon meg érvényes webcímet.",
+    bg: "Моля, въведете валиден уеб адрес.",
+    el: "Παρακαλώ εισάγετε έγκυρη διεύθυνση URL.",
+    ro: "Vă rugăm să introduceți o adresă URL validă.",
+  },
+  tooShort: {
+    ru: (min, len) => `Минимальная длина: ${min} симв. (введено: ${len}).`,
+    en: (min, len) => `Please lengthen this text to ${min} characters or more (you currently have ${len} characters).`,
+    hu: (min, len) => `Kérjük, hosszabbítsa meg a szöveget legalább ${min} karakterre (jelenleg: ${len}).`,
+    bg: (min, len) => `Минимална дължина: ${min} знака (въведени: ${len}).`,
+    el: (min, len) => `Ελάχιστο μήκος: ${min} χαρακτήρες (έχετε εισάγει: ${len}).`,
+    ro: (min, len) => `Lungime minimă: ${min} caractere (ați introdus: ${len}).`,
+  },
+  tooLong: {
+    ru: (max) => `Максимальная длина: ${max} симв.`,
+    en: (max) => `Please shorten this text to ${max} characters or less.`,
+    hu: (max) => `Kérjük, rövidítse a szöveget legfeljebb ${max} karakterre.`,
+    bg: (max) => `Максимална дължина: ${max} знака.`,
+    el: (max) => `Μέγιστο μήκος: ${max} χαρακτήρες.`,
+    ro: (max) => `Lungime maximă: ${max} caractere.`,
+  },
+  patternMismatch: {
+    ru: "Пожалуйста, соблюдайте указанный формат.",
+    en: "Please match the requested format.",
+    hu: "Kérjük, kövesse a kért formátumot.",
+    bg: "Моля, спазвайте посочения формат.",
+    el: "Παρακαλώ ακολουθήστε την απαιτούμενη μορφή.",
+    ro: "Vă rugăm să respectați formatul solicitat.",
+  },
+  defaultCheck: {
+    ru: "Пожалуйста, проверьте это поле.",
+    en: "Please check this field.",
+    hu: "Kérjük, ellenőrizze ezt a mezőt.",
+    bg: "Моля, проверете това поле.",
+    el: "Παρακαλώ ελέγξτε αυτό το πεδίο.",
+    ro: "Vă rugăm să verificați acest câmp.",
+  },
+};
+
+function getMsg(category, lang, ...args) {
+  const l = VALIDATION_STRINGS[category]?.[lang] ? lang : "en";
+  const item = VALIDATION_STRINGS[category][l];
+  return typeof item === "function" ? item(...args) : item;
+}
+
 export function getFriendlyValidationMessage(target) {
-  const isRu = getSiteLanguage().startsWith("ru");
+  const lang = (getSiteLanguage() || "ru").slice(0, 2);
 
   if (target.validity?.valueMissing) {
-    return isRu ? "Заполните это поле." : "Please fill out this field.";
+    return getMsg("valueMissing", lang);
   }
 
   if (target.validity?.typeMismatch) {
     if (target.type === "email") {
       const val = target.value || "";
       if (val && !val.includes("@")) {
-        return isRu
-          ? `Адрес электронной почты должен содержать символ "@". В адресе "${val}" отсутствует символ "@".`
-          : `Please include an '@' in the email address. '${val}' is missing an '@'.`;
+        return getMsg("emailMissingAt", lang, val);
       }
-      return isRu
-        ? "Введите корректный адрес электронной почты."
-        : "Please enter a valid email address.";
+      return getMsg("emailInvalid", lang);
     }
     if (target.type === "url") {
-      return isRu
-        ? "Введите правильный URL-адрес."
-        : "Please enter a valid URL.";
+      return getMsg("urlInvalid", lang);
     }
   }
 
   if (target.validity?.tooShort) {
     const min = target.minLength || target.getAttribute("minlength");
     const len = target.value ? target.value.length : 0;
-    return isRu
-      ? `Минимальная длина: ${min} симв. (введено: ${len}).`
-      : `Please lengthen this text to ${min} characters or more (you currently have ${len} characters).`;
+    return getMsg("tooShort", lang, min, len);
   }
 
   if (target.validity?.tooLong) {
     const max = target.maxLength || target.getAttribute("maxlength");
-    return isRu
-      ? `Максимальная длина: ${max} симв.`
-      : `Please shorten this text to ${max} characters or less.`;
+    return getMsg("tooLong", lang, max);
   }
 
   if (target.validity?.patternMismatch) {
-    return isRu
-      ? "Пожалуйста, соблюдайте указанный формат."
-      : "Please match the requested format.";
+    return getMsg("patternMismatch", lang);
   }
 
-  return (
-    target.validationMessage ||
-    (isRu ? "Пожалуйста, проверьте это поле." : "Please check this field.")
-  );
+  return target.validationMessage || getMsg("defaultCheck", lang);
 }
 
 // Global initialization

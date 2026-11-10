@@ -12,6 +12,7 @@ import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
+import { formatVolume } from "../../utils/localization";
 import { OrnateCard } from "../common/OrnateCard";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
@@ -77,13 +78,12 @@ const POPULAR_ARABIAN_BRANDS = [
 const PAGE_SIZE = 21;
 
 export default function SearchResults() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { isInCart, toggleCart } = useCartState();
   const query = (params.get("q") || "").trim();
-  const isRu = language !== "en";
 
   const [loading, setLoading] = useState(true);
   const [allPerfumes, setAllPerfumes] = useState([]);
@@ -231,17 +231,13 @@ export default function SearchResults() {
       <div className="results__heading">
         <h1 className="results__title">
           {query
-            ? `${isRu ? "Результаты поиска:" : "Search Results:"} "${query}"`
-            : isRu
-              ? "Каталог арабской парфюмерии"
-              : "Arabian Fragrances Catalog"}
+            ? `${t("search.resultsFor")} "${query}"`
+            : t("search.allPerfumes")}
         </h1>
         <p className="results__count">
           {loading
-            ? isRu
-              ? "Загружаем арабские духи..."
-              : "Loading Arabian perfumes..."
-            : `${results.length} ${isRu ? "ароматов найдено" : "fragrances found"}`}
+            ? t("search.selecting")
+            : `${results.length} ${t("search.foundCount")}`}
         </p>
       </div>
 
@@ -255,7 +251,7 @@ export default function SearchResults() {
               className={`warda-filter-pill ${filterType === "all" ? "active" : ""}`}
               onClick={() => setFilterType("all")}
             >
-              {isRu ? "Все арабские духи" : "All Arabian Perfumes"}
+              {t("search.allPerfumes")}
             </button>
           </div>
 
@@ -268,7 +264,7 @@ export default function SearchResults() {
                 className={`warda-filter-pill ${selectedBrand === brand ? "active" : ""}`}
                 onClick={() => setSelectedBrand(brand)}
               >
-                {brand === "All" ? (isRu ? "Все бренды" : "All Brands") : brand}
+                {brand === "All" ? t("search.allBrands") : brand}
               </button>
             ))}
           </div>
@@ -279,7 +275,7 @@ export default function SearchResults() {
         <div className="results__loading-state" style={{ textAlign: "center", padding: "4rem 0" }}>
           <div className="app-route-loader__spinner" style={{ margin: "0 auto 1rem" }} />
           <p style={{ color: "#d4af37", fontFamily: "var(--second-font)" }}>
-            {isRu ? "Подбираем оригинальные арабские ароматы..." : "Selecting genuine Arabian fragrances..."}
+            {t("search.selecting")}
           </p>
         </div>
       ) : results.length === 0 ? (
@@ -289,9 +285,7 @@ export default function SearchResults() {
             style={{ fontSize: "3rem", color: "#c5a059", display: "block", marginBottom: "1rem" }}
           />
           <p style={{ fontSize: "1.1rem", color: "#c2b59b" }}>
-            {isRu
-              ? "По вашему запросу среди арабских духов ничего не найдено"
-              : "No Arabian fragrances matched your search"}
+            {t("search.notFoundQuery")}
           </p>
           <button
             type="button"
@@ -302,7 +296,7 @@ export default function SearchResults() {
               setSelectedBrand("All");
             }}
           >
-            {isRu ? "СБРОСИТЬ ФИЛЬТРЫ" : "RESET FILTERS"}
+            {t("search.resetFilters")}
           </button>
         </div>
       ) : (
@@ -317,8 +311,8 @@ export default function SearchResults() {
                 : getPerfumeUrl(perfume);
               const displayPrice = defaultOpt.price;
               const displayVolume = defaultOpt.isSecondLargest
-                ? (isRu ? defaultOpt.labelRu : defaultOpt.labelEn)
-                : (perfume.volume ? (isRu ? perfume.volume.split("/")[0].trim().replace(/ml/gi, "мл") : perfume.volume.split("/")[0].trim().replace(/мл/gi, "ml")) : "");
+                ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
+                : formatVolume(perfume.volume ? perfume.volume.split("/")[0].trim() : "", language);
               return (
                 <OrnateCard
                   key={perfume.id}
@@ -343,7 +337,7 @@ export default function SearchResults() {
                   <div className="warda-perfume-card__media">
                     {isPerfumeSet(perfume) && (
                       <span className="warda-perfume-card__set-tag">
-                        🎁 {isRu ? "СЕТ / НАБОР" : "GIFT SET"}
+                        🎁 {t("featured.giftSet")}
                       </span>
                     )}
                     <div className="warda-perfume-card__aura" />
@@ -395,20 +389,18 @@ export default function SearchResults() {
                           type="button"
                           className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                           onClick={(e) => handleAddToCart(perfume, e)}
-                          aria-label={inCart ? (isRu ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
-                          title={inCart ? (isRu ? "Удалить из корзины" : "Remove from bag") : undefined}
+                          aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                          title={inCart ? t("featured.remove") : undefined}
                         >
                           {inCart ? (
                             <>
-                              <span className="warda-btn__text-normal">{isRu ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
-                              <span className="warda-btn__text-hover">{isRu ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                              <span className="warda-btn__text-normal">{t("featured.inBag")}</span>
+                              <span className="warda-btn__text-hover">{t("featured.remove")}</span>
                             </>
                           ) : isAdded ? (
-                            "ADDED ✓"
-                          ) : isRu ? (
-                            "В КОРЗИНУ"
+                            t("featured.added")
                           ) : (
-                            "ADD TO CART"
+                            t("featured.addToCart")
                           )}
                         </button>
                       );
@@ -432,7 +424,7 @@ export default function SearchResults() {
                     <div className="warda-spinner-gem" />
                   </div>
                   <span className="warda-loader-text">
-                    {isRu ? "Загрузка парфюмерии..." : "Loading perfumes..."}
+                    {t("search.loadingMore")}
                   </span>
                 </div>
               ) : (
@@ -441,9 +433,7 @@ export default function SearchResults() {
                   className="warda-btn warda-btn--more"
                   onClick={loadMoreItems}
                 >
-                  {isRu
-                    ? `ПОКАЗАТЬ ЕЩЕ (показано ${visibleLimit} из ${results.length})`
-                    : `LOAD MORE (${visibleLimit} of ${results.length})`}
+                  {`✦ ${t("featured.loadMore")} (${visibleLimit} / ${results.length}) ✦`}
                 </button>
               )}
             </div>

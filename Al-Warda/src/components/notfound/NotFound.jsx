@@ -101,11 +101,7 @@ export default function NotFound() {
               </div>
               <div className="not-found__nav-info">
                 <strong>{t("notFound.catalog")}</strong>
-                <span>
-                  {language === "ru"
-                    ? "Выгодные скидки на лучшие ароматы"
-                    : "Great deals on luxury perfumes"}
-                </span>
+                <span>{t("notFound.dealsDesc")}</span>
               </div>
               <i className="ri-arrow-right-s-line not-found__nav-arrow" />
             </Link>
@@ -116,11 +112,7 @@ export default function NotFound() {
               </div>
               <div className="not-found__nav-info">
                 <strong>{t("notFound.featured")}</strong>
-                <span>
-                  {language === "ru"
-                    ? "Курируемые коллекции восточных парфюмов"
-                    : "Curated oriental perfume collections"}
-                </span>
+                <span>{t("notFound.featuredDesc")}</span>
               </div>
               <i className="ri-arrow-right-s-line not-found__nav-arrow" />
             </Link>
@@ -131,11 +123,7 @@ export default function NotFound() {
               </div>
               <div className="not-found__nav-info">
                 <strong>{t("notFound.new")}</strong>
-                <span>
-                  {language === "ru"
-                    ? "Свежие книжные поступления"
-                    : "Fresh arrivals and novelties"}
-                </span>
+                <span>{t("notFound.newDesc")}</span>
               </div>
               <i className="ri-arrow-right-s-line not-found__nav-arrow" />
             </Link>

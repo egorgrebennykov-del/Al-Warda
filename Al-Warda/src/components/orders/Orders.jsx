@@ -8,8 +8,10 @@ import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import "./Orders.css";
 
+const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
+
 function formatPrice(price, currency, language) {
-  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const locale = LOCALE_MAP[language] || "en-GB";
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency || "EUR",
@@ -20,7 +22,7 @@ function formatPrice(price, currency, language) {
 function formatDate(dateString, language) {
   if (!dateString) return "";
   try {
-    const locale = language === "ru" ? "ru-RU" : "en-US";
+    const locale = LOCALE_MAP[language] || "en-GB";
     return new Date(dateString).toLocaleDateString(locale, {
       year: "numeric",
       month: "long",

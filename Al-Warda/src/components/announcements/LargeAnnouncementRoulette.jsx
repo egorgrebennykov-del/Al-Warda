@@ -3,20 +3,30 @@ import { useLanguage } from "../../context/languageContext";
 import "./LargeAnnouncementRoulette.css";
 
 export default function LargeAnnouncementRoulette({ items = [] }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const getPosterImage = (item) => {
     if (!item) return "";
-    return language === "en"
-      ? item.imageUrl_en || item.en?.imageUrl || item.imageUrl_ru || item.imageUrl
-      : item.imageUrl_ru || item.ru?.imageUrl || item.imageUrl_en || item.imageUrl;
+    return (
+      item[`imageUrl_${language}`] ||
+      item[language]?.imageUrl ||
+      item.imageUrl_en ||
+      item.en?.imageUrl ||
+      item.imageUrl_ru ||
+      item.imageUrl
+    );
   };
 
   const getPosterLink = (item) => {
     if (!item) return "";
-    return language === "en"
-      ? item.linkUrl_en || item.en?.linkUrl || item.linkUrl_ru || item.linkUrl
-      : item.linkUrl_ru || item.ru?.linkUrl || item.linkUrl_en || item.linkUrl;
+    return (
+      item[`linkUrl_${language}`] ||
+      item[language]?.linkUrl ||
+      item.linkUrl_en ||
+      item.en?.linkUrl ||
+      item.linkUrl_ru ||
+      item.linkUrl
+    );
   };
 
   const posters = items.filter(
@@ -89,7 +99,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
           >
             <img
               src={posterImageUrl}
-              alt={language === "ru" ? "Рекламный плакат" : "Promotional poster"}
+              alt={t("announcements.poster")}
               className="warda-poster-image"
               loading="eager"
             />
@@ -98,7 +108,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
           <div className="warda-poster-link">
             <img
               src={posterImageUrl}
-              alt={language === "ru" ? "Рекламный плакат" : "Promotional poster"}
+              alt={t("announcements.poster")}
               className="warda-poster-image"
               loading="eager"
             />
@@ -112,7 +122,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
               type="button"
               className="warda-poster-btn warda-poster-btn--prev"
               onClick={handlePrev}
-              aria-label={language === "ru" ? "Предыдущий плакат" : "Previous poster"}
+              aria-label={t("announcements.prev")}
             >
               <i className="ri-arrow-left-s-line" />
             </button>
@@ -120,7 +130,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
               type="button"
               className="warda-poster-btn warda-poster-btn--next"
               onClick={handleNext}
-              aria-label={language === "ru" ? "Следующий плакат" : "Next poster"}
+              aria-label={t("announcements.next")}
             >
               <i className="ri-arrow-right-s-line" />
             </button>
@@ -136,7 +146,7 @@ export default function LargeAnnouncementRoulette({ items = [] }) {
                     e.stopPropagation();
                     setCurrentIndex(idx);
                   }}
-                  aria-label={language === "ru" ? `Плакат ${idx + 1}` : `Poster ${idx + 1}`}
+                  aria-label={`${t("announcements.poster")} ${idx + 1}`}
                 />
               ))}
             </div>

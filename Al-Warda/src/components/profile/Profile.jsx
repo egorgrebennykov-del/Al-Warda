@@ -164,11 +164,19 @@ export default function Profile() {
   };
 
   const handleCopy = (val) => {
-    setNotice(
+    const copiedMsg =
       language === "ru"
         ? `"${val}" скопировано в буфер обмена!`
-        : `"${val}" copied to clipboard!`,
-    );
+        : language === "hu"
+        ? `"${val}" a vágólapra másolva!`
+        : language === "bg"
+        ? `"${val}" е копирано в клипборда!`
+        : language === "el"
+        ? `"${val}" αντιγράφηκε στο πρόχειρο!`
+        : language === "ro"
+        ? `"${val}" a fost copiat în clipboard!`
+        : `"${val}" copied to clipboard!`;
+    setNotice(copiedMsg);
     setTimeout(() => setNotice(null), 3000);
   };
 
@@ -200,7 +208,7 @@ export default function Profile() {
             <div className="profile__name-wrap">
               <TruncatedField
                 text={fullName}
-                label={language === "ru" ? "Имя пользователя" : "User Name"}
+                label={t("profile.userName")}
                 as="h2"
                 className="profile__name"
                 align="center"
@@ -225,15 +233,11 @@ export default function Profile() {
               {profile.status === "privileged" && (
                 <span
                   className="profile__status-badge"
-                  title={
-                    language === "ru"
-                      ? "Статус: Привилегированный"
-                      : "Status: Privileged"
-                  }
+                  title={t("profile.privileged")}
                 >
                   <i className="ri-vip-crown-fill" />
                   <span>
-                    {language === "ru" ? "Привилегированный" : "Privileged"}
+                    {t("profile.privileged")}
                   </span>
                 </span>
               )}
@@ -241,7 +245,7 @@ export default function Profile() {
                 <span
                   key={role}
                   className={`profile__role-tag profile__role-tag--${role}`}
-                  title={`${language === "ru" ? "Роль: " : "Role: "}${formatRoleName(role, language)}`}
+                  title={formatRoleName(role, language)}
                 >
                   {role === "developer" && <i className="ri-code-box-line" />}
                   {role === "admin" && <i className="ri-shield-star-line" />}
@@ -256,13 +260,11 @@ export default function Profile() {
               <Link
                 to="/privileged"
                 className="profile__privileged-badge"
-                title={t("privileged.title")}
+                title={t("nav.controlPanel") || t("privileged.title")}
               >
                 <i className="ri-shield-check-line" />
                 <span>
-                  {language === "ru"
-                    ? "Панель управления"
-                    : "Management Panel"}
+                  {t("nav.controlPanel") || "Control Panel"}
                 </span>
               </Link>
             )}

@@ -2107,6 +2107,18 @@ export function getCategories() {
   return PERFUME_CATEGORIES;
 }
 
+export {
+  getLocalizedCategory,
+  getLocalizedCategoryDetails,
+  getLocalizedGender,
+  getLocalizedLongevity,
+  getLocalizedNote,
+  getLocalizedFormat,
+  getLocalizedVolumeOption,
+  formatVolume,
+  getLocalizedSampleDesc,
+} from "../src/utils/localization.js";
+
 export function parseVolumeMl(val) {
   if (val == null) return null;
   if (typeof val === "number" && Number.isFinite(val) && val > 0) return val;

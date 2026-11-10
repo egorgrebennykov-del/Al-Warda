@@ -8,8 +8,10 @@ import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
 import "./Discount.css";
 
+const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
+
 function formatPrice(value, currency, language) {
-  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const locale = LOCALE_MAP[language] || "en-GB";
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
@@ -242,7 +244,7 @@ export default function Discount() {
           {snapshot.updatedAt && (
             <p className="deals__updated">
               {t("discount.updated")}{" "}
-              {new Intl.DateTimeFormat(language === "ru" ? "ru-RU" : "en-GB").format(
+              {new Intl.DateTimeFormat(LOCALE_MAP[language] || "en-GB").format(
                 new Date(snapshot.updatedAt),
               )}
             </p>

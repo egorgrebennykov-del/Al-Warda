@@ -7,28 +7,8 @@ import { addToCart } from "../../../utils/cart";
 import "./Search.css";
 import "../common/ProductCardImages.css";
 
-const QUICK_TAGS = [
-  { label: "Lattafa", query: "Lattafa" },
-  { label: "Armaf", query: "Armaf" },
-  { label: "Afnan", query: "Afnan" },
-  { label: "Al Haramain", query: "Al Haramain" },
-  { label: "Amouage", query: "Amouage" },
-  { label: "Arabian Oud", query: "Arabian Oud" },
-  { label: "Ajmal", query: "Ajmal" },
-  { label: "Ard Al Zaafaran", query: "Ard Al Zaafaran" },
-  { label: "Rasasi", query: "Rasasi" },
-  { label: "Swiss Arabian", query: "Swiss Arabian" },
-  { label: "Maison Alhambra", query: "Maison Alhambra" },
-  { label: "French Avenue", query: "French Avenue" },
-  { label: "Khadlaj", query: "Khadlaj" },
-  { label: "Уд / Oud", query: "oud" },
-  { label: "Амбра / Amber", query: "amber" },
-  { label: "Мускус / Musk", query: "musk" },
-  { label: "Бестселлеры", query: "bestseller" },
-];
-
 export default function Search({ show, onClose }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [query, setQuery] = useState("");
   const [allPerfumes, setAllPerfumes] = useState([]);
@@ -36,7 +16,26 @@ export default function Search({ show, onClose }) {
   const [addedIds, setAddedIds] = useState({});
   const inputRef = useRef(null);
   const navigate = useNavigate();
-  const isRu = language !== "en";
+
+  const quickTags = [
+    { label: "Lattafa", query: "Lattafa" },
+    { label: "Armaf", query: "Armaf" },
+    { label: "Afnan", query: "Afnan" },
+    { label: "Al Haramain", query: "Al Haramain" },
+    { label: "Amouage", query: "Amouage" },
+    { label: "Arabian Oud", query: "Arabian Oud" },
+    { label: "Ajmal", query: "Ajmal" },
+    { label: "Ard Al Zaafaran", query: "Ard Al Zaafaran" },
+    { label: "Rasasi", query: "Rasasi" },
+    { label: "Swiss Arabian", query: "Swiss Arabian" },
+    { label: "Maison Alhambra", query: "Maison Alhambra" },
+    { label: "French Avenue", query: "French Avenue" },
+    { label: "Khadlaj", query: "Khadlaj" },
+    { label: t("search.tagOud") || "Oud", query: "oud" },
+    { label: t("search.tagAmber") || "Amber", query: "amber" },
+    { label: t("search.tagMusk") || "Musk", query: "musk" },
+    { label: t("search.tagBestsellers") || "Bestsellers", query: "bestseller" },
+  ];
 
   useEffect(() => {
     if (!show) return;
@@ -158,7 +157,7 @@ export default function Search({ show, onClose }) {
           <input
             ref={inputRef}
             type="search"
-            placeholder={isRu ? "Поиск арабских духов, брендов (Lattafa, Armaf...), нот..." : "Search Arabian perfumes, brands, notes..."}
+            placeholder={t("search.inputPlaceholder") || t("search.placeholder")}
             className="search__input"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -177,7 +176,7 @@ export default function Search({ show, onClose }) {
 
         {/* Quick Filter Tag Chips */}
         <div className="search__quick-tags">
-          {QUICK_TAGS.map((tag) => (
+          {quickTags.map((tag) => (
             <button
               key={tag.query}
               type="button"
@@ -193,17 +192,15 @@ export default function Search({ show, onClose }) {
         <div className="search__results-header">
           <span>
             {query.trim()
-              ? `${isRu ? "Найдено арабских ароматов:" : "Arabian fragrances found:"} ${matchingPerfumes.length}`
-              : isRu
-                ? "Популярные арабские ароматы"
-                : "Popular Arabian Fragrances"}
+              ? `${t("search.foundFragrances")} ${matchingPerfumes.length}`
+              : t("search.popularFragrances")}
           </span>
           {query.trim() && matchingPerfumes.length > 0 && (
             <span
               className="search__view-all-link"
               onClick={handleSubmit}
             >
-              {isRu ? "Открыть в каталоге ↵" : "Open in catalog ↵"}
+              {t("search.openInCatalog")}
             </span>
           )}
         </div>
@@ -212,9 +209,9 @@ export default function Search({ show, onClose }) {
         {matchingPerfumes.length === 0 ? (
           <div className="search__no-results">
             <i className="ri-search-eye-line search__no-results-icon" />
-            <p>{isRu ? "По вашему запросу ничего не найдено" : "No fragrances found"}</p>
+            <p>{t("search.noFragrancesFound") || t("search.nothingFound")}</p>
             <div className="search__no-results-hint">
-              {isRu ? "Попробуйте выбрать один из популярных арабских брендов выше." : "Try choosing one of the popular Arabian brands above."}
+              {t("search.tryChoosingBrand")}
             </div>
           </div>
         ) : (
@@ -233,7 +230,7 @@ export default function Search({ show, onClose }) {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === "Enter" && handleSelectPerfume(p)}
                   >
-                    {/* Perfume Bottle Image (Без фона + эффект как у категорий) */}
+                    {/* Perfume Bottle Image */}
                     <div className="search__card-img-wrap">
                       <div className="search__card-aura" />
                       <img
@@ -262,7 +259,7 @@ export default function Search({ show, onClose }) {
                       className={`search__card-btn ${isAdded ? "search__card-btn--added" : ""}`}
                       onClick={(e) => handleAddToCart(p, e)}
                     >
-                      {isAdded ? (isRu ? "✓ ДОБАВЛЕНО" : "✓ ADDED") : (isRu ? "В КОРЗИНУ" : "ADD TO CART")}
+                      {isAdded ? t("featured.added") : t("featured.addToCart")}
                     </button>
                   </div>
                 );
@@ -276,7 +273,7 @@ export default function Search({ show, onClose }) {
                   className="search__view-all-btn"
                   onClick={handleSubmit}
                 >
-                  <span>{isRu ? "Смотреть все результаты" : "View all results"} ({matchingPerfumes.length})</span>
+                  <span>{t("search.viewAllResults")} ({matchingPerfumes.length})</span>
                   <i className="ri-arrow-right-line" />
                 </button>
               </div>

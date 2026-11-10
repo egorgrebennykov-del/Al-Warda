@@ -12,7 +12,7 @@ import "../components/common/ConfirmModal.css";
 const ConfirmContext = createContext(null);
 
 export function ConfirmProvider({ children }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [modalState, setModalState] = useState({
     isOpen: false,
     title: "",
@@ -105,28 +105,17 @@ export function ConfirmProvider({ children }) {
   }, [modalState.isOpen, handleCancel, handleConfirm]);
 
   // Derive defaults based on language & type
-  const isRu = language === "ru";
   const defaultTitle = modalState.isAlert
-    ? isRu
-      ? "Внимание"
-      : "Notice"
-    : isRu
-    ? "Подтверждение действия"
-    : "Confirm Action";
+    ? t("confirm.notice")
+    : t("confirm.action");
 
   const defaultConfirmText = modalState.isAlert
-    ? isRu
-      ? "Понятно"
-      : "OK"
+    ? t("confirm.ok")
     : modalState.type === "danger"
-    ? isRu
-      ? "Удалить"
-      : "Delete"
-    : isRu
-    ? "Подтвердить"
-    : "Confirm";
+    ? t("confirm.delete")
+    : t("confirm.confirm");
 
-  const defaultCancelText = isRu ? "Отмена" : "Cancel";
+  const defaultCancelText = t("confirm.cancel");
 
   const title = modalState.title || defaultTitle;
   const confirmText = modalState.confirmText || defaultConfirmText;
@@ -166,7 +155,7 @@ export function ConfirmProvider({ children }) {
               type="button"
               className="warda-confirm-close"
               onClick={handleCancel}
-              aria-label={isRu ? "Закрыть" : "Close"}
+              aria-label={defaultCancelText}
             >
               ×
             </button>

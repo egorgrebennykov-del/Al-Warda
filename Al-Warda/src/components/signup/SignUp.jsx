@@ -17,7 +17,6 @@ import {
 export default function SignUp({ onLogin, onClose }) {
   const { t, language } = useLanguage();
   const { register: authRegister } = useAuth();
-  const isRu = language !== "en";
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [form, setForm] = useState({
@@ -126,12 +125,10 @@ export default function SignUp({ onLogin, onClose }) {
 
   const translateAuthError = (rawMessage) => {
     if (rawMessage === "Enter a valid email") {
-      return isRu ? "Введите корректный email" : "Enter a valid email";
+      return t("auth.invalidEmail");
     }
     if (rawMessage === "This email is already registered") {
-      return isRu
-        ? "Этот email уже зарегистрирован"
-        : "This email is already registered";
+      return t("auth.emailAlreadyRegistered");
     }
     return rawMessage;
   };
@@ -142,13 +139,13 @@ export default function SignUp({ onLogin, onClose }) {
     setInfoMessage("");
 
     if (!form.firstName.trim()) {
-      const msg = isRu ? "Введите ваше имя" : "Please enter your first name";
+      const msg = t("auth.firstNameRequired");
       setError(msg);
       showValidationTooltip(document.getElementById("signup-first-name"), msg);
       return;
     }
     if (!form.lastName.trim()) {
-      const msg = isRu ? "Введите вашу фамилию" : "Please enter your last name";
+      const msg = t("auth.lastNameRequired");
       setError(msg);
       showValidationTooltip(document.getElementById("signup-last-name"), msg);
       return;
@@ -160,9 +157,7 @@ export default function SignUp({ onLogin, onClose }) {
       return;
     }
     if (!form.password || form.password.length < 8) {
-      const msg = isRu
-        ? "Пароль должен содержать минимум 8 символов"
-        : "Password must be at least 8 characters";
+      const msg = t("auth.passwordMinLength");
       setError(msg);
       showValidationTooltip(document.getElementById("signup-password"), msg);
       return;
@@ -193,9 +188,7 @@ export default function SignUp({ onLogin, onClose }) {
       setVerificationCode("");
       setStep("verify");
       setInfoMessage(
-        isRu
-          ? `Мы отправили 6-значный код подтверждения на ${form.email.trim()}`
-          : `We sent a 6-digit verification code to ${form.email.trim()}`,
+        t("auth.signupCodeSent").replace("{email}", form.email.trim()),
       );
       hideValidationTooltip();
     } catch (err) {
@@ -213,9 +206,7 @@ export default function SignUp({ onLogin, onClose }) {
 
     const cleanEntered = verificationCode.replace(/\D/g, "").trim();
     if (cleanEntered.length !== 6) {
-      const msg = isRu
-        ? "Введите 6-значный код из письма"
-        : "Enter the 6-digit code from the email";
+      const msg = t("auth.enterSixDigitCode");
       setError(msg);
       showValidationTooltip(codeInputRef.current, msg);
       codeInputRef.current?.focus();
@@ -223,9 +214,7 @@ export default function SignUp({ onLogin, onClose }) {
     }
 
     if (cleanEntered !== expectedCode) {
-      const msg = isRu
-        ? "Неверный код подтверждения. Проверьте письмо и попробуйте снова."
-        : "Invalid verification code. Please check your email and try again.";
+      const msg = t("auth.invalidVerificationCode");
       setError(msg);
       showValidationTooltip(codeInputRef.current, msg);
       codeInputRef.current?.focus();
@@ -275,9 +264,7 @@ export default function SignUp({ onLogin, onClose }) {
       setExpectedCode(newCode);
       setVerificationCode("");
       setInfoMessage(
-        isRu
-          ? `Новый 6-значный код отправлен на ${form.email.trim()}`
-          : `A new 6-digit code was sent to ${form.email.trim()}`,
+        t("auth.newSignupCodeSent").replace("{email}", form.email.trim()),
       );
     } catch (err) {
       setError(translateAuthError(err.message));
@@ -447,9 +434,7 @@ export default function SignUp({ onLogin, onClose }) {
               disabled={submitting}
             >
               {submitting
-                ? isRu
-                  ? "Отправка кода..."
-                  : "Sending code..."
+                ? t("auth.sendingCode")
                 : t("auth.signUpBtn")}
             </button>
           </div>
@@ -469,7 +454,7 @@ export default function SignUp({ onLogin, onClose }) {
             ×
           </button>
           <h3 className="login__title">
-            {isRu ? "Подтверждение Email" : "Confirm Your Email"}
+            {t("auth.confirmEmail")}
           </h3>
           {infoMessage && (
             <p
@@ -487,7 +472,7 @@ export default function SignUp({ onLogin, onClose }) {
           <div className="login__group grid">
             <div>
               <label htmlFor="signup-verify-code" className="login__label">
-                {isRu ? "Код из 6 цифр" : "6-Digit Verification Code"}
+                {t("auth.codePlaceholder")}
               </label>
               <input
                 ref={codeInputRef}
@@ -540,7 +525,7 @@ export default function SignUp({ onLogin, onClose }) {
                 }}
                 style={{ color: "var(--first-color)", fontWeight: 600 }}
               >
-                ← {isRu ? "Изменить данные" : "Edit details"}
+                ← {t("auth.editDetails")}
               </a>
               <a
                 href="#"
@@ -555,12 +540,8 @@ export default function SignUp({ onLogin, onClose }) {
                 }}
               >
                 {resending
-                  ? isRu
-                    ? "Отправка..."
-                    : "Sending..."
-                  : isRu
-                    ? "Отправить код повторно"
-                    : "Resend code"}
+                  ? t("auth.sending")
+                  : t("auth.resendCode")}
               </a>
             </div>
             <button
@@ -569,12 +550,8 @@ export default function SignUp({ onLogin, onClose }) {
               disabled={submitting}
             >
               {submitting
-                ? isRu
-                  ? "Создание аккаунта..."
-                  : "Creating account..."
-                : isRu
-                  ? "Подтвердить и создать аккаунт"
-                  : "Verify & Create Account"}
+                ? t("auth.creatingAccount")
+                : t("auth.verifyAndCreateAccount")}
             </button>
           </div>
         </form>

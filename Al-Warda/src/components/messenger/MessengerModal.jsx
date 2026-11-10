@@ -24,11 +24,20 @@ function formatMsgTime(isoStr) {
   }
 }
 
+const LOCALE_MAP = {
+  ru: "ru-RU",
+  hu: "hu-HU",
+  bg: "bg-BG",
+  el: "el-GR",
+  ro: "ro-RO",
+  en: "en-US",
+};
+
 function formatTransferTime(isoStr, lang = "ru") {
   if (!isoStr) return "";
   try {
     const d = new Date(isoStr);
-    return d.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-US", {
+    return d.toLocaleDateString(LOCALE_MAP[lang] || "en-GB", {
       day: "numeric",
       month: "short",
       hour: "2-digit",
@@ -40,7 +49,7 @@ function formatTransferTime(isoStr, lang = "ru") {
 }
 
 export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const loggedIn = isLoggedIn();
   const [currentUser, setCurrentUser] = useState(() => (loggedIn ? getCookieUser() : null));
 
@@ -172,10 +181,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
     } catch (err) {
       console.warn("Failed to ensure inquiry:", err);
       setSendError(
-        err?.message ||
-          (language === "ru"
-            ? "Не удалось подключиться к чату"
-            : "Could not connect to chat")
+        err?.message || t("messenger.connectError")
       );
     }
     return null;
@@ -247,15 +253,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
     const cleanEmail = emailInput.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!cleanEmail || !emailRegex.test(cleanEmail)) {
-      setEmailError(
-        language === "ru"
-          ? "Пожалуйста, введите корректный адрес электронной почты"
-          : "Please enter a valid email address",
-      );
+      setEmailError(t("messenger.invalidEmail"));
       return;
     }
     setEmailError("");
-    const cleanName = nameInput.trim() || (language === "ru" ? "Гость" : "Guest");
+    const cleanName = nameInput.trim() || t("messenger.guest");
     localStorage.setItem(GUEST_EMAIL_KEY, cleanEmail);
     localStorage.setItem(GUEST_NAME_KEY, cleanName);
     setGuestEmail(cleanEmail);
@@ -285,10 +287,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         if (check.redirectToWarda) {
           setWardaRedirectQuery(text);
           setSendError(
-            check.reason ||
-              (language === "ru"
-                ? "Наш ИИ-ассистент Ясмин с удовольствием ответит на этот вопрос о парфюмах, нотах, брендах или корзине! Нажмите на Ясмин в углу экрана."
-                : "Our AI assistant Al-Warda will gladly answer this question about perfumes, notes, brands, or your cart! Click on Al-Warda in the corner.")
+            check.reason || t("messenger.redirectWardaPrompt")
           );
           // Trigger Al-Warda's floating speech bubble with help offer
           window.dispatchEvent(
@@ -299,10 +298,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         } else {
           setWardaRedirectQuery(null);
           setSendError(
-            check.reason ||
-              (language === "ru"
-                ? "Сообщение не отправлено: служба поддержки принимает вопросы о работе книжного магазина или сотрудничестве."
-                : "Message rejected: inquiries must relate to store operations or business cooperation.")
+            check.reason || t("messenger.rejectedPrompt")
           );
         }
         setSending(false);
@@ -317,11 +313,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       }
 
       if (!activeInquiry?.id) {
-        throw new Error(
-          language === "ru"
-            ? "Не удалось инициализировать чат с администратором. Пожалуйста, попробуйте еще раз."
-            : "Could not initialize chat with administrator. Please try again."
-        );
+        throw new Error(t("messenger.initError"));
       }
 
       const activeUser = loggedIn ? (currentUser || getCookieUser()) : null;
@@ -329,8 +321,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         id: `opt_${Date.now()}`,
         sender: "user",
         senderName: loggedIn
-          ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() || activeUser?.email || "Пользователь"
-          : guestName || localStorage.getItem(GUEST_NAME_KEY) || "Гость",
+          ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() || activeUser?.email || t("auth.profile")
+          : guestName || localStorage.getItem(GUEST_NAME_KEY) || t("messenger.guest"),
         text,
         timestamp: new Date().toISOString(),
         deliveredViaEmail: false,
@@ -357,10 +349,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       console.error("Failed to send message:", err);
       setInputText(text);
       setSendError(
-        err?.message ||
-          (language === "ru"
-            ? "Не удалось отправить сообщение. Пожалуйста, попробуйте ещё раз."
-            : "Failed to send message. Please try again.")
+        err?.message || t("messenger.sendError")
       );
     } finally {
       setSending(false);
@@ -406,13 +395,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
             </div>
             <div>
               <h3 className="warda-messenger-title">
-                {language === "ru"
-                  ? "Служба поддержки Al-Warda"
-                  : "Al-Warda Customer Support"}
+                {t("messenger.supportTitle")}
               </h3>
               <p className="warda-messenger-subtitle">
                 <span className="warda-messenger-online-text">
-                  {language === "ru" ? "Администратор на связи" : "Administrator online"}
+                  {t("messenger.adminOnline")}
                 </span>
               </p>
             </div>
@@ -424,15 +411,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   type="button"
                   className="warda-messenger-history-btn"
                   onClick={() => setShowTransferHistoryModal(true)}
-                  title={
-                    language === "ru"
-                      ? "История передачи обращения"
-                      : "Support transfer history"
-                  }
+                  title={t("messenger.transferHistoryTitle")}
                 >
                   <i className="ri-history-line" />
                   <span>
-                    {language === "ru" ? "Передачи" : "Transfers"} ({inquiry.interlocutors_info.transferHistory.length})
+                    {t("messenger.transfers")} ({inquiry.interlocutors_info.transferHistory.length})
                   </span>
                 </button>
               )}
@@ -455,21 +438,17 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 <i className="ri-mail-send-line" />
               </div>
               <h4>
-                {language === "ru"
-                  ? "Свяжитесь с администратором"
-                  : "Contact an Administrator"}
+                {t("messenger.contactAdmin")}
               </h4>
               <p>
-                {language === "ru"
-                  ? "Укажите ваш email, чтобы администратор мог ответить вам прямо на сайте или письмом на почту."
-                  : "Please provide your email so the administrator can answer you directly on the website or via email."}
+                {t("messenger.guestPrompt")}
               </p>
             </div>
 
             <form onSubmit={handleGuestSubmit}>
               <div className="warda-messenger-field">
                 <label>
-                  {language === "ru" ? "Ваш Email" : "Your Email"} *
+                  {t("messenger.yourEmail")} *
                 </label>
                 <input
                   type="email"
@@ -483,13 +462,11 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
 
               <div className="warda-messenger-field">
                 <label>
-                  {language === "ru"
-                    ? "Ваше имя (необязательно)"
-                    : "Your Name (optional)"}
+                  {t("messenger.yourNameOptional")}
                 </label>
                 <input
                   type="text"
-                  placeholder={language === "ru" ? "Иван" : "John"}
+                  placeholder={t("messenger.namePlaceholder")}
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
                 />
@@ -504,7 +481,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 className="warda-messenger-submit-btn"
               >
                 <i className="ri-chat-1-line" />
-                {language === "ru" ? "Начать чат" : "Start Chat"}
+                {t("messenger.startChat")}
               </button>
             </form>
           </div>
@@ -521,9 +498,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   type="button"
                   className="warda-messenger-change-email-btn"
                   onClick={() => setIsEditingGuest(true)}
-                  title={language === "ru" ? "Изменить email" : "Change email"}
+                  title={t("messenger.changeEmail")}
                 >
-                  {language === "ru" ? "Изменить" : "Change"}
+                  {t("messenger.change")}
                 </button>
               </div>
             )}
@@ -534,9 +511,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 <div className="warda-messenger-loading">
                   <i className="ri-loader-4-line ri-spin" />
                   <span>
-                    {language === "ru"
-                      ? "Загрузка сообщений..."
-                      : "Loading messages..."}
+                    {t("messenger.loadingMessages")}
                   </span>
                 </div>
               ) : messages.length === 0 ? (
@@ -545,9 +520,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                     <i className="ri-chat-smile-2-line" />
                   </div>
                   <p>
-                    {language === "ru"
-                      ? "Здравствуйте! Задайте любой вопрос по ароматам, доставке или заказам — администратор скоро ответит вам."
-                      : "Hello! Ask any question about fragrances, delivery or orders — an administrator will answer shortly."}
+                    {t("messenger.emptyPrompt")}
                   </p>
                 </div>
               ) : (
@@ -599,7 +572,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                       >
                         {!isUser && (
                           <div className="inquiry-msg-sender">
-                            {language === "ru" ? "Администратор" : "Administrator"}
+                            {t("messenger.administrator")}
                           </div>
                         )}
                         <div className="inquiry-msg-text">{msg.text}</div>
@@ -613,22 +586,14 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                               toggleMsgExpand(msgKey);
                             }}
                             title={
-                              language === "ru"
-                                ? isMsgExpanded
-                                  ? "Свернуть сообщение"
-                                  : "Раскрыть полностью"
-                                : isMsgExpanded
-                                  ? "Collapse message"
-                                  : "Show full message"
+                              isMsgExpanded
+                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
+                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
                             }
                             aria-label={
-                              language === "ru"
-                                ? isMsgExpanded
-                                  ? "Свернуть сообщение"
-                                  : "Раскрыть полностью"
-                                : isMsgExpanded
-                                  ? "Collapse message"
-                                  : "Show full message"
+                              isMsgExpanded
+                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
+                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
                             }
                           >
                             <i
@@ -648,11 +613,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                           {!isUser && msg.deliveredViaEmail && (
                             <span
                               className="inquiry-msg-email-badge"
-                              title={
-                                language === "ru"
-                                  ? "Отправлено также на вашу электронную почту"
-                                  : "Also delivered to your email"
-                              }
+                              title={t("messenger.emailBadgeTitle")}
                             >
                               <i className="ri-mail-check-line" />
                             </span>
@@ -697,9 +658,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                     >
                       <i className="ri-chat-smile-3-line" />
                       <span>
-                        {language === "ru"
-                          ? "Спросить Ясмин прямо сейчас"
-                          : "Ask Al-Warda right now"}
+                        {t("messenger.askWardaBtn")}
                       </span>
                     </button>
                   )}
@@ -727,11 +686,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 ref={inputRef}
                 rows={1}
                 className={`warda-messenger-input ${isInputExpanded ? "expanded" : ""}`}
-                placeholder={
-                  language === "ru"
-                    ? "Напишите сообщение..."
-                    : "Type a message..."
-                }
+                placeholder={t("messenger.typeMessage")}
                 value={inputText}
                 onChange={(e) => {
                   setInputText(e.target.value);
@@ -747,22 +702,14 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                     className={`warda-messenger-expand-btn ${isInputExpanded ? "active" : ""}`}
                     onClick={() => setIsInputExpanded((prev) => !prev)}
                     title={
-                      language === "ru"
-                        ? isInputExpanded
-                          ? "Свернуть поле ввода"
-                          : "Расширить поле ввода существенно"
-                        : isInputExpanded
-                          ? "Collapse input"
-                          : "Expand input"
+                      isInputExpanded
+                        ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
+                        : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
                     }
                     aria-label={
-                      language === "ru"
-                        ? isInputExpanded
-                          ? "Свернуть поле ввода"
-                          : "Расширить поле ввода существенно"
-                        : isInputExpanded
-                          ? "Collapse input"
-                          : "Expand input"
+                      isInputExpanded
+                        ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
+                        : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
                     }
                   >
                     <i
@@ -778,7 +725,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   type="submit"
                   className="warda-messenger-send-btn"
                   disabled={!inputText.trim() || sending}
-                  title={language === "ru" ? "Отправить (Enter)" : "Send (Enter)"}
+                  title={t("messenger.sendBtnTitle")}
                   aria-label="Send message"
                 >
                   {sending ? (
@@ -808,14 +755,10 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 </div>
                 <div className="warda-messenger-transfer-title-group">
                   <h4>
-                    {language === "ru"
-                      ? "История передачи обращения"
-                      : "Support Transfer History"}
+                    {t("messenger.transferHistoryTitle")}
                   </h4>
                   <p>
-                    {language === "ru"
-                      ? "Диалог со службой поддержки"
-                      : "Support dialogue"}
+                    {t("messenger.dialogTitle")}
                   </p>
                 </div>
                 <button
@@ -860,9 +803,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   </div>
                 ) : (
                   <p className="warda-messenger-transfer-empty">
-                    {language === "ru"
-                      ? "Диалог закреплен за администратором и не передавался."
-                      : "The inquiry is assigned to the administrator and has not been transferred."}
+                    {t("messenger.transferEmpty")}
                   </p>
                 )}
               </div>
@@ -873,7 +814,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   className="warda-messenger-transfer-close-btn"
                   onClick={() => setShowTransferHistoryModal(false)}
                 >
-                  {language === "ru" ? "Понятно" : "Got it"}
+                  {t("messenger.gotIt")}
                 </button>
               </div>
             </div>

@@ -134,7 +134,18 @@ export default function PhoneInput({
     onSelectSavedPhone?.(savedNumber);
   };
 
-  const displayName = language === "ru" ? selectedCountry.ruName : selectedCountry.name;
+  const getCountryName = (c) => {
+    try {
+      const dn = new Intl.DisplayNames([language], { type: "region" });
+      const name = dn.of(c.iso2.toUpperCase());
+      if (name) return name;
+    } catch {
+      // fallback
+    }
+    return language === "ru" ? c.ruName : c.name;
+  };
+
+  const displayName = getCountryName(selectedCountry);
   const hasSavedPhones = savedPhones && savedPhones.length > 0;
 
   return (
@@ -176,11 +187,7 @@ export default function PhoneInput({
                 ref={searchInputRef}
                 type="text"
                 className="checkout__country-search-input"
-                placeholder={
-                  language === "ru"
-                    ? "Поиск страны или кода..."
-                    : "Search country or code..."
-                }
+                placeholder={t("phone.searchPlaceholder") || "Search country..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -198,7 +205,7 @@ export default function PhoneInput({
             <ul className="checkout__country-list" role="listbox">
               {filteredCountries.map((c) => {
                 const isSelected = c.iso2 === selectedCountry.iso2;
-                const cName = language === "ru" ? c.ruName : c.name;
+                const cName = getCountryName(c);
                 return (
                   <li
                     key={c.iso2}
@@ -226,9 +233,7 @@ export default function PhoneInput({
               })}
               {filteredCountries.length === 0 && (
                 <li className="checkout__country-no-results">
-                  {language === "ru"
-                    ? "Ничего не найдено"
-                    : "No results found"}
+                  {t("phone.noCountries") || "No countries found"}
                 </li>
               )}
             </ul>
@@ -261,6 +266,14 @@ export default function PhoneInput({
             title={
               language === "ru"
                 ? "Выбрать из сохранённых номеров"
+                : language === "hu"
+                ? "Választás a mentett számok közül"
+                : language === "bg"
+                ? "Избор от запазените номера"
+                : language === "el"
+                ? "Επιλογή από αποθηκευμένους αριθμούς"
+                : language === "ro"
+                ? "Selectați din numerele salvate"
                 : "Select from saved phones"
             }
           >
@@ -275,6 +288,14 @@ export default function PhoneInput({
                 <span>
                   {language === "ru"
                     ? "Сохранённые номера"
+                    : language === "hu"
+                    ? "Mentett telefonszámok"
+                    : language === "bg"
+                    ? "Запазени телефонни номера"
+                    : language === "el"
+                    ? "Αποθηκευμένοι αριθμοί τηλεφώνου"
+                    : language === "ro"
+                    ? "Numere de telefon salvate"
                     : "Saved phone numbers"}
                 </span>
               </div>
@@ -307,19 +328,15 @@ export default function PhoneInput({
                       </span>
                       {index === 0 && (
                         <span className="checkout__saved-phone-badge">
-                          {language === "ru" ? "Основной" : "Primary"}
+                          {t("phone.primary")}
                         </span>
                       )}
                       {onDeleteSavedPhone && (
                         <button
                           type="button"
                           className="checkout__saved-phone-del-btn"
-                          title={
-                            language === "ru" ? "Удалить номер" : "Delete phone"
-                          }
-                          aria-label={
-                            language === "ru" ? "Удалить номер" : "Delete phone"
-                          }
+                          title={t("phone.delete")}
+                          aria-label={t("phone.delete")}
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteSavedPhone(savedNumber);

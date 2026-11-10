@@ -11,6 +11,7 @@ import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
+import { getLocalizedCategory, formatVolume } from "../../utils/localization";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import LargeAnnouncementRoulette from "../announcements/LargeAnnouncementRoulette";
 import { fetchActiveAnnouncements } from "../../../utils/announcements";
@@ -20,7 +21,7 @@ import "../common/ProductCardImages.css";
 
 export default function Home() {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { isInCart, toggleCart } = useCartState();
   const [bestSellers, setBestSellers] = useState(INITIAL_BEST_SELLERS);
@@ -168,13 +169,11 @@ export default function Home() {
             Timeless Arabian<br />Fragrances
           </h1>
           <p className="warda-hero__subtitle">
-            {language === "ru"
-              ? "Откройте для себя ваш неповторимый восточный аромат"
-              : "Discover your signature scent"}
+            {t("home.heroSubtitle")}
           </p>
           <div className="warda-hero__action">
             <Link to="/featured" className="warda-btn warda-btn--hero">
-              <span>{language === "ru" ? "ИССЛЕДОВАТЬ КОЛЛЕКЦИЮ" : "EXPLORE COLLECTION"}</span>
+              <span>{t("home.explore")}</span>
               <span className="warda-btn__arrow">→</span>
             </Link>
           </div>
@@ -213,7 +212,7 @@ export default function Home() {
       {/* 2. SECTION DIVIDER: SHOP BY CATEGORY */}
       <div className="container">
         <SectionDivider
-          title={language === "ru" ? "КАТЕГОРИИ АРОМАТОВ" : "SHOP BY CATEGORY"}
+          title={t("home.shopByCategory")}
           showMotif={true}
         />
       </div>
@@ -234,7 +233,7 @@ export default function Home() {
 
           <div className="warda-categories-carousel" ref={carouselRef}>
             {categories.map((cat) => {
-              const catName = language === "ru" ? (cat.nameRu || cat.name) : (cat.nameEn || cat.name);
+              const catName = getLocalizedCategory(cat, language);
               return (
                 <article
                   key={cat.id}
@@ -280,7 +279,7 @@ export default function Home() {
       {/* 4. SECTION DIVIDER: BEST SELLERS */}
       <div className="container">
         <SectionDivider
-          title={language === "ru" ? "БЕСТСЕЛЛЕРЫ" : "BEST SELLERS"}
+          title={t("home.bestSellers")}
           showMotif={true}
         />
       </div>
@@ -294,8 +293,8 @@ export default function Home() {
             const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
             const displayPrice = defaultOpt.price;
             const displayVolume = defaultOpt.isSecondLargest
-              ? (language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn)
-              : (perfume.volume ? perfume.volume.split("/")[0].trim() : "");
+              ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
+              : formatVolume(perfume.volume ? perfume.volume.split("/")[0].trim() : "", language);
             return (
               <OrnateCard
                 key={perfume.id}
@@ -341,18 +340,18 @@ export default function Home() {
                         type="button"
                         className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                         onClick={(e) => handleAddToCart(perfume, e)}
-                        aria-label={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
-                        title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from bag") : undefined}
+                        aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                        title={inCart ? t("featured.remove") : undefined}
                       >
                         {inCart ? (
                           <>
-                            <span className="warda-btn__text-normal">{language === "ru" ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
-                            <span className="warda-btn__text-hover">{language === "ru" ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                            <span className="warda-btn__text-normal">{t("featured.inBag")}</span>
+                            <span className="warda-btn__text-hover">{t("featured.remove")}</span>
                           </>
                         ) : isAdded ? (
-                          language === "ru" ? "ДОБАВЛЕНО ✓" : "ADDED ✓"
+                          t("featured.added")
                         ) : (
-                          language === "ru" ? "В КОРЗИНУ" : "ADD TO CART"
+                          t("featured.addToCart")
                         )}
                       </button>
                     );

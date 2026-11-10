@@ -15,6 +15,15 @@ import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
+import {
+  getLocalizedCategory,
+  getLocalizedGender,
+  getLocalizedLongevity,
+  getLocalizedNote,
+  getLocalizedFormat,
+  getLocalizedVolumeOption,
+  formatVolume,
+} from "../../utils/localization";
 import { OrnateCard } from "../common/OrnateCard";
 import "./Featured.css";
 import "../common/ProductCardImages.css";
@@ -283,7 +292,7 @@ function getPerfumeMl(p) {
 const PAGE_SIZE = 24;
 
 export default function Featured() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -781,12 +790,10 @@ export default function Featured() {
     <div className="container warda-shop-page">
       <div className="warda-shop-header">
         <h1 className="warda-shop-title">
-          {language === "ru" ? "Коллекция Арабских Духов" : "Arabian Perfumes Collection"}
+          {t("featured.heading")}
         </h1>
         <p className="warda-shop-subtitle">
-          {language === "ru"
-            ? "Аутентичные масляные и восточные ароматы с Ближнего Востока. Прямые поставки от сертифицированных парфюмерных домов."
-            : "Authentic luxury Eau de Parfum and precious attars from the Middle East. Direct supply from certified perfume houses."}
+          {t("featured.subheading")}
         </p>
 
         {/* MULTI-FILTER TOOLBAR */}
@@ -799,7 +806,7 @@ export default function Featured() {
                 onClick={() => setIsFilterPanelOpen((prev) => !prev)}
                 aria-expanded={isFilterPanelOpen}
               >
-                <span>⚙ {language === "ru" ? "Фильтры ароматов" : "Fragrance Filters"}</span>
+                <span>⚙ {t("featured.filters")}</span>
                 {totalActiveFilters > 0 && (
                   <span className="warda-filter-count-badge">{totalActiveFilters}</span>
                 )}
@@ -810,9 +817,9 @@ export default function Featured() {
                 type="button"
                 className={`warda-sets-quick-toggle ${selectedFormat === "sets" ? "active" : ""}`}
                 onClick={toggleOnlySets}
-                title={language === "ru" ? "Показать только парфюмерные сеты и подарочные наборы" : "Show sets and gift sets only"}
+                title={t("featured.onlySetsTitle")}
               >
-                <span>🎁 {language === "ru" ? "Только сеты" : "Only Sets"}</span>
+                <span>🎁 {t("featured.onlySets")}</span>
                 {setsCount > 0 && (
                   <span className="warda-sets-count-badge">{setsCount}</span>
                 )}
@@ -823,9 +830,9 @@ export default function Featured() {
                   type="button"
                   className="warda-reset-filters-btn"
                   onClick={resetAllFilters}
-                  title={language === "ru" ? "Снять абсолютно все фильтры" : "Clear all filters"}
+                  title={t("featured.clearFilters")}
                 >
-                  ✕ {language === "ru" ? "Снять все фильтры" : "Clear all filters"}
+                  ✕ {t("featured.clearFilters")}
                   <span className="warda-filter-count-badge" style={{ marginLeft: "4px" }}>
                     {totalActiveFilters}
                   </span>
@@ -842,18 +849,16 @@ export default function Featured() {
                     setVisibleLimit(PAGE_SIZE);
                     setSortBy(e.target.value);
                   }}
-                  aria-label={language === "ru" ? "Сортировка" : "Sort by"}
+                  aria-label={t("featured.sort")}
                 >
-                  <option value="popular">{language === "ru" ? "По популярности" : "Most Popular"}</option>
-                  <option value="price-asc">{language === "ru" ? "Сначала дешевле" : "Price: Low to High"}</option>
-                  <option value="price-desc">{language === "ru" ? "Сначала дороже" : "Price: High to Low"}</option>
+                  <option value="popular">{t("featured.sortPopular")}</option>
+                  <option value="price-asc">{t("featured.sortPriceAsc")}</option>
+                  <option value="price-desc">{t("featured.sortPriceDesc")}</option>
                 </select>
               </div>
 
               <div className="warda-filter-summary-text">
-                {language === "ru"
-                  ? `Найдено: ${filteredPerfumes.length} ароматов`
-                  : `Found: ${filteredPerfumes.length} fragrances`}
+                {`${t("featured.showing")}: ${filteredPerfumes.length} ${t("featured.fragrancesCount")}`}
               </div>
             </div>
           </div>
@@ -864,15 +869,14 @@ export default function Featured() {
               {selectedFormat !== "all" && (
                 <span className="warda-chip">
                   {selectedFormat === "sets"
-                    ? (language === "ru" ? "🎁 Только сеты" : "🎁 Only Sets")
-                    : (language === "ru" ? "🧴 Только флаконы" : "🧴 Bottles Only")}
+                    ? `🎁 ${t("featured.activePillSets")}`
+                    : `🧴 ${t("featured.activePillBottles")}`}
                   <button type="button" className="warda-chip-remove" onClick={() => setSelectedFormat("all")}>×</button>
                 </span>
               )}
 
               {selectedLongevities.map((l) => {
-                const opt = LONGEVITY_OPTIONS.find((o) => o.id === l);
-                const name = opt ? (language === "ru" ? opt.nameRu : opt.nameEn) : l;
+                const name = getLocalizedLongevity(l, language);
                 return (
                   <span key={`chip-long-${l}`} className="warda-chip">
                     ⏳ {name}
@@ -882,8 +886,7 @@ export default function Featured() {
               })}
 
               {selectedVolumes.map((v) => {
-                const opt = VOLUME_OPTIONS.find((o) => o.id === v);
-                const name = opt ? (language === "ru" ? opt.nameRu : opt.nameEn) : v;
+                const name = getLocalizedVolumeOption(v, language);
                 return (
                   <span key={`chip-vol-${v}`} className="warda-chip">
                     🧴 {name}
@@ -893,8 +896,7 @@ export default function Featured() {
               })}
 
               {selectedCategories.map((c) => {
-                const catObj = categories.find((cat) => cat.id === c || cat.slug === c);
-                const name = catObj ? (language === "ru" ? (catObj.nameRu || catObj.name) : (catObj.nameEn || catObj.name)) : c;
+                const name = getLocalizedCategory(c, language);
                 return (
                   <span key={`chip-cat-${c}`} className="warda-chip">
                     {name}
@@ -911,8 +913,7 @@ export default function Featured() {
               ))}
 
               {selectedGenders.map((g) => {
-                const gObj = GENDER_OPTIONS.find((opt) => opt.id === g);
-                const gName = gObj ? (language === "ru" ? gObj.nameRu : gObj.nameEn) : g;
+                const gName = getLocalizedGender(g, language);
                 return (
                   <span key={`chip-g-${g}`} className="warda-chip">
                     {gName}
@@ -922,8 +923,7 @@ export default function Featured() {
               })}
 
               {selectedNotes.map((n) => {
-                const nObj = POPULAR_NOTES.find((opt) => opt.id === n);
-                const nName = nObj ? (language === "ru" ? nObj.nameRu : nObj.nameEn) : n;
+                const nName = getLocalizedNote(n, language);
                 return (
                   <span key={`chip-n-${n}`} className="warda-chip">
                     {nName}
@@ -941,7 +941,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    🎁 {language === "ru" ? "Формат выпуска (наборы и сеты):" : "Release Format (Sets & Gifts):"}
+                    🎁 {t("featured.format")}
                   </div>
                   {selectedFormat !== "all" && (
                     <button
@@ -951,9 +951,9 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedFormat("all");
                       }}
-                      title={language === "ru" ? "Отменить выбор формата" : "Reset format"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -968,7 +968,7 @@ export default function Featured() {
                         onClick={() => toggleFormat(fmt.id)}
                       >
                         {isActive && "✓ "}
-                        {language === "ru" ? fmt.nameRu : fmt.nameEn}
+                        {getLocalizedFormat(fmt.id, language)}
                         {fmt.id === "sets" && setsCount > 0 && ` (${setsCount})`}
                       </button>
                     );
@@ -980,7 +980,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    ⏳ {language === "ru" ? "Стойкость аромата:" : "Fragrance Longevity:"}
+                    ⏳ {t("featured.longevity")}
                   </div>
                   {selectedLongevities.length > 0 && (
                     <button
@@ -990,9 +990,9 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedLongevities([]);
                       }}
-                      title={language === "ru" ? "Отменить выбор стойкости" : "Reset longevity"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -1007,7 +1007,7 @@ export default function Featured() {
                         onClick={() => toggleLongevity(opt.id)}
                       >
                         {isActive && "✓ "}
-                        {language === "ru" ? opt.nameRu : opt.nameEn}
+                        {getLocalizedLongevity(opt.id, language)}
                       </button>
                     );
                   })}
@@ -1018,7 +1018,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    🧴 {language === "ru" ? "Объем флакона:" : "Bottle Volume:"}
+                    🧴 {t("featured.volume")}
                   </div>
                   {selectedVolumes.length > 0 && (
                     <button
@@ -1028,9 +1028,9 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedVolumes([]);
                       }}
-                      title={language === "ru" ? "Отменить выбор объема" : "Reset volume"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -1045,7 +1045,7 @@ export default function Featured() {
                         onClick={() => toggleVolume(opt.id)}
                       >
                         {isActive && "✓ "}
-                        {language === "ru" ? opt.nameRu : opt.nameEn}
+                        {getLocalizedVolumeOption(opt.id, language)}
                       </button>
                     );
                   })}
@@ -1056,7 +1056,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    🏷️ {language === "ru" ? "Категория:" : "Category:"}
+                    🏷️ {t("featured.category")}
                   </div>
                   {selectedCategories.length > 0 && (
                     <button
@@ -1066,16 +1066,16 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedCategories([]);
                       }}
-                      title={language === "ru" ? "Отменить выбор категории" : "Reset category"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
                 <div className="warda-pills-wrap">
                   {categories.map((cat) => {
                     const isActive = selectedCategories.includes(cat.id.toLowerCase()) || selectedCategories.includes((cat.slug || "").toLowerCase());
-                    const catName = language === "ru" ? (cat.nameRu || cat.name) : (cat.nameEn || cat.name);
+                    const catName = getLocalizedCategory(cat, language);
                     return (
                       <button
                         key={cat.id}
@@ -1095,7 +1095,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    👥 {language === "ru" ? "Пол:" : "Gender:"}
+                    👥 {t("featured.gender")}
                   </div>
                   {selectedGenders.length > 0 && (
                     <button
@@ -1105,9 +1105,9 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedGenders([]);
                       }}
-                      title={language === "ru" ? "Отменить выбор пола" : "Reset gender"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -1122,7 +1122,7 @@ export default function Featured() {
                         onClick={() => toggleGender(g.id)}
                       >
                         {isActive && "✓ "}
-                        {language === "ru" ? g.nameRu : g.nameEn}
+                        {getLocalizedGender(g.id, language)}
                       </button>
                     );
                   })}
@@ -1133,7 +1133,7 @@ export default function Featured() {
               <div>
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    💎 {language === "ru" ? "Бренд:" : "Brand:"}
+                    💎 {t("featured.brand")}
                   </div>
                   {selectedBrands.length > 0 && (
                     <button
@@ -1143,9 +1143,9 @@ export default function Featured() {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedBrands([]);
                       }}
-                      title={language === "ru" ? "Отменить выбор брендов" : "Reset brands"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -1171,7 +1171,7 @@ export default function Featured() {
               <div className="warda-filter-notes-section">
                 <div className="warda-filter-section-header">
                   <div className="warda-filter-section-title">
-                    🌿 {language === "ru" ? "Ноты композиции:" : "Olfactory Notes:"}
+                    🌿 {t("featured.notes")}
                   </div>
                   {selectedNotes.length > 0 && (
                     <button
@@ -1182,9 +1182,9 @@ export default function Featured() {
                         setSelectedNotes([]);
                         setNotesCombination(false);
                       }}
-                      title={language === "ru" ? "Отменить выбор нот" : "Reset notes"}
+                      title={t("featured.clear")}
                     >
-                      ✕ {language === "ru" ? "Снять выбор" : "Clear"}
+                      ✕ {t("featured.clear")}
                     </button>
                   )}
                 </div>
@@ -1202,7 +1202,7 @@ export default function Featured() {
                     />
                     <span className="warda-combination-custom-check" aria-hidden="true" />
                     <span className="warda-combination-label-text">
-                      {language === "ru" ? "Комбинация" : "Combination"}
+                      {t("featured.combination")}
                     </span>
                   </label>
                 </div>
@@ -1217,7 +1217,7 @@ export default function Featured() {
                         onClick={() => toggleNote(note.id)}
                       >
                         {isActive && "✓ "}
-                        {language === "ru" ? note.nameRu : note.nameEn}
+                        {getLocalizedNote(note.id, language)}
                       </button>
                     );
                   })}
@@ -1231,9 +1231,9 @@ export default function Featured() {
                   className="warda-clear-all-expanded-btn"
                   onClick={resetAllFilters}
                   disabled={totalActiveFilters === 0}
-                  title={language === "ru" ? "Снять абсолютно все активные фильтры" : "Clear all active filters"}
+                  title={t("featured.clearFilters")}
                 >
-                  ✕ {language === "ru" ? "Снять все фильтры" : "Clear all filters"}
+                  ✕ {t("featured.clearFilters")}
                   {totalActiveFilters > 0 && ` (${totalActiveFilters})`}
                 </button>
               </div>
@@ -1245,24 +1245,22 @@ export default function Featured() {
       {loading ? (
         <div className="warda-shop-loader">
           <div className="app-route-loader__spinner" />
-          <p>{language === "ru" ? "Загрузка коллекции..." : "Loading collection..."}</p>
+          <p>{t("featured.loading")}</p>
         </div>
       ) : filteredPerfumes.length === 0 ? (
         <div className="warda-shop-empty">
-          <p>{language === "ru" ? "По выбранным фильтрам духи не найдены" : "No fragrances found matching selected filters"}</p>
+          <p>{t("featured.noMatch")}</p>
           <button type="button" className="warda-load-more-btn" onClick={resetAllFilters} style={{ marginTop: "1.5rem" }}>
-            {language === "ru" ? "Сбросить фильтры" : "Reset filters"}
+            {t("featured.resetFilters")}
           </button>
         </div>
       ) : (
         <>
-                    {/* CATALOG COUNT (LINE & PERCENT REMOVED) */}
+          {/* CATALOG COUNT (LINE & PERCENT REMOVED) */}
           <div className="warda-catalog-progress-bar">
             <div className="warda-progress-meta">
               <span className="warda-catalog-count-text">
-                {language === "ru"
-                  ? `Показано ${visiblePerfumes.length} из ${filteredPerfumes.length} ароматов`
-                  : `Displaying ${visiblePerfumes.length} of ${filteredPerfumes.length} fragrances`}
+                {`${t("featured.showing")} ${visiblePerfumes.length} / ${filteredPerfumes.length} ${t("featured.fragrancesCount")}`}
               </span>
             </div>
           </div>
@@ -1278,8 +1276,8 @@ export default function Featured() {
                 : getPerfumeUrl(perfume);
               const displayPrice = defaultOpt.price;
               const displayVolume = defaultOpt.isSecondLargest
-                ? (language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn)
-                : (perfume.volume ? (language === "ru" ? perfume.volume.split("/")[0].trim().replace(/ml/gi, "мл") : perfume.volume.split("/")[0].trim().replace(/мл/gi, "ml")) : "");
+                ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
+                : formatVolume(perfume.volume ? perfume.volume.split("/")[0].trim() : "", language);
               return (
                 <OrnateCard
                   key={perfume.id}
@@ -1302,7 +1300,7 @@ export default function Featured() {
                   <div className="warda-perfume-card__media">
                     {isPerfumeSet(perfume) && (
                       <span className="warda-perfume-card__set-tag">
-                        🎁 {language === "ru" ? "СЕТ / НАБОР" : "GIFT SET"}
+                        🎁 {t("featured.giftSet")}
                       </span>
                     )}
                     <span className="warda-perfume-card__aura" />
@@ -1345,18 +1343,18 @@ export default function Featured() {
                           type="button"
                           className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                           onClick={(e) => handleAddToCart(perfume, e)}
-                          aria-label={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
-                          title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from cart") : undefined}
+                          aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                          title={inCart ? t("featured.remove") : undefined}
                         >
                           {inCart ? (
                             <>
-                              <span className="warda-btn__text-normal">{language === "ru" ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
-                              <span className="warda-btn__text-hover">{language === "ru" ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                              <span className="warda-btn__text-normal">{t("featured.inBag")}</span>
+                              <span className="warda-btn__text-hover">{t("featured.remove")}</span>
                             </>
                           ) : isAdded ? (
-                            language === "ru" ? "ДОБАВЛЕНО ✓" : "ADDED ✓"
+                            t("featured.added")
                           ) : (
-                            language === "ru" ? "В КОРЗИНУ" : "ADD TO CART"
+                            t("featured.addToCart")
                           )}
                         </button>
                       );
@@ -1378,20 +1376,13 @@ export default function Featured() {
                   disabled={isLoadingMore}
                 >
                   {isLoadingMore
-                    ? (language === "ru" ? "Загружаем следующие ароматы..." : "Loading fragrances...")
-                    : (language === "ru"
-                        ? `✦ Показать следующие ${Math.min(PAGE_SIZE, remainingCount)} из ${remainingCount} ✦`
-                        : `✦ Load next ${Math.min(PAGE_SIZE, remainingCount)} of ${remainingCount} ✦`)}
+                    ? t("featured.loadingNext")
+                    : `✦ ${t("featured.loadMore")} (${Math.min(PAGE_SIZE, remainingCount)} / ${remainingCount}) ✦`}
                 </button>
-                <p style={{ color: "#a89882", fontSize: "0.85rem" }}>
-                  {language === "ru"
-                    ? `Прокрутите страницу вниз или нажмите кнопку, чтобы открыть еще ${remainingCount} ароматов коллекции`
-                    : `Scroll down or tap to reveal ${remainingCount} more exquisite fragrances`}
-                </p>
               </>
             ) : (
               <div className="warda-catalog-ended">
-                ✦ {language === "ru" ? `Вы просмотрели всю коллекцию из ${filteredPerfumes.length} ароматов` : `You have viewed all ${filteredPerfumes.length} collection fragrances`} ✦
+                ✦ {t("featured.allViewed")} {filteredPerfumes.length} {t("featured.fragrancesCount")} ✦
               </div>
             )}
           </div>

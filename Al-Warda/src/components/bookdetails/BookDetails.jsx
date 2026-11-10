@@ -20,17 +20,47 @@ import { useAuth } from "../../context/AuthContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
+import {
+  getLocalizedCategory,
+  getLocalizedGender,
+  getLocalizedLongevity,
+  getLocalizedNote,
+  getLocalizedSampleDesc,
+  formatVolume,
+} from "../../utils/localization";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
+
+function formatFallbackDescription(name, brand, top, heart, base, lang = "ru") {
+  const topStr = top.join(", ");
+  const heartStr = heart.join(", ");
+  const baseStr = base.join(", ");
+  const l = String(lang || "ru").toLowerCase();
+  if (l === "ru") {
+    return `${name} от легендарного дома ${brand} — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами ${topStr}, переходя в сердце из ${heartStr}, и оставляет благородный стойкий шлейф: ${baseStr}.`;
+  }
+  if (l === "hu") {
+    return `A(z) ${brand} ház ${name} alkotása az autentikus arab parfümkészítés mesterműve. Fejjegyeiben ${topStr} bontakozik ki, szívében ${heartStr} virágzik, alapjában pedig fenséges ${baseStr} illatjegyek ölelik körül.`;
+  }
+  if (l === "bg") {
+    return `${name} от легендарната къща ${brand} е изискано въплъщение на арабската парфюмерийна традиция. Ароматът се разкрива с нотки на ${topStr}, преминава в сърцевина от ${heartStr} и оставя благороден дълготраен шлейф от ${baseStr}.`;
+  }
+  if (l === "el") {
+    return `Το ${name} από τον θρυλικό οίκο ${brand} αποτελεί αυθεντικό αριστούργημα της ανατολίτικης αρωματοποιίας. Ανοίγει με νότες από ${topStr}, αποκαλύπτει καρδιά από ${heartStr} και καταλήγει σε πολυτελή βάση από ${baseStr}.`;
+  }
+  if (l === "ro") {
+    return `${name} creat de celebra casă ${brand} este o întruchipare rafinată a tradiției parfumeriei arabe. Debutează cu note de ${topStr}, trece într-o inimă de ${heartStr} și lasă un siaj nobil și persistent de ${baseStr}.`;
+  }
+  return `${name} by ${brand} is an authentic luxury Arabian fragrance. Opening with notes of ${topStr}, unfolding into an alluring heart of ${heartStr}, enveloped in an opulent base of ${baseStr}.`;
+}
 
 export default function BookDetails() {
   const { bookId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
   const { user, isPrivileged: isPrivContext } = useAuth();
   const isPriv = Boolean(isPrivContext || checkIsPrivileged(user));
@@ -123,12 +153,12 @@ export default function BookDetails() {
     ? getSamplePrice(perfume?.price, activeSampleConfig.key)
     : Number(perfume?.price || 0);
   const displayVolume = activeSampleConfig
-    ? `${isRu ? activeSampleConfig.labelRu : activeSampleConfig.labelEn} (${isRu ? activeSampleConfig.descRu : activeSampleConfig.descEn})`
-    : (isRu ? (enrichedPerfume?.volume || "100 мл").replace(/ml/gi, "мл") : (enrichedPerfume?.volume || "100 ml").replace(/мл/gi, "ml"));
+    ? `${formatVolume(activeSampleConfig.ml, language)} (${getLocalizedSampleDesc(activeSampleConfig.key, language)})`
+    : formatVolume(enrichedPerfume?.volume || "100 ml", language);
   const rawBottleVol = isSet
-    ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || (isRu ? "Набор" : "Set"))
-    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || (isRu ? "100 мл" : "100 ml"));
-  const fullBottleVol = isRu ? rawBottleVol.replace(/ml/gi, "мл") : rawBottleVol.replace(/мл/gi, "ml");
+    ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || t("details.discoverySet"))
+    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "100 ml");
+  const fullBottleVol = isSet ? rawBottleVol : formatVolume(rawBottleVol, language);
 
   const handleSelectVolume = (vol) => {
     setSelectedVolume(vol);
@@ -165,7 +195,7 @@ export default function BookDetails() {
     return (
       <div className="warda-details-page warda-details-loading" role="status" aria-live="polite">
         <div className="container">
-          <span className="warda-details-sr-only">{language === "ru" ? "Загрузка парфюма" : "Loading fragrance"}</span>
+          <span className="warda-details-sr-only">{t("details.loading", "Loading fragrance")}</span>
           <div className="warda-details-skeleton-nav" />
           <div className="warda-details-grid" aria-hidden="true">
             <div className="warda-details-skeleton-image" />
@@ -181,9 +211,9 @@ export default function BookDetails() {
   if (!perfume) {
     return (
       <div className="container warda-details-empty">
-        <h2>{language === "ru" ? "Парфюм не найден" : "Fragrance not found"}</h2>
+        <h2>{t("details.fragranceNotFound")}</h2>
         <Link to="/featured" className="warda-btn">
-          {language === "ru" ? "В каталог" : "To Collection"}
+          {t("details.toCollection")}
         </Link>
       </div>
     );
@@ -191,26 +221,43 @@ export default function BookDetails() {
 
   const notesFallback = enrichedPerfume ? getHarmoniousNotes(enrichedPerfume) : null;
 
-  const topNotes = (isRu
-    ? (enrichedPerfume?.topNotesRu?.length ? enrichedPerfume.topNotesRu : enrichedPerfume?.topNotes)
-    : (enrichedPerfume?.topNotesEn?.length ? enrichedPerfume.topNotesEn : enrichedPerfume?.topNotes)) || (isRu ? notesFallback?.ru?.top : notesFallback?.en?.top) || [];
+  const resolveNotes = (notesRu, notesEn, fallbackNotes) => {
+    const raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || fallbackNotes || [];
+    return raw.map((n) => getLocalizedNote(n, language));
+  };
 
-  const heartNotes = (isRu
-    ? (enrichedPerfume?.heartNotesRu?.length ? enrichedPerfume.heartNotesRu : enrichedPerfume?.heartNotes)
-    : (enrichedPerfume?.heartNotesEn?.length ? enrichedPerfume.heartNotesEn : enrichedPerfume?.heartNotes)) || (isRu ? notesFallback?.ru?.heart : notesFallback?.en?.heart) || [];
+  const topNotes = resolveNotes(
+    enrichedPerfume?.topNotesRu,
+    enrichedPerfume?.topNotesEn,
+    notesFallback?.[language === "ru" ? "ru" : "en"]?.top
+  );
+  const heartNotes = resolveNotes(
+    enrichedPerfume?.heartNotesRu,
+    enrichedPerfume?.heartNotesEn,
+    notesFallback?.[language === "ru" ? "ru" : "en"]?.heart
+  );
+  const baseNotes = resolveNotes(
+    enrichedPerfume?.baseNotesRu,
+    enrichedPerfume?.baseNotesEn,
+    notesFallback?.[language === "ru" ? "ru" : "en"]?.base
+  );
 
-  const baseNotes = (isRu
-    ? (enrichedPerfume?.baseNotesRu?.length ? enrichedPerfume.baseNotesRu : enrichedPerfume?.baseNotes)
-    : (enrichedPerfume?.baseNotesEn?.length ? enrichedPerfume.baseNotesEn : enrichedPerfume?.baseNotes)) || (isRu ? notesFallback?.ru?.base : notesFallback?.en?.base) || [];
-
-  let displayDesc = isRu
-    ? (enrichedPerfume?.descriptionRu || enrichedPerfume?.description)
-    : (enrichedPerfume?.descriptionEn || enrichedPerfume?.description);
+  let displayDesc =
+    enrichedPerfume?.[`description_${language}`] ||
+    enrichedPerfume?.[`description${language.charAt(0).toUpperCase() + language.slice(1)}`] ||
+    (language === "ru"
+      ? (enrichedPerfume?.descriptionRu || enrichedPerfume?.description)
+      : (enrichedPerfume?.descriptionEn || enrichedPerfume?.description));
 
   if (!displayDesc || displayDesc.includes("Сертифицированная оригинальная") || displayDesc.length < 25) {
-    displayDesc = isRu
-      ? (enrichedPerfume?.name + " от легендарного дома " + enrichedPerfume?.brand + " — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами " + topNotes.join(", ") + ", переходя в сердце из " + heartNotes.join(", ") + ", и оставляет благородный стойкий шлейф: " + baseNotes.join(", ") + ".")
-      : (enrichedPerfume?.name + " by " + enrichedPerfume?.brand + " is an authentic luxury Arabian fragrance. Opening with notes of " + topNotes.join(", ") + ", unfolding into an alluring heart of " + heartNotes.join(", ") + ", enveloped in an opulent base of " + baseNotes.join(", ") + ".");
+    displayDesc = formatFallbackDescription(
+      enrichedPerfume?.name,
+      enrichedPerfume?.brand,
+      topNotes,
+      heartNotes,
+      baseNotes,
+      language
+    );
   }
 
   return (
@@ -230,13 +277,13 @@ export default function BookDetails() {
             aria-label="Back"
           >
             <span className="warda-back-arrow">←</span>
-            <span>{language === "ru" ? "Назад в каталог" : "Back to catalog"}</span>
+            <span>{t("details.backToCatalog")}</span>
           </button>
 
           <div className="warda-details-breadcrumb">
-            <Link to="/">{language === "ru" ? "Главная" : "Home"}</Link>
+            <Link to="/">{t("nav.home")}</Link>
             <span className="warda-breadcrumb-sep">/</span>
-            <Link to="/featured">{language === "ru" ? "Коллекция" : "Collection"}</Link>
+            <Link to="/featured">{t("nav.catalog")}</Link>
             <span className="warda-breadcrumb-sep">/</span>
             <span className="warda-breadcrumb-current">{perfume.name}</span>
           </div>
@@ -247,7 +294,7 @@ export default function BookDetails() {
               target="_blank"
               rel="noopener noreferrer"
               className="warda-privileged-top-badge"
-              title={isRu ? "Открыть страницу товара в Qogita (новое окно)" : "Open product page on Qogita (new tab)"}
+              title={t("details.qogitaView")}
             >
               <i className="ri-shield-star-line" />
               <span>Qogita ↗</span>
@@ -276,7 +323,7 @@ export default function BookDetails() {
                   }
                 }}
                 aria-label="Inspect perfume flacon details"
-                title={language === "ru" ? "Нажмите для полноэкранного осмотра флакона" : "Click to view full size bottle"}
+                title={t("details.clickToView")}
               >
                 <div className="warda-details-aura" />
                 <div className="warda-details-photo">
@@ -301,11 +348,11 @@ export default function BookDetails() {
             <div className="warda-details-tag">
               <span className="warda-tag-category">
                 {isSet
-                  ? (isRu ? "Подарочный сет • Discovery Set" : "Discovery Gift Set")
-                  : (language === "ru" ? (perfume.categoryRu || perfume.categoryName || perfume.category?.toUpperCase()) : (perfume.categoryEn || perfume.category?.toUpperCase()))}
+                  ? t("details.discoverySet")
+                  : getLocalizedCategory(perfume.category, language)}
               </span>
               <span className="warda-tag-badge">
-                {isSet ? (isRu ? "Коллекция миниатюр" : "Miniature Set") : perfume.concentration}
+                {isSet ? t("details.miniatureSet") : perfume.concentration}
               </span>
             </div>
 
@@ -315,7 +362,7 @@ export default function BookDetails() {
             <div className="warda-details-rating">
               <div className="warda-stars">★★★★★</div>
               <span className="warda-rating-num">{perfume.rating} / 5.0</span>
-              <span className="warda-reviews-count">({perfume.reviewsCount} {language === "ru" ? "отзывов" : "reviews"})</span>
+              <span className="warda-reviews-count">({perfume.reviewsCount} {t("details.reviews")})</span>
             </div>
 
             {/* PRIVILEGED ACCESS: DIRECT QOGITA WHOLESALE PRODUCT LINK */}
@@ -328,7 +375,7 @@ export default function BookDetails() {
                   <div className="warda-privileged-text-group">
                     <div className="warda-privileged-title-row">
                       <span className="warda-privileged-badge">
-                        {isRu ? "Привилегированный доступ" : "Privileged Access"}
+                        {t("details.privilegedAccess")}
                       </span>
                       {perfumeGtin && (
                         <span className="warda-privileged-gtin-tag">
@@ -337,9 +384,7 @@ export default function BookDetails() {
                       )}
                     </div>
                     <span className="warda-privileged-desc">
-                      {isRu
-                        ? "Прямой переход на страницу этого товара в оптовом каталоге Qogita"
-                        : "Direct link to this product in the Qogita wholesale catalog"}
+                      {t("details.qogitaDirect")}
                     </span>
                   </div>
                 </div>
@@ -350,10 +395,10 @@ export default function BookDetails() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="warda-privileged-qogita-btn"
-                    title={isRu ? "Открыть страницу товара в Qogita" : "Open product page on Qogita"}
+                    title={t("details.qogitaView")}
                   >
                     <i className="ri-external-link-line" />
-                    <span>{isRu ? "Товар в Qogita ↗" : "View on Qogita ↗"}</span>
+                    <span>{t("details.qogitaView")}</span>
                   </a>
                   {perfumeGtin && (
                     <a
@@ -361,26 +406,26 @@ export default function BookDetails() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="warda-privileged-panel-btn"
-                      title={isRu ? "Поиск по штрихкоду GTIN в оптовом кабинете Qogita" : "Search by GTIN in Qogita wholesale catalog"}
+                      title={t("details.qogitaPortal")}
                     >
                       <i className="ri-search-line" />
-                      <span>{isRu ? "Оптовый кабинет ↗" : "Wholesale Portal ↗"}</span>
+                      <span>{t("details.qogitaPortal")}</span>
                     </a>
                   )}
                   <Link
                     to="/privileged/qogita"
                     className="warda-privileged-panel-btn"
-                    title={isRu ? "Открыть панель управления Qogita" : "Open wholesale management panel"}
+                    title={t("details.qogitaWholesalePanel")}
                   >
                     <i className="ri-dashboard-3-line" />
-                    <span>{isRu ? "Оптовая панель" : "Wholesale panel"}</span>
+                    <span>{t("details.qogitaWholesalePanel")}</span>
                   </Link>
                 </div>
               </div>
             )}
 
             {/* FORMAT / VOLUME SELECTOR: INLINE ROW ABOVE PRICE (ASCENDING ORDER) */}
-            <div className="warda-details-volumes" role="radiogroup" aria-label={isRu ? "Выбор объема" : "Select volume"}>
+            <div className="warda-details-volumes" role="radiogroup" aria-label={t("details.selectVolume")}>
               <div className="warda-details-volume-pills">
                 {allowSamples && SAMPLE_VOLUMES.map((sv) => {
                   const sPrice = getSamplePrice(perfume.price, sv.key);
@@ -393,7 +438,7 @@ export default function BookDetails() {
                       role="radio"
                       aria-checked={selectedVolume === sv.key}
                     >
-                      <span className="warda-volume-pill__title">{isRu ? sv.labelRu : sv.labelEn}</span>
+                      <span className="warda-volume-pill__title">{formatVolume(sv.ml, language)}</span>
                       <span className="warda-volume-pill__price">{formatPrice(sPrice)}</span>
                     </button>
                   );
@@ -413,7 +458,7 @@ export default function BookDetails() {
 
             <div className="warda-details-price-row">
               <span className="warda-details-price">{formatPrice(displayPrice)}</span>
-              {perfume.inStock === false && <span className="warda-stock-status">{language === "ru" ? "Под заказ" : "Pre-order"}</span>}
+              {perfume.inStock === false && <span className="warda-stock-status">{t("details.preorder")}</span>}
             </div>
 
             <p className="warda-details-desc">
@@ -425,18 +470,18 @@ export default function BookDetails() {
               <div className="warda-set-composition">
                 <h3 className="warda-pyramid-title">
                   <i className="ri-gift-2-line" style={{ marginRight: "0.5rem", color: "#d4af37" }} />
-                  {isRu ? "Состав и ароматы набора" : "Set Contents & Collection"}
+                  {t("details.setContents")}
                 </h3>
                 {setItems && setItems.length > 0 ? (
                   <div className="warda-set-items-grid">
                     {setItems.map((item, idx) => (
                       <div key={idx} className="warda-set-item-card">
                         <div className="warda-set-item-head">
-                          <span className="warda-set-item-badge">{item.volume || "10 мл"}</span>
+                          <span className="warda-set-item-badge">{formatVolume(item.volume || "10 ml", language)}</span>
                           <h4 className="warda-set-item-title">{item.name}</h4>
                         </div>
-                        {item.descRu && (
-                          <p className="warda-set-item-desc">{isRu ? item.descRu : (item.descEn || item.descRu)}</p>
+                        {(item.descRu || item.descEn) && (
+                          <p className="warda-set-item-desc">{item[`desc_${language}`] || item[`desc${language.charAt(0).toUpperCase() + language.slice(1)}`] || (language === "ru" ? item.descRu : (item.descEn || item.descRu))}</p>
                         )}
                       </div>
                     ))}
@@ -446,25 +491,19 @@ export default function BookDetails() {
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
                       <span>
-                        {isRu
-                          ? "Коллекция оригинальных селективных миниатюр в фирменной подарочной коробке"
-                          : "Curated collection of authentic niche miniatures in a presentation coffret box"}
+                        {t("details.setFeature1")}
                       </span>
                     </div>
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
                       <span>
-                        {isRu
-                          ? "Каждый флакон оснащен удобным распылителем (спрей) для идеального нанесения"
-                          : "Each miniature is equipped with a fine mist pocket atomizer"}
+                        {t("details.setFeature2")}
                       </span>
                     </div>
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
                       <span>
-                        {isRu
-                          ? "Прекрасная возможность познакомиться с культовыми ароматами бренда перед покупкой полноразмерного флакона"
-                          : "Experience the house's signature scents before committing to a full bottle"}
+                        {t("details.setFeature3")}
                       </span>
                     </div>
                   </div>
@@ -473,11 +512,11 @@ export default function BookDetails() {
             ) : (
               <div className="warda-pyramid">
                 <h3 className="warda-pyramid-title">
-                  {language === "ru" ? "Ольфакторная пирамида" : "Olfactory Pyramid"}
+                  {t("details.pyramid")}
                 </h3>
                 <div className="warda-pyramid-grid">
                   <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{language === "ru" ? "Верхние ноты:" : "Top Notes:"}</span>
+                    <span className="warda-step-name">{t("details.topNotes")}</span>
                     <div className="warda-notes-tags">
                       {topNotes.map((n) => (
                         <span key={n} className="warda-note-tag">{n}</span>
@@ -486,7 +525,7 @@ export default function BookDetails() {
                   </div>
 
                   <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{language === "ru" ? "Ноты сердца:" : "Heart Notes:"}</span>
+                    <span className="warda-step-name">{t("details.heartNotes")}</span>
                     <div className="warda-notes-tags">
                       {heartNotes.map((n) => (
                         <span key={n} className="warda-note-tag">{n}</span>
@@ -495,7 +534,7 @@ export default function BookDetails() {
                   </div>
 
                   <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{language === "ru" ? "Базовые ноты:" : "Base Notes:"}</span>
+                    <span className="warda-step-name">{t("details.baseNotes")}</span>
                     <div className="warda-notes-tags">
                       {baseNotes.map((n) => (
                         <span key={n} className="warda-note-tag">{n}</span>
@@ -509,20 +548,20 @@ export default function BookDetails() {
             {/* SPECS ROW */}
             <div className="warda-specs-row">
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{isSet ? (isRu ? "Формат:" : "Format:") : (language === "ru" ? "Объем:" : "Volume:")}</span>
-                <span className="warda-spec-val">{isSet ? (isRu ? "Подарочный сет" : "Discovery Set") : displayVolume}</span>
+                <span className="warda-spec-lbl">{isSet ? t("details.format") : t("details.volume")}</span>
+                <span className="warda-spec-val">{isSet ? t("details.discoverySet") : displayVolume}</span>
               </div>
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{isSet ? (isRu ? "Комплектация:" : "Included:") : (language === "ru" ? "Пол:" : "Gender:")}</span>
+                <span className="warda-spec-lbl">{isSet ? t("details.included") : t("details.gender")}</span>
                 <span className="warda-spec-val">
                   {isSet
-                    ? (perfume.volume || "4 × 10 мл")
-                    : (language === "ru" ? (perfume.genderRu || perfume.gender) : (perfume.genderEn || perfume.gender))}
+                    ? (perfume.volume || "4 × 10 ml")
+                    : getLocalizedGender(perfume.gender, language)}
                 </span>
               </div>
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{language === "ru" ? "Стойкость:" : "Longevity:"}</span>
-                <span className="warda-spec-val">{language === "ru" ? (perfume.longevityRu || perfume.longevity) : (perfume.longevityEn || perfume.longevity)}</span>
+                <span className="warda-spec-lbl">{t("details.longevity")}</span>
+                <span className="warda-spec-val">{getLocalizedLongevity(perfume.longevity, language)}</span>
               </div>
             </div>
 
@@ -555,17 +594,17 @@ export default function BookDetails() {
                     type="button"
                     className={`warda-btn warda-btn--add-details ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                     onClick={handleAddToCart}
-                    title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from bag") : undefined}
+                    title={inCart ? t("details.remove") : undefined}
                   >
                     {inCart ? (
                       <>
-                        <span className="warda-btn__text-normal">{language === "ru" ? "В КОРЗИНЕ ✓" : "IN BAG ✓"}</span>
-                        <span className="warda-btn__text-hover">{language === "ru" ? "УДАЛИТЬ ✕" : "REMOVE ✕"}</span>
+                        <span className="warda-btn__text-normal">{t("details.inBag")}</span>
+                        <span className="warda-btn__text-hover">{t("details.remove")}</span>
                       </>
                     ) : isAdded ? (
-                      language === "ru" ? "ДОБАВЛЕНО В КОРЗИНУ ✓" : "ADDED TO BAG ✓"
+                      t("details.addedToBag")
                     ) : (
-                      language === "ru" ? "ДОБАВИТЬ В КОРЗИНУ" : "ADD TO CART"
+                      t("details.addToCart")
                     )}
                   </button>
                 );
@@ -637,9 +676,7 @@ export default function BookDetails() {
             <div className="warda-lightbox-footer">
               <span className="warda-lightbox-hint">
                 <i className="ri-information-line" />
-                {language === "ru"
-                  ? "Детальный осмотр надписей, концентрации и флакона • Выберите масштаб или прокрутите • Esc для закрытия"
-                  : "Detail inspection of bottle, inscriptions and concentration • Select zoom • Esc to close"}
+                {t("details.lightboxHint")}
               </span>
             </div>
           </div>

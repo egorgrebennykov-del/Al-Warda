@@ -46,12 +46,14 @@ function calculateShipping(address) {
   return 5.0;
 }
 
+const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
+
 function generateOrderNumber() {
   return `AW-${Math.floor(100000 + Math.random() * 900000)}`;
 }
 
 function formatPrice(price, currency, language) {
-  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const locale = LOCALE_MAP[language] || "en-GB";
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency || "EUR",
@@ -164,9 +166,9 @@ export default function Checkout() {
   const handleDeleteSavedPhone = async (phoneToDelete) => {
     if (!user?.id) return;
     const ok = await confirm({
-      title: language === "ru" ? "Удалить номер телефона?" : "Delete Phone Number?",
-      message: `${language === "ru" ? "Удалить сохранённый номер" : "Delete saved phone"} ${phoneToDelete}?`,
-      confirmText: language === "ru" ? "Удалить" : "Delete",
+      title: t("checkout.deletePhoneTitle"),
+      message: `${t("phone.delete")} ${phoneToDelete}?`,
+      confirmText: t("confirm.delete"),
       type: "danger",
     });
     if (!ok) return;
@@ -395,12 +397,20 @@ export default function Checkout() {
   const handleDeleteAddress = async (id, e) => {
     e.stopPropagation();
     const ok = await confirm({
-      title: language === "ru" ? "Удалить адрес?" : "Delete Address?",
+      title: t("checkout.deleteAddressTitle"),
       message:
         language === "ru"
           ? "Вы действительно хотите удалить этот сохранённый адрес доставки?"
+          : language === "hu"
+          ? "Biztosan törölni szeretné ezt a mentett szállítási címet?"
+          : language === "bg"
+          ? "Сигурни ли сте, че искате да изтриете този запазен адрес за доставка?"
+          : language === "el"
+          ? "Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτή τη διεύθυνση παράδοσης;"
+          : language === "ro"
+          ? "Sigur doriți să ștergeți această adresă de livrare salvată?"
           : "Are you sure you want to delete this saved delivery address?",
-      confirmText: language === "ru" ? "Удалить адрес" : "Delete Address",
+      confirmText: t("checkout.deleteAddressBtn"),
       type: "danger",
     });
     if (!ok) return;
@@ -981,7 +991,7 @@ export default function Checkout() {
                             </span>
                             <span className="checkout__shipping-free-tag">
                               <i className="ri-gift-line" />
-                              {language === "ru" ? "Бесплатно" : "Free"}
+                              {t("checkout.free")}
                             </span>
                           </span>
                         ) : (
@@ -1081,7 +1091,7 @@ export default function Checkout() {
                           <strong className="checkout__coupon-deduction-amount">
                             {isFreeShipping
                               ? `-${formatPrice(hasValidAddress ? baseShippingCost : 5.0, "EUR", language)} (${t("checkout.couponFreeShipping")})`
-                              : `-${formatPrice(couponDeduction, "EUR", language)}${couponValidation.applyWithShipping ? ` (${language === "ru" ? "с доставкой" : "with shipping"})` : ""}`}
+                              : `-${formatPrice(couponDeduction, "EUR", language)}${couponValidation.applyWithShipping ? ` (${t("checkout.withShipping")})` : ""}`}
                           </strong>
                         </div>
                       </div>

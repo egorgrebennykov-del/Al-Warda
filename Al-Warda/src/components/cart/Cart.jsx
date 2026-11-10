@@ -10,15 +10,6 @@ import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
 import "./Cart.css";
 
-function formatPrice(price, currency = "EUR", language = "ru") {
-  const locale = language === "ru" ? "ru-RU" : "en-US";
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currency || "EUR",
-    maximumFractionDigits: 2,
-  }).format(price);
-}
-
 function formatPerfumeCount(count, language = "ru") {
   const n = Math.abs(Number(count) || 0);
   if (language === "ru") {
@@ -28,6 +19,18 @@ function formatPerfumeCount(count, language = "ru") {
     if (mod10 === 1) return `${n} парфюм`;
     if (mod10 >= 2 && mod10 <= 4) return `${n} парфюма`;
     return `${n} парфюмов`;
+  }
+  if (language === "bg") {
+    return `${n} ${n === 1 ? "парфюм" : "парфюма"}`;
+  }
+  if (language === "hu") {
+    return `${n} parfüm`;
+  }
+  if (language === "el") {
+    return `${n} ${n === 1 ? "άρωμα" : "αρώματα"}`;
+  }
+  if (language === "ro") {
+    return `${n} ${n === 1 ? "parfum" : "parfumuri"}`;
   }
   return `${n} ${n === 1 ? "perfume" : "perfumes"}`;
 }
@@ -100,18 +103,18 @@ export default function Cart({ onSearch }) {
       <div className="cart__heading">
         <div>
           <h1 className="cart__title">
-            {language === "ru" ? "Ваша Корзина" : "Your Shopping Bag"}
+            {t("cart.yourBag")}
           </h1>
           <p className="cart__count">
             {loading
-              ? (language === "ru" ? "Загрузка..." : "Loading...")
+              ? t("cart.loading")
               : formatPerfumeCount(totalItems, language)}
           </p>
         </div>
         {!loading && items.length > 0 && (
           <Link to="/checkout" className="warda-btn cart__order-btn">
             <i className="ri-shopping-bag-3-line" />
-            <span>{language === "ru" ? "ОФОРМИТЬ ЗАКАЗ" : "PROCEED TO CHECKOUT"}</span>
+            <span>{t("cart.checkoutBtn")}</span>
           </Link>
         )}
       </div>
@@ -128,10 +131,10 @@ export default function Cart({ onSearch }) {
         <div className="cart__empty">
           <i className="ri-shopping-bag-line" style={{ fontSize: "3rem", color: "#c5a059" }} />
           <p style={{ marginTop: "1rem", fontSize: "1.1rem" }}>
-            {language === "ru" ? "Ваша корзина пуста" : "Your shopping bag is empty"}
+            {t("cart.bagEmpty")}
           </p>
           <Link to="/featured" className="warda-btn" style={{ marginTop: "1.5rem" }}>
-            {language === "ru" ? "ИССЛЕДОВАТЬ КОЛЛЕКЦИЮ" : "EXPLORE COLLECTION"}
+            {t("cart.explore")}
           </Link>
         </div>
       ) : (
@@ -184,7 +187,7 @@ export default function Cart({ onSearch }) {
                     {formatPrice(unitPrice * quantity)}
                   </strong>
                   <small className="cart__unit-price" style={{ color: "#8c7e6c" }}>
-                    {formatPrice(unitPrice)} {language === "ru" ? "/ шт." : "each"}
+                    {formatPrice(unitPrice)} {t("cart.eachItem")}
                   </small>
                 </div>
 
@@ -211,14 +214,14 @@ export default function Cart({ onSearch }) {
           }}>
             <div>
               <span style={{ color: "#a89882", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                {language === "ru" ? "Итого к оплате:" : "Total Amount:"}
+                {t("cart.totalAmount")}
               </span>
               <div style={{ fontFamily: "var(--second-font)", fontSize: "1.8rem", color: "#d4af37", fontWeight: "600" }}>
                 {formatPrice(totalPrice)}
               </div>
             </div>
             <Link to="/checkout" className="warda-btn">
-              {language === "ru" ? "ОФОРМИТЬ ЗАКАЗ" : "CHECKOUT"}
+              {t("cart.checkoutBtn")}
             </Link>
           </div>
         </div>

@@ -15,8 +15,10 @@ function getEuroPrice(book, rate) {
   return rate ? price / rate : null;
 }
 
+const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
+
 function formatPrice(value, currency, language) {
-  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const locale = LOCALE_MAP[language] || "en-GB";
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
@@ -201,7 +203,7 @@ export default function NewBooks() {
           {updatedAt && (
             <p className="new-books__info">
               {t("newBooks.updated")}{" "}
-              {new Intl.DateTimeFormat(language === "ru" ? "ru-RU" : "en-GB", {
+              {new Intl.DateTimeFormat(LOCALE_MAP[language] || "en-GB", {
                 dateStyle: "medium",
                 timeStyle: "short",
               }).format(new Date(updatedAt))}

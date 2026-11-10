@@ -167,9 +167,7 @@ export default function Header({ theme, isLight, onSearch }) {
           onClick={() => setIsMenuOpen((open) => !open)}
           aria-expanded={isMenuOpen}
           aria-controls="warda-main-navigation"
-          aria-label={isMenuOpen
-            ? (language === "ru" ? "Закрыть меню" : "Close menu")
-            : (language === "ru" ? "Открыть меню" : "Open menu")}
+          aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
         >
           <i className={isMenuOpen ? "ri-close-line" : "ri-menu-line"} aria-hidden="true" />
         </button>
@@ -180,27 +178,27 @@ export default function Header({ theme, isLight, onSearch }) {
           <ul className="warda-nav__links">
             <li className="warda-nav__item">
               <NavLink to="/" end className={navClass}>
-                <span>{language === "ru" ? "ГЛАВНАЯ" : "HOME"}</span>
+                <span>{t("nav.home").toUpperCase()}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/featured" className={navClass}>
-                <span>{language === "ru" ? "КАТАЛОГ" : "SHOP"}</span>
+                <span>{t("nav.catalog").toUpperCase()}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
-              <NavLink to="/sets" className={navClass} title={language === "ru" ? "Сеты и пробники ароматов" : "Sets & discovery samples"}>
-                <span>{language === "ru" ? "ПРОБУЙ И ОТКРЫВАЙ" : "TRY & DISCOVER"}</span>
+              <NavLink to="/sets" className={navClass} title={t("nav.setsTitle")}>
+                <span>{t("nav.sets").toUpperCase()}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/about" className={navClass}>
-                <span>{language === "ru" ? "О БРЕНДЕ" : "ABOUT"}</span>
+                <span>{t("nav.about").toUpperCase()}</span>
               </NavLink>
             </li>
             <li className="warda-nav__item">
               <NavLink to="/contacts" className={navClass}>
-                <span>{language === "ru" ? "КОНТАКТЫ" : "CONTACT"}</span>
+                <span>{t("nav.contacts").toUpperCase()}</span>
               </NavLink>
             </li>
             {(isPrivilegedUser || isAdminOrDev) && (
@@ -210,10 +208,10 @@ export default function Header({ theme, isLight, onSearch }) {
                   className={({ isActive }) =>
                     `warda-nav__privileged-pill ${isActive ? "active" : ""}`
                   }
-                  title={language === "ru" ? "Панель управления" : "Control Panel"}
+                  title={t("nav.privileged")}
                 >
                   <i className="ri-vip-crown-fill" />
-                  <span>{language === "ru" ? "ПАНЕЛЬ УПРАВЛЕНИЯ" : "CONTROL PANEL"}</span>
+                  <span>{t("nav.privileged").toUpperCase()}</span>
                   {adminUnreadCount > 0 && (
                     <span className="warda-nav__badge">{adminUnreadCount}</span>
                   )}
@@ -284,8 +282,8 @@ export default function Header({ theme, isLight, onSearch }) {
                 });
                 setAdminAttention(false);
               }}
-              title="Fragrance Concierge"
-              aria-label="Fragrance Concierge"
+              title={t("nav.concierge")}
+              aria-label={t("nav.concierge")}
             >
               <i className="ri-customer-service-2-line" />
               {unreadCount > 0 && (
@@ -312,7 +310,7 @@ export default function Header({ theme, isLight, onSearch }) {
                   {user?.firstName && (
                     <div className="nav__profile-header">
                       <span className="nav__profile-welcome">
-                        {language === "ru" ? "Здравствуйте," : "Welcome,"}
+                        {t("nav.welcome")}
                       </span>
                       <div className="nav__profile-name-row">
                         <span className="nav__profile-name">
@@ -340,7 +338,7 @@ export default function Header({ theme, isLight, onSearch }) {
                         >
                           <i className="ri-vip-crown-fill" style={{ color: "#ffd700" }} />
                           <span style={{ color: "#ffd700", fontWeight: 700 }}>
-                            {language === "ru" ? "Панель управления" : language === "hu" ? "Kezelőpanel" : language === "bg" ? "Контролен панел" : language === "el" ? "Πίνακας Ελέγχου" : language === "ro" ? "Panou de Control" : "Privileged Panel"}
+                            {t("nav.privileged")}
                           </span>
                         </Link>
                       </li>
@@ -352,7 +350,7 @@ export default function Header({ theme, isLight, onSearch }) {
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         <i className="ri-user-settings-line" />
-                        <span>{t("nav.profileSettings", language === "ru" ? "Профиль" : "Profile")}</span>
+                        <span>{t("nav.profileSettings")}</span>
                       </Link>
                     </li>
                     <li className="nav__profile-item" role="none">

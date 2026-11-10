@@ -16,7 +16,6 @@ import {
 export default function Login({ onSignUp, onClose }) {
   const { t, language } = useLanguage();
   const { login: authLogin, refreshUser } = useAuth();
-  const isRu = language !== "en";
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -122,17 +121,13 @@ export default function Login({ onSignUp, onClose }) {
 
   const translateResetError = (rawMessage) => {
     if (rawMessage === "Enter a valid email") {
-      return isRu ? "Введите корректный email" : "Enter a valid email";
+      return t("auth.invalidEmail");
     }
     if (rawMessage === "No account found with this email") {
-      return isRu
-        ? "Аккаунт с таким email не найден"
-        : "No account found with this email";
+      return t("auth.noAccountFound");
     }
     if (rawMessage === "Password must be at least 8 characters") {
-      return isRu
-        ? "Пароль должен содержать минимум 8 символов"
-        : "Password must be at least 8 characters";
+      return t("auth.passwordMinLength");
     }
     return rawMessage;
   };
@@ -143,14 +138,14 @@ export default function Login({ onSignUp, onClose }) {
 
     const trimmedIdentifier = email.trim();
     if (!trimmedIdentifier) {
-      const msg = isRu ? "Заполните это поле." : "Please fill out this field.";
+      const msg = t("auth.fillField");
       showValidationTooltip(emailRef.current, msg);
       emailRef.current?.focus();
       return;
     }
 
     if (!password) {
-      const msg = isRu ? "Заполните это поле." : "Please fill out this field.";
+      const msg = t("auth.fillField");
       showValidationTooltip(passwordRef.current, msg);
       passwordRef.current?.focus();
       return;
@@ -169,9 +164,7 @@ export default function Login({ onSignUp, onClose }) {
     } catch (err) {
       let displayMsg = err.message;
       if (err.message === "Invalid email or password") {
-        displayMsg = isRu
-          ? "Неверный логин или пароль"
-          : "Invalid email/login or password";
+        displayMsg = t("auth.invalidCredentials");
       }
       setError(displayMsg);
       showValidationTooltip(emailRef.current, displayMsg);
@@ -188,7 +181,7 @@ export default function Login({ onSignUp, onClose }) {
 
     const trimmedEmail = resetEmail.trim();
     if (!trimmedEmail) {
-      const msg = isRu ? "Введите ваш email" : "Please enter your email";
+      const msg = t("auth.enterEmail");
       setError(msg);
       showValidationTooltip(resetEmailRef.current, msg);
       resetEmailRef.current?.focus();
@@ -213,9 +206,7 @@ export default function Login({ onSignUp, onClose }) {
       setNewPassword("");
       setRepeatNewPassword("");
       setResetInfo(
-        isRu
-          ? `6-значный код для смены пароля отправлен на ${userInfo.email}`
-          : `A 6-digit password reset code was sent to ${userInfo.email}`,
+        t("auth.resetCodeSent").replace("{email}", userInfo.email),
       );
       setMode("resetVerify");
       hideValidationTooltip();
@@ -245,9 +236,7 @@ export default function Login({ onSignUp, onClose }) {
       setExpectedResetCode(code);
       setResetCode("");
       setResetInfo(
-        isRu
-          ? `Новый 6-значный код отправлен на ${resetEmail}`
-          : `A new 6-digit code was sent to ${resetEmail}`,
+        t("auth.newResetCodeSent").replace("{email}", resetEmail),
       );
     } catch (err) {
       setError(translateResetError(err.message));
@@ -262,9 +251,7 @@ export default function Login({ onSignUp, onClose }) {
 
     const cleanCode = resetCode.replace(/\D/g, "").trim();
     if (cleanCode.length !== 6) {
-      const msg = isRu
-        ? "Введите 6-значный код из письма"
-        : "Enter the 6-digit code from the email";
+      const msg = t("auth.enterSixDigitCode");
       setError(msg);
       showValidationTooltip(resetCodeRef.current, msg);
       resetCodeRef.current?.focus();
@@ -272,9 +259,7 @@ export default function Login({ onSignUp, onClose }) {
     }
 
     if (cleanCode !== expectedResetCode) {
-      const msg = isRu
-        ? "Неверный код подтверждения. Проверьте письмо и попробуйте снова."
-        : "Invalid verification code. Please check your email and try again.";
+      const msg = t("auth.invalidVerificationCode");
       setError(msg);
       showValidationTooltip(resetCodeRef.current, msg);
       resetCodeRef.current?.focus();
@@ -282,9 +267,7 @@ export default function Login({ onSignUp, onClose }) {
     }
 
     if (!newPassword || newPassword.length < 8) {
-      const msg = isRu
-        ? "Новый пароль должен содержать минимум 8 символов"
-        : "New password must be at least 8 characters";
+      const msg = t("auth.passwordMinLength");
       setError(msg);
       showValidationTooltip(newPasswordRef.current, msg);
       newPasswordRef.current?.focus();
@@ -441,7 +424,7 @@ export default function Login({ onSignUp, onClose }) {
             ×
           </button>
           <h3 className="login__title">
-            {isRu ? "Смена пароля" : "Reset Password"}
+            {t("auth.resetPassword")}
           </h3>
           <p
             style={{
@@ -452,9 +435,7 @@ export default function Login({ onSignUp, onClose }) {
               margin: 0,
             }}
           >
-            {isRu
-              ? "Укажите email вашего аккаунта — мы отправим 6-значный код для смены пароля."
-              : "Enter your account email and we will send a 6-digit code to change your password."}
+            {t("auth.resetEmailPrompt")}
           </p>
           <div className="login__group grid">
             <div>
@@ -490,7 +471,7 @@ export default function Login({ onSignUp, onClose }) {
                   setMode("login");
                 }}
               >
-                ← {isRu ? "Вернуться ко входу" : "Back to Login"}
+                ← {t("auth.backToLogin")}
               </a>
             </span>
             <button
@@ -499,12 +480,8 @@ export default function Login({ onSignUp, onClose }) {
               disabled={submitting}
             >
               {submitting
-                ? isRu
-                  ? "Отправка кода..."
-                  : "Sending code..."
-                : isRu
-                  ? "Отправить код на email"
-                  : "Send Verification Code"}
+                ? t("auth.sendingCode")
+                : t("auth.sendVerificationCode")}
             </button>
           </div>
         </form>
@@ -528,7 +505,7 @@ export default function Login({ onSignUp, onClose }) {
             ×
           </button>
           <h3 className="login__title">
-            {isRu ? "Новый пароль" : "Set New Password"}
+            {t("auth.setNewPassword")}
           </h3>
           {resetInfo && (
             <p
@@ -546,7 +523,7 @@ export default function Login({ onSignUp, onClose }) {
           <div className="login__group grid">
             <div>
               <label htmlFor="reset-code" className="login__label">
-                {isRu ? "Код подтверждения (6 цифр)" : "6-Digit Verification Code"}
+                {t("auth.codePlaceholder")}
               </label>
               <input
                 ref={resetCodeRef}
@@ -573,7 +550,7 @@ export default function Login({ onSignUp, onClose }) {
             </div>
             <div>
               <label htmlFor="reset-new-password" className="login__label">
-                {isRu ? "Новый пароль" : "New Password"}
+                {t("auth.newPasswordLabel")}
               </label>
               <div className="auth__password-wrap">
                 <input
@@ -695,7 +672,7 @@ export default function Login({ onSignUp, onClose }) {
                 }}
                 style={{ color: "var(--first-color)", fontWeight: 600 }}
               >
-                ← {isRu ? "Изменить email" : "Change email"}
+                ← {t("auth.editEmail")}
               </a>
               <a
                 href="#"
@@ -710,12 +687,8 @@ export default function Login({ onSignUp, onClose }) {
                 }}
               >
                 {resendingCode
-                  ? isRu
-                    ? "Отправка..."
-                    : "Sending..."
-                  : isRu
-                    ? "Отправить код повторно"
-                    : "Resend code"}
+                  ? t("auth.sending")
+                  : t("auth.resendCode")}
               </a>
             </div>
             <button
@@ -724,12 +697,8 @@ export default function Login({ onSignUp, onClose }) {
               disabled={submitting}
             >
               {submitting
-                ? isRu
-                  ? "Сохранение пароля..."
-                  : "Saving password..."
-                : isRu
-                  ? "Сменить пароль"
-                  : "Change Password"}
+                ? t("auth.savingPassword")
+                : t("auth.changePasswordBtn")}
             </button>
           </div>
         </form>
@@ -769,7 +738,7 @@ export default function Login({ onSignUp, onClose }) {
             <i className="ri-checkbox-circle-fill" />
           </div>
           <h3 className="login__title" style={{ marginBottom: 0 }}>
-            {isRu ? "Пароль успешно изменён!" : "Password Changed Successfully!"}
+            {t("auth.passwordSuccess")}
           </h3>
           <p
             style={{
@@ -779,9 +748,7 @@ export default function Login({ onSignUp, onClose }) {
               margin: 0,
             }}
           >
-            {isRu
-              ? "Смена пароля прошла успешно, и вы автоматически вошли в свой аккаунт. Теперь вы можете перейти на главную страницу."
-              : "Your password has been changed successfully and you are now signed in. Would you like to go to the home page?"}
+            {t("auth.resetSuccessDesc")}
           </p>
           <button
             type="button"
@@ -791,7 +758,7 @@ export default function Login({ onSignUp, onClose }) {
               navigate("/");
             }}
           >
-            {isRu ? "Перейти на главную" : "Go to Home Page"}
+            {t("auth.goHome")}
           </button>
         </div>
       )}

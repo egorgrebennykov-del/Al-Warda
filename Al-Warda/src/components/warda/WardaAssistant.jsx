@@ -371,9 +371,9 @@ export default function WardaAssistant() {
 
   const handleClearHistory = async () => {
     const ok = await confirm({
-      title: language === "ru" ? "Очистить историю диалога?" : "Clear Chat History?",
+      title: t("assistant.clearHistoryTitle"),
       message: t("assistant.clearHistoryConfirm"),
-      confirmText: language === "ru" ? "Очистить" : "Clear",
+      confirmText: t("assistant.clear"),
       type: "warning",
     });
     if (!ok) return;
@@ -550,6 +550,14 @@ export default function WardaAssistant() {
           content:
             language === "ru"
               ? "Ой, кажется, возникла ошибка соединения! 💜 Попробуйте повторить запрос."
+              : language === "hu"
+              ? "Hoppá, kapcsolódási hiba történt! 💜 Kérjük, próbálja újra a kérést."
+              : language === "bg"
+              ? "Опа, възникна грешка при връзката! 💜 Моля, опитайте отново."
+              : language === "el"
+              ? "Ωχ, παρουσιάστηκε σφάλμα σύνδεσης! 💜 Παρακαλώ δοκιμάστε ξανά."
+              : language === "ro"
+              ? "Ups, a apărut o eroare de conexiune! 💜 Vă rugăm să încercați din nou."
               : "Oops, a connection error occurred! 💜 Please try again.",
           emotion: "concerned",
           books: [],
@@ -590,8 +598,8 @@ export default function WardaAssistant() {
     } catch (err) {
       console.error("Failed to toggle perfume in cart:", err);
       await customAlert({
-        title: language === "ru" ? "Ошибка корзины" : "Cart Error",
-        message: err.message || (language === "ru" ? "Не удалось обновить корзину" : "Failed to update bag"),
+        title: t("assistant.cartError"),
+        message: err.message || t("featured.error"),
         type: "danger",
       });
     } finally {
@@ -634,7 +642,15 @@ export default function WardaAssistant() {
               title={
                 language === "ru"
                   ? "Нажмите, чтобы задать вопрос Ясмин"
-                  : "Click to ask Al-Warda"
+                  : language === "hu"
+                  ? "Kattintson, hogy kérdezzen Jázmintól"
+                  : language === "bg"
+                  ? "Кликнете, за да попитате Ясмин"
+                  : language === "el"
+                  ? "Κάντε κλικ για να ρωτήσετε τη Yasmin"
+                  : language === "ro"
+                  ? "Faceți clic pentru a întreba pe Yasmin"
+                  : "Click to ask Yasmin"
               }
               role="button"
               tabIndex={0}
@@ -643,6 +659,14 @@ export default function WardaAssistant() {
               <span className="warda-offer-badge-text">
                 {language === "ru"
                   ? "Я с радостью отвечу на этот вопрос! Нажмите на меня 🤍"
+                  : language === "hu"
+                  ? "Örömmel válaszolok erre a kérdésre! Kattintson rám 🤍"
+                  : language === "bg"
+                  ? "С удоволствие ще отговоря на този въпрос! Кликнете върху мен 🤍"
+                  : language === "el"
+                  ? "Θα χαρώ να απαντήσω σε αυτή την ερώτηση! Κάντε κλικ επάνω μου 🤍"
+                  : language === "ro"
+                  ? "Voi răspunde cu plăcere la această întrebare! Faceți clic pe mine 🤍"
                   : "I'll gladly answer this question! Click me 🤍"}
               </span>
               <button
@@ -834,22 +858,14 @@ export default function WardaAssistant() {
                               toggleMsgExpand(msg.id);
                             }}
                             title={
-                              language === "ru"
-                                ? isMsgExpanded
-                                  ? "Свернуть сообщение"
-                                  : "Раскрыть полностью"
-                                : isMsgExpanded
-                                  ? "Collapse message"
-                                  : "Show full message"
+                              isMsgExpanded
+                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
+                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
                             }
                             aria-label={
-                              language === "ru"
-                                ? isMsgExpanded
-                                  ? "Свернуть сообщение"
-                                  : "Раскрыть полностью"
-                                : isMsgExpanded
-                                  ? "Collapse message"
-                                  : "Show full message"
+                              isMsgExpanded
+                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
+                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
                             }
                           >
                             <i
@@ -876,9 +892,7 @@ export default function WardaAssistant() {
                             >
                               <i className="ri-customer-service-2-line" />
                               <span>
-                                {language === "ru"
-                                  ? "Связаться с администратором"
-                                  : "Contact administrator"}
+                                {t("nav.messenger") || "Contact administrator"}
                               </span>
                             </button>
                           </div>
@@ -967,7 +981,7 @@ export default function WardaAssistant() {
                                             }`}
                                             onClick={() => handleAddToCart(book)}
                                             disabled={isAdding}
-                                            title={inCart ? (language === "ru" ? "Удалить из корзины" : "Remove from bag") : undefined}
+                                            title={inCart ? t("featured.remove") : undefined}
                                           >
                                             <i
                                               className={
@@ -984,7 +998,7 @@ export default function WardaAssistant() {
                                             />
                                             <span>
                                               {inCart
-                                                ? (language === "ru" ? "В корзине" : "In Bag")
+                                                ? t("featured.inBag")
                                                 : isSuccess
                                                   ? t("assistant.addedToCart")
                                                   : isLoginPrompt
@@ -1058,7 +1072,15 @@ export default function WardaAssistant() {
                 <span>
                   {language === "ru"
                     ? "Ясмин переводит диалог на русский..."
-                    : "Al-Warda is translating the dialog into English..."}
+                    : language === "hu"
+                    ? "Jázmin lefordítja a beszélgetést magyarra..."
+                    : language === "bg"
+                    ? "Ясмин превежда диалога на български..."
+                    : language === "el"
+                    ? "Η Yasmin μεταφράζει τον διάλογο στα ελληνικά..."
+                    : language === "ro"
+                    ? "Yasmin traduce dialogul în limba română..."
+                    : "Yasmin is translating the dialog into English..."}
                 </span>
               </div>
             )}
@@ -1097,13 +1119,7 @@ export default function WardaAssistant() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={
-                    isMobile
-                      ? language === "ru"
-                        ? "Спросите об ароматах, нотах или брендах..."
-                        : "Ask about perfumes, notes, or brands..."
-                      : t("assistant.placeholder")
-                  }
+                  placeholder={t("assistant.placeholder")}
                   rows={1}
                   disabled={loading || isTranslating}
                 />
@@ -1114,22 +1130,14 @@ export default function WardaAssistant() {
                       className={`warda-expand-btn ${isExpanded ? "active" : ""}`}
                       onClick={() => setIsExpanded((prev) => !prev)}
                       title={
-                        language === "ru"
-                          ? isExpanded
-                            ? "Свернуть поле ввода"
-                            : "Расширить поле ввода"
-                          : isExpanded
-                            ? "Collapse input"
-                            : "Expand input"
+                        isExpanded
+                          ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
+                          : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
                       }
                       aria-label={
-                        language === "ru"
-                          ? isExpanded
-                            ? "Свернуть поле ввода"
-                            : "Расширить поле ввода"
-                          : isExpanded
-                            ? "Collapse input"
-                            : "Expand input"
+                        isExpanded
+                          ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
+                          : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
                       }
                     >
                       <i className={isExpanded ? "ri-fullscreen-exit-line" : "ri-fullscreen-line"} />

@@ -12,11 +12,13 @@ import { useConfirm } from "../../context/ConfirmContext";
 import { useAuth } from "../../context/AuthContext";
 import "./Testimonial.css";
 
+const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
+
 function formatReviewDate(dateString, language) {
   if (!dateString) return "";
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat(language === "ru" ? "ru-RU" : "en-US", {
+    return new Intl.DateTimeFormat(LOCALE_MAP[language] || "en-GB", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -193,9 +195,9 @@ export default function Testimonial() {
 
   const handleDelete = async (id) => {
     const ok = await confirm({
-      title: language === "ru" ? "Удаление отзыва" : "Delete Review",
+      title: t("testimonial.deleteTitle"),
       message: t("testimonial.confirmDelete"),
-      confirmText: language === "ru" ? "Удалить" : "Delete",
+      confirmText: t("confirm.delete"),
       type: "danger",
     });
     if (!ok) return;
@@ -437,6 +439,7 @@ export default function Testimonial() {
                 Number.isInteger(rating) && rating >= 1 && rating <= 5;
               const originalText = decodeHtmlEntities(item.feedback || "");
               const translatedText = decodeHtmlEntities(
+                item[`feedback_${language}`] ||
                 (language === "ru" ? item.feedback_ru : item.feedback_en) ||
                   item.feedback ||
                   "",
@@ -476,7 +479,7 @@ export default function Testimonial() {
                           {authorName}
                           {isOwnReview && (
                             <span className="testimonial__own-badge">
-                              {language === "ru" ? "Ваш отзыв" : "Your review"}
+                              {t("testimonial.yourReview")}
                             </span>
                           )}
                         </span>

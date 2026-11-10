@@ -3,7 +3,7 @@ import { useLanguage } from "../../context/languageContext";
 import "./Contacts.css";
 
 export default function Contacts() {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [copiedKey, setCopiedKey] = useState(null);
 
   const handleCopy = (key, text) => {
@@ -18,10 +18,7 @@ export default function Contacts() {
 
   const phone = "+373 68 123 456";
   const email = "alwardaparfumes@gmail.com";
-  const addressText =
-    language === "ru"
-      ? "ул. „Первая“, 8240 Несебр, Болгария"
-      : "1st Street, 8240 Nessebar, Bulgaria";
+  const addressText = t("contacts.addressValue") || "ул. „Первая“, 8240 Несебр, Болгария";
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent("1st Street, 8240 Nessebar, Bulgaria")}`;
 
   return (
@@ -38,7 +35,7 @@ export default function Contacts() {
             <div className="contacts__photo-frame">
               <img
                 src="/assets/img/director.png"
-                alt={language === "ru" ? "Егор Гребенников" : "Yegor Grebennykov"}
+                alt={t("contacts.name")}
                 className="contacts__photo"
                 loading="eager"
               />
@@ -53,7 +50,7 @@ export default function Contacts() {
             </div>
 
             <h2 className="contacts__hero-name">
-              {language === "ru" ? "Егор Гребенников" : "Yegor Grebennykov"}
+              {t("contacts.name")}
             </h2>
 
             <div className="contacts__hero-tags">
@@ -62,7 +59,7 @@ export default function Contacts() {
               </span>
               <span className="contacts__tag contacts__tag--dev">
                 <i className="ri-code-box-line" />
-                {language === "ru" ? "Девелопер" : "Developer"}
+                {t("contacts.developer")}
               </span>
               <span className="contacts__tag contacts__tag--warda">
                 <i className="ri-sparkling-2-line" /> Al-Warda
@@ -130,9 +127,7 @@ export default function Contacts() {
                 {phone}
               </a>
               <span className="contacts__card-desc">
-                {language === "ru"
-                  ? "Звонки и сообщения WhatsApp / Viber"
-                  : "Calls & instant messaging"}
+                {t("contacts.phoneDesc")}
               </span>
             </div>
             <button
@@ -155,9 +150,7 @@ export default function Contacts() {
               <span className="contacts__card-label">{t("contacts.email")}</span>
               <span className="contacts__card-value">{email}</span>
               <span className="contacts__card-desc">
-                {language === "ru"
-                  ? "Вопросы сотрудничества и партнерства"
-                  : "Partnerships & general inquiries"}
+                {t("contacts.emailDesc")}
               </span>
             </div>
             <button
@@ -187,9 +180,7 @@ export default function Contacts() {
                 {addressText}
               </a>
               <span className="contacts__card-desc">
-                {language === "ru"
-                  ? "Отправка заказов и корреспонденции"
-                  : "Orders shipping & correspondence"}
+                {t("contacts.addressDesc")}
               </span>
             </div>
             <button

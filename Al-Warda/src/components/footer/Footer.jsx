@@ -4,10 +4,9 @@ import { useLanguage } from "../../context/languageContext";
 import "./Footer.css";
 
 export default function Footer() {
-  const { language } = useLanguage();
-  const isRu = language === "ru";
+  const { t } = useLanguage();
   const accountPath = isLoggedIn() ? "/profile" : "/login";
-  const accountLabel = isLoggedIn() ? (isRu ? "Мой профиль" : "My Account") : (isRu ? "Войти в аккаунт" : "Sign In");
+  const accountLabel = isLoggedIn() ? t("footer.myProfile") : t("footer.signIn");
 
   return (
     <footer className="footer warda-footer">
@@ -22,19 +21,17 @@ export default function Footer() {
             />
           </Link>
           <p className="warda-footer__desc">
-            {isRu
-              ? "Дом эксклюзивной арабской парфюмерии. Оригинальные селективные ароматы прямиком из парфюмерных мануфактур Ближнего Востока: редчайший уд, дамасская роза, золотая амбра и чувственный мускус."
-              : "House of exclusive Arabian perfumery. Authentic niche creations sourced directly from premier master perfumers in the Middle East: precious oud, Damask rose, solar amber, and alluring white musk."}
+            {t("footer.brandDesc")}
           </p>
 
           <div className="warda-footer__badges">
             <span className="warda-footer__badge">
               <i className="ri-shield-check-line" />
-              <span>{isRu ? "100% Оригинал" : "100% Authentic"}</span>
+              <span>{t("footer.authentic")}</span>
             </span>
             <span className="warda-footer__badge">
               <i className="ri-truck-line" />
-              <span>{isRu ? "Быстрая доставка" : "Express Delivery"}</span>
+              <span>{t("footer.fastDelivery")}</span>
             </span>
           </div>
         </div>
@@ -42,42 +39,42 @@ export default function Footer() {
         {/* COLLECTIONS COLUMN */}
         <div className="warda-footer__col">
           <h4 className="warda-footer__heading">
-            {isRu ? "КОЛЛЕКЦИИ" : "COLLECTIONS"}
+            {t("footer.collections")}
           </h4>
           <ul className="footer__links">
             <li>
               <Link to="/featured?category=oud" className="footer__link">
-                {isRu ? "Уд и Древесные" : "Oud & Woody"}
+                {t("footer.oudWoody")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=gourmand" className="footer__link">
-                {isRu ? "Гурманские и Ваниль" : "Gourmand & Vanilla"}
+                {t("footer.gourmandVanilla")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=floral" className="footer__link">
-                {isRu ? "Цветочные и Роза" : "Floral & Rose"}
+                {t("footer.floralRose")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=fresh" className="footer__link">
-                {isRu ? "Свежие и Акватика" : "Fresh & Aquatic"}
+                {t("footer.freshAquatic")}
               </Link>
             </li>
             <li>
               <Link to="/featured?brand=Lattafa,Armaf,Amouage,Arabian Oud" className="footer__link">
-                {isRu ? "Популярные бренды" : "Featured Brands"}
+                {t("footer.featuredBrands")}
               </Link>
             </li>
             <li>
               <Link to="/sets" className="footer__link">
-                {isRu ? "Пробуй и открывай (Сеты и пробники)" : "Try & Discover (Sets & Samples)"}
+                {t("footer.tryAndDiscover")}
               </Link>
             </li>
             <li>
               <Link to="/featured" className="footer__link warda-footer__collection-link">
-                {isRu ? "Вся коллекция" : "All Fragrances"} →
+                {t("footer.allFragrances")} →
               </Link>
             </li>
           </ul>
@@ -86,32 +83,32 @@ export default function Footer() {
         {/* NAVIGATION & SERVICE COLUMN */}
         <div className="warda-footer__col">
           <h4 className="warda-footer__heading">
-            {isRu ? "СЕРВИС И БУТИК" : "SERVICE & BOUTIQUE"}
+            {t("footer.service")}
           </h4>
           <ul className="footer__links">
             <li>
               <Link to="/" className="footer__link">
-                {isRu ? "Главная страница" : "Home"}
+                {t("footer.home")}
               </Link>
             </li>
             <li>
               <Link to="/about" className="footer__link">
-                {isRu ? "О бренде Al-Warda" : "About Al-Warda"}
+                {t("footer.aboutWarda")}
               </Link>
             </li>
             <li>
               <Link to="/contacts" className="footer__link">
-                {isRu ? "Контакты и бутик" : "Contact & Boutique"}
+                {t("footer.contactBoutique") || t("footer.contactsBoutique")}
               </Link>
             </li>
             <li>
               <Link to="/orders" className="footer__link">
-                {isRu ? "Отследить заказ" : "Track Order"}
+                {t("footer.trackOrder")}
               </Link>
             </li>
             <li>
               <Link to="/cart" className="footer__link">
-                {isRu ? "Корзина покупок" : "Shopping Bag"}
+                {t("footer.shoppingBag")}
               </Link>
             </li>
             <li>
@@ -125,7 +122,7 @@ export default function Footer() {
         {/* CONTACT & PAYMENT COLUMN */}
         <div className="warda-footer__col">
           <h4 className="warda-footer__heading">
-            {isRu ? "КОНТАКТЫ" : "CONTACT"}
+            {t("footer.contact") || t("footer.contacts")}
           </h4>
           <div className="warda-footer__info">
             <span className="warda-footer__info-item">
@@ -138,13 +135,13 @@ export default function Footer() {
             </span>
             <span className="warda-footer__info-item">
               <i className="ri-map-pin-line" />
-              <span>{isRu ? "Кишинёв / Ближний Восток" : "Chisinau / Middle East"}</span>
+              <span>{t("footer.location")}</span>
             </span>
           </div>
 
           <div className="warda-footer__payment-section">
             <span className="warda-footer__payment-title">
-              {isRu ? "СПОСОБЫ ОПЛАТЫ" : "ACCEPTED PAYMENTS"}
+              {t("footer.acceptedPayments") || t("footer.payments")}
             </span>
             <div className="warda-footer__payment-icons">
               <span className="warda-payment-pill">VISA</span>
@@ -158,7 +155,7 @@ export default function Footer() {
 
       <div className="footer__bottom container">
         <span className="footer__copy">
-          © {new Date().getFullYear()} Al-Warda Parfumes. {isRu ? "Все права защищены." : "All rights reserved."}
+          © {new Date().getFullYear()} Al-Warda Parfumes. {t("footer.allRightsReserved") || t("footer.allRights")}
         </span>
         <span className="footer__tagline">
           ✦ Timeless Arabian Luxury Fragrances ✦

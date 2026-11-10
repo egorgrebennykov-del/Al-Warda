@@ -15,6 +15,7 @@ import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
+import { formatVolume, getLocalizedSampleDesc } from "../../utils/localization";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import "../featured/Featured.css";
 import "../common/ProductCardImages.css";
@@ -25,16 +26,24 @@ function isDiscoveryOrMiniSet(item) {
   return /\b(discovery|mini|travel|sample|\d+\s*[x×]\s*[1-9]\d?\s*ml|pen\s*spray|pack\s+of)\b/i.test(txt);
 }
 
-function getSetBadgeLabel(item, language = "ru") {
-  if (isDiscoveryOrMiniSet(item)) {
-    return language === "ru" ? "ДИСКАВЕРИ СЕТ" : "DISCOVERY SET";
+function getSetBadgeLabel(item, language = "ru", t) {
+  const isDisc = isDiscoveryOrMiniSet(item);
+  if (t) {
+    return isDisc ? t("sets.badgeDiscovery") : t("sets.badgeGift");
   }
-  return language === "ru" ? "ПОДАРОЧНЫЙ СЕТ" : "GIFT SET";
+  const lang = String(language || "ru").toLowerCase();
+  if (lang === "ru") return isDisc ? "ДИСКАВЕРИ СЕТ" : "ПОДАРОЧНЫЙ СЕТ";
+  if (lang === "hu") return isDisc ? "FELFEDEZŐ KÉSZLET" : "AJÁNDÉK SZETT";
+  if (lang === "bg") return isDisc ? "ДИСКАВЪРИ КОМПЛЕКТ" : "ПОДАРЪЧЕН КОМПЛЕКТ";
+  if (lang === "el") return isDisc ? "DISCOVERY SET" : "ΣΕΤ ΔΩΡΟΥ";
+  if (lang === "ro") return isDisc ? "DISCOVERY SET" : "SET CADOU";
+  return isDisc ? "DISCOVERY SET" : "GIFT SET";
 }
 
 function formatItemCount(count, language = "ru") {
   const n = Math.abs(Number(count) || 0);
-  if (language === "ru") {
+  const lang = String(language || "ru").toLowerCase();
+  if (lang === "ru") {
     const mod100 = n % 100;
     const mod10 = n % 10;
     if (mod100 >= 11 && mod100 <= 19) return `${n} предложений`;
@@ -42,7 +51,29 @@ function formatItemCount(count, language = "ru") {
     if (mod10 >= 2 && mod10 <= 4) return `${n} предложения`;
     return `${n} предложений`;
   }
+  if (lang === "bg") {
+    return `${n} ${n === 1 ? "предложение" : "предложения"}`;
+  }
+  if (lang === "hu") {
+    return `${n} ajánlat`;
+  }
+  if (lang === "el") {
+    return `${n} ${n === 1 ? "προσφορά" : "προσφορές"}`;
+  }
+  if (lang === "ro") {
+    return `${n} ${n === 1 ? "ofertă" : "oferte"}`;
+  }
   return `${n} ${n === 1 ? "offer" : "offers"}`;
+}
+
+function formatShowingOf(count, total, language = "ru") {
+  const lang = String(language || "ru").toLowerCase();
+  if (lang === "ru") return `Показано ${count} из ${total} предложений`;
+  if (lang === "bg") return `Показани ${count} от ${total} предложения`;
+  if (lang === "hu") return `Megjelenítve: ${count} / ${total} ajánlat`;
+  if (lang === "el") return `Εμφάνιση ${count} από ${total} προσφορές`;
+  if (lang === "ro") return `Se afișează ${count} din ${total} oferte`;
+  return `Showing ${count} of ${total} offers`;
 }
 
 const PAGE_SIZE = 28;
@@ -50,9 +81,8 @@ const PAGE_SIZE = 28;
 export default function Sets() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const isRu = language === "ru";
   const { isInCart, toggleCart } = useCartState();
 
   const [allItems, setAllItems] = useState(() => getCachedPerfumes() || []);
@@ -286,15 +316,13 @@ export default function Sets() {
       <div className="warda-sets-hero">
         <span className="warda-sets-eyebrow">
           <i className="ri-compass-3-line" />
-          {isRu ? "ЗНАКОМСТВО С АРОМАТАМИ • ПРОБУЙ И ОТКРЫВАЙ" : "FRAGRANCE DISCOVERY • TRY & DISCOVER"}
+          {t("sets.heroEyebrow")}
         </span>
         <h1 className="warda-shop-title">
-          {isRu ? "Пробуй и открывай • Сеты и Пробники" : "Try & Discover • Sets & Samples"}
+          {t("sets.heroTitle")}
         </h1>
         <p className="warda-shop-subtitle">
-          {isRu
-            ? "Познакомьтесь с восточными ароматами перед покупкой полного флакона: открывайте миниатюры, отливанты и пробники от 1 мл, 2 мл, 5 мл, 10 мл, а также эксклюзивные подарочные и дискавери-сеты."
-            : "Experience authentic Arabian perfumery before committing to a full bottle: explore sample vials, decants, and travel sprays from 1ml, 2ml, 5ml, 10ml, alongside luxury gift and discovery sets."}
+          {t("sets.heroSubtitle")}
         </p>
 
         {/* LUXURY ASSURANCE BENEFITS */}
@@ -302,22 +330,22 @@ export default function Sets() {
           <div className="warda-sets-benefit-item">
             <i className="ri-shield-star-line" />
             <div>
-              <strong>{isRu ? "100% Оригинальные ароматы" : "100% Authentic Scents"}</strong>
-              <span>{isRu ? "Отливанты производятся исключительно из запечатанных заводских флаконов" : "Decanted directly from sealed authentic manufacture flacons"}</span>
+              <strong>{t("sets.benefit1Title")}</strong>
+              <span>{t("sets.benefit1Desc")}</span>
             </div>
           </div>
           <div className="warda-sets-benefit-item">
             <i className="ri-flask-line" />
             <div>
-              <strong>{isRu ? "Пробники от 1 до 10 мл" : "Sample Vials (1ml - 10ml)"}</strong>
-              <span>{isRu ? "Стеклянные виалки и качественные тревел-атомайзеры с микрораспылением" : "Glass spray vials and premium pocket atomizers with fine mist"}</span>
+              <strong>{t("sets.benefit2Title")}</strong>
+              <span>{t("sets.benefit2Desc")}</span>
             </div>
           </div>
           <div className="warda-sets-benefit-item">
             <i className="ri-sparkling-2-line" />
             <div>
-              <strong>{isRu ? "Уверенность перед покупкой" : "Try Before Committing"}</strong>
-              <span>{isRu ? "Проверьте раскрытие пирамиды, стойкость и шлейф в реальной жизни" : "Test longevity and sillage on your skin before buying the full bottle"}</span>
+              <strong>{t("sets.benefit3Title")}</strong>
+              <span>{t("sets.benefit3Desc")}</span>
             </div>
           </div>
         </div>
@@ -326,10 +354,10 @@ export default function Sets() {
         <div className="warda-sets-controls">
           <div className="warda-sets-tabs" role="tablist">
             {[
-              { id: "all", ru: "Все предложения", en: "All (Try & Discover)", icon: "ri-apps-2-line" },
-              { id: "samples", ru: "Флаконы-пробники (1-10 мл)", en: "Sample Vials (1-10 ml)", icon: "ri-flask-line" },
-              { id: "discovery", ru: "Дискавери-сеты", en: "Discovery Sets", icon: "ri-magic-line" },
-              { id: "gift", ru: "Подарочные наборы", en: "Gift Sets", icon: "ri-gift-line" },
+              { id: "all", label: t("sets.tabAll"), icon: "ri-apps-2-line" },
+              { id: "samples", label: t("sets.tabSamples"), icon: "ri-flask-line" },
+              { id: "discovery", label: t("sets.tabDiscovery"), icon: "ri-magic-line" },
+              { id: "gift", label: t("sets.tabGift"), icon: "ri-gift-line" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -338,7 +366,7 @@ export default function Sets() {
                 onClick={() => setSelectedType(tab.id)}
               >
                 <i className={tab.icon} />
-                <span>{isRu ? tab.ru : tab.en}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
@@ -350,11 +378,7 @@ export default function Sets() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  isRu
-                    ? "Поиск сета или пробника по названию, бренду или нотам..."
-                    : "Search sets or samples by name, brand, or notes..."
-                }
+                placeholder={t("sets.searchPlaceholder")}
               />
               {searchQuery && (
                 <button
@@ -374,14 +398,14 @@ export default function Sets() {
                 className="warda-sort-select"
                 value={selectedVolume}
                 onChange={(e) => setSelectedVolume(e.target.value)}
-                aria-label={isRu ? "Объём" : "Volume"}
+                aria-label={t("featured.volume")}
               >
-                <option value="all">{isRu ? "Все объёмы" : "All Volumes"}</option>
-                <option value="1ml">{isRu ? "1 мл (Пробник)" : "1 ml (Sample)"}</option>
-                <option value="2ml">{isRu ? "2 мл (Спрей)" : "2 ml (Spray)"}</option>
-                <option value="5ml">{isRu ? "5 мл (Атомайзер)" : "5 ml (Travel)"}</option>
-                <option value="10ml">{isRu ? "10 мл (Миниатюра)" : "10 ml (Mini)"}</option>
-                <option value="sets">{isRu ? "Сеты и наборы" : "Sets & Coffrets"}</option>
+                <option value="all">{t("sets.volAll")}</option>
+                <option value="1ml">{t("sets.vol1ml")}</option>
+                <option value="2ml">{t("sets.vol2ml")}</option>
+                <option value="5ml">{t("sets.vol5ml")}</option>
+                <option value="10ml">{t("sets.vol10ml")}</option>
+                <option value="sets">{t("sets.volSets")}</option>
               </select>
 
               {/* BRAND FILTER */}
@@ -390,9 +414,9 @@ export default function Sets() {
                   className="warda-sort-select"
                   value={selectedBrand}
                   onChange={(e) => setSelectedBrand(e.target.value)}
-                  aria-label={isRu ? "Бренд" : "Brand"}
+                  aria-label={t("featured.brand")}
                 >
-                  <option value="all">{isRu ? "Все бренды" : "All Brands"}</option>
+                  <option value="all">{t("sets.brandAll")}</option>
                   {availableBrands.map((brand) => (
                     <option key={brand} value={brand}>
                       {brand}
@@ -406,12 +430,12 @@ export default function Sets() {
                 className="warda-sort-select"
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
-                aria-label={isRu ? "Для кого" : "Gender"}
+                aria-label={t("featured.gender")}
               >
-                <option value="all">{isRu ? "Для всех" : "All Genders"}</option>
-                <option value="unisex">{isRu ? "Унисекс" : "Unisex"}</option>
-                <option value="women">{isRu ? "Женские" : "For Her"}</option>
-                <option value="men">{isRu ? "Мужские" : "For Him"}</option>
+                <option value="all">{t("sets.genderAll")}</option>
+                <option value="unisex">{t("sets.genderUnisex")}</option>
+                <option value="women">{t("sets.genderWomen")}</option>
+                <option value="men">{t("sets.genderMen")}</option>
               </select>
 
               {/* SORT FILTER */}
@@ -419,11 +443,11 @@ export default function Sets() {
                 className="warda-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                aria-label={isRu ? "Сортировка" : "Sort by"}
+                aria-label={t("featured.sort")}
               >
-                <option value="popular">{isRu ? "По популярности" : "Most Popular"}</option>
-                <option value="price-asc">{isRu ? "Сначала дешевле" : "Price: Low to High"}</option>
-                <option value="price-desc">{isRu ? "Сначала дороже" : "Price: High to Low"}</option>
+                <option value="popular">{t("sets.sortPopular")}</option>
+                <option value="price-asc">{t("sets.sortPriceAsc")}</option>
+                <option value="price-desc">{t("sets.sortPriceDesc")}</option>
               </select>
 
               {hasActiveFilters && (
@@ -431,9 +455,9 @@ export default function Sets() {
                   type="button"
                   className="warda-reset-filters-btn"
                   onClick={resetFilters}
-                  title={isRu ? "Снять все фильтры" : "Clear all filters"}
+                  title={t("sets.resetFilters")}
                 >
-                  ✕ {isRu ? "Снять все фильтры" : "Clear all filters"}
+                  ✕ {t("sets.resetFilters")}
                 </button>
               )}
             </div>
@@ -442,20 +466,18 @@ export default function Sets() {
       </div>
 
       <SectionDivider
-        title={`${isRu ? "НАЙДЕНО" : "SHOWING"}: ${formatItemCount(filteredItems.length, language).toUpperCase()}`}
+        title={`${t("sets.showing").toUpperCase()}: ${formatItemCount(filteredItems.length, language).toUpperCase()}`}
         showMotif={true}
       />
 
       {loading ? (
         <div className="warda-loading">
-          {isRu ? "Загрузка коллекции «Пробуй и открывай»..." : "Loading Try & Discover collection..."}
+          {t("sets.loading")}
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="warda-empty">
           <p>
-            {isRu
-              ? "По выбранным параметрам сеты и пробники не найдены."
-              : "No sets or fragrance samples found matching your filters."}
+            {t("sets.noOffers")}
           </p>
           <button
             type="button"
@@ -463,7 +485,7 @@ export default function Sets() {
             style={{ marginTop: "1rem" }}
             onClick={resetFilters}
           >
-            {isRu ? "ПОКАЗАТЬ ВСЕ ПРЕДЛОЖЕНИЯ" : "SHOW ALL OFFERS"}
+            {t("sets.showAllOffers")}
           </button>
         </div>
       ) : (
@@ -481,7 +503,8 @@ export default function Sets() {
               const currentPrice = isSet
                 ? Number(perfume.price)
                 : getSamplePrice(perfume.price, activeVol);
-              const volLabel = sampleCfg ? (isRu ? sampleCfg.labelRu : sampleCfg.labelEn) : "";
+              const rawVolLabel = sampleCfg ? (sampleCfg.labelEn || sampleCfg.key) : "";
+              const volLabel = formatVolume(rawVolLabel, language);
               const itemKey = isSet ? perfume.id : `${perfume.id}-${activeVol}`;
               const isAdded = Boolean(addedIds[itemKey]);
 
@@ -498,12 +521,12 @@ export default function Sets() {
                     {isSet ? (
                       <span className="warda-set-card__badge">
                         <i className="ri-gift-2-fill" />
-                        {getSetBadgeLabel(perfume, language)}
+                        {getSetBadgeLabel(perfume, language, t)}
                       </span>
                     ) : (
                       <span className="warda-sample-card__badge">
                         <i className="ri-flask-fill" />
-                        {isRu ? `ПРОБНИК • ${volLabel}` : `SAMPLE • ${volLabel}`}
+                        {`${t("sets.badgeSample")} • ${volLabel}`}
                       </span>
                     )}
 
@@ -543,9 +566,9 @@ export default function Sets() {
                               setCardVolumes((prev) => ({ ...prev, [perfume.id]: sv.key }));
                               handleCardClick(perfume, sv.key);
                             }}
-                            title={`${isRu ? sv.labelRu : sv.labelEn} — ${isRu ? sv.descRu : sv.descEn}`}
+                            title={`${formatVolume(sv.labelEn || sv.key, language)} — ${getLocalizedSampleDesc(sv.key, language)}`}
                           >
-                            {isRu ? sv.labelRu : sv.labelEn}
+                            {formatVolume(sv.labelEn || sv.key, language)}
                           </button>
                         ))}
                       </div>
@@ -564,24 +587,24 @@ export default function Sets() {
                           type="button"
                           className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                           onClick={(e) => handleAddToCartItem(perfume, activeVol, e)}
-                          aria-label={inCart ? (isRu ? "Удалить из корзины" : "Remove from cart") : `Add ${perfume.name} to cart`}
-                          title={inCart ? (isRu ? "Удалить из корзины" : "Remove from bag") : undefined}
+                          aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                          title={inCart ? t("featured.remove") : undefined}
                         >
                           {inCart ? (
                             <>
                               <span className="warda-btn__text-normal">
-                                {isRu ? (isSet ? "В КОРЗИНЕ ✓" : `В КОРЗИНЕ (${volLabel}) ✓`) : (isSet ? "IN BAG ✓" : `IN BAG (${volLabel}) ✓`)}
+                                {isSet ? t("featured.inBag") : `${t("featured.inBag").replace("✓", "").trim()} (${volLabel}) ✓`}
                               </span>
                               <span className="warda-btn__text-hover">
-                                {isRu ? "УДАЛИТЬ ✕" : "REMOVE ✕"}
+                                {t("featured.remove")}
                               </span>
                             </>
                           ) : isAdded ? (
-                            isRu ? "ДОБАВЛЕНО ✓" : "ADDED ✓"
+                            t("featured.added")
                           ) : isSet ? (
-                            isRu ? "В КОРЗИНУ" : "ADD TO CART"
+                            t("featured.addToCart")
                           ) : (
-                            isRu ? `В КОРЗИНУ (${volLabel})` : `ADD TO BAG (${volLabel})`
+                            `${t("featured.addToCart")} (${volLabel})`
                           )}
                         </button>
                       );
@@ -602,15 +625,11 @@ export default function Sets() {
               >
                 <i className="ri-arrow-down-line" />
                 <span>
-                  {isRu
-                    ? `ПОКАЗАТЬ ЕЩЁ (+${Math.min(PAGE_SIZE, filteredItems.length - visibleCount)})`
-                    : `LOAD MORE (+${Math.min(PAGE_SIZE, filteredItems.length - visibleCount)})`}
+                  {`${t("sets.loadMore")} (+${Math.min(PAGE_SIZE, filteredItems.length - visibleCount)})`}
                 </span>
               </button>
               <p className="warda-sets-load-more__hint">
-                {isRu
-                  ? `Показано ${visibleItems.length} из ${filteredItems.length} предложений`
-                  : `Showing ${visibleItems.length} of ${filteredItems.length} offers`}
+                {formatShowingOf(visibleItems.length, filteredItems.length, language)}
               </p>
             </div>
           )}
