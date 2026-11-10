@@ -629,10 +629,9 @@ export async function saveManualProductItem(request, env) {
       return json({ error: "Invalid JSON request" }, 400);
     }
 
-    const id = body.id;
-    if (id === undefined || id === null || id === "") {
-      return json({ error: "Product ID is required" }, 400);
-    }
+    const rawId = body.id;
+    const isNew = !rawId || rawId === "new" || rawId === 0 || rawId === "0";
+    const id = isNew ? "new" : rawId;
 
     const key = getServiceKey(env);
     const baseUrl = getSupabaseUrl(env);
@@ -642,17 +641,22 @@ export async function saveManualProductItem(request, env) {
       "Content-Type": "application/json; charset=utf-8",
     };
 
-    // 1. Fetch current row
-    const fetchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
-    fetchUrl.searchParams.set("id", `eq.${id}`);
-    fetchUrl.searchParams.set("select", "id,name,brand,price,currency,image,info");
-    const getRes = await fetch(fetchUrl, { headers });
-    if (!getRes.ok) {
-      throw new Error(`Failed to load product ${id} from database (${getRes.status})`);
+    let existingRow = {};
+    let existingInfo = {};
+
+    if (!isNew) {
+      // 1. Fetch current row
+      const fetchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+      fetchUrl.searchParams.set("id", `eq.${id}`);
+      fetchUrl.searchParams.set("select", "id,name,brand,price,currency,image,info");
+      const getRes = await fetch(fetchUrl, { headers });
+      if (!getRes.ok) {
+        throw new Error(`Failed to load product ${id} from database (${getRes.status})`);
+      }
+      const rows = await getRes.json();
+      existingRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : {};
+      existingInfo = existingRow.info && typeof existingRow.info === "object" ? { ...existingRow.info } : {};
     }
-    const rows = await getRes.json();
-    const existingRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : {};
-    const existingInfo = existingRow.info && typeof existingRow.info === "object" ? { ...existingRow.info } : {};
 
     // 2. Resolve image
     let finalImageUrl = (typeof body.image === "string" ? body.image.trim() : "") ||
@@ -777,6 +781,29 @@ export async function saveManualProductItem(request, env) {
       info: updatedInfo,
     };
 
+    if (isNew) {
+      const insertUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+      const insertRes = await fetch(insertUrl, {
+        method: "POST",
+        headers: { ...headers, Prefer: "return=representation" },
+        body: JSON.stringify(patchPayload),
+      });
+
+      if (!insertRes.ok) {
+        const errText = (await insertRes.text()).slice(0, 300);
+        throw new Error(`Failed to insert product into database (${insertRes.status}): ${errText}`);
+      }
+
+      const insertedRows = await insertRes.json().catch(() => []);
+      const created = insertedRows[0] || patchPayload;
+      return json({
+        ok: true,
+        id: created.id,
+        product: created,
+        isNew: true,
+      });
+    }
+
     const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
     patchUrl.searchParams.set("id", `eq.${id}`);
     const patchRes = await fetch(patchUrl, {
@@ -801,5 +828,98 @@ export async function saveManualProductItem(request, env) {
       return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
     }
     return json({ error: error.message || "Could not save product" }, 500);
+  }
+}
+
+
+export async function getAllAdminProducts(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+
+    const key = getServiceKey(env);
+    const rows = await fetchAllStocks(env, key);
+    const products = rows
+      .filter((row) => row && row.id && !String(row.slug || "").includes("site-settings"))
+      .map((row) => {
+        const info = row.info && typeof row.info === "object" ? row.info : {};
+        const gen = info.imageGeneration || {};
+        return {
+          id: row.id,
+          name: row.name || "",
+          brand: row.brand || "Al-Warda",
+          price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+          currency: row.currency || "EUR",
+          image: row.image || gen.imageUrl || info.rawImage || null,
+          rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+          category: info.category || "Восточные",
+          categorySlug: info.categorySlug || "oud",
+          categoryEn: info.categoryEn || "Oriental",
+          gender: info.gender || "Унисекс",
+          volume: info.volume || "100 мл",
+          concentration: info.concentration || "Eau De Parfum",
+          inStock: info.inStock !== false,
+          notesSummary: info.notesSummary || "",
+          notesSummaryEn: info.notesSummaryEn || "",
+          status: gen.status || "pending",
+          completedAt: gen.completedAt || null,
+          info,
+        };
+      });
+
+    return json({ count: products.length, products });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not load products" }, 500);
+  }
+}
+
+export async function deleteAdminProducts(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+
+    const ids = Array.isArray(body.ids)
+      ? body.ids.map(String).filter(Boolean)
+      : (body.id !== undefined && body.id !== null ? [String(body.id)] : []);
+
+    if (!ids.length) {
+      return json({ error: "No product IDs specified to delete" }, 400);
+    }
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = { apikey: key, Authorization: `Bearer ${key}` };
+
+    let deletedCount = 0;
+    for (let i = 0; i < ids.length; i += 200) {
+      const chunk = ids.slice(i, i + 200);
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("id", `in.(${chunk.join(",")})`);
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to delete products from database (${response.status})`);
+      }
+      deletedCount += chunk.length;
+    }
+
+    return json({ ok: true, deletedCount, ids });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+    }
+    return json({ error: error.message || "Could not delete products" }, 500);
   }
 }

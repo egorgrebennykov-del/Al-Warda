@@ -30,6 +30,8 @@ import {
   deleteFailedProductItems,
   requeueFailedProductItems,
   saveManualProductItem,
+  getAllAdminProducts,
+  deleteAdminProducts,
   getSiteSettings,
   saveSiteSettings,
 } from "./productImageQueueAdmin.js";
@@ -201,6 +203,28 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await saveManualProductItem(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/admin/products") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await getAllAdminProducts(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if ((req.method === "POST" || req.method === "DELETE") && (pathname === "/api/admin/products/delete" || pathname === "/api/admin/products")) {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await deleteAdminProducts(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);

@@ -14,6 +14,8 @@ import {
   deleteFailedProductItems,
   requeueFailedProductItems,
   saveManualProductItem,
+  getAllAdminProducts,
+  deleteAdminProducts,
   getSiteSettings,
   saveSiteSettings,
 } from "./productImageQueueAdmin.js";
@@ -157,6 +159,12 @@ export default {
     }
     if (method === "POST" && pathname === "/api/admin/product-images/manual-save") {
       return saveManualProductItem(request, env);
+    }
+    if (method === "GET" && pathname === "/api/admin/products") {
+      return getAllAdminProducts(request, env);
+    }
+    if ((method === "DELETE" || method === "POST") && (pathname === "/api/admin/products/delete" || pathname === "/api/admin/products")) {
+      return deleteAdminProducts(request, env);
     }
     if (pathname === "/api/admin/settings" && method === "GET") return getSiteSettings(request, env);
     if (pathname === "/api/admin/settings" && method === "POST") return saveSiteSettings(request, env);

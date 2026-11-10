@@ -34,11 +34,13 @@ export default function ProductManualConfigModal({
   const isRussian = language === "ru";
   const fileInputRef = useRef(null);
 
+  const isNew = !item?.id || item?.id === "new" || Boolean(item?.isNew);
+
   // Pre-fill initial state using existing product info and enrichment
   const [initialData] = useState(() => {
     const rawName = item?.name || item?.title || "";
     const cleanName = stripVolumeFromName(rawName);
-    const enriched = ensurePerfumeEnrichment({
+    const enriched = isNew ? {} : ensurePerfumeEnrichment({
       id: item?.id,
       name: cleanName,
       title: cleanName,
@@ -215,7 +217,7 @@ export default function ProductManualConfigModal({
     try {
       const currentCategory = CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0];
       const payload = {
-        id: item.id,
+        id: isNew ? "new" : item.id,
         name: name.trim(),
         brand: brand.trim(),
         category: currentCategory.ru,
@@ -278,14 +280,22 @@ export default function ProductManualConfigModal({
         <header className="product-manual-modal__header">
           <div className="product-manual-modal__title-wrap">
             <h2 className="product-manual-modal__title">
-              <i className="ri-settings-3-line" />
-              {isRussian ? "Панель создания и настройки товара" : "Manual Product Setup"}
-              <span className="product-manual-modal__badge">ID #{item?.id}</span>
+              <i className={isNew ? "ri-add-circle-line" : "ri-settings-3-line"} />
+              {isNew
+                ? (isRussian ? "Создание нового товара" : "Create New Product")
+                : (isRussian ? "Панель настройки товара" : "Manual Product Setup")}
+              <span className="product-manual-modal__badge">
+                {isNew ? (isRussian ? "Новый товар" : "New Item") : `ID #${item?.id}`}
+              </span>
             </h2>
             <p className="product-manual-modal__subtitle">
-              {isRussian
-                ? "Все поля уже заполнены на основе характеристик аромата. Вы можете отредактировать ноты, описание, цену и загрузить фото флакона."
-                : "All fields are pre-filled based on fragrance notes. Edit properties, descriptions, price, and upload a flacon photo."}
+              {isNew
+                ? (isRussian
+                  ? "Заполните название, бренд и характеристики аромата, добавьте фото флакона и сохраните товар в базу данных магазина."
+                  : "Fill in perfume title, brand and properties, add flacon photo and save the product directly to store database.")
+                : (isRussian
+                  ? "Все поля уже заполнены на основе характеристик аромата. Вы можете отредактировать ноты, описание, цену и загрузить фото флакона."
+                  : "All fields are pre-filled based on fragrance notes. Edit properties, descriptions, price, and upload a flacon photo.")}
             </p>
           </div>
           <button

@@ -5,6 +5,8 @@ import {
   deleteFailedProductItems,
   requeueFailedProductItems,
   saveManualProductItem,
+  getAllAdminProducts,
+  deleteAdminProducts,
 } from "../server/productImageQueueAdmin.js";
 import { hasCompletedGeneratedImage } from "../utils/perfumes.js";
 
@@ -311,5 +313,113 @@ describe("product image queue admin API", () => {
       }),
       true,
     );
+  });
+
+  it("allows privileged users to create a brand new product via saveManualProductItem", async () => {
+    let insertedBody = null;
+
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "POST") {
+        insertedBody = JSON.parse(init.body);
+        return Response.json([{ id: 101, ...insertedBody }]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+
+    const res = await saveManualProductItem(
+      request("/api/admin/product-images/manual-save", userCookie(), {
+        method: "POST",
+        body: JSON.stringify({
+          id: "new",
+          name: "Asad Lattafa",
+          brand: "Lattafa",
+          price: 34.5,
+          image: "https://example.com/asad.png",
+          category: "Древесные и Уд",
+          categorySlug: "oud",
+          gender: "Мужской",
+          volume: "100 мл",
+          descriptionRu: "Восточный пряный мужской парфюм Asad.",
+        }),
+      }),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.id, 101);
+    assert.equal(body.isNew, true);
+    assert.equal(insertedBody.name, "Asad Lattafa");
+    assert.equal(insertedBody.brand, "Lattafa");
+    assert.equal(insertedBody.image, "https://example.com/asad.png");
+    assert.equal(insertedBody.info.imageGeneration.status, "completed");
+    assert.equal(insertedBody.info.imageGeneration.manual, true);
+  });
+
+  it("lists all admin products and allows deleting products", async () => {
+    let deletedIdParam = null;
+
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "DELETE") {
+        deletedIdParam = url.searchParams.get("id");
+        return new Response(null, { status: 204 });
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && (!init.method || init.method === "GET")) {
+        return Response.json([
+          {
+            id: 1,
+            name: "Khamrah",
+            brand: "Lattafa",
+            price: 39.9,
+            currency: "EUR",
+            image: "https://example.com/khamrah.png",
+            info: { category: "Гурманские", inStock: true },
+          },
+          {
+            id: 2,
+            name: "Club de Nuit",
+            brand: "Armaf",
+            price: 35.0,
+            currency: "EUR",
+            image: "https://example.com/cdn.png",
+            info: { category: "Цитрусовые", inStock: false },
+          },
+        ]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+
+    const getRes = await getAllAdminProducts(
+      request("/api/admin/products", userCookie()),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+    assert.equal(getRes.status, 200);
+    const getBody = await getRes.json();
+    assert.equal(getBody.count, 2);
+    assert.equal(getBody.products[0].name, "Khamrah");
+    assert.equal(getBody.products[0].brand, "Lattafa");
+    assert.equal(getBody.products[1].name, "Club de Nuit");
+
+    const delRes = await deleteAdminProducts(
+      request("/api/admin/products", userCookie(), {
+        method: "DELETE",
+        body: JSON.stringify({ id: 2 }),
+      }),
+      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+    );
+    assert.equal(delRes.status, 200);
+    const delBody = await delRes.json();
+    assert.equal(delBody.ok, true);
+    assert.equal(delBody.deletedCount, 1);
+    assert.equal(deletedIdParam, "in.(2)");
   });
 });

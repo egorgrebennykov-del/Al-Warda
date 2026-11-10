@@ -41,6 +41,7 @@ import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import QogitaManager from "./QogitaManager";
 import ProductImageQueue from "./ProductImageQueue";
+import ProductsManager from "./ProductsManager";
 import "./Privileged.css";
 
 function formatPrice(price, currency = "EUR", language = "ru") {
@@ -84,6 +85,12 @@ const PRIVILEGED_TAB_ALIASES = {
   gitactions: "git-actions",
   git: "git-actions",
   actions: "git-actions",
+  products: "products",
+  tovary: "products",
+  items: "products",
+  stock: "products",
+  stocks: "products",
+  catalog: "products",
   qogita: "qogita",
   "product-images": "product-images",
   productimages: "product-images",
@@ -1785,6 +1792,17 @@ export default function Privileged() {
         >
           <i className="ri-shopping-bag-3-line" />
           <span>Qogita B2B</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "products"}
+          className={`privileged__nav-btn ${activeSection === "products" ? "privileged__nav-btn--active" : ""}`}
+          onClick={() => setActiveSection("products")}
+        >
+          <i className="ri-store-2-line" />
+          <span>{language === "ru" ? "Товары" : "Products"}</span>
         </button>
 
         <button
@@ -5340,6 +5358,11 @@ export default function Privileged() {
         {activeSection === "qogita" && (
           <div className="privileged__panel">
             <QogitaManager language={language} />
+          </div>
+        )}
+        {activeSection === "products" && (
+          <div className="privileged__panel">
+            <ProductsManager language={language} />
           </div>
         )}
         {activeSection === "product-images" && (
