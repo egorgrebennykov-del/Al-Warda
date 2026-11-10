@@ -225,3 +225,46 @@ test("GitHub Actions workflows exist for RON and HUF with correct daily schedule
   assert.ok(!ronContent.includes("full-database-refresh"));
   assert.ok(!hufContent.includes("full-database-refresh"));
 });
+
+test("getPerfumeMinOrder and applyMinOrderFilter accurately enforce MOQ and exclude items requiring > 1 unit", async () => {
+  const { getPerfumeMinOrder, applyMinOrderFilter } = await import("../utils/perfumes.js");
+
+  // Al Fares Abaq Oud For Love is sold in bundles of 4
+  const abaqItem = {
+    id: "5241",
+    name: "Al Fares Abaq Oud For Love - Fragrance",
+    gtin: "6294021900843",
+  };
+  assert.equal(getPerfumeMinOrder(abaqItem), 4, "Abaq Oud minimum order must resolve to 4");
+
+  // Lattafa Yara is sold in bundles of 6
+  const yaraItem = {
+    id: "3840",
+    name: "Lattafa Yara 100ml EDP",
+    gtin: "6291108730515",
+  };
+  assert.equal(getPerfumeMinOrder(yaraItem), 6, "Yara minimum order must resolve to 6");
+
+  // Single unit perfume
+  const singleItem = {
+    id: "9999",
+    name: "Standard Single Bottle EDP",
+    minOrderQuantity: 1,
+  };
+  assert.equal(getPerfumeMinOrder(singleItem), 1, "Single item MOQ must resolve to 1");
+
+  // Filter with minOrder 1..1 (only single-unit items allowed)
+  const singleOnlySettings = { minOrderFrom: 1, minOrderTo: 1 };
+  const catalog = [abaqItem, yaraItem, singleItem];
+  const filtered = applyMinOrderFilter(catalog, singleOnlySettings);
+
+  assert.equal(filtered.length, 1, "Only single-unit items should pass the 1..1 filter");
+  assert.equal(filtered[0].id, "9999", "Only the true MOQ 1 item passes");
+
+  // Filter with minOrder 1..4 (allows single bottles up to bundles of 4)
+  const upTo4Settings = { minOrderFrom: 1, minOrderTo: 4 };
+  const filteredUpTo4 = applyMinOrderFilter(catalog, upTo4Settings);
+  assert.equal(filteredUpTo4.length, 2, "Items with MOQ <= 4 should pass");
+  assert.ok(filteredUpTo4.some((p) => p.name.includes("Abaq Oud")));
+  assert.ok(!filteredUpTo4.some((p) => p.name.includes("Yara")));
+});

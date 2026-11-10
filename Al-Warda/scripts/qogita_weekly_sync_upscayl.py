@@ -36,6 +36,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.dirname(SCRIPT_DIR)
 ENRICHED_STOCKS_PATH = os.path.join(APP_DIR, "server", "data", "enrichedStocks.json")
 CACHED_PERFUMES_PATH = os.path.join(APP_DIR, "server", "data", "cachedArabianPerfumes.json")
+MIN_ORDER_MAP_PATH = os.path.join(APP_DIR, "server", "data", "qogitaMinOrderMap.json")
 
 ROOT_SCRIPTS_DIR = os.path.join(os.path.dirname(APP_DIR), "scripts")
 if ROOT_SCRIPTS_DIR not in sys.path:
@@ -562,6 +563,15 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         if v.get("info", {}).get("gtin")
     }
 
+    # Load min order map fallback
+    min_order_map = {"byGtin": {}, "byName": {}}
+    if os.path.exists(MIN_ORDER_MAP_PATH):
+        try:
+            with open(MIN_ORDER_MAP_PATH, "r", encoding="utf-8") as f:
+                min_order_map = json.load(f)
+        except Exception as e:
+            print(f"Warning: could not load qogitaMinOrderMap.json: {e}")
+
     # 4. Fetch and Process Perfumes
     all_perfumes = []
     new_additions_count = 0
@@ -581,8 +591,10 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0)
 
             gtin = item.get("gtin")
-            min_order = int(item.get("unit") or 1)
             name_clean = name.strip().lower()
+            raw_unit = int(item.get("unit") or item.get("minOrderQuantity") or item.get("variants", [{}])[0].get("unit") or 1)
+            map_moq = int(min_order_map.get("byGtin", {}).get(gtin) or min_order_map.get("byName", {}).get(name_clean) or 1)
+            min_order = raw_unit if raw_unit > 1 else (map_moq if map_moq > 1 else raw_unit)
 
             # Delta / incremental check
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
@@ -598,6 +610,9 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 existing_item["rawImage"] = raw_img
                 existing_info["gtin"] = gtin or existing_info.get("gtin", "")
                 existing_info["minOrderQuantity"] = min_order
+                existing_info["unit"] = min_order
+                existing_item["minOrderQuantity"] = min_order
+                existing_item["unit"] = min_order
                 existing_info["rawImage"] = raw_img
                 existing_item["image"] = (
                     generation.get("imageUrl")

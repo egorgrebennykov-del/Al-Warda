@@ -24,6 +24,15 @@ const MAX_LOG_SIZE = 50;
 
 // In-memory cache for Arabian Dropship perfumes
 const cacheFilePath = path.resolve(appDir, "server/data/cachedArabianPerfumes.json");
+const minOrderMapPath = path.resolve(appDir, "server/data/qogitaMinOrderMap.json");
+let minOrderMap = { byGtin: {}, byName: {} };
+if (fs.existsSync(minOrderMapPath)) {
+  try {
+    minOrderMap = JSON.parse(fs.readFileSync(minOrderMapPath, "utf8"));
+  } catch (err) {
+    console.warn("Could not load qogitaMinOrderMap.json:", err.message);
+  }
+}
 let cachedArabianPerfumes = null;
 let lastCacheTime = 0;
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
@@ -301,6 +310,17 @@ export function mapQogitaProductToPerfume(qogitaItem) {
 
   const isTopBestSeller = /khamrah|club de nuit|asad|yara|odyssey|amber oud|honor & glory|liquid brun/i.test(name);
 
+  const rawUnit = Number(
+    qogitaItem.unit ||
+    qogitaItem.minOrderQuantity ||
+    qogitaItem.min_order_quantity ||
+    qogitaItem.variants?.[0]?.unit ||
+    1
+  ) || 1;
+  const nameClean = (name || "").toLowerCase().trim();
+  const mapMoq = Number((gtin && minOrderMap.byGtin?.[gtin]) || minOrderMap.byName?.[nameClean] || 1) || 1;
+  const resolvedMinOrder = rawUnit > 1 ? rawUnit : (mapMoq > 1 ? mapMoq : rawUnit);
+
   return {
     id: slug,
     slug: slug,
@@ -311,6 +331,8 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     notesSummary: brand,
     price: Math.round(amount * 100) / 100,
     currency: currency,
+    minOrderQuantity: resolvedMinOrder,
+    unit: resolvedMinOrder,
     volume: "100ml / 3.4 FL.OZ.",
     concentration: "Eau de Parfum",
     gender: "Unisex",

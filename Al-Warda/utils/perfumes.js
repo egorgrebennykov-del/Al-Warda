@@ -1,6 +1,7 @@
 import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
 import { isGeneratedProductImage } from "./generatedProductImage.js";
 import QOGITA_PRODUCTS_MAP from "../src/data/qogitaProductsMap.js";
+import QOGITA_MIN_ORDER_OVERRIDES from "../src/data/qogitaMinOrderOverrides.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -1605,7 +1606,20 @@ export async function fetchPerfumesFromSupabase() {
             descriptionRu: descRu,
             descriptionEn: descEn,
             info,
-            minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
+            minOrderQuantity: (() => {
+              const rawMoq = Number(info.minOrderQuantity || info.unit || 0);
+              const gtin = info.gtin || r.gtin;
+              const nameLower = (r.name || r.title || "").toLowerCase().trim();
+              const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
+              return rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
+            })(),
+            unit: (() => {
+              const rawMoq = Number(info.minOrderQuantity || info.unit || 0);
+              const gtin = info.gtin || r.gtin;
+              const nameLower = (r.name || r.title || "").toLowerCase().trim();
+              const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
+              return rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
+            })(),
             gtin: info.gtin || r.gtin,
             dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
           };
@@ -1639,7 +1653,20 @@ export async function fetchDropshipArabianPerfumes(query = "") {
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
             (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
         )
-        .map(ensurePerfumeEnrichment);
+        .map((p) => {
+          const rawMoq = Number(p.minOrderQuantity || p.info?.minOrderQuantity || p.unit || p.info?.unit || 0);
+          const gtin = p.gtin || p.info?.gtin;
+          const nameLower = (p.name || p.title || "").toLowerCase().trim();
+          const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
+          const resolvedMoq = rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
+          p.minOrderQuantity = resolvedMoq;
+          p.unit = resolvedMoq;
+          if (p.info) {
+            p.info.minOrderQuantity = resolvedMoq;
+            p.info.unit = resolvedMoq;
+          }
+          return ensurePerfumeEnrichment(p);
+        });
 
       if (!query) {
         memoryDropshipCache = items;
@@ -1694,7 +1721,15 @@ let minOrderSettingsLoadedAt = 0;
 let minOrderSettingsPromise = null;
 
 export function getPerfumeMinOrder(p) {
-  const value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 1);
+  let value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 0);
+  if (!value || value <= 1) {
+    const gtin = p?.gtin || p?.info?.gtin;
+    const nameLower = (p?.name || p?.title || "").toLowerCase().trim();
+    const override = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]);
+    if (override > 1) {
+      value = override;
+    }
+  }
   return Number.isFinite(value) && value > 0 ? value : 1;
 }
 
