@@ -764,23 +764,76 @@ def transparent_product_image(image_bytes, segmentation_session):
 def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024)):
     if "A" not in cutout.getbands():
         return cutout
-    alpha = cutout.getchannel("A")
     import numpy as np
-    arr = np.array(alpha)
-    mask = (arr > 25).astype(np.uint8)
+
+    # 1. Clean invisible/faint ghost residue (alpha < 18)
+    arr = np.array(cutout)
+    alpha = arr[:, :, 3].copy()
+    alpha[alpha < 18] = 0
+
+    # 2. Extract significant foreground components (alpha > 28)
+    mask = (alpha > 28).astype(np.uint8)
     try:
         import cv2
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
         if num_labels <= 1:
             return cutout
+
+        # Find largest component (main bottle body)
+        areas = [stats[i, cv2.CC_STAT_AREA] for i in range(1, num_labels)]
+        max_area = max(areas)
+        main_lbl = 1 + int(np.argmax(areas))
+        main_w = stats[main_lbl, cv2.CC_STAT_WIDTH]
+        main_cx = centroids[main_lbl][0]
+
+        # Valid components: main body, plus vertically aligned components (cap, sprayer, base)
+        # Exclude small detached artifacts or side shadows far from bottle center
         valid_mask = np.zeros_like(mask)
         for lbl in range(1, num_labels):
-            if stats[lbl, cv2.CC_STAT_AREA] >= 60:
+            area = stats[lbl, cv2.CC_STAT_AREA]
+            cx = centroids[lbl][0]
+            if lbl == main_lbl:
                 valid_mask[labels == lbl] = 1
-        ys, xs = np.where(valid_mask > 0)
+            elif area >= 120 and abs(cx - main_cx) <= max(main_w * 0.75, 80):
+                valid_mask[labels == lbl] = 1
+            elif area >= max_area * 0.35:
+                valid_mask[labels == lbl] = 1
     except Exception:
-        ys, xs = np.where(arr > 25)
+        # Fallback using scipy.ndimage
+        try:
+            from scipy.ndimage import label
+            labeled, num_features = label(mask)
+            if num_features <= 1:
+                valid_mask = mask
+            else:
+                areas = [int(np.sum(labeled == i)) for i in range(1, num_features + 1)]
+                max_area = max(areas)
+                main_lbl = 1 + int(np.argmax(areas))
+                ys_m, xs_m = np.where(labeled == main_lbl)
+                main_w = xs_m.max() - xs_m.min() + 1
+                main_cx = float(np.mean(xs_m))
+                valid_mask = np.zeros_like(mask)
+                for i in range(1, num_features + 1):
+                    ys_i, xs_i = np.where(labeled == i)
+                    if len(xs_i) == 0:
+                        continue
+                    cx_i = float(np.mean(xs_i))
+                    area_i = areas[i - 1]
+                    if i == main_lbl:
+                        valid_mask[labeled == i] = 1
+                    elif area_i >= 120 and abs(cx_i - main_cx) <= max(main_w * 0.75, 80):
+                        valid_mask[labeled == i] = 1
+                    elif area_i >= max_area * 0.35:
+                        valid_mask[labeled == i] = 1
+        except Exception:
+            valid_mask = (alpha > 25).astype(np.uint8)
 
+    # Zero out rejected components from alpha (removes side ghosts and stray reflections)
+    alpha[valid_mask == 0] = 0
+    arr[:, :, 3] = alpha
+    cleaned_cutout = Image.fromarray(arr)
+
+    ys, xs = np.where(valid_mask > 0)
     if len(xs) == 0:
         return cutout
     x1, y1 = max(0, int(xs.min()) - 4), max(0, int(ys.min()) - 4)
@@ -793,12 +846,23 @@ def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_s
     new_w = max(1, int(round(cw * scale)))
     new_h = max(1, int(round(ch * scale)))
 
-    crop = cutout.crop((x1, y1, x2, y2))
+    crop = cleaned_cutout.crop((x1, y1, x2, y2))
     resized = crop.resize((new_w, new_h), Image.Resampling.LANCZOS)
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     pos_x = (canvas_size[0] - new_w) // 2
     pos_y = (canvas_size[1] - new_h) // 2
     canvas.paste(resized, (pos_x, pos_y), resized)
+
+    # Sub-pixel anti-aliasing fine-tuning: ensure canvas flacon center is exactly canvas_size[0] // 2
+    final_arr = np.array(canvas)
+    f_ys, f_xs = np.where(final_arr[:, :, 3] > 25)
+    if len(f_xs) > 0:
+        cur_cx = (f_xs.min() + f_xs.max()) / 2.0
+        err = int(round(canvas_size[0] / 2.0 - cur_cx))
+        if err != 0 and abs(err) <= 20:
+            canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
+            canvas.paste(resized, (pos_x + err, pos_y), resized)
+
     return canvas
 
 

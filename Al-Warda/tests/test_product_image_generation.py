@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PIL import Image
+import numpy as np
 
 
 rembg_stub = types.ModuleType("rembg")
@@ -651,6 +652,43 @@ class ProductImageGenerationTests(unittest.TestCase):
             self.assertEqual(call_202.args[3]["imageGeneration"]["status"], "pending")
             self.assertNotIn("startedAt", call_202.args[3]["imageGeneration"])
 
+
+
+    def test_normalize_flacon_cutout_centers_off_center_bottle(self):
+        im = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+        draw_bottle = Image.new('RGBA', (200, 600), (180, 140, 60, 255))
+        im.paste(draw_bottle, (650, 200))
+        normalized = queue.normalize_flacon_cutout(im)
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        self.assertTrue(len(xs) > 0)
+        center_x = (xs.min() + xs.max()) / 2.0
+        self.assertAlmostEqual(center_x, 512.0, delta=1.5)
+
+    def test_normalize_flacon_cutout_filters_faint_ghost_noise(self):
+        im = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+        bottle = Image.new('RGBA', (220, 700), (120, 80, 40, 255))
+        im.paste(bottle, (600, 150))
+        ghost = Image.new('RGBA', (300, 700), (200, 200, 200, 12))
+        im.paste(ghost, (100, 150))
+        normalized = queue.normalize_flacon_cutout(im)
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        self.assertTrue(len(xs) > 0)
+        center_x = (xs.min() + xs.max()) / 2.0
+        self.assertAlmostEqual(center_x, 512.0, delta=1.5)
+
+    def test_normalize_flacon_cutout_rejects_disconnected_side_noise(self):
+        im = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+        bottle = Image.new('RGBA', (250, 750), (100, 50, 20, 255))
+        im.paste(bottle, (550, 120))
+        noise = Image.new('RGBA', (20, 20), (255, 255, 255, 200))
+        im.paste(noise, (80, 500))
+        normalized = queue.normalize_flacon_cutout(im)
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        center_x = (xs.min() + xs.max()) / 2.0
+        self.assertAlmostEqual(center_x, 512.0, delta=1.5)
 
 if __name__ == "__main__":
     unittest.main()
