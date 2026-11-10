@@ -429,3 +429,47 @@ test("isPerfumeSet, inferSetItems and ensurePerfumeEnrichment correctly handle d
   assert.equal(items[2].name, "Amber Oud Carbon Edition");
   assert.equal(items[3].name, "Amber Oud White Edition");
 });
+
+test("getDefaultPerfumeVolumeOption defaults to second largest volume >= 10ml when volume can be changed", async () => {
+  const { getDefaultPerfumeVolumeOption, getDefaultCatalogPrice } = await import("../utils/perfumes.js");
+
+  // 1. User example: perfume with sizes 100ml, 50ml, and 10ml -> defaults to 50ml price
+  const multiBottle = {
+    name: "Luxury Oud",
+    price: 60,
+    volume: "100ml",
+    availableSizes: [
+      { ml: 100, price: 60 },
+      { ml: 50, price: 35 },
+      { ml: 10, price: 15 },
+    ],
+  };
+  const multiOpt = getDefaultPerfumeVolumeOption(multiBottle);
+  assert.equal(multiOpt.ml, 50);
+  assert.equal(multiOpt.price, 35);
+  assert.equal(multiOpt.isSecondLargest, true);
+  assert.equal(getDefaultCatalogPrice(multiBottle), 35);
+
+  // 2. Decantable perfume: 100ml bottle + decants (10ml, 5ml, 2ml, 1ml) -> second largest is 10ml
+  const asad = { name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" };
+  const asadOpt = getDefaultPerfumeVolumeOption(asad);
+  assert.equal(asadOpt.ml, 10);
+  assert.equal(asadOpt.key, "10ml");
+  assert.equal(asadOpt.isSecondLargest, true);
+  assert.equal(asadOpt.price, 18.9);
+  assert.equal(getDefaultCatalogPrice(asad), 18.9);
+
+  // 3. Perfume where volume CANNOT be changed (non-decantable deodorant) -> returns standard full price
+  const deo = { name: "Nabeel Deo Spray 200ml", price: 2.71, volume: "200ml" };
+  const deoOpt = getDefaultPerfumeVolumeOption(deo);
+  assert.equal(deoOpt.ml, 200);
+  assert.equal(deoOpt.price, 2.71);
+  assert.equal(deoOpt.isSecondLargest, false);
+  assert.equal(getDefaultCatalogPrice(deo), 2.71);
+
+  // 4. Discovery Set -> returns set price
+  const set = { name: "Amber Oud Discovery Set 4x10ml", price: 29.90, volume: "4x10ml", isSet: true };
+  const setOpt = getDefaultPerfumeVolumeOption(set);
+  assert.equal(setOpt.price, 29.90);
+  assert.equal(setOpt.isSecondLargest, false);
+});

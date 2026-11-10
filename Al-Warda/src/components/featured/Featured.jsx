@@ -1,6 +1,14 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { getPerfumes, getCachedPerfumes, getCategories, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
+import {
+  getPerfumes,
+  getCachedPerfumes,
+  getCategories,
+  getPerfumeUrl,
+  isPerfumeSet,
+  getDefaultPerfumeVolumeOption,
+  getDefaultCatalogPrice,
+} from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -683,9 +691,9 @@ export default function Featured() {
   }
 
     if (sortBy === "price-asc") {
-      result.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+      result.sort((a, b) => (getDefaultCatalogPrice(a) || 0) - (getDefaultCatalogPrice(b) || 0));
     } else if (sortBy === "price-desc") {
-      result.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+      result.sort((a, b) => (getDefaultCatalogPrice(b) || 0) - (getDefaultCatalogPrice(a) || 0));
     } else if (sortBy === "popular") {
       result.sort((a, b) => {
         const scoreA = (a.isBestSeller ? 50 : 0) + (a.isFeatured ? 25 : 0) + (Number(a.rating) || 4.5) * 10 + (Number(a.reviewsCount) || 0);
@@ -741,9 +749,17 @@ export default function Featured() {
 
   const handleAddToCart = async (perfume, e) => {
     e.stopPropagation();
-    const currentlyInCart = isInCart(perfume);
+    const defaultOpt = getDefaultPerfumeVolumeOption(perfume);
+    const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
+    const volKey = isSample ? defaultOpt.key : null;
+    const currentlyInCart = isInCart(perfume, isSample ? defaultOpt.key : "full");
     try {
-      await toggleCart(perfume);
+      await toggleCart(perfume, {
+        volKey,
+        isSample,
+        quantity: 1,
+        language,
+      });
       if (!currentlyInCart) {
         setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
         setTimeout(() => {
@@ -1249,7 +1265,15 @@ export default function Featured() {
           <div className="warda-shop-grid">
             {visiblePerfumes.map((perfume) => {
               const isAdded = Boolean(addedIds[perfume.id]);
-              const productUrl = getPerfumeUrl(perfume);
+              const defaultOpt = getDefaultPerfumeVolumeOption(perfume);
+              const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
+              const productUrl = defaultOpt.isSecondLargest
+                ? (isSample ? `${getPerfumeUrl(perfume)}?sample=${defaultOpt.key}` : `${getPerfumeUrl(perfume)}?size=${defaultOpt.key}`)
+                : getPerfumeUrl(perfume);
+              const displayPrice = defaultOpt.price;
+              const displayVolume = defaultOpt.isSecondLargest
+                ? (language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn)
+                : (perfume.volume ? perfume.volume.split("/")[0].trim() : "");
               return (
                 <OrnateCard
                   key={perfume.id}
@@ -1295,20 +1319,25 @@ export default function Featured() {
                     </h3>
                     <p className="warda-perfume-card__notes">
                       {perfume.brand || "Al-Warda"}
-                      {perfume.volume && (
+                      {displayVolume && (
                         <span style={{ marginLeft: "0.4rem", opacity: 0.75, fontSize: "0.8rem" }}>
-                          · {perfume.volume.split("/")[0].trim()}
+                          · {displayVolume}
                         </span>
                       )}
                     </p>
                     <div className="warda-perfume-card__price">
-                      €{Number(perfume.price).toFixed(2)}
+                      €{displayPrice.toFixed(2)}
+                      {defaultOpt.isSecondLargest && (
+                        <span style={{ fontSize: "0.74rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
+                          / {language === "ru" ? defaultOpt.labelRu : defaultOpt.labelEn}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="warda-perfume-card__action">
                     {(() => {
-                      const inCart = isInCart(perfume);
+                      const inCart = isInCart(perfume, isSample ? defaultOpt.key : "full");
                       return (
                         <button
                           type="button"

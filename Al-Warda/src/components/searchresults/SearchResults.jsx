@@ -1,6 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { getPerfumes, getPerfumeUrl, isPerfumeSet } from "../../../utils/perfumes";
+import {
+  getPerfumes,
+  getPerfumeUrl,
+  isPerfumeSet,
+  getDefaultPerfumeVolumeOption,
+  getDefaultCatalogPrice,
+} from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -179,9 +185,17 @@ export default function SearchResults() {
     e.preventDefault();
     e.stopPropagation();
 
-    const currentlyInCart = isInCart(perfume);
+    const defaultOpt = getDefaultPerfumeVolumeOption(perfume);
+    const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
+    const volKey = isSample ? defaultOpt.key : null;
+    const currentlyInCart = isInCart(perfume, isSample ? defaultOpt.key : "full");
     try {
-      await toggleCart(perfume);
+      await toggleCart(perfume, {
+        volKey,
+        isSample,
+        quantity: 1,
+        language: isRu ? "ru" : "en",
+      });
       if (!currentlyInCart) {
         setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
         setTimeout(() => {
@@ -293,6 +307,15 @@ export default function SearchResults() {
           <div className="warda-shop-grid">
             {results.slice(0, visibleLimit).map((perfume) => {
               const isAdded = Boolean(addedIds[perfume.id]);
+              const defaultOpt = getDefaultPerfumeVolumeOption(perfume);
+              const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
+              const productUrl = defaultOpt.isSecondLargest
+                ? (isSample ? `${getPerfumeUrl(perfume)}?sample=${defaultOpt.key}` : `${getPerfumeUrl(perfume)}?size=${defaultOpt.key}`)
+                : getPerfumeUrl(perfume);
+              const displayPrice = defaultOpt.price;
+              const displayVolume = defaultOpt.isSecondLargest
+                ? (isRu ? defaultOpt.labelRu : defaultOpt.labelEn)
+                : (perfume.volume ? perfume.volume.split("/")[0].trim() : "");
               return (
                 <OrnateCard
                   key={perfume.id}
@@ -300,7 +323,7 @@ export default function SearchResults() {
                   onClick={() => {
                     const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
                     sessionStorage.setItem(scrollKey, String(window.scrollY));
-                    navigate(getPerfumeUrl(perfume));
+                    navigate(productUrl);
                   }}
                   onMouseMove={handleCardMouseMove}
                   onMouseLeave={handleCardMouseLeave}
@@ -310,7 +333,7 @@ export default function SearchResults() {
                     if (e.key === "Enter") {
                       const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
                       sessionStorage.setItem(scrollKey, String(window.scrollY));
-                      navigate(getPerfumeUrl(perfume));
+                      navigate(productUrl);
                     }
                   }}
                 >
@@ -347,15 +370,27 @@ export default function SearchResults() {
                       {perfume.brand || "Al-Warda"}
                     </span>
                     <h3 className="warda-perfume-card__title">{perfume.name}</h3>
-                    <p className="warda-perfume-card__notes">{perfume.brand}</p>
+                    <p className="warda-perfume-card__notes">
+                      {perfume.brand}
+                      {displayVolume && (
+                        <span style={{ marginLeft: "0.4rem", opacity: 0.75, fontSize: "0.8rem" }}>
+                          · {displayVolume}
+                        </span>
+                      )}
+                    </p>
                     <div className="warda-perfume-card__price">
-                      €{Number(perfume.price).toFixed(2)}
+                      €{displayPrice.toFixed(2)}
+                      {defaultOpt.isSecondLargest && (
+                        <span style={{ fontSize: "0.74rem", color: "#a89882", marginLeft: "0.35rem", fontWeight: 400 }}>
+                          / {isRu ? defaultOpt.labelRu : defaultOpt.labelEn}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="warda-perfume-card__action">
                     {(() => {
-                      const inCart = isInCart(perfume);
+                      const inCart = isInCart(perfume, isSample ? defaultOpt.key : "full");
                       return (
                         <button
                           type="button"

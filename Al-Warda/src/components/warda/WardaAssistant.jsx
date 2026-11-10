@@ -6,7 +6,7 @@ import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
-import { getPerfumeUrl } from "../../../utils/perfumes";
+import { getPerfumeUrl, getDefaultPerfumeVolumeOption } from "../../../utils/perfumes";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./WardaAssistant.css";
 
@@ -561,10 +561,18 @@ export default function WardaAssistant() {
 
   const handleAddToCart = async (book) => {
     try {
+      const defOpt = getDefaultPerfumeVolumeOption(book);
+      const isSample = defOpt.isSecondLargest && defOpt.isSample;
+      const volKey = isSample ? defOpt.key : null;
       const bookKey = book.id || book.url;
-      const inCart = isInCart(book);
+      const inCart = isInCart(book, isSample ? defOpt.key : "full");
       setCartAddingId(bookKey);
-      await toggleCart(book);
+      await toggleCart(book, {
+        volKey,
+        isSample,
+        quantity: 1,
+        language,
+      });
 
       if (!inCart) {
         setCartSuccessId(bookKey);
@@ -583,7 +591,13 @@ export default function WardaAssistant() {
   };
 
   const handleViewBook = (book) => {
-    const targetUrl = book ? (book.url || getPerfumeUrl(book)) : "/featured";
+    const defOpt = getDefaultPerfumeVolumeOption(book);
+    const isSample = defOpt.isSecondLargest && defOpt.isSample;
+    const targetUrl = book
+      ? (book.url || (defOpt.isSecondLargest
+          ? (isSample ? `${getPerfumeUrl(book)}?sample=${defOpt.key}` : `${getPerfumeUrl(book)}?size=${defOpt.key}`)
+          : getPerfumeUrl(book)))
+      : "/featured";
     navigate(targetUrl, {
       state: { book },
     });
@@ -921,13 +935,20 @@ export default function WardaAssistant() {
                                     )}
                                     <div className="warda-book-card__price-row">
                                       <span className="warda-book-card__price">
-                                        €{Number(book.price).toFixed(2)}
+                                        €{getDefaultPerfumeVolumeOption(book).price.toFixed(2)}
+                                        {getDefaultPerfumeVolumeOption(book).isSecondLargest && (
+                                          <span style={{ fontSize: "0.72rem", color: "#a89882", marginLeft: "0.3rem" }}>
+                                            / {language === "ru" ? getDefaultPerfumeVolumeOption(book).labelRu : getDefaultPerfumeVolumeOption(book).labelEn}
+                                          </span>
+                                        )}
                                       </span>
                                     </div>
 
                                     <div className="warda-book-card__actions">
                                       {(() => {
-                                        const inCart = isInCart(book);
+                                        const defOpt = getDefaultPerfumeVolumeOption(book);
+                                        const isSample = defOpt.isSecondLargest && defOpt.isSample;
+                                        const inCart = isInCart(book, isSample ? defOpt.key : "full");
                                         return (
                                           <button
                                             type="button"

@@ -10,6 +10,7 @@ import {
   SAMPLE_VOLUMES,
   getSamplePrice,
   createSampleCartItem,
+  getDefaultPerfumeVolumeOption,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -45,10 +46,15 @@ export default function BookDetails() {
     const s = searchParams.get("sample");
     if (["1ml", "2ml", "5ml", "10ml"].includes(s)) {
       setSelectedVolume(s);
-    } else if (!s) {
-      setSelectedVolume("full");
+    } else if (!s && perfume) {
+      const def = getDefaultPerfumeVolumeOption(perfume);
+      if (def.isSecondLargest && def.isSample) {
+        setSelectedVolume(def.key);
+      } else {
+        setSelectedVolume("full");
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, perfume]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });

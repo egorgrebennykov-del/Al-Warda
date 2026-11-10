@@ -172,20 +172,21 @@ export default function Sets() {
     }
 
     // Sort items
+    const volForSort = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume) ? selectedVolume : "10ml";
     if (sortBy === "price-asc") {
       result.sort((a, b) => {
         const isSetA = isPerfumeSet(a);
         const isSetB = isPerfumeSet(b);
-        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, "1ml");
-        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, "1ml");
+        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, volForSort);
+        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, volForSort);
         return priceA - priceB;
       });
     } else if (sortBy === "price-desc") {
       result.sort((a, b) => {
         const isSetA = isPerfumeSet(a);
         const isSetB = isPerfumeSet(b);
-        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, "10ml");
-        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, "10ml");
+        const priceA = isSetA ? Number(a.price) : getSamplePrice(a.price, volForSort);
+        const priceB = isSetB ? Number(b.price) : getSamplePrice(b.price, volForSort);
         return priceB - priceA;
       });
     } else if (sortBy === "popular") {
@@ -465,7 +466,7 @@ export default function Sets() {
               const isSet = isPerfumeSet(perfume);
               const defaultVol = ["1ml", "2ml", "5ml", "10ml"].includes(selectedVolume)
                 ? selectedVolume
-                : "1ml";
+                : "10ml";
               const activeVol = cardVolumes[perfume.id] || defaultVol;
               const sampleCfg = !isSet
                 ? SAMPLE_VOLUMES.find((v) => v.key === activeVol) || SAMPLE_VOLUMES[0]
