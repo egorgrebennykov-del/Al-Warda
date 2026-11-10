@@ -366,3 +366,84 @@ test("formatVolume correctly localizes volume units (мл for ru/bg, ml for ro/e
   assert.equal(formatVolume("100 ml", "ru"), "100 мл");
   assert.equal(formatVolume("100 мл EDP", "ru"), "100 мл EDP");
 });
+
+test("getLocalizedNote translates fragrance notes accurately across all supported languages", async () => {
+  const { getLocalizedNote } = await import("../src/utils/localization.js");
+
+  // Romanian
+  assert.equal(getLocalizedNote("Pink Pepper", "ro"), "Piper roz");
+  assert.equal(getLocalizedNote("Damask Rose", "ro"), "Trandafir de Damasc");
+  assert.equal(getLocalizedNote("White Musk", "ro"), "Mosc alb");
+  assert.equal(getLocalizedNote("Белый мускус", "ro"), "Mosc alb");
+  assert.equal(getLocalizedNote("Дамасская роза", "ro"), "Trandafir de Damasc");
+  assert.equal(getLocalizedNote("Розовый перец", "ro"), "Piper roz");
+  assert.equal(getLocalizedNote("Табачный лист", "ro"), "Frunză de tutun");
+  assert.equal(getLocalizedNote("Oud", "ro"), "Oud");
+
+  // Hungarian
+  assert.equal(getLocalizedNote("Pink Pepper", "hu"), "Rózsaszín bors");
+  assert.equal(getLocalizedNote("White Musk", "hu"), "Fehér pézsma");
+  assert.equal(getLocalizedNote("Oud", "hu"), "Agárfa (Oud)");
+  assert.equal(getLocalizedNote("Vanilla", "hu"), "Vanília");
+
+  // Bulgarian
+  assert.equal(getLocalizedNote("Pink Pepper", "bg"), "Розов пипер");
+  assert.equal(getLocalizedNote("White Musk", "bg"), "Бял мускус");
+
+  // Greek
+  assert.equal(getLocalizedNote("Pink Pepper", "el"), "Ροζ πιπέρι");
+  assert.equal(getLocalizedNote("White Musk", "el"), "Λευκός μόσχος");
+  assert.equal(getLocalizedNote("Oud", "el"), "Ούντ");
+
+  // English
+  assert.equal(getLocalizedNote("Розовый перец", "en"), "Pink Pepper");
+  assert.equal(getLocalizedNote("Белый мускус", "en"), "White Musk");
+  assert.equal(getLocalizedNote("Дамасская роза", "en"), "Damask Rose");
+
+  // Russian
+  assert.equal(getLocalizedNote("Pink Pepper", "ru"), "Розовый перец");
+  assert.equal(getLocalizedNote("White Musk", "ru"), "Белый мускус");
+});
+
+test("formatFallbackDescription generates natural, fully localized fragrance descriptions", async () => {
+  const { formatFallbackDescription } = await import("../src/utils/localization.js");
+
+  const top = ["Pink Pepper", "Bergamot"];
+  const heart = ["Damask Rose", "Jasmine"];
+  const base = ["Oud", "White Musk"];
+
+  // Romanian description
+  const roDesc = formatFallbackDescription("Raghba", "Lattafa", top, heart, base, "ro");
+  assert.match(roDesc, /Raghba creat de celebra casă Lattafa/);
+  assert.match(roDesc, /Piper roz/);
+  assert.match(roDesc, /Trandafir de Damasc/);
+  assert.match(roDesc, /Mosc alb/);
+  assert.ok(!/[а-яА-ЯёЁ]/.test(roDesc), "Romanian description must not contain Cyrillic");
+
+  // Hungarian description
+  const huDesc = formatFallbackDescription("Raghba", "Lattafa", top, heart, base, "hu");
+  assert.match(huDesc, /A\(z\) Lattafa ház Raghba alkotása/);
+  assert.match(huDesc, /Rózsaszín bors/);
+  assert.match(huDesc, /Fehér pézsma/);
+  assert.ok(!/[а-яА-ЯёЁ]/.test(huDesc), "Hungarian description must not contain Cyrillic");
+
+  // Bulgarian description
+  const bgDesc = formatFallbackDescription("Raghba", "Lattafa", top, heart, base, "bg");
+  assert.match(bgDesc, /Raghba от легендарната къща Lattafa/);
+  assert.match(bgDesc, /Розов пипер/);
+  assert.match(bgDesc, /Бял мускус/);
+
+  // Greek description
+  const elDesc = formatFallbackDescription("Raghba", "Lattafa", top, heart, base, "el");
+  assert.match(elDesc, /Το Raghba από τον θρυλικό οίκο Lattafa/);
+  assert.match(elDesc, /Ροζ πιπέρι/);
+  assert.match(elDesc, /Λευκός μόσχος/);
+  assert.ok(!/[а-яА-ЯёЁ]/.test(elDesc), "Greek description must not contain Cyrillic");
+
+  // English description
+  const enDesc = formatFallbackDescription("Raghba", "Lattafa", top, heart, base, "en");
+  assert.match(enDesc, /Raghba by Lattafa is an authentic luxury Arabian fragrance/);
+  assert.match(enDesc, /Pink Pepper/);
+  assert.match(enDesc, /White Musk/);
+  assert.ok(!/[а-яА-ЯёЁ]/.test(enDesc), "English description must not contain Cyrillic");
+});

@@ -27,33 +27,11 @@ import {
   getLocalizedNote,
   getLocalizedSampleDesc,
   formatVolume,
+  formatFallbackDescription,
 } from "../../utils/localization";
 import { OrnateCard, CornerBracket } from "../common/OrnateCard";
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
-
-function formatFallbackDescription(name, brand, top, heart, base, lang = "ru") {
-  const topStr = top.join(", ");
-  const heartStr = heart.join(", ");
-  const baseStr = base.join(", ");
-  const l = String(lang || "ru").toLowerCase();
-  if (l === "ru") {
-    return `${name} от легендарного дома ${brand} — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами ${topStr}, переходя в сердце из ${heartStr}, и оставляет благородный стойкий шлейф: ${baseStr}.`;
-  }
-  if (l === "hu") {
-    return `A(z) ${brand} ház ${name} alkotása az autentikus arab parfümkészítés mesterműve. Fejjegyeiben ${topStr} bontakozik ki, szívében ${heartStr} virágzik, alapjában pedig fenséges ${baseStr} illatjegyek ölelik körül.`;
-  }
-  if (l === "bg") {
-    return `${name} от легендарната къща ${brand} е изискано въплъщение на арабската парфюмерийна традиция. Ароматът се разкрива с нотки на ${topStr}, преминава в сърцевина от ${heartStr} и оставя благороден дълготраен шлейф от ${baseStr}.`;
-  }
-  if (l === "el") {
-    return `Το ${name} από τον θρυλικό οίκο ${brand} αποτελεί αυθεντικό αριστούργημα της ανατολίτικης αρωματοποιίας. Ανοίγει με νότες από ${topStr}, αποκαλύπτει καρδιά από ${heartStr} και καταλήγει σε πολυτελή βάση από ${baseStr}.`;
-  }
-  if (l === "ro") {
-    return `${name} creat de celebra casă ${brand} este o întruchipare rafinată a tradiției parfumeriei arabe. Debutează cu note de ${topStr}, trece într-o inimă de ${heartStr} și lasă un siaj nobil și persistent de ${baseStr}.`;
-  }
-  return `${name} by ${brand} is an authentic luxury Arabian fragrance. Opening with notes of ${topStr}, unfolding into an alluring heart of ${heartStr}, enveloped in an opulent base of ${baseStr}.`;
-}
 
 export default function BookDetails() {
   const { bookId } = useParams();
@@ -222,34 +200,48 @@ export default function BookDetails() {
   const notesFallback = enrichedPerfume ? getHarmoniousNotes(enrichedPerfume) : null;
 
   const resolveNotes = (notesRu, notesEn, fallbackNotes) => {
-    const raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || fallbackNotes || [];
-    return raw.map((n) => getLocalizedNote(n, language));
+    let raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || fallbackNotes || [];
+    if (typeof raw === "string") {
+      raw = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+    return (Array.isArray(raw) ? raw : []).map((n) => getLocalizedNote(n, language));
   };
 
   const topNotes = resolveNotes(
-    enrichedPerfume?.topNotesRu,
+    enrichedPerfume?.topNotesRu || enrichedPerfume?.topNotes,
     enrichedPerfume?.topNotesEn,
     notesFallback?.[language === "ru" ? "ru" : "en"]?.top
   );
   const heartNotes = resolveNotes(
-    enrichedPerfume?.heartNotesRu,
+    enrichedPerfume?.heartNotesRu || enrichedPerfume?.heartNotes,
     enrichedPerfume?.heartNotesEn,
     notesFallback?.[language === "ru" ? "ru" : "en"]?.heart
   );
   const baseNotes = resolveNotes(
-    enrichedPerfume?.baseNotesRu,
+    enrichedPerfume?.baseNotesRu || enrichedPerfume?.baseNotes,
     enrichedPerfume?.baseNotesEn,
     notesFallback?.[language === "ru" ? "ru" : "en"]?.base
   );
 
   let displayDesc =
     enrichedPerfume?.[`description_${language}`] ||
-    enrichedPerfume?.[`description${language.charAt(0).toUpperCase() + language.slice(1)}`] ||
-    (language === "ru"
-      ? (enrichedPerfume?.descriptionRu || enrichedPerfume?.description)
-      : (enrichedPerfume?.descriptionEn || enrichedPerfume?.description));
+    enrichedPerfume?.[`description${language.charAt(0).toUpperCase() + language.slice(1)}`];
 
-  if (!displayDesc || displayDesc.includes("Сертифицированная оригинальная") || displayDesc.length < 25) {
+  if (!displayDesc) {
+    if (language === "ru") {
+      displayDesc = enrichedPerfume?.descriptionRu || enrichedPerfume?.description;
+    } else if (language === "en") {
+      displayDesc = enrichedPerfume?.descriptionEn;
+    }
+  }
+
+  const isCorruptedOrNonNative =
+    !displayDesc ||
+    displayDesc.includes("Сертифицированная оригинальная") ||
+    displayDesc.length < 25 ||
+    (language !== "ru" && language !== "bg" && /[а-яА-ЯёЁ]/.test(displayDesc));
+
+  if (isCorruptedOrNonNative) {
     displayDesc = formatFallbackDescription(
       enrichedPerfume?.name,
       enrichedPerfume?.brand,

@@ -347,28 +347,33 @@ export const FORMAT_LOCALIZATION = {
 };
 
 export const NOTES_LOCALIZATION = {
-  oud: { ru: "Уд", en: "Oud", hu: "Agárfa (Oud)", bg: "Уд", el: "Ούντ", ro: "Oud" },
-  rose: { ru: "Дамасская и таифская роза", en: "Damask & Taif Rose", hu: "Damaszkuszi és Taif rózsa", bg: "Дамаска и таифска роза", el: "Τριαντάφυλλο Δαμασκού & Ταΐφ", ro: "Trandafir de Damasc și Taif" },
+  oud: { ru: "Благородный уд", en: "Oud", hu: "Agárfa (Oud)", bg: "Благороден уд", el: "Ούντ", ro: "Oud" },
+  rose: { ru: "Дамасская роза", en: "Damask Rose", hu: "Damaszkuszi rózsa", bg: "Дамаска роза", el: "Τριαντάφυλλο Δαμασκού", ro: "Trandafir de Damasc" },
+  "damask-rose": { ru: "Дамасская роза", en: "Damask Rose", hu: "Damaszkuszi rózsa", bg: "Дамаска роза", el: "Τριαντάφυλλο Δαμασκού", ro: "Trandafir de Damasc" },
+  "taif-rose": { ru: "Таифская роза", en: "Taif Rose", hu: "Taif rózsa", bg: "Таифска роза", el: "Τριαντάφυλλο Ταΐφ", ro: "Trandafir Taif" },
   vanilla: { ru: "Мадагаскарская ваниль", en: "Vanilla", hu: "Vanília", bg: "Ванилия", el: "Βανίλια", ro: "Vanilie" },
-  amber: { ru: "Золотая и серая амбра", en: "Golden & Grey Amber", hu: "Arany és szürke borostyán", bg: "Златен и сив кехлибар", el: "Χρυσό & Γκρι κεχριμπάρι", ro: "Ambră aurie și gri" },
+  amber: { ru: "Золотая амбра", en: "Golden Amber", hu: "Arany borostyán", bg: "Златен кехлибар", el: "Χρυσό κεχριμπάρι", ro: "Ambră aurie" },
+  "golden-amber": { ru: "Золотая амбра", en: "Golden Amber", hu: "Arany borostyán", bg: "Златен кехлибар", el: "Χρυσό κεχριμπάρι", ro: "Ambră aurie" },
   musk: { ru: "Белый мускус", en: "White Musk", hu: "Fehér pézsma", bg: "Бял мускус", el: "Λευκός μόσχος", ro: "Mosc alb" },
+  "white-musk": { ru: "Белый мускус", en: "White Musk", hu: "Fehér pézsma", bg: "Бял мускус", el: "Λευκός μόσχος", ro: "Mosc alb" },
   saffron: { ru: "Королевский шафран", en: "Saffron", hu: "Sáfrány", bg: "Шафран", el: "Σαφράν", ro: "Șofran" },
   bergamot: { ru: "Сицилийский бергамот", en: "Sicilian Bergamot", hu: "Bergamott", bg: "Бергамот", el: "Περγαμόντο", ro: "Bergamotă" },
   sandalwood: { ru: "Сандал", en: "Sandalwood", hu: "Szantálfa", bg: "Сандалово дърво", el: "Σανδαλόξυλο", ro: "Lemn de santal" },
   patchouli: { ru: "Пачули", en: "Patchouli", hu: "Pacsuli", bg: "Пачули", el: "Πατσουλί", ro: "Paciuli" },
   leather: { ru: "Кожаный аккорд", en: "Leather", hu: "Bőrakkord", bg: "Кожен акорд", el: "Συγχορδία δέρματος", ro: "Acord de piele" },
-  incense: { ru: "Дымный ладан", en: "Frankincense & Incense", hu: "Füstös tömjén", bg: "Опушен тамян", el: "Λιβάνι", ro: "Tămâie fumée" },
+  incense: { ru: "Дымный ладан", en: "Frankincense", hu: "Füstös tömjén", bg: "Опушен тамян", el: "Λιβάνι", ro: "Tămâie" },
   tonka: { ru: "Бобы тонка", en: "Tonka Bean", hu: "Tonkabab", bg: "Тонка боб", el: "Σπόροι τόνκα", ro: "Boabe de tonka" },
+  "tonka-bean": { ru: "Бобы тонка", en: "Tonka Bean", hu: "Tonkabab", bg: "Тонка боб", el: "Σπόροι τόνκα", ro: "Boabe de tonka" },
   caramel: { ru: "Карамель", en: "Caramel", hu: "Karamell", bg: "Карамел", el: "Καραμέλα", ro: "Caramel" },
   cardamom: { ru: "Кардамон", en: "Cardamom", hu: "Kardamom", bg: "Кардамон", el: "Κάρδαμο", ro: "Cardamom" },
   cinnamon: { ru: "Корица", en: "Cinnamon", hu: "Fahéj", bg: "Канела", el: "Κανέλα", ro: "Scorțișoară" },
-  lavender: { ru: "Французская лаванда", en: "French Lavender", hu: "Francia levendula", bg: "Френска лавандула", el: "Γαλλική λεβάντα", ro: "Levănțică franțuzească" },
+  lavender: { ru: "Французская лаванда", en: "French Lavender", hu: "Francia levendula", bg: "Френска лавандула", el: "Γαλλική λεβάντα", ro: "Levănțică" },
   cedar: { ru: "Благородный кедр", en: "Cedarwood", hu: "Nemes cédrus", bg: "Благороден кедър", el: "Κέδρος", ro: "Lemn de cedru" },
   vetiver: { ru: "Ветивер", en: "Vetiver", hu: "Vetiver", bg: "Ветивер", el: "Βετιβέρ", ro: "Vetiver" },
   jasmine: { ru: "Жасмин самбак", en: "Jasmine Sambac", hu: "Szambak jázmin", bg: "Жасмин самбак", el: "Γιασεμί σαμπάκ", ro: "Iasomie Sambac" },
   iris: { ru: "Ирис и пудра", en: "Iris & Powder", hu: "Írisz és púder", bg: "Ирис и пудра", el: "Ίριδα & Πούδρα", ro: "Iris și pudră" },
   violet: { ru: "Фиалка и пион", en: "Violet & Peony", hu: "Ibolya és bazsarózsa", bg: "Теменужка и божур", el: "Βιολέτα & Παιώνια", ro: "Violetă și bujor" },
-  "orange-blossom": { ru: "Флердоранж и нероли", en: "Orange Blossom & Neroli", hu: "Narancsvirág és neroli", bg: "Портокалов цвят и нероли", el: "Άνθη πορτοκαλιάς & Νερόλι", ro: "Floare de portocal și neroli" },
+  "orange-blossom": { ru: "Флердоранж", en: "Orange Blossom", hu: "Narancsvirág", bg: "Портокалов цвят", el: "Άνθη πορτοκαλιάς", ro: "Floare de portocal" },
   ylang: { ru: "Иланг-иланг", en: "Ylang-Ylang", hu: "Ylang-ylang", bg: "Иланг-иланг", el: "Υλάνγκ-υλάνγκ", ro: "Ylang-ylang" },
   peach: { ru: "Сладкий персик", en: "Sweet Peach", hu: "Édes őszibarack", bg: "Сладка праскова", el: "Γλυκό ροδάκινο", ro: "Piersică dulce" },
   cherry: { ru: "Спелая вишня", en: "Ripe Cherry", hu: "Érett cseresznye", bg: "Зряла череша", el: "Ώριμο κεράσι", ro: "Cireașă coaptă" },
@@ -377,14 +382,18 @@ export const NOTES_LOCALIZATION = {
   berries: { ru: "Черная смородина и малина", en: "Blackcurrant & Raspberry", hu: "Fekete ribizli és málna", bg: "Касис и малина", el: "Φραγκοστάφυλο & Βατόμουρο", ro: "Coacăze negre și zmeură" },
   mandarin: { ru: "Мандарин и апельсин", en: "Mandarin & Orange", hu: "Mandarin és narancs", bg: "Мандарина и портокал", el: "Μανταρίνι & Πορτοκάλι", ro: "Mandarină și portocală" },
   grapefruit: { ru: "Грейпфрут и лимон", en: "Grapefruit & Lemon", hu: "Grépfrút és citrom", bg: "Грейпфрут и лимон", el: "Γκρέιπφρουτ & Λεμόνι", ro: "Grepfrut și lămâie" },
-  pepper: { ru: "Розовый и черный перец", en: "Pink & Black Pepper", hu: "Rózsaszín és fekete bors", bg: "Розов и черен пипер", el: "Ροζ & Μαύρο πιπέρι", ro: "Piper roz și negru" },
+  pepper: { ru: "Розовый перец", en: "Pink Pepper", hu: "Rózsaszín bors", bg: "Розов пипер", el: "Ροζ πιπέρι", ro: "Piper roz" },
+  "black-pepper": { ru: "Черный перец", en: "Black Pepper", hu: "Fekete bors", bg: "Черен пипер", el: "Μαύρο πιπέρι", ro: "Piper negru" },
   ginger: { ru: "Имбирь и мускатный орех", en: "Ginger & Nutmeg", hu: "Gyömbér és szerecsendió", bg: "Джинджифил и индийско орехче", el: "Τζίντζερ & Μοσχοκάρυδο", ro: "Ghimbir și nucșoară" },
   tobacco: { ru: "Табачный лист", en: "Tobacco Leaf", hu: "Dohánylevél", bg: "Тютюнев лист", el: "Φύλλο καπνού", ro: "Frunză de tutun" },
+  "tobacco-leaf": { ru: "Табачный лист", en: "Tobacco Leaf", hu: "Dohánylevél", bg: "Тютюнев лист", el: "Φύλλο καπνού", ro: "Frunză de tutun" },
   coffee: { ru: "Кофе", en: "Coffee", hu: "Kávé", bg: "Кафе", el: "Καφές", ro: "Cafea" },
   almond: { ru: "Миндаль и пралине", en: "Almond & Praline", hu: "Mandula és praliné", bg: "Бадем и пралина", el: "Αμύγδαλο & Πραλίνα", ro: "Migdală și pralină" },
   "sea-breeze": { ru: "Морской бриз", en: "Sea Breeze", hu: "Tengeri szellő", bg: "Морски бриз", el: "Θαλασσινή αύρα", ro: "Briză marină" },
   mint: { ru: "Свежая мята и шалфей", en: "Fresh Mint & Sage", hu: "Friss menta és zsálya", bg: "Свежа мента и градински чай", el: "Δυόσμος & Φασκόμηλο", ro: "Mentă proaspătă și salvie" },
   oakmoss: { ru: "Дубовый мох", en: "Oakmoss", hu: "Tölgymoha", bg: "Дъбов мъх", el: "Βρύα δρυός", ro: "Mușchi de stejar" },
+  chocolate: { ru: "Шоколад и какао", en: "Chocolate & Cocoa", hu: "Csokoládé és kakaó", bg: "Шоколад и какао", el: "Σοκολάτα & Κακάο", ro: "Ciocolată și cacao" },
+  honey: { ru: "Мед", en: "Honey", hu: "Méz", bg: "Мед", el: "Μέλι", ro: "Miere" },
 };
 
 export const SAMPLE_DESCRIPTIONS = {
@@ -500,21 +509,110 @@ export function getLocalizedLongevity(longevity, language = "ru") {
   return longevity;
 }
 
+const NOTE_PATTERNS = [
+  { key: "black-pepper", rx: /black\s*pepper|черн.*перец|piper\s*negru|fekete\s*bors|μαυρο\s*πιπερι|черен\s*пипер/i },
+  { key: "pepper", rx: /pink\s*pepper|розов.*перец|piper\s*roz|rózsaszín\s*bors|ροζ\s*πιπερι|розов\s*пипер|pepper|перец|пипер/i },
+  { key: "damask-rose", rx: /damask\s*rose|дамасск.*роз|trandafir.*damasc|damaszkuszi\s*rózsa|τριαντάφυλλο.*δαμασκ|дамаска\s*роза/i },
+  { key: "taif-rose", rx: /taif\s*rose|таифск.*роз|trandafir.*taif|taif\s*rózsa|τριαντάφυλλο.*ταΐφ|таифска\s*роза/i },
+  { key: "rose", rx: /rose|роза|rózsa|trandafir|τριαντάφυλλ/i },
+  { key: "white-musk", rx: /white\s*musk|бел.*мускус|mosc\s*alb|fehér\s*pézsma|λευκ.*μόσχ|бял\s*мускус/i },
+  { key: "musk", rx: /musk|мускус|pézsma|μόσχ|mosc/i },
+  { key: "golden-amber", rx: /golden\s*amber|золот.*амбр|ambr.*auri|arany\s*borostyán|χρυσ.*κεχριμπ|златен\s*кехлибар/i },
+  { key: "amber", rx: /amber|амбр|кехлибар|κεχριμπ|ambr|borostyán/i },
+  { key: "vanilla", rx: /vanill|ванил|vaníli|βανίλι/i },
+  { key: "oud", rx: /\boud\b|удэ?|agárfa|ούντ/i },
+  { key: "saffron", rx: /saffron|шафран|sáfrány|σαφράν|șofran/i },
+  { key: "bergamot", rx: /bergamot|бергамот|περγαμόντ/i },
+  { key: "sandalwood", rx: /sandal|сандал|szantál|σανδαλ/i },
+  { key: "patchouli", rx: /patchoul|пачул|pacsul|πατσουλ/i },
+  { key: "leather", rx: /leather|кож|bőr|piel|δέρμ/i },
+  { key: "tobacco-leaf", rx: /tobacco|табак|тютюн|καπνού|tutun|dohány/i },
+  { key: "tonka-bean", rx: /tonka|тонк|τόνκα/i },
+  { key: "incense", rx: /incense|frankincense|ладан|тамян|tămâi|tömjén|λιβάν/i },
+  { key: "cardamom", rx: /cardamom|кардамон|kardamom|κάρδαμ/i },
+  { key: "cinnamon", rx: /cinnamon|кориц|fahéj|канел|κανέλ|scorțiș/i },
+  { key: "lavender", rx: /lavender|лаванд|levendul|λεβάντ|levănț/i },
+  { key: "cedar", rx: /cedar|кедр|cédrus|κέδρ/i },
+  { key: "vetiver", rx: /vetiver|ветивер|βετιβέρ/i },
+  { key: "jasmine", rx: /jasmin|жасмин|jázmin|γιασεμ|iasomi/i },
+  { key: "caramel", rx: /caramel|карамел|karamell|καραμέλ/i },
+  { key: "coffee", rx: /coffee|кофе|kávé|кафе|καφές|cafea/i },
+  { key: "peach", rx: /peach|персик|őszibarack|прасков|ροδάκιν|piersic/i },
+  { key: "cherry", rx: /cherry|вишн|череш|csereszny|κεράσ|cireaș/i },
+  { key: "apple", rx: /apple|яблок|alma|ябълк|μήλ|măr/i },
+  { key: "pear", rx: /pear|груш|körte|круш|αχλάδ|pară/i },
+  { key: "mandarin", rx: /mandarin|orange|мандарин|апельсин|narancs|портокал|πορτοκάλ/i },
+  { key: "grapefruit", rx: /grapefruit|lemon|грейпфрут|лимон|citrom|λεμόν|lămâi/i },
+  { key: "iris", rx: /iris|ирис|írisz|ίριδ/i },
+  { key: "violet", rx: /violet|peony|фиалк|пион|ibolya|bazsarózsa|βιολέτ|παιώνι|violetă|bujor/i },
+  { key: "orange-blossom", rx: /orange\s*blossom|neroli|флердоранж|нероли|narancsvirág/i },
+  { key: "ylang", rx: /ylang|иланг|υλάνγκ/i },
+  { key: "berries", rx: /berr|blackcurrant|raspberry|ягод|смородин|малин|ribizli|málna|касис|βατόμουρ|coacăz|zmeur/i },
+  { key: "ginger", rx: /ginger|nutmeg|имбир|мускат|gyömbér|szerecsendió|джинджифил|τζίντζερ|ghimbir/i },
+  { key: "almond", rx: /almond|praline|миндал|пралине|mandula|pralin|αμύγδαλ|migdal/i },
+  { key: "chocolate", rx: /chocolat|cocoa|шоколад|какао|csokoládé|kakaó|σοκολάτα|κακάο|ciocolată/i },
+  { key: "honey", rx: /honey|мед|méz|μέλι|miere/i },
+  { key: "sea-breeze", rx: /sea\s*breeze|морск.*бриз|tengeri|θαλασσιν|briză\s*marin/i },
+  { key: "mint", rx: /mint|sage|мят|шалфей|menta|zsálya|мента|δυόσμ|mentă/i },
+  { key: "oakmoss", rx: /oakmoss|дубов.*мох|tölgymoha|дъбов\s*мъх|βρύα\s*δρυός|mușchi\s*de\s*stejar/i },
+];
+
 /**
  * Get localized note name
  */
 export function getLocalizedNote(note, language = "ru") {
   if (!note) return "";
   const lang = String(language || "ru").toLowerCase();
-  const id = typeof note === "object" ? note.id : String(note).toLowerCase().trim();
-  const entry = NOTES_LOCALIZATION[id];
-  if (entry && entry[lang]) return entry[lang];
+
+  // If note is an object with localized property (e.g. { nameRo: "...", nameEn: "..." })
   if (typeof note === "object") {
     const propKey = `name${lang.charAt(0).toUpperCase() + lang.slice(1)}`;
     if (note[propKey]) return note[propKey];
+    if (note[`name_${lang}`]) return note[`name_${lang}`];
+  }
+
+  const rawStr = typeof note === "object"
+    ? String(note.id || note.name || note.nameEn || note.nameRu || "")
+    : String(note);
+
+  const trimmed = rawStr.trim();
+  if (!trimmed) return "";
+
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+
+  // 1. Direct key match (e.g., "damask-rose", "white-musk", "oud")
+  if (NOTES_LOCALIZATION[slug]?.[lang]) {
+    return NOTES_LOCALIZATION[slug][lang];
+  }
+
+  // 2. Direct dictionary match against entry values in any language
+  const lowerTrimmed = trimmed.toLowerCase();
+  for (const entry of Object.values(NOTES_LOCALIZATION)) {
+    for (const val of Object.values(entry)) {
+      if (typeof val === "string" && val.toLowerCase() === lowerTrimmed) {
+        if (entry[lang]) return entry[lang];
+      }
+    }
+  }
+
+  // 3. Smart pattern matching for compound & multi-lingual fragrance notes
+  for (const { key, rx } of NOTE_PATTERNS) {
+    if (rx.test(lowerTrimmed)) {
+      if (NOTES_LOCALIZATION[key]?.[lang]) {
+        return NOTES_LOCALIZATION[key][lang];
+      }
+    }
+  }
+
+  // 4. Fallback for object with default name properties
+  if (typeof note === "object") {
     if (lang === "ru") return note.nameRu || note.name || note.nameEn;
     return note.nameEn || note.name || note.nameRu;
   }
+
   return note;
 }
 
@@ -571,4 +669,42 @@ export function getLocalizedSampleDesc(sampleKey, language = "ru") {
   const lang = String(language || "ru").toLowerCase();
   const entry = SAMPLE_DESCRIPTIONS[sampleKey];
   return entry?.[lang] || entry?.en || entry?.ru || "";
+}
+
+/**
+ * Format fallback product description in the selected language using localized pyramid notes
+ */
+export function formatFallbackDescription(name, brand, top, heart, base, lang = "ru") {
+  const l = String(lang || "ru").toLowerCase();
+  const formatList = (items) => {
+    let arr = items;
+    if (typeof arr === "string") {
+      arr = arr.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+    if (!Array.isArray(arr) || !arr.length) return "";
+    return arr.map((n) => getLocalizedNote(n, l)).filter(Boolean).join(", ");
+  };
+
+  const topStr = formatList(top) || (l === "ru" ? "бергамот, шафран" : "Bergamot, Saffron");
+  const heartStr = formatList(heart) || (l === "ru" ? "дамасская роза, жасмин" : "Damask Rose, Jasmine");
+  const baseStr = formatList(base) || (l === "ru" ? "благородный уд, амбра" : "Oud, Amber");
+  const safeName = name || (l === "ru" ? "Аромат" : "Fragrance");
+  const safeBrand = brand || "Al Warda";
+
+  if (l === "ru") {
+    return `${safeName} от легендарного дома ${safeBrand} — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами ${topStr}, переходя в сердце из ${heartStr}, и оставляет благородный стойкий шлейф: ${baseStr}.`;
+  }
+  if (l === "hu") {
+    return `A(z) ${safeBrand} ház ${safeName} alkotása az autentikus arab parfümkészítés mesterműve. Fejjegyeiben ${topStr} bontakozik ki, szívében ${heartStr} virágzik, alapjában pedig fenséges ${baseStr} illatjegyek ölelik körül.`;
+  }
+  if (l === "bg") {
+    return `${safeName} от легендарната къща ${safeBrand} е изискано въплъщение на арабската парфюмерийна традиция. Ароматът се разкрива с нотки на ${topStr}, преминава в сърцевина от ${heartStr} и оставя благороден дълготраен шлейф от ${baseStr}.`;
+  }
+  if (l === "el") {
+    return `Το ${safeName} από τον θρυλικό οίκο ${safeBrand} αποτελεί αυθεντικό αριστούργημα της ανατολίτικης αρωματοποιίας. Ανοίγει με νότες από ${topStr}, αποκαλύπτει καρδιά από ${heartStr} και καταλήγει σε πολυτελή βάση από ${baseStr}.`;
+  }
+  if (l === "ro") {
+    return `${safeName} creat de celebra casă ${safeBrand} este o întruchipare rafinată a tradiției parfumeriei arabe. Debutează cu note de ${topStr}, trece într-o inimă de ${heartStr} și lasă un siaj nobil și persistent de ${baseStr}.`;
+  }
+  return `${safeName} by ${safeBrand} is an authentic luxury Arabian fragrance. Opening with notes of ${topStr}, unfolding into an alluring heart of ${heartStr}, enveloped in an opulent base of ${baseStr}.`;
 }
