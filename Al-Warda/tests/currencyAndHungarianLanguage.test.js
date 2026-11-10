@@ -226,47 +226,41 @@ test("GitHub Actions workflows exist for RON and HUF with correct daily schedule
   assert.ok(!hufContent.includes("full-database-refresh"));
 });
 
-test("getPerfumeMinOrder and applyMinOrderFilter accurately enforce MOQ and exclude items requiring > 1 unit", async () => {
-  const { getPerfumeMinOrder, applyMinOrderFilter } = await import("../utils/perfumes.js");
+test("all perfumes default to 1 unit MOQ and wholesale bundles are excluded", async () => {
+  const { getPerfumeMinOrder, isWholesaleBundle, applyMinOrderFilter } = await import("../utils/perfumes.js");
 
-  // Al Fares Abaq Oud For Love is sold in bundles of 4
+  // Al Fares Abaq Oud is available as 1 single bottle
   const abaqItem = {
     id: "5241",
     name: "Al Fares Abaq Oud For Love - Fragrance",
     gtin: "6294021900843",
   };
-  assert.equal(getPerfumeMinOrder(abaqItem), 4, "Abaq Oud minimum order must resolve to 4");
+  assert.equal(getPerfumeMinOrder(abaqItem), 1, "Abaq Oud minimum order must resolve to 1");
+  assert.equal(isWholesaleBundle(abaqItem), false, "Standard bottle is not a wholesale bundle");
 
-  // Lattafa Yara is sold in bundles of 6
+  // Lattafa Yara is available as 1 single bottle
   const yaraItem = {
     id: "3840",
     name: "Lattafa Yara 100ml EDP",
     gtin: "6291108730515",
   };
-  assert.equal(getPerfumeMinOrder(yaraItem), 6, "Yara minimum order must resolve to 6");
+  assert.equal(getPerfumeMinOrder(yaraItem), 1, "Yara minimum order must resolve to 1");
+  assert.equal(isWholesaleBundle(yaraItem), false, "Standard bottle is not a wholesale bundle");
 
-  // Single unit perfume
-  const singleItem = {
-    id: "9999",
-    name: "Standard Single Bottle EDP",
-    minOrderQuantity: 1,
+  // Wholesale bundle item (e.g. Pack of 6) should be identified as wholesale bundle
+  const wholesalePack = {
+    id: "7777",
+    name: "Nabeel Nasaem Concentrated Oil Perfume Attar Pack Of 6",
+    gtin: "6291100175499",
   };
-  assert.equal(getPerfumeMinOrder(singleItem), 1, "Single item MOQ must resolve to 1");
+  assert.equal(isWholesaleBundle(wholesalePack), true, "Pack Of 6 is recognized as wholesale bundle");
 
-  // Filter with minOrder 1..1 (only single-unit items allowed)
+  // Catalog with minOrder settings 1..1 (single unit allowed)
   const singleOnlySettings = { minOrderFrom: 1, minOrderTo: 1 };
-  const catalog = [abaqItem, yaraItem, singleItem];
+  const catalog = [abaqItem, yaraItem].filter((p) => !isWholesaleBundle(p));
   const filtered = applyMinOrderFilter(catalog, singleOnlySettings);
 
-  assert.equal(filtered.length, 1, "Only single-unit items should pass the 1..1 filter");
-  assert.equal(filtered[0].id, "9999", "Only the true MOQ 1 item passes");
-
-  // Filter with minOrder 1..4 (allows single bottles up to bundles of 4)
-  const upTo4Settings = { minOrderFrom: 1, minOrderTo: 4 };
-  const filteredUpTo4 = applyMinOrderFilter(catalog, upTo4Settings);
-  assert.equal(filteredUpTo4.length, 2, "Items with MOQ <= 4 should pass");
-  assert.ok(filteredUpTo4.some((p) => p.name.includes("Abaq Oud")));
-  assert.ok(!filteredUpTo4.some((p) => p.name.includes("Yara")));
+  assert.equal(filtered.length, 2, "Both individual perfumes pass the single unit filter");
 });
 
 test("stripVolumeFromName cleanly removes volume specifications from perfume names", async () => {

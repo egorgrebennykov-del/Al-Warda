@@ -607,15 +607,17 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             if not name_raw or not raw_img:
                 continue
 
+            # Skip wholesale multipacks / bundles
+            if re.search(r'\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b', name_raw, re.IGNORECASE):
+                continue
+
             name = strip_volume_from_name(name_raw)
 
             amount, currency = extract_qogita_price_for_mov(item, target_mov=500.0)
 
             gtin = item.get("gtin")
             name_clean = name.strip().lower()
-            raw_unit = int(item.get("unit") or item.get("minOrderQuantity") or item.get("variants", [{}])[0].get("unit") or 1)
-            map_moq = int(min_order_map.get("byGtin", {}).get(gtin) or min_order_map.get("byName", {}).get(name_clean) or 1)
-            min_order = raw_unit if raw_unit > 1 else (map_moq if map_moq > 1 else raw_unit)
+            min_order = 1
 
             # Delta / incremental check
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)

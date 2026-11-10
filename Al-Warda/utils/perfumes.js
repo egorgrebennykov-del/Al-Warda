@@ -1649,20 +1649,8 @@ export async function fetchPerfumesFromSupabase() {
             descriptionRu: descRu,
             descriptionEn: descEn,
             info,
-            minOrderQuantity: (() => {
-              const rawMoq = Number(info.minOrderQuantity || info.unit || 0);
-              const gtin = info.gtin || r.gtin;
-              const nameLower = (r.name || r.title || "").toLowerCase().trim();
-              const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
-              return rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
-            })(),
-            unit: (() => {
-              const rawMoq = Number(info.minOrderQuantity || info.unit || 0);
-              const gtin = info.gtin || r.gtin;
-              const nameLower = (r.name || r.title || "").toLowerCase().trim();
-              const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
-              return rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
-            })(),
+            minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
+            unit: Number(info.minOrderQuantity || info.unit || 1) || 1,
             gtin: info.gtin || r.gtin,
             dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
           };
@@ -1692,16 +1680,13 @@ export async function fetchDropshipArabianPerfumes(query = "") {
         .filter(
           (p) =>
             hasCompletedGeneratedImage(p) &&
+            !isWholesaleBundle(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
             (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
         )
         .map((p) => {
-          const rawMoq = Number(p.minOrderQuantity || p.info?.minOrderQuantity || p.unit || p.info?.unit || 0);
-          const gtin = p.gtin || p.info?.gtin;
-          const nameLower = (p.name || p.title || "").toLowerCase().trim();
-          const overrideMoq = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]) || 1;
-          const resolvedMoq = rawMoq > 1 ? rawMoq : (overrideMoq > 1 ? overrideMoq : (rawMoq || 1));
+          const resolvedMoq = Number(p.minOrderQuantity || p.info?.minOrderQuantity || p.unit || p.info?.unit || 1) || 1;
           p.minOrderQuantity = resolvedMoq;
           p.unit = resolvedMoq;
           if (p.info) {
@@ -1752,27 +1737,24 @@ async function getPerfumesUnfiltered(options = {}) {
       (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
     );
     const combined = includeDropship ? [...base, ...uniqueDropship] : base;
-    return combined.filter(hasCompletedGeneratedImage);
+    return combined.filter((p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p));
   }
 
   const combined = includeDropship ? [...base, ...dropship] : base;
-  return combined.filter(hasCompletedGeneratedImage);
+  return combined.filter((p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p));
 }
 
 let memoryMinOrderSettings = { minOrderFrom: 0, minOrderTo: 0 };
 let minOrderSettingsLoadedAt = 0;
 let minOrderSettingsPromise = null;
 
+export function isWholesaleBundle(p) {
+  const name = (p?.name || p?.title || "").toLowerCase();
+  return /\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b/i.test(name);
+}
+
 export function getPerfumeMinOrder(p) {
-  let value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 0);
-  if (!value || value <= 1) {
-    const gtin = p?.gtin || p?.info?.gtin;
-    const nameLower = (p?.name || p?.title || "").toLowerCase().trim();
-    const override = (gtin && QOGITA_MIN_ORDER_OVERRIDES?.byGtin?.[gtin]) || (nameLower && QOGITA_MIN_ORDER_OVERRIDES?.byName?.[nameLower]);
-    if (override > 1) {
-      value = override;
-    }
-  }
+  const value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 1);
   return Number.isFinite(value) && value > 0 ? value : 1;
 }
 

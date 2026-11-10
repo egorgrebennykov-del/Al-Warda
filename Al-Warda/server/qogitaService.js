@@ -311,13 +311,14 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     qogitaItem.image ||
     qogitaItem.variants?.[0]?.imageUrl;
 
-  // Strictly exclude items with missing or invalid photos
+  // Strictly exclude items with missing or invalid photos or wholesale bundles
   if (
     !rawImageUrl ||
     typeof rawImageUrl !== "string" ||
     !rawImageUrl.startsWith("http") ||
     /placeholder|no-image|default_image|missing|not_found/i.test(rawImageUrl) ||
-    rawImageUrl.includes("c1b79cffa1a5fa8aab226414b9e4a063")
+    rawImageUrl.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
+    /\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b/i.test(name)
   ) {
     return null;
   }
@@ -326,16 +327,6 @@ export function mapQogitaProductToPerfume(qogitaItem) {
 
   const isTopBestSeller = /khamrah|club de nuit|asad|yara|odyssey|amber oud|honor & glory|liquid brun/i.test(name);
 
-  const rawUnit = Number(
-    qogitaItem.unit ||
-    qogitaItem.minOrderQuantity ||
-    qogitaItem.min_order_quantity ||
-    qogitaItem.variants?.[0]?.unit ||
-    1
-  ) || 1;
-  const nameClean = (name || "").toLowerCase().trim();
-  const mapMoq = Number((gtin && minOrderMap.byGtin?.[gtin]) || minOrderMap.byName?.[nameClean] || 1) || 1;
-  const resolvedMinOrder = rawUnit > 1 ? rawUnit : (mapMoq > 1 ? mapMoq : rawUnit);
   const cleanDisplayName = stripVolumeFromName(name);
 
   return {
@@ -348,8 +339,8 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     notesSummary: brand,
     price: Math.round(amount * 100) / 100,
     currency: currency,
-    minOrderQuantity: resolvedMinOrder,
-    unit: resolvedMinOrder,
+    minOrderQuantity: 1,
+    unit: 1,
     volume: "100ml / 3.4 FL.OZ.",
     concentration: "Eau de Parfum",
     gender: "Unisex",

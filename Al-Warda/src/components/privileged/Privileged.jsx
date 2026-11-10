@@ -5363,8 +5363,8 @@ export default function Privileged() {
               </strong>
               <p className="privileged__stats-text">
                 {language === "ru"
-                  ? "Показываются только духи, у которых минимальный заказ попадает в диапазон от и до (включительно). Например, «от 3 до 8» — духи с минимальным заказом 3–8 штук. Если указать только «До» = 2, будут показаны духи с минимальным заказом от 1 до 2. Пустое поле — без ограничения."
-                  : "Only perfumes whose minimum order falls within the from–to range (inclusive) are shown. E.g. 'from 3 to 8' shows perfumes with a minimum order of 3–8 pcs. Setting only 'To' = 2 shows 1 to 2. Empty means no limit."}
+                  ? "В системе Qogita параметр Stock показывает остаток товара на складе, а MOV — минимальную сумму заказа у поставщика (от 500 €). Все духи в каталоге доступны по 1 штуке (поштучно), оптовые бандлы исключены."
+                  : "In Qogita, Stock represents remaining supplier inventory, while MOV is the minimum order value (€500+). All perfumes in the boutique are available by 1 piece; wholesale multipacks/bundles are excluded."}
               </p>
               <div className="privileged__form-row-2">
                 <div className="privileged__form-group">
