@@ -5,6 +5,7 @@ import {
   getCategories,
   getPerfumeUrl,
   getDefaultPerfumeVolumeOption,
+  INITIAL_BEST_SELLERS,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -20,7 +21,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { isInCart, toggleCart } = useCartState();
-  const [bestSellers, setBestSellers] = useState([]);
+  const [bestSellers, setBestSellers] = useState(INITIAL_BEST_SELLERS);
   const [categories] = useState(() => getCategories());
   const [largeAnnouncements, setLargeAnnouncements] = useState([]);
   const [addedIds, setAddedIds] = useState({});

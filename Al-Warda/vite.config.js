@@ -34,6 +34,18 @@ export default defineConfig({
   plugins: [react(), generatedImageFallback()],
   build: {
     emptyOutDir: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+            return "vendor-react";
+          }
+          if (id.includes("node_modules/react-router") || id.includes("node_modules/@remix-run/router")) {
+            return "vendor-router";
+          }
+        },
+      },
+    },
   },
   server: {
     proxy: { "/api": { target: "http://localhost:3001", changeOrigin: false } },

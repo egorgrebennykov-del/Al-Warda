@@ -10,7 +10,6 @@ import {
 import Footer from "./components/footer/Footer";
 import Header from "./components/header/Header";
 import Home from "./components/home/Home";
-import Search from "./components/search/Search";
 import SmallAnnouncements from "./components/announcements/SmallAnnouncements";
 import { isLoggedIn } from "../utils/auth";
 import { useAuth } from "./context/AuthContext";
@@ -57,6 +56,7 @@ const loadSignUp = () => import("./components/signup/SignUp");
 const loadJoin = () => import("./components/join/Join");
 const loadNotFound = () => import("./components/notfound/NotFound");
 const loadWardaAssistant = () => import("./components/warda/WardaAssistant");
+const loadSearch = () => import("./components/search/Search");
 
 const Featured = lazy(loadFeatured);
 const Sets = lazy(loadSets);
@@ -77,6 +77,29 @@ const SignUp = lazy(loadSignUp);
 const Join = lazy(loadJoin);
 const NotFound = lazy(loadNotFound);
 const WardaAssistant = lazy(loadWardaAssistant);
+const Search = lazy(loadSearch);
+
+function DeferredWardaAssistant() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let timer = null;
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => setReady(true), { timeout: 2500 });
+      return () => window.cancelIdleCallback(id);
+    } else {
+      timer = setTimeout(() => setReady(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <WardaAssistant />
+    </Suspense>
+  );
+}
 
 const THEME_COOKIE_KEY = "alwarda_theme";
 
@@ -262,7 +285,11 @@ function App() {
         isLight={lightTheme}
         onSearch={() => setShowSearch(true)}
       />
-      <Search show={showSearch} onClose={() => setShowSearch(false)} />
+      {showSearch && (
+        <Suspense fallback={null}>
+          <Search show={showSearch} onClose={() => setShowSearch(false)} />
+        </Suspense>
+      )}
       {announcements.length > 0 && (
         <div className="container" style={{ paddingTop: "1rem", paddingBottom: "0.25rem" }}>
           <SmallAnnouncements items={announcements} />
@@ -397,9 +424,7 @@ function App() {
       </Suspense>
 
       <main className="main"></main>
-      <Suspense fallback={null}>
-        <WardaAssistant />
-      </Suspense>
+      <DeferredWardaAssistant />
       <Footer />
       <a href="#" className="scrollup" id="scroll-up">
         <i className="ri-arrow-up-line" />

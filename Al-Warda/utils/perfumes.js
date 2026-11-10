@@ -1490,12 +1490,17 @@ export async function fetchPerfumesFromSupabase() {
     while (hasMore) {
       const from = page * pageSize;
       const to = from + pageSize - 1;
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 4500) : null;
       const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc&info->imageGeneration->>status=eq.completed`, {
         headers: {
           apikey: SUPABASE_KEY,
           Authorization: `Bearer ${SUPABASE_KEY}`,
           Range: `${from}-${to}`,
         },
+        signal: controller?.signal,
+      }).finally(() => {
+        if (timeoutId) clearTimeout(timeoutId);
       });
 
       if (!res.ok) throw new Error(`Could not load catalog (HTTP ${res.status})`);
@@ -1623,6 +1628,23 @@ let memoryDropshipCache = null;
 
 export async function fetchDropshipArabianPerfumes(query = "") {
   try {
+    // 1. Fast edge static cache (resolves in ~15ms without cold-start API lag)
+    if (!query && typeof window !== "undefined") {
+      try {
+        const staticRes = await fetch("/data/cachedArabianPerfumes.json");
+        if (staticRes.ok) {
+          const staticData = await staticRes.json();
+          if (Array.isArray(staticData) && staticData.length > 0) {
+            const items = staticData.map(ensurePerfumeEnrichment);
+            memoryDropshipCache = items;
+            return items;
+          }
+        }
+      } catch {
+        // Fallback to API if static JSON is not accessible
+      }
+    }
+
     const res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
     if (res.ok) {
       const data = await res.json();
@@ -1849,12 +1871,60 @@ export async function getPerfumeSets(options = {}) {
   return all.filter((p) => isPerfumeSet(p));
 }
 
+export const INITIAL_BEST_SELLERS = [
+  {
+    id: "dropship-6291108730515",
+    slug: "dropship-6291108730515",
+    name: "Lattafa Yara 100ml EDP",
+    brand: "Lattafa",
+    price: 12.95,
+    volume: "100 мл / 3.4 FL.OZ.",
+    image: "/assets/img/products/6291108730515.jpg?v=qogita-gemini-image-v3",
+    rating: 4.9,
+    reviewsCount: 38,
+    isBestSeller: true,
+    inStock: true,
+  },
+  {
+    id: "dropship-6291108737194",
+    slug: "dropship-6291108737194",
+    name: "Lattafa Khamrah 100ml EDP",
+    brand: "Lattafa",
+    price: 17.81,
+    volume: "100 мл / 3.4 FL.OZ.",
+    image: "/assets/img/products/6291108737194.jpg?v=qogita-gemini-image-v3",
+    rating: 4.9,
+    reviewsCount: 42,
+    isBestSeller: true,
+    inStock: true,
+  },
+  {
+    id: "dropship-6290360593661",
+    slug: "dropship-6290360593661",
+    name: "Lattafa Khamrah Qahwa 100ml EDP",
+    brand: "Lattafa",
+    price: 15.82,
+    volume: "100 мл / 3.4 FL.OZ.",
+    image: "/assets/img/products/6290360593661.jpg?v=qogita-gemini-image-v3",
+    rating: 4.9,
+    reviewsCount: 36,
+    isBestSeller: true,
+    inStock: true,
+  },
+].map((item) => ensurePerfumeEnrichment(item));
+
 export async function getBestSellerPerfumes(options = {}) {
-  const all = await getPerfumes(options);
-  const nonSets = all.filter((p) => !isPerfumeSet(p));
-  const pool = nonSets.length >= 3 ? nonSets : all;
-  const best = pool.filter((p) => p.isBestSeller);
-  return best.length > 0 ? best.slice(0, 3) : pool.slice(0, 3);
+  try {
+    const all = await getPerfumes(options);
+    const nonSets = all.filter((p) => !isPerfumeSet(p));
+    const pool = nonSets.length >= 3 ? nonSets : all;
+    const best = pool.filter((p) => p.isBestSeller);
+    if (best.length > 0) return best.slice(0, 3);
+    if (pool.length > 0) return pool.slice(0, 3);
+  } catch (err) {
+    console.warn("Could not load bestsellers:", err);
+  }
+  return INITIAL_BEST_SELLERS;
 }
 
 export const SAMPLE_VOLUMES = [
