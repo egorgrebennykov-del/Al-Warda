@@ -95,29 +95,68 @@ async function fetchStockPage(env, key, from, to) {
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
   url.searchParams.set("select", "id,name,brand,image,info");
   url.searchParams.set("order", "id.asc");
-  const result = await fetch(url, {
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Range-Unit": "items",
-      Range: `${from}-${to}`,
-    },
-  });
-  if (!result.ok) {
-    throw new Error(`Could not load product image queue (${result.status})`);
+
+  let lastError = null;
+  for (let attempt = 0; attempt <= 2; attempt++) {
+    try {
+      const result = await fetch(url, {
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Range-Unit": "items",
+          Range: `${from}-${to}`,
+        },
+      });
+
+      if (result.ok) {
+        const rows = await result.json();
+        if (!Array.isArray(rows)) {
+          throw new Error("Supabase stocks response was not a list");
+        }
+        return rows;
+      }
+
+      if ([500, 502, 503, 504, 429].includes(result.status) && attempt < 2) {
+        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        continue;
+      }
+
+      const errText = await result.text().catch(() => "");
+      let details = "";
+      try {
+        const parsed = JSON.parse(errText);
+        details = parsed.message || parsed.error || "";
+      } catch {
+        if (errText) details = errText.slice(0, 150);
+      }
+      throw new Error(`Could not load product image queue (${result.status})${details ? `: ${details}` : ""}`);
+    } catch (err) {
+      lastError = err;
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      }
+    }
   }
-  const rows = await result.json();
-  if (!Array.isArray(rows)) {
-    throw new Error("Supabase stocks response was not a list");
-  }
-  return rows;
+
+  throw lastError || new Error("Could not load product image queue");
 }
 
 async function fetchAllStocks(env, key) {
   const pageSize = 500;
   const rows = [];
   for (let from = 0; ; from += pageSize) {
-    const page = await fetchStockPage(env, key, from, from + pageSize - 1);
+    let page;
+    try {
+      page = await fetchStockPage(env, key, from, from + pageSize - 1);
+    } catch (err) {
+      try {
+        const half1 = await fetchStockPage(env, key, from, from + 249);
+        const half2 = await fetchStockPage(env, key, from + 250, from + 499);
+        page = [...half1, ...half2];
+      } catch {
+        throw err;
+      }
+    }
     rows.push(...page);
     if (page.length < pageSize) return rows;
   }

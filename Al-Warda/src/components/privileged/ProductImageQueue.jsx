@@ -233,6 +233,7 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   const [selectedFailed, setSelectedFailed] = useState({});
   const [deletingFailed, setDeletingFailed] = useState(false);
   const [manualConfigItem, setManualConfigItem] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const confirm = useConfirm();
 
   useEffect(() => {
@@ -360,6 +361,18 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       setLoading(false);
     }
   }, [isRussian]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setActionError("");
+    setError("");
+    try {
+      await Promise.allSettled([loadRuns(), loadStatus()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, loadRuns, loadStatus]);
 
   const deleteFailedFromDb = async (explicitIds = null) => {
     const ids = explicitIds || Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
@@ -620,7 +633,25 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       </div>
       {actionError && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
         <span>{actionError}</span>
-        <button type="button" style={{ marginLeft: "0.5rem", padding: "0.2rem 0.6rem", fontSize: "0.8rem", cursor: "pointer", borderRadius: "4px" }} onClick={() => { loadRuns(); loadStatus(); }}>{isRussian ? "Обновить статус" : "Retry"}</button>
+        <button
+          type="button"
+          className="product-image-queue__retry-btn"
+          disabled={refreshing}
+          onClick={handleManualRefresh}
+          title={isRussian ? "Обновить статус очереди и задачи" : "Refresh queue and task status"}
+        >
+          {refreshing ? (
+            <>
+              <span className="product-image-queue__btn-spinner" aria-hidden="true" />
+              <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
+            </>
+          ) : (
+            <>
+              <i className="ri-refresh-line" />
+              <span>{isRussian ? "Обновить статус" : "Retry"}</span>
+            </>
+          )}
+        </button>
         {needsQogita && onOpenQogita && <button type="button" onClick={onOpenQogita}>{isRussian ? "Открыть Qogita B2B" : "Open Qogita B2B"}</button>}
       </div>}
       {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
@@ -640,7 +671,25 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       </a>)}
       {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
         <span>{error}</span>
-        <button type="button" style={{ marginLeft: "0.5rem", padding: "0.2rem 0.6rem", fontSize: "0.8rem", cursor: "pointer", borderRadius: "4px" }} onClick={() => { loadRuns(); loadStatus(); }}>{isRussian ? "Обновить статус" : "Retry"}</button>
+        <button
+          type="button"
+          className="product-image-queue__retry-btn"
+          disabled={refreshing}
+          onClick={handleManualRefresh}
+          title={isRussian ? "Обновить статус очереди и задачи" : "Refresh queue and task status"}
+        >
+          {refreshing ? (
+            <>
+              <span className="product-image-queue__btn-spinner" aria-hidden="true" />
+              <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
+            </>
+          ) : (
+            <>
+              <i className="ri-refresh-line" />
+              <span>{isRussian ? "Обновить статус" : "Retry"}</span>
+            </>
+          )}
+        </button>
       </div>}
       {loading && !status && <div role="status">{isRussian ? "Загрузка очереди..." : "Loading queue..."}</div>}
 
