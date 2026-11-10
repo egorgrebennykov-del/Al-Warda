@@ -1,32 +1,45 @@
 import { useState, useEffect } from "react";
 
-// Stabilize avatar: map volatile emotions to Yasmin's iconic signature presence.
-// Yasmin stays calm and elegant: signature portrait (greeting) for conversation,
-// thinking portrait only while searching/loading, and concerned only on errors.
+// Yasmin's visual emotion map: connects state expressions to authentic avatar portraits.
+// Greeting/welcoming for hello & introductions; happy/friendly for recommendations;
+// speaking/confident for explanations; thinking/loading for searches; concerned for errors.
 export const CANONICAL_EMOTION_MAP = {
+  // Greetings & Welcome (signature waving pose)
   greeting: "greeting",
-  welcoming: "greeting",
-  friendly: "greeting",
-  neutral: "greeting",
-  happy: "greeting",
-  smiling: "greeting",
-  speaking: "greeting",
-  curious: "greeting",
-  confident: "greeting",
-  blushing: "greeting",
-  shy: "greeting",
-  laughing: "greeting",
-  laughting: "greeting",
-  messageRead: "greeting",
-  success: "greeting",
-  reassuring: "greeting",
-  surprised: "greeting",
+  welcoming: "welcoming",
+
+  // Warmth, Joy & Delight
+  happy: "happy",
+  smiling: "happy",
+  friendly: "friendly",
+  blushing: "blushing",
+  shy: "shy",
+  laughing: "laughing",
+  laughting: "laughing",
+  success: "success",
+
+  // Conversation, Explanation & Fragrance Notes
+  speaking: "speaking",
+  confident: "confident",
+  curious: "curious",
+
+  // Reflection & Searching
   thinking: "thinking",
-  loading: "thinking",
-  confused: "thinking",
+  loading: "loading",
+
+  // Wonder & Surprise
+  surprised: "surprised",
+  confused: "confused",
+
+  // Calm & Attentive Listening
+  neutral: "neutral",
+  messageRead: "messageRead",
+
+  // Empathy, Support & Alerts
   concerned: "concerned",
-  sad: "concerned",
-  error: "concerned",
+  reassuring: "reassuring",
+  sad: "sad",
+  error: "error",
 };
 
 export function getCanonicalEmotion(emotion) {

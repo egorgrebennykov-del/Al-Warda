@@ -641,29 +641,42 @@ export function extractDialogueMemory(history = [], currentMessage = "", userInf
 // 4.5 FEMININE GRAMMAR ENFORCER & CANONICAL EMOTIONS FOR YASMIN
 // ============================================================================
 export const CANONICAL_EMOTION_MAP = {
+  // Greetings & Welcome (signature waving pose)
   greeting: "greeting",
-  welcoming: "greeting",
-  friendly: "greeting",
-  neutral: "greeting",
-  happy: "greeting",
-  smiling: "greeting",
-  speaking: "greeting",
-  curious: "greeting",
-  confident: "greeting",
-  blushing: "greeting",
-  shy: "greeting",
-  laughing: "greeting",
-  laughting: "greeting",
-  messageRead: "greeting",
-  success: "greeting",
-  reassuring: "greeting",
-  surprised: "greeting",
+  welcoming: "welcoming",
+
+  // Warmth, Joy & Delight
+  happy: "happy",
+  smiling: "happy",
+  friendly: "friendly",
+  blushing: "blushing",
+  shy: "shy",
+  laughing: "laughing",
+  laughting: "laughing",
+  success: "success",
+
+  // Conversation, Explanation & Fragrance Notes
+  speaking: "speaking",
+  confident: "confident",
+  curious: "curious",
+
+  // Reflection & Searching
   thinking: "thinking",
-  loading: "thinking",
-  confused: "thinking",
+  loading: "loading",
+
+  // Wonder & Surprise
+  surprised: "surprised",
+  confused: "confused",
+
+  // Calm & Attentive Listening
+  neutral: "neutral",
+  messageRead: "messageRead",
+
+  // Empathy, Support & Alerts
   concerned: "concerned",
-  sad: "concerned",
-  error: "concerned",
+  reassuring: "reassuring",
+  sad: "sad",
+  error: "error",
 };
 
 export function getCanonicalEmotion(emotion) {
@@ -983,14 +996,21 @@ STYLE & EMOJI FORMATTING:
   * NEVER write "EUR", "Eur", "eur", or "евро" (FORBIDDEN: "24.09 EUR", "24.09 евро").
   * Never allow the price number and the "€" currency symbol to split across different lines.
 - EMOTIONAL EXPRESSION & HOSPITALITY:
-  * Yasmin is always radiant, warm, cheerful, and welcoming with a kind, friendly smile.
-  * When presenting recommendations, chatting with guests, or offering guidance, always return "greeting" or "happy".
-  * Never adopt sad, aloof, or gloomy expressions.
+  * Yasmin is radiant, warm, cheerful, and emotionally attuned to the guest.
+  * Pick the most appropriate emotion for each response:
+    - "greeting" when saying hello, welcoming the guest, or introducing yourself.
+    - "happy" when recommending perfumes, sharing pleasing choices, expressing joy or warmth.
+    - "speaking" when giving detailed advice, explaining pyramid notes, longevity, or answering specific questions.
+    - "laughing" when sharing delightful humor, celebrating a great choice, or when the customer is enthusiastic.
+    - "curious" or "surprised" when wondering about customer tastes or expressing pleasant surprise.
+    - "concerned" when something is out of stock, addressing issues, or showing gentle empathy.
+    - "neutral" for calm, attentive listening and standard confirmations.
+  * Never adopt cold, aloof, or gloomy expressions.
 
 OUTPUT FORMAT (valid JSON only, no markdown fences):
 {
   "message": "Your reply",
-  "emotion": "greeting | happy | speaking",
+  "emotion": "happy | speaking | greeting | laughing | curious | concerned | neutral",
   "bookIds": [],
   "action": null,
   "referToAdmin": false
@@ -1338,8 +1358,8 @@ No catalog items are attached to this turn. Respond to what the customer actuall
       sampleRequested
     )
   );
-  const rawEmotion = aiResult.emotion || "greeting";
-  const resolvedEmotion = rawEmotion === "thinking" ? "greeting" : rawEmotion;
+  const rawEmotion = aiResult.emotion || (isPureGreeting ? "greeting" : "happy");
+  const resolvedEmotion = rawEmotion === "thinking" ? "speaking" : rawEmotion;
   const cleanEmotion = getCanonicalEmotion(resolvedEmotion);
 
   return {
@@ -1399,7 +1419,7 @@ function generateHeuristicResponse({
         message: isRu
           ? "Корзина привязана к вашему личному аккаунту Al-Warda. Войдите или зарегистрируйтесь, чтобы сохранять выбранные ароматы из каталога! ✨"
           : "Your shopping bag is linked to your personal Al-Warda account. Sign in to view and save fragrances from our catalog! ✨",
-        emotion: "greeting",
+        emotion: "speaking",
         bookIds: [],
         action: { type: "navigate", url: "/cart" },
       };
@@ -1501,7 +1521,7 @@ function generateHeuristicResponse({
     message: isRu
       ? "Расскажите, какие ноты или бренд из каталога Al-Warda вам интересны, и я сразу покажу доступные товары в наличии! ✨"
       : "Let me know which notes or brand from the Al-Warda catalog you prefer, and I will show you the available fragrances in stock! ✨",
-    emotion: "greeting",
+    emotion: "speaking",
     bookIds: [],
   };
 }
@@ -1512,32 +1532,35 @@ function generateConversationalFallback(q, isRu) {
     return reply(
       "Всегда пожалуйста! Если захотите, помогу подобрать аромат под настроение или повод — просто скажите, что вам по душе. 🤍",
       "You're very welcome! Whenever you like, I can help you find a scent for your mood or occasion — just tell me what you enjoy. 🤍",
+      "laughing",
     );
   }
   if (/(как дела|как ты|как жизнь|how are you)/i.test(q)) {
     return reply(
       "Спасибо, у меня прекрасное настроение — рядом столько ароматов! А как ваш день? Если хотите, расскажите, какое у вас сейчас настроение, и я подскажу, какой запах ему подходит.",
       "Thank you, I'm in a lovely mood — surrounded by so many fragrances! How is your day? Tell me your mood and I'll tell you which scent suits it.",
+      "happy",
     );
   }
   if (/(кто ты|ты кто|как тебя зовут|who are you|your name)/i.test(q)) {
     return reply(
       "Я Ясмин, персональный консультант восточного парфюмерного бутика Al-Warda. Мне нравится беседовать о восточной культуре, традициях и, конечно же, помогать находить благородные ароматы для души. Что вас сегодня привело?",
       "I am Yasmin, the personal fragrance concierge at the Al-Warda boutique. I enjoy chatting about culture, traditions, and helping you discover noble fragrances. What brings you here today?",
+      "happy",
     );
   }
   if (/(мусульман|ислам|суннит|суннизм|вера|религи|muslim|islam|faith|sunni)/i.test(q)) {
     return reply(
       "Да, я мусульманка и придерживаюсь суннитской традиции Ислама. Для меня это основа доброты, искренности, скромности и уважения ко всем людям. А восток издревле славится своим гостеприимством и любовью к изысканным благовониям!",
       "Yes, I am a Muslim and adhere to the Sunni tradition of Islam. For me, it is the foundation of kindness, sincerity, modesty, and respect for all people. The East has always been renowned for its hospitality and love for exquisite fragrances!",
-      "greeting",
+      "happy",
     );
   }
   if (/(платок|хиджаб|абай|одежд|покрыва|наряд)/i.test(q)) {
     return reply(
       "Мой платок и скромный наряд — это отражение моего достоинства, личной веры и уважения к восточным традициям красоты. А тонкие благородные ароматы прекрасно дополняют этот гармоничный образ. ✨",
       "My headscarf and modest attire reflect my dignity, personal faith, and appreciation for the beautiful traditions of the East. Delicate noble fragrances perfectly complement this harmonious aesthetic. ✨",
-      "greeting",
+      "happy",
     );
   }
   if (/(доставк|shipping|delivery|оплат|payment|вернуть|возврат|return|оригинал|подлин|authentic|минимальн)/i.test(q)) {

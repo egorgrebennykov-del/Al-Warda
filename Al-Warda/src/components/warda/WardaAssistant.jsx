@@ -317,13 +317,13 @@ export default function WardaAssistant() {
         pendingQueryRef.current = query;
         setShowHelpOfferBubble(true);
         setShowGreetingBubble(false);
-        setEmotion("greeting");
+        setEmotion("speaking");
       }
     };
 
     const handleCloseForAdmin = () => {
       setIsOpen(false);
-      setEmotion("greeting");
+      setEmotion("neutral");
     };
 
     window.addEventListener("open-warda-assistant", handleTrigger);
@@ -354,7 +354,7 @@ export default function WardaAssistant() {
 
   const handleClose = () => {
     setIsOpen(false);
-    setEmotion("greeting");
+    setEmotion("neutral");
   };
 
   const toggleMsgExpand = (id) => {
@@ -423,7 +423,7 @@ export default function WardaAssistant() {
     const initialStatus = isSearchQuery(queryText) ? "searching" : "typing";
     setLoadingStatus(initialStatus);
     setLoading(true);
-    setEmotion(initialStatus === "searching" ? "thinking" : "greeting");
+    setEmotion(initialStatus === "searching" ? "thinking" : "speaking");
 
     try {
       let cartContext = {
@@ -508,7 +508,7 @@ export default function WardaAssistant() {
         ...payload,
         onStatus: (status) => {
           setLoadingStatus(status);
-          setEmotion(status === "searching" ? "thinking" : "greeting");
+          setEmotion(status === "searching" ? "thinking" : "speaking");
         },
       });
 
@@ -521,8 +521,8 @@ export default function WardaAssistant() {
         window.dispatchEvent(new CustomEvent("warda-refer-to-admin"));
       }
 
-      const rawEmotion = data?.emotion || "greeting";
-      const assistantEmotion = rawEmotion === "thinking" ? "greeting" : rawEmotion;
+      const rawEmotion = data?.emotion || "happy";
+      const assistantEmotion = rawEmotion === "thinking" ? "speaking" : rawEmotion;
       setEmotion(assistantEmotion);
 
       const assistantMsg = {
@@ -721,7 +721,7 @@ export default function WardaAssistant() {
           <div className="warda-companion-dock">
             <div className="warda-companion-dock__character-box">
               <WardaCharacter
-                emotion={loading && loadingStatus === "searching" ? "thinking" : emotion}
+                emotion={loading ? (loadingStatus === "searching" ? "thinking" : "speaking") : emotion}
                 size={230}
                 className="warda-companion-dock__character"
               />
@@ -750,7 +750,7 @@ export default function WardaAssistant() {
               <div className="warda-chat-header__info">
                 <div className="warda-chat-header__avatar-wrap">
                   <WardaCharacter
-                    emotion={loading && loadingStatus === "searching" ? "thinking" : emotion}
+                    emotion={loading ? (loadingStatus === "searching" ? "thinking" : "speaking") : emotion}
                     size={38}
                     className="warda-chat-header__avatar"
                   />
@@ -817,7 +817,7 @@ export default function WardaAssistant() {
                   >
                     {msg.role === "assistant" && (
                       <WardaCharacter
-                        emotion="greeting"
+                        emotion={msg.emotion || "happy"}
                         size={32}
                         className="warda-msg-avatar"
                       />
@@ -1042,7 +1042,7 @@ export default function WardaAssistant() {
               {loading && (
                 <div className="warda-msg-row warda-msg-row--assistant">
                   <WardaCharacter
-                    emotion={loadingStatus === "searching" ? "thinking" : "greeting"}
+                    emotion={loadingStatus === "searching" ? "thinking" : "speaking"}
                     size={32}
                     className="warda-msg-avatar"
                   />

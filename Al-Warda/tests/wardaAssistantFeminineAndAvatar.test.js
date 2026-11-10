@@ -96,28 +96,42 @@ test("enforceFeminineSelfReferences preserves customer/third-person references",
   }
 });
 
-test("getCanonicalEmotion maps volatile emotions to stable canonical states", () => {
-  // Conversational and expressive states map to greeting signature
+test("getCanonicalEmotion maps volatile emotions to appropriate canonical states", () => {
+  // Greetings & welcomes map to greeting/welcoming signature
   assert.equal(getCanonicalEmotion("greeting"), "greeting");
-  assert.equal(getCanonicalEmotion("welcoming"), "greeting");
-  assert.equal(getCanonicalEmotion("neutral"), "greeting");
-  assert.equal(getCanonicalEmotion("happy"), "greeting");
-  assert.equal(getCanonicalEmotion("smiling"), "greeting");
-  assert.equal(getCanonicalEmotion("speaking"), "greeting");
-  assert.equal(getCanonicalEmotion("curious"), "greeting");
-  assert.equal(getCanonicalEmotion("confident"), "greeting");
-  assert.equal(getCanonicalEmotion("friendly"), "greeting");
-  assert.equal(getCanonicalEmotion("surprised"), "greeting");
+  assert.equal(getCanonicalEmotion("welcoming"), "welcoming");
 
-  // Catalog search / processing maps to thinking
+  // Expressive & warm states
+  assert.equal(getCanonicalEmotion("happy"), "happy");
+  assert.equal(getCanonicalEmotion("smiling"), "happy");
+  assert.equal(getCanonicalEmotion("friendly"), "friendly");
+  assert.equal(getCanonicalEmotion("laughing"), "laughing");
+  assert.equal(getCanonicalEmotion("success"), "success");
+  assert.equal(getCanonicalEmotion("blushing"), "blushing");
+  assert.equal(getCanonicalEmotion("shy"), "shy");
+
+  // Conversational and consulting
+  assert.equal(getCanonicalEmotion("speaking"), "speaking");
+  assert.equal(getCanonicalEmotion("curious"), "curious");
+  assert.equal(getCanonicalEmotion("confident"), "confident");
+
+  // Catalog search / processing maps to thinking / loading
   assert.equal(getCanonicalEmotion("thinking"), "thinking");
-  assert.equal(getCanonicalEmotion("loading"), "thinking");
-  assert.equal(getCanonicalEmotion("confused"), "thinking");
+  assert.equal(getCanonicalEmotion("loading"), "loading");
 
-  // Errors / alerts map to concerned
+  // Surprise & confusion
+  assert.equal(getCanonicalEmotion("surprised"), "surprised");
+  assert.equal(getCanonicalEmotion("confused"), "confused");
+
+  // Calm attentive
+  assert.equal(getCanonicalEmotion("neutral"), "neutral");
+  assert.equal(getCanonicalEmotion("messageRead"), "messageRead");
+
+  // Errors / alerts / empathy
   assert.equal(getCanonicalEmotion("concerned"), "concerned");
-  assert.equal(getCanonicalEmotion("error"), "concerned");
-  assert.equal(getCanonicalEmotion("sad"), "concerned");
+  assert.equal(getCanonicalEmotion("reassuring"), "reassuring");
+  assert.equal(getCanonicalEmotion("error"), "error");
+  assert.equal(getCanonicalEmotion("sad"), "sad");
 
   // Fallback for null/empty/unknown
   assert.equal(getCanonicalEmotion(null), "greeting");
