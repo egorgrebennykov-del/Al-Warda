@@ -120490,28 +120490,28 @@
     "unit": 1
   },
   "dropship-6291106815870": {
-    "name": "Al Haramain Fragrance Gift Set for Unisex 410ml Amber Oud Gold Edition",
+    "name": "Al Haramain Amber Oud Gold Edition Gift Set 4x10ml",
     "brand": "Al Haramain",
     "price": 25,
-    "image": "/assets/img/dropship/b05471e3181d83148d24de639e15b86d.png",
+    "image": "/assets/img/products/6291106815870.jpg",
     "info": {
-      "category": "Уд и дым",
+      "category": "Подарочные наборы и сеты",
       "gender": "Унисекс",
       "notesSummary": "Шафран · Кардамон · Благородный уд · Серая амбра · Дымный ладан",
       "longevity": "10–14 часов",
       "sillage": "Заметный, шлейфовый",
-      "volume": "100 мл EDP",
-      "descriptionRu": "Al Haramain Fragrance Gift Set for Unisex 410ml Amber Oud Gold Edition от парфюмерного дома Al Haramain — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
+      "volume": "4 × 10 мл (40 мл)",
+      "descriptionRu": "Фирменный подарочный набор миниатюр Al Haramain Amber Oud Gold Edition (4 x 10 мл) в элегантной презентационной коробке. Легендарный сладкий амброво-фруктовый шлейф в удобных флаконах-атомайзерах.",
       "rawImage": "https://static.prod.qogita.com/files/images/variants/WgtewhmxAxpxkt4bYmezEt.jpg",
       "gtin": "6291106815870",
-      "categoryEn": "Oud & Smoke",
+      "categoryEn": "Discovery & Gift Sets",
       "origin": "Ближний Восток",
       "originEn": "Middle East",
       "deliveryTime": "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
       "deliveryTimeEn": "4–7 days (direct dispatch from the Middle East / EU)",
       "notesSummaryEn": "Saffron · Cardamom · Precious Oud · Grey Amber · Smoky Frankincense",
-      "description": "Al Haramain Fragrance Gift Set for Unisex 410ml Amber Oud Gold Edition от парфюмерного дома Al Haramain — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
-      "descriptionEn": "Al Haramain Fragrance Gift Set for Unisex 410ml Amber Oud Gold Edition by the house of Al Haramain is a rich, temperamental composition with a hypnotic aura that unfolds in warm, sensual layers (oud & smoke). From the very first spritz, the composition captivates with a vibrant opening of Saffron, Cardamom, French Lavender. As it warms on the skin, the fragrance reveals an alluring heart of Precious Oud, Leather Accord, Patchouli, lending remarkable depth and dimension. It settles into a velvety, long-lasting sillage (longevity 8–12 hours) crafted from Grey Amber, Smoky Frankincense, Sandalwood, White Musk. Its versatile unisex character adapts beautifully to both men and women, evolving uniquely on the skin.",
+      "description": "Фирменный подарочный набор миниатюр Al Haramain Amber Oud Gold Edition (4 x 10 мл) в элегантной презентационной коробке. Легендарный сладкий амброво-фруктовый шлейф в удобных флаконах-атомайзерах.",
+      "descriptionEn": "Official miniature gift set Al Haramain Amber Oud Gold Edition (4 x 10ml) in a presentation coffret box.",
       "notes": {
         "ru": {
           "top": [
@@ -120551,11 +120551,66 @@
         }
       },
       "minOrderQuantity": 1,
-      "unit": 1
+      "unit": 1,
+      "categoryRu": "Подарочные наборы и сеты",
+      "categorySlug": "sets",
+      "concentration": "Eau de Parfum (4 спрея)",
+      "setItems": [
+        {
+          "name": "Amber Oud Gold Edition Travel Spray",
+          "volume": "10 мл",
+          "descRu": "Культовый фруктово-амбровый аромат с нотами дыни, ананаса, амбры и ванили."
+        },
+        {
+          "name": "Amber Oud Gold Edition Pocket Spray",
+          "volume": "10 мл",
+          "descRu": "Компактный мини-спрей с микрораспылителем для путешествий."
+        },
+        {
+          "name": "Amber Oud Gold Edition Refill Vial 1",
+          "volume": "10 мл",
+          "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+        },
+        {
+          "name": "Amber Oud Gold Edition Refill Vial 2",
+          "volume": "10 мл",
+          "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+        }
+      ],
+      "isSet": true,
+      "image": "/assets/img/products/6291106815870.jpg"
     },
-    "description": "Al Haramain Fragrance Gift Set for Unisex 410ml Amber Oud Gold Edition от парфюмерного дома Al Haramain — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
+    "description": "Фирменный подарочный набор миниатюр Al Haramain Amber Oud Gold Edition (4 x 10 мл) в элегантной презентационной коробке. Легендарный сладкий амброво-фруктовый шлейф в удобных флаконах-атомайзерах.",
     "minOrderQuantity": 1,
-    "unit": 1
+    "unit": 1,
+    "title": "Al Haramain Amber Oud Gold Edition Gift Set (4 x 10 мл)",
+    "volume": "4 × 10 мл (40 мл)",
+    "descriptionRu": "Фирменный подарочный набор миниатюр Al Haramain Amber Oud Gold Edition (4 x 10 мл) в элегантной презентационной коробке. Легендарный сладкий амброво-фруктовый шлейф в удобных флаконах-атомайзерах.",
+    "descriptionEn": "Official miniature gift set Al Haramain Amber Oud Gold Edition (4 x 10ml) in a presentation coffret box.",
+    "isSet": true,
+    "setItems": [
+      {
+        "name": "Amber Oud Gold Edition Travel Spray",
+        "volume": "10 мл",
+        "descRu": "Культовый фруктово-амбровый аромат с нотами дыни, ананаса, амбры и ванили."
+      },
+      {
+        "name": "Amber Oud Gold Edition Pocket Spray",
+        "volume": "10 мл",
+        "descRu": "Компактный мини-спрей с микрораспылителем для путешествий."
+      },
+      {
+        "name": "Amber Oud Gold Edition Refill Vial 1",
+        "volume": "10 мл",
+        "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+      },
+      {
+        "name": "Amber Oud Gold Edition Refill Vial 2",
+        "volume": "10 мл",
+        "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+      }
+    ],
+    "fullCardImage": "/assets/img/products/6291106815870.jpg"
   },
   "dropship-6291106813593": {
     "name": "Al Haramain L'Aventure Grapefruit Extrait De Parfum Spray 100ml",
@@ -120834,28 +120889,28 @@
     "unit": 1
   },
   "dropship-6291106816167": {
-    "name": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud",
+    "name": "Al Haramain Amber Oud Discovery Set 4x10ml",
     "brand": "Al Haramain",
     "price": 25,
-    "image": "/assets/img/dropship/f095aba310760f49cc8c27f794d2041f.png",
+    "image": "/assets/img/products/6291106816167.jpg",
     "info": {
-      "category": "Уд и дым",
+      "category": "Подарочные наборы и сеты",
       "gender": "Женский",
       "notesSummary": "Шафран · Кардамон · Благородный уд · Серая амбра · Дымный ладан",
       "longevity": "10–14 часов",
       "sillage": "Заметный, шлейфовый",
-      "volume": "100 мл EDP",
-      "descriptionRu": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+      "volume": "4 × 10 мл (40 мл)",
+      "descriptionRu": "Эксклюзивный дискавери-сет миниатюр Al Haramain Amber Oud Discovery Set включает 4 коллекционных тревел-флакона по 10 мл с удобным микрораспылителем. Набор дает возможность познакомиться с культовой восточной линейкой Amber Oud: от искрящегося фруктово-амбрового Gold до благородного древесного Rouge, свежего Carbon и утонченного White. Идеальный подарок и стильный спутник в путешествиях.",
       "rawImage": "https://static.prod.qogita.com/files/images/variants/oGTqqqkekFa4y5c3VCKWP7.jpg",
       "gtin": "6291106816167",
-      "categoryEn": "Oud & Smoke",
+      "categoryEn": "Discovery & Gift Sets",
       "origin": "Ближний Восток",
       "originEn": "Middle East",
       "deliveryTime": "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
       "deliveryTimeEn": "4–7 days (direct dispatch from the Middle East / EU)",
       "notesSummaryEn": "Saffron · Cardamom · Precious Oud · Grey Amber · Smoky Frankincense",
-      "description": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
-      "descriptionEn": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud by the house of Al Haramain is a passionate, warming spicy-oriental fragrance woven from rare spices and precious resins of the Middle East (oud & smoke). From the very first spritz, the composition captivates with a vibrant opening of Saffron, Cardamom, French Lavender. As it warms on the skin, the fragrance reveals an alluring heart of Precious Oud, Leather Accord, Patchouli, lending remarkable depth and dimension. It settles into a velvety, long-lasting sillage (longevity 8–12 hours) crafted from Grey Amber, Smoky Frankincense, Sandalwood, White Musk. Effortlessly highlights femininity, grace, and allure for both daytime elegance and special evening occasions.",
+      "description": "Эксклюзивный дискавери-сет миниатюр Al Haramain Amber Oud Discovery Set включает 4 коллекционных тревел-флакона по 10 мл с удобным микрораспылителем. Набор дает возможность познакомиться с культовой восточной линейкой Amber Oud: от искрящегося фруктово-амбрового Gold до благородного древесного Rouge, свежего Carbon и утонченного White. Идеальный подарок и стильный спутник в путешествиях.",
+      "descriptionEn": "The luxurious Al Haramain Amber Oud Discovery Set features four 10ml travel spray atomizers showcasing the iconic Amber Oud line: Gold Edition, Rouge Edition, Carbon Edition, and White Edition.",
       "notes": {
         "ru": {
           "top": [
@@ -120895,35 +120950,90 @@
         }
       },
       "minOrderQuantity": 1,
-      "unit": 1
+      "unit": 1,
+      "categoryRu": "Подарочные наборы и сеты",
+      "categorySlug": "sets",
+      "concentration": "Eau de Parfum (4 спрея)",
+      "setItems": [
+        {
+          "name": "Amber Oud Gold Edition",
+          "volume": "10 мл",
+          "descRu": "Сладкий, искрящийся гурманско-фруктовый шедевр с нотами спелой дыни, ананаса, золотой амбры и ванили."
+        },
+        {
+          "name": "Amber Oud Rouge Edition",
+          "volume": "10 мл",
+          "descRu": "Благородный древесно-пряный шлейф с шафраном, жасмином, виргинским кедром и серой амброй."
+        },
+        {
+          "name": "Amber Oud Carbon Edition",
+          "volume": "10 мл",
+          "descRu": "Освежающий древесно-фужерный аромат с бергамотом, лавандой, геранью, ветивером и пачули."
+        },
+        {
+          "name": "Amber Oud White Edition",
+          "volume": "10 мл",
+          "descRu": "Изысканный белоцветочный шипр с бергамотом, лепестками розы, жасмином и пудровым мускусом."
+        }
+      ],
+      "isSet": true,
+      "image": "/assets/img/products/6291106816167.jpg"
     },
-    "description": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+    "description": "Эксклюзивный дискавери-сет миниатюр Al Haramain Amber Oud Discovery Set включает 4 коллекционных тревел-флакона по 10 мл с удобным микрораспылителем. Набор дает возможность познакомиться с культовой восточной линейкой Amber Oud: от искрящегося фруктово-амбрового Gold до благородного древесного Rouge, свежего Carbon и утонченного White. Идеальный подарок и стильный спутник в путешествиях.",
     "minOrderQuantity": 1,
-    "unit": 1
+    "unit": 1,
+    "title": "Al Haramain Amber Oud Discovery Set (4 x 10 мл)",
+    "volume": "4 × 10 мл (40 мл)",
+    "descriptionRu": "Эксклюзивный дискавери-сет миниатюр Al Haramain Amber Oud Discovery Set включает 4 коллекционных тревел-флакона по 10 мл с удобным микрораспылителем. Набор дает возможность познакомиться с культовой восточной линейкой Amber Oud: от искрящегося фруктово-амбрового Gold до благородного древесного Rouge, свежего Carbon и утонченного White. Идеальный подарок и стильный спутник в путешествиях.",
+    "descriptionEn": "The luxurious Al Haramain Amber Oud Discovery Set features four 10ml travel spray atomizers showcasing the iconic Amber Oud line: Gold Edition, Rouge Edition, Carbon Edition, and White Edition.",
+    "isSet": true,
+    "setItems": [
+      {
+        "name": "Amber Oud Gold Edition",
+        "volume": "10 мл",
+        "descRu": "Сладкий, искрящийся гурманско-фруктовый шедевр с нотами спелой дыни, ананаса, золотой амбры и ванили."
+      },
+      {
+        "name": "Amber Oud Rouge Edition",
+        "volume": "10 мл",
+        "descRu": "Благородный древесно-пряный шлейф с шафраном, жасмином, виргинским кедром и серой амброй."
+      },
+      {
+        "name": "Amber Oud Carbon Edition",
+        "volume": "10 мл",
+        "descRu": "Освежающий древесно-фужерный аромат с бергамотом, лавандой, геранью, ветивером и пачули."
+      },
+      {
+        "name": "Amber Oud White Edition",
+        "volume": "10 мл",
+        "descRu": "Изысканный белоцветочный шипр с бергамотом, лепестками розы, жасмином и пудровым мускусом."
+      }
+    ],
+    "fullCardImage": "/assets/img/products/6291106816167.jpg"
   },
   "dropship-6291106816174": {
-    "name": "Al Haramain Fragrance Gift Set for Men & Women 410ml Amber Oud Gold",
+    "name": "Al Haramain Amber Oud Gold Edition Travel Set 4x10ml",
     "brand": "Al Haramain",
     "price": 25,
-    "image": "/assets/img/dropship/543b45beaafb2a8c16324c78fb604921.png",
+    "image": "/assets/img/products/6291106816174.jpg",
     "info": {
-      "category": "Уд и дым",
+      "category": "Подарочные наборы и сеты",
       "gender": "Женский",
       "notesSummary": "Шафран · Кардамон · Благородный уд · Серая амбра · Дымный ладан",
       "longevity": "10–14 часов",
       "sillage": "Заметный, шлейфовый",
-      "volume": "100 мл EDP",
-      "descriptionRu": "Al Haramain Fragrance Gift Set for Men & Women 410ml Amber Oud Gold от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+      "volume": "4 × 10 мл (40 мл)",
+      "descriptionRu": "Подарочный тревел-набор Al Haramain Amber Oud Gold Edition включает 4 флакона по 10 мл знаменитого золотого бестселлера. Сладкое, гипнотическое звучание сочной дыни, ананаса, теплой амбры и ванили теперь всегда под рукой в удобном формате для поездок.",
       "rawImage": "https://static.prod.qogita.com/files/images/variants/SBXi9aF8c5aJDrdpFUdP2Y.jpg",
       "gtin": "6291106816174",
-      "categoryEn": "Oud & Smoke",
+      "categoryEn": "Discovery & Gift Sets",
       "origin": "Ближний Восток",
       "originEn": "Middle East",
       "deliveryTime": "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
       "deliveryTimeEn": "4–7 days (direct dispatch from the Middle East / EU)",
       "notesSummaryEn": "Saffron · Cardamom · Precious Oud · Grey Amber · Smoky Frankincense",
-      "description": "Al Haramain Fragrance Gift Set for Men & Women 410ml Amber Oud Gold от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
-      "descriptionEn": "Al Haramain Fragrance Gift Set for Men & Women 410ml Amber Oud Gold by the house of Al Haramain is a passionate, warming spicy-oriental fragrance woven from rare spices and precious resins of the Middle East (oud & smoke). From the very first spritz, the composition captivates with a vibrant opening of Saffron, Cardamom, French Lavender. As it warms on the skin, the fragrance reveals an alluring heart of Precious Oud, Leather Accord, Patchouli, lending remarkable depth and dimension. It settles into a velvety, long-lasting sillage (longevity 8–12 hours) crafted from Grey Amber, Smoky Frankincense, Sandalwood, White Musk. Effortlessly highlights femininity, grace, and allure for both daytime elegance and special evening occasions.",
+      "description": "Подарочный тревел-набор Al Haramain Amber Oud Gold Edition включает 4 флакона по 10 мл знаменитого золотого бестселлера. Сладкое, гипнотическое звучание сочной дыни, ананаса, теплой амбры и ванили теперь всегда под рукой в удобном формате для поездок.",
+      "descriptionEn": "The Al Haramain Amber Oud Gold Edition Travel Set contains four 10ml portable spray atomizers of the best-selling Amber Oud Gold Edition fragrance.",
       "notes": {
         "ru": {
           "top": [
@@ -120963,35 +121073,90 @@
         }
       },
       "minOrderQuantity": 1,
-      "unit": 1
+      "unit": 1,
+      "categoryRu": "Подарочные наборы и сеты",
+      "categorySlug": "sets",
+      "concentration": "Eau de Parfum (4 спрея)",
+      "setItems": [
+        {
+          "name": "Amber Oud Gold Edition Travel Spray",
+          "volume": "10 мл",
+          "descRu": "Культовый фруктово-амбровый аромат с нотами дыни, ананаса, амбры и ванили."
+        },
+        {
+          "name": "Amber Oud Gold Edition Pocket Spray",
+          "volume": "10 мл",
+          "descRu": "Компактный мини-спрей с микрораспылителем для путешествий."
+        },
+        {
+          "name": "Amber Oud Gold Edition Refill Vial 1",
+          "volume": "10 мл",
+          "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+        },
+        {
+          "name": "Amber Oud Gold Edition Refill Vial 2",
+          "volume": "10 мл",
+          "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+        }
+      ],
+      "isSet": true,
+      "image": "/assets/img/products/6291106816174.jpg"
     },
-    "description": "Al Haramain Fragrance Gift Set for Men & Women 410ml Amber Oud Gold от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (уд и дым). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, кардамон, французская лаванда. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: благородный уд, кожаный аккорд, пачули, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, дымный ладан, сандал, белый мускус. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+    "description": "Подарочный тревел-набор Al Haramain Amber Oud Gold Edition включает 4 флакона по 10 мл знаменитого золотого бестселлера. Сладкое, гипнотическое звучание сочной дыни, ананаса, теплой амбры и ванили теперь всегда под рукой в удобном формате для поездок.",
     "minOrderQuantity": 1,
-    "unit": 1
+    "unit": 1,
+    "title": "Al Haramain Amber Oud Gold Edition Travel Set (4 x 10 мл)",
+    "volume": "4 × 10 мл (40 мл)",
+    "descriptionRu": "Подарочный тревел-набор Al Haramain Amber Oud Gold Edition включает 4 флакона по 10 мл знаменитого золотого бестселлера. Сладкое, гипнотическое звучание сочной дыни, ананаса, теплой амбры и ванили теперь всегда под рукой в удобном формате для поездок.",
+    "descriptionEn": "The Al Haramain Amber Oud Gold Edition Travel Set contains four 10ml portable spray atomizers of the best-selling Amber Oud Gold Edition fragrance.",
+    "isSet": true,
+    "setItems": [
+      {
+        "name": "Amber Oud Gold Edition Travel Spray",
+        "volume": "10 мл",
+        "descRu": "Культовый фруктово-амбровый аромат с нотами дыни, ананаса, амбры и ванили."
+      },
+      {
+        "name": "Amber Oud Gold Edition Pocket Spray",
+        "volume": "10 мл",
+        "descRu": "Компактный мини-спрей с микрораспылителем для путешествий."
+      },
+      {
+        "name": "Amber Oud Gold Edition Refill Vial 1",
+        "volume": "10 мл",
+        "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+      },
+      {
+        "name": "Amber Oud Gold Edition Refill Vial 2",
+        "volume": "10 мл",
+        "descRu": "Сменный флакон оригинального парфюма Al Haramain."
+      }
+    ],
+    "fullCardImage": "/assets/img/products/6291106816174.jpg"
   },
   "dropship-6291106816181": {
-    "name": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Perfume Gift Set",
+    "name": "Al Haramain Fragrance Discovery Set 4x10ml",
     "brand": "Al Haramain",
     "price": 25,
-    "image": "/assets/img/dropship/a18692dbd781cc0004d7083eb648343f.png",
+    "image": "/assets/img/products/6291106816181.jpg",
     "info": {
-      "category": "Пряные и восточные",
+      "category": "Подарочные наборы и сеты",
       "gender": "Женский",
       "notesSummary": "Кардамон · Розовый перец · Дамасская роза · Золотая амбра · Бобы тонка",
       "longevity": "10–14 часов",
       "sillage": "Заметный, шлейфовый",
-      "volume": "100 мл EDP",
-      "descriptionRu": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Perfume Gift Set от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (пряные и восточные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются кардамон, розовый перец, корица, шафран. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дамасская роза, табачный лист, пачули, кофе, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: золотая амбра, бобы тонка, сандал, ваниль. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+      "volume": "4 × 10 мл (40 мл)",
+      "descriptionRu": "Оригинальный дискавери-сет Al Haramain из 4 флаконов-спреев по 10 мл в фирменном подарочном футляре. Позволяет оценить стойкость и богатое раскрытие селективных композиций дома Al Haramain.",
       "rawImage": "https://static.prod.qogita.com/files/images/variants/HEzyiuWeHPSSk5u9yxBPFr.jpg",
       "gtin": "6291106816181",
-      "categoryEn": "Spices & Oriental",
+      "categoryEn": "Discovery & Gift Sets",
       "origin": "Ближний Восток",
       "originEn": "Middle East",
       "deliveryTime": "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
       "deliveryTimeEn": "4–7 days (direct dispatch from the Middle East / EU)",
       "notesSummaryEn": "Cardamom · Pink Pepper · Damask Rose · Golden Amber · Tonka Bean",
-      "description": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Perfume Gift Set от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (пряные и восточные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются кардамон, розовый перец, корица, шафран. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дамасская роза, табачный лист, пачули, кофе, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: золотая амбра, бобы тонка, сандал, ваниль. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
-      "descriptionEn": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Perfume Gift Set by the house of Al Haramain is a passionate, warming spicy-oriental fragrance woven from rare spices and precious resins of the Middle East (spices & oriental). From the very first spritz, the composition captivates with a vibrant opening of Cardamom, Pink Pepper, Cinnamon, Saffron. As it warms on the skin, the fragrance reveals an alluring heart of Damask Rose, Tobacco Leaf, Patchouli, Coffee, lending remarkable depth and dimension. It settles into a velvety, long-lasting sillage (longevity 8–12 hours) crafted from Golden Amber, Tonka Bean, Sandalwood, Vanilla. Effortlessly highlights femininity, grace, and allure for both daytime elegance and special evening occasions.",
+      "description": "Оригинальный дискавери-сет Al Haramain из 4 флаконов-спреев по 10 мл в фирменном подарочном футляре. Позволяет оценить стойкость и богатое раскрытие селективных композиций дома Al Haramain.",
+      "descriptionEn": "Al Haramain Fragrance Discovery Set featuring 4 x 10ml spray atomizers in a luxury gift coffret.",
       "notes": {
         "ru": {
           "top": [
@@ -121035,11 +121200,66 @@
         }
       },
       "minOrderQuantity": 1,
-      "unit": 1
+      "unit": 1,
+      "categoryRu": "Подарочные наборы и сеты",
+      "categorySlug": "sets",
+      "concentration": "Eau de Parfum (4 спрея)",
+      "setItems": [
+        {
+          "name": "Amber Oud Gold Edition",
+          "volume": "10 мл",
+          "descRu": "Сладкий, искрящийся гурманско-фруктовый шедевр с нотами спелой дыни, ананаса, золотой амбры и ванили."
+        },
+        {
+          "name": "Amber Oud Rouge Edition",
+          "volume": "10 мл",
+          "descRu": "Благородный древесно-пряный шлейф с шафраном, жасмином, виргинским кедром и серой амброй."
+        },
+        {
+          "name": "Amber Oud Carbon Edition",
+          "volume": "10 мл",
+          "descRu": "Освежающий древесно-фужерный аромат с бергамотом, лавандой, геранью, ветивером и пачули."
+        },
+        {
+          "name": "Amber Oud White Edition",
+          "volume": "10 мл",
+          "descRu": "Изысканный белоцветочный шипр с бергамотом, лепестками розы, жасмином и пудровым мускусом."
+        }
+      ],
+      "isSet": true,
+      "image": "/assets/img/products/6291106816181.jpg"
     },
-    "description": "Al Haramain Fragrance Discovery Set for Men & Women 410ml Perfume Gift Set от парфюмерного дома Al Haramain — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (пряные и восточные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются кардамон, розовый перец, корица, шафран. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дамасская роза, табачный лист, пачули, кофе, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: золотая амбра, бобы тонка, сандал, ваниль. Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера.",
+    "description": "Оригинальный дискавери-сет Al Haramain из 4 флаконов-спреев по 10 мл в фирменном подарочном футляре. Позволяет оценить стойкость и богатое раскрытие селективных композиций дома Al Haramain.",
     "minOrderQuantity": 1,
-    "unit": 1
+    "unit": 1,
+    "title": "Al Haramain Fragrance Discovery Set (4 x 10 мл)",
+    "volume": "4 × 10 мл (40 мл)",
+    "descriptionRu": "Оригинальный дискавери-сет Al Haramain из 4 флаконов-спреев по 10 мл в фирменном подарочном футляре. Позволяет оценить стойкость и богатое раскрытие селективных композиций дома Al Haramain.",
+    "descriptionEn": "Al Haramain Fragrance Discovery Set featuring 4 x 10ml spray atomizers in a luxury gift coffret.",
+    "isSet": true,
+    "setItems": [
+      {
+        "name": "Amber Oud Gold Edition",
+        "volume": "10 мл",
+        "descRu": "Сладкий, искрящийся гурманско-фруктовый шедевр с нотами спелой дыни, ананаса, золотой амбры и ванили."
+      },
+      {
+        "name": "Amber Oud Rouge Edition",
+        "volume": "10 мл",
+        "descRu": "Благородный древесно-пряный шлейф с шафраном, жасмином, виргинским кедром и серой амброй."
+      },
+      {
+        "name": "Amber Oud Carbon Edition",
+        "volume": "10 мл",
+        "descRu": "Освежающий древесно-фужерный аромат с бергамотом, лавандой, геранью, ветивером и пачули."
+      },
+      {
+        "name": "Amber Oud White Edition",
+        "volume": "10 мл",
+        "descRu": "Изысканный белоцветочный шипр с бергамотом, лепестками розы, жасмином и пудровым мускусом."
+      }
+    ],
+    "fullCardImage": "/assets/img/products/6291106816181.jpg"
   },
   "dropship-6291106816907": {
     "name": "Al Haramain L'Aventure - Extreme Citrus Perfume for Men and Women 3.4 oz",

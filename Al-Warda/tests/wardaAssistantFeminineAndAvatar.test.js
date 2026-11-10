@@ -400,15 +400,32 @@ test("isDecantablePerfume and getSamplePrice enforce monotonicity: larger volume
 
 test("getPerfumeById resolves sample URLs, sample- prefixed IDs and stock IDs", async () => {
   const { getPerfumeById } = await import("../utils/perfumes.js");
-
-  // In test environment without network, mock perfumes can be tested directly with getPerfumeById logic
-  // Let's verify clean id processing by testing with simulated options or IDs
-  const mockCatalog = [
-    { id: "5468", name: "Lattafa Yara", price: 32, volume: "100 ml", gtin: "6291108735411" },
-    { id: "stock-4217", name: "Lattafa Asad", price: 28, volume: "100 ml" },
-  ];
-
-  // We test using options.catalog or by directly inspecting resolved IDs
-  // Since getPerfumes calls fetch when no cache, let's test getPerfumeById with pre-cached catalog if supported, or verify matching regexes
   assert.ok(typeof getPerfumeById === "function");
+});
+
+test("isPerfumeSet, inferSetItems and ensurePerfumeEnrichment correctly handle discovery sets", async () => {
+  const { isPerfumeSet, inferSetItems, ensurePerfumeEnrichment } = await import("../utils/perfumes.js");
+
+  const rawSet = {
+    id: "dropship-6291106816167",
+    name: "Al Haramain Fragrance Discovery Set for Men & Women 410ml Amber Oud",
+    brand: "Al Haramain",
+    price: 25,
+  };
+
+  assert.equal(isPerfumeSet(rawSet), true, "Should identify discovery set as a set");
+
+  const enriched = ensurePerfumeEnrichment(rawSet);
+  assert.ok(!enriched.name.includes("410ml"), "410ml typo should be cleaned up to 4x10ml");
+  assert.ok(enriched.name.includes("4x10ml"), "Should normalize to 4x10ml");
+  assert.equal(enriched.isSet, true);
+  assert.equal(enriched.categoryRu, "Подарочные наборы и сеты");
+
+  const items = inferSetItems(enriched.name, enriched.brand);
+  assert.ok(Array.isArray(items), "Should infer items for Amber Oud set");
+  assert.equal(items.length, 4, "Should have 4 miniatures in Amber Oud set");
+  assert.equal(items[0].name, "Amber Oud Gold Edition");
+  assert.equal(items[1].name, "Amber Oud Rouge Edition");
+  assert.equal(items[2].name, "Amber Oud Carbon Edition");
+  assert.equal(items[3].name, "Amber Oud White Edition");
 });

@@ -5,6 +5,7 @@ import {
   ensurePerfumeEnrichment,
   getHarmoniousNotes,
   isPerfumeSet,
+  inferSetItems,
   isDecantablePerfume,
   SAMPLE_VOLUMES,
   getSamplePrice,
@@ -94,6 +95,7 @@ export default function BookDetails() {
   }, [targetId]);
 
   const isSet = perfume ? isPerfumeSet(perfume) : false;
+  const setItems = perfume?.setItems || (isSet ? inferSetItems(perfume?.name, perfume?.brand) : null);
   const isDecantable = perfume ? isDecantablePerfume(perfume) : false;
   const hasSampleParam = Boolean(searchParams.get("sample"));
   const allowSamples = !isSet && (isDecantable || hasSampleParam);
@@ -265,9 +267,13 @@ export default function BookDetails() {
           <div className="warda-details-info">
             <div className="warda-details-tag">
               <span className="warda-tag-category">
-                {language === "ru" ? (perfume.categoryRu || perfume.categoryName || perfume.category?.toUpperCase()) : (perfume.categoryEn || perfume.category?.toUpperCase())}
+                {isSet
+                  ? (isRu ? "Подарочный сет • Discovery Set" : "Discovery Gift Set")
+                  : (language === "ru" ? (perfume.categoryRu || perfume.categoryName || perfume.category?.toUpperCase()) : (perfume.categoryEn || perfume.category?.toUpperCase()))}
               </span>
-              <span className="warda-tag-badge">{perfume.concentration}</span>
+              <span className="warda-tag-badge">
+                {isSet ? (isRu ? "Коллекция миниатюр" : "Miniature Set") : perfume.concentration}
+              </span>
             </div>
 
             <h1 className="warda-details-title">{perfume.name}</h1>
@@ -322,50 +328,105 @@ export default function BookDetails() {
               {displayDesc}
             </p>
 
-            {/* OLFACTORY PYRAMID */}
-            <div className="warda-pyramid">
-              <h3 className="warda-pyramid-title">
-                {language === "ru" ? "Ольфакторная пирамида" : "Olfactory Pyramid"}
-              </h3>
-              <div className="warda-pyramid-grid">
-                <div className="warda-pyramid-step">
-                  <span className="warda-step-name">{language === "ru" ? "Верхние ноты:" : "Top Notes:"}</span>
-                  <div className="warda-notes-tags">
-                    {topNotes.map((n) => (
-                      <span key={n} className="warda-note-tag">{n}</span>
+            {/* SET COMPOSITION / INCLUDED FRAGRANCES OR OLFACTORY PYRAMID */}
+            {isSet ? (
+              <div className="warda-set-composition">
+                <h3 className="warda-pyramid-title">
+                  <i className="ri-gift-2-line" style={{ marginRight: "0.5rem", color: "#d4af37" }} />
+                  {isRu ? "Состав и ароматы набора" : "Set Contents & Collection"}
+                </h3>
+                {setItems && setItems.length > 0 ? (
+                  <div className="warda-set-items-grid">
+                    {setItems.map((item, idx) => (
+                      <div key={idx} className="warda-set-item-card">
+                        <div className="warda-set-item-head">
+                          <span className="warda-set-item-badge">{item.volume || "10 мл"}</span>
+                          <h4 className="warda-set-item-title">{item.name}</h4>
+                        </div>
+                        {item.descRu && (
+                          <p className="warda-set-item-desc">{isRu ? item.descRu : (item.descEn || item.descRu)}</p>
+                        )}
+                      </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="warda-pyramid-step">
-                  <span className="warda-step-name">{language === "ru" ? "Ноты сердца:" : "Heart Notes:"}</span>
-                  <div className="warda-notes-tags">
-                    {heartNotes.map((n) => (
-                      <span key={n} className="warda-note-tag">{n}</span>
-                    ))}
+                ) : (
+                  <div className="warda-set-features">
+                    <div className="warda-set-feature-row">
+                      <span className="warda-set-feature-bullet">✦</span>
+                      <span>
+                        {isRu
+                          ? "Коллекция оригинальных селективных миниатюр в фирменной подарочной коробке"
+                          : "Curated collection of authentic niche miniatures in a presentation coffret box"}
+                      </span>
+                    </div>
+                    <div className="warda-set-feature-row">
+                      <span className="warda-set-feature-bullet">✦</span>
+                      <span>
+                        {isRu
+                          ? "Каждый флакон оснащен удобным распылителем (спрей) для идеального нанесения"
+                          : "Each miniature is equipped with a fine mist pocket atomizer"}
+                      </span>
+                    </div>
+                    <div className="warda-set-feature-row">
+                      <span className="warda-set-feature-bullet">✦</span>
+                      <span>
+                        {isRu
+                          ? "Прекрасная возможность познакомиться с культовыми ароматами бренда перед покупкой полноразмерного флакона"
+                          : "Experience the house's signature scents before committing to a full bottle"}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+            ) : (
+              <div className="warda-pyramid">
+                <h3 className="warda-pyramid-title">
+                  {language === "ru" ? "Ольфакторная пирамида" : "Olfactory Pyramid"}
+                </h3>
+                <div className="warda-pyramid-grid">
+                  <div className="warda-pyramid-step">
+                    <span className="warda-step-name">{language === "ru" ? "Верхние ноты:" : "Top Notes:"}</span>
+                    <div className="warda-notes-tags">
+                      {topNotes.map((n) => (
+                        <span key={n} className="warda-note-tag">{n}</span>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="warda-pyramid-step">
-                  <span className="warda-step-name">{language === "ru" ? "Базовые ноты:" : "Base Notes:"}</span>
-                  <div className="warda-notes-tags">
-                    {baseNotes.map((n) => (
-                      <span key={n} className="warda-note-tag">{n}</span>
-                    ))}
+                  <div className="warda-pyramid-step">
+                    <span className="warda-step-name">{language === "ru" ? "Ноты сердца:" : "Heart Notes:"}</span>
+                    <div className="warda-notes-tags">
+                      {heartNotes.map((n) => (
+                        <span key={n} className="warda-note-tag">{n}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="warda-pyramid-step">
+                    <span className="warda-step-name">{language === "ru" ? "Базовые ноты:" : "Base Notes:"}</span>
+                    <div className="warda-notes-tags">
+                      {baseNotes.map((n) => (
+                        <span key={n} className="warda-note-tag">{n}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* SPECS ROW */}
             <div className="warda-specs-row">
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{language === "ru" ? "Объем:" : "Volume:"}</span>
-                <span className="warda-spec-val">{displayVolume}</span>
+                <span className="warda-spec-lbl">{isSet ? (isRu ? "Формат:" : "Format:") : (language === "ru" ? "Объем:" : "Volume:")}</span>
+                <span className="warda-spec-val">{isSet ? (isRu ? "Подарочный сет" : "Discovery Set") : displayVolume}</span>
               </div>
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{language === "ru" ? "Пол:" : "Gender:"}</span>
-                <span className="warda-spec-val">{language === "ru" ? (perfume.genderRu || perfume.gender) : (perfume.genderEn || perfume.gender)}</span>
+                <span className="warda-spec-lbl">{isSet ? (isRu ? "Комплектация:" : "Included:") : (language === "ru" ? "Пол:" : "Gender:")}</span>
+                <span className="warda-spec-val">
+                  {isSet
+                    ? (perfume.volume || "4 × 10 мл")
+                    : (language === "ru" ? (perfume.genderRu || perfume.gender) : (perfume.genderEn || perfume.gender))}
+                </span>
               </div>
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{language === "ru" ? "Стойкость:" : "Longevity:"}</span>

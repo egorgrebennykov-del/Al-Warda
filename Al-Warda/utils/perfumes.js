@@ -1255,9 +1255,55 @@ function isGenericOrShortDescription(text = "") {
   );
 }
 
+export function inferSetItems(perfumeName = "", brand = "") {
+  const text = `${perfumeName} ${brand}`.toLowerCase();
+
+  if (text.includes("amber oud")) {
+    return [
+      { name: "Amber Oud Gold Edition", volume: "10 мл", descRu: "Сладкий, искрящийся гурманско-фруктовый шедевр: бергамот, спелая дыня, ананас, золотая амбра и ваниль.", descEn: "Sweet, sparkling gourmand-fruity icon: bergamot, ripe melon, pineapple, golden amber, and vanilla." },
+      { name: "Amber Oud Rouge Edition", volume: "10 мл", descRu: "Благородный древесно-пряный шлейф: шафран, жасмин, виргинский кедр и серая амбра.", descEn: "Opulent woody-spicy trail: saffron, jasmine, cedarwood, and ambergris." },
+      { name: "Amber Oud Carbon Edition", volume: "10 мл", descRu: "Освежающий древесно-фужерный аромат: калабрийский бергамот, лаванда, герань, ветивер и пачули.", descEn: "Invigorating woody-fougere: bergamot, lavender, geranium, vetiver, and patchouli." },
+      { name: "Amber Oud White Edition", volume: "10 мл", descRu: "Изысканный белоцветочный шипр: бергамот, лепестки розы, жасмин и чистый белый мускус.", descEn: "Sophisticated white floral chypre: bergamot, rose petals, jasmine, and white musk." }
+    ];
+  }
+
+  if (text.includes("yara")) {
+    const is25 = text.includes("25ml") || text.includes("25 ml");
+    return [
+      { name: "Yara Eau de Parfum (Pink)", volume: is25 ? "25 мл" : "5 мл", descRu: "Знаменитый пудрово-гурманский хит: гелиотроп, орхидея, маршмеллоу, тропические фрукты и ваниль.", descEn: "Iconic powdery-gourmand: heliotrope, orchid, tropical fruits, marshmallow, and vanilla." },
+      { name: "Yara Tous (Orange)", volume: is25 ? "25 мл" : "5 мл", descRu: "Солнечный тропический коктейль: сочное спелое манго, маракуйя, кокос и жасмин.", descEn: "Sunny tropical blend: ripe mango, passionfruit, coconut, and jasmine." },
+      { name: "Yara Moi (White)", volume: is25 ? "25 мл" : "5 мл", descRu: "Элегантный сливочно-карамельный аромат: жасмин, персик, золотая карамель и сандал.", descEn: "Elegant creamy-caramel scent: jasmine, peach, golden caramel, and sandalwood." },
+      { name: "Yara Candy", volume: is25 ? "25 мл" : "5 мл", descRu: "Игривая ягодно-леденцовая новинка: засахаренная черная смородина, малина, гардения и ваниль.", descEn: "Playful berry-candy novelty: candied blackcurrant, raspberry, gardenia, and vanilla." }
+    ];
+  }
+
+  if (text.includes("asad")) {
+    return [
+      { name: "Asad Eau de Parfum (Black)", volume: "25 мл", descRu: "Пряный мужественный бестселлер: черный перец, ананас, табак, кофе, пачули и сухая амбра.", descEn: "Spicy masculine bestseller: black pepper, pineapple, tobacco, coffee, and dry amber." },
+      { name: "Asad Zanzibar", volume: "25 мл", descRu: "Экзотический морской аромат: черный перец, кокосовая вода, ирис, морская соль и ваниль.", descEn: "Exotic marine scent: black pepper, coconut water, iris, sea salt, and vanilla." }
+    ];
+  }
+
+  if (text.includes("supremacy")) {
+    return [
+      { name: "Supremacy Silver", volume: "2 мл", descRu: "Свежий цитрусово-древесный аромат в стиле Aventus: ананас, черная смородина, береза и дубовый мох.", descEn: "Fresh citrus-woody legend: pineapple, blackcurrant, birch, and oakmoss." },
+      { name: "Supremacy Not Only Intense", volume: "2 мл", descRu: "Глубокий фруктово-кожаный экстракт: бергамот, яблоко, лаванда, дубовый мох и амбра.", descEn: "Deep fruity-leather extrait: bergamot, apple, lavender, oakmoss, and amber." },
+      { name: "Supremacy in Oud", volume: "2 мл", descRu: "Благородный пряный уд: шафран, мускатный орех, лаванда, благородный уд и пачули.", descEn: "Noble spicy oud: saffron, nutmeg, lavender, precious oud, and patchouli." },
+      { name: "Supremacy Incense", volume: "2 мл", descRu: "Мистический дымный ладан: бергамот, орегано, лабданум, амбра и кожа.", descEn: "Mystic smoky incense: bergamot, oregano, labdanum, amber, and leather." },
+      { name: "Supremacy Noir", volume: "2 мл", descRu: "Загадочный вечерний аромат: бергамот, фиалка, еловая хвоя, кожа и пачули.", descEn: "Mysterious nocturnal scent: bergamot, violet, spruce, leather, and patchouli." }
+    ];
+  }
+
+  return null;
+}
+
 export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
-  const name = p.name || p.title || "";
+  const isSet = isPerfumeSet(p);
+  let name = p.name || p.title || "";
+  // Fix corrupted 410ml -> 4x10ml in sets (e.g. "Discovery Set 410ml Amber Oud" -> "Discovery Set 4x10ml Amber Oud")
+  name = name.replace(/\b([3-8])10\s*ml\b/gi, "$1x10ml");
+
   const brand = p.brand || "Al-Warda";
   const profile = inferPerfumeProfile(p);
 
@@ -1277,22 +1323,26 @@ export function ensurePerfumeEnrichment(p) {
   const heartEn = (Array.isArray(p.heartNotesEn) && p.heartNotesEn.length > 0) ? p.heartNotesEn : profile.en.heart;
   const baseEn = (Array.isArray(p.baseNotesEn) && p.baseNotesEn.length > 0) ? p.baseNotesEn : profile.en.base;
 
-  const category = (!p.category || p.category === "spicy") ? profile.category : p.category;
-  const categoryRu = (!p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные")
+  const category = isSet ? "sets" : ((!p.category || p.category === "spicy") ? profile.category : p.category);
+  const categoryRu = isSet ? "Подарочные наборы и сеты" : ((!p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные")
     ? profile.categoryRu
-    : p.categoryRu;
-  const categoryEn = (!p.categoryEn || p.categoryEn === "Oriental")
+    : p.categoryRu);
+  const categoryEn = isSet ? "Discovery & Gift Sets" : ((!p.categoryEn || p.categoryEn === "Oriental")
     ? profile.categoryEn
-    : p.categoryEn;
+    : p.categoryEn);
 
   let notesSummaryRu = p.notesSummaryRu || p.notesSummary || "";
   if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu.includes("Элитный восточный парфюм") || notesSummaryRu === brand) {
-    notesSummaryRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)].join(" · ");
+    notesSummaryRu = isSet
+      ? "Коллекция оригинальных тревел-миниатюр"
+      : [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)].join(" · ");
   }
 
   let notesSummaryEn = p.notesSummaryEn || "";
   if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn.includes("Элитный восточный парфюм") || notesSummaryEn === brand) {
-    notesSummaryEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)].join(" · ");
+    notesSummaryEn = isSet
+      ? "Curated collection of travel miniatures"
+      : [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)].join(" · ");
   }
 
   const genderRu = p.genderRu || p.gender || "Унисекс";
@@ -1319,13 +1369,20 @@ export function ensurePerfumeEnrichment(p) {
   });
 
   let descRu = p.descriptionRu || p.description;
-  if (isGenericOrShortDescription(descRu)) {
-    descRu = generatedDescs.descriptionRu;
-  }
-
   let descEn = p.descriptionEn;
-  if (isGenericOrShortDescription(descEn)) {
-    descEn = generatedDescs.descriptionEn;
+
+  if (isSet) {
+    if (!descRu || isGenericOrShortDescription(descRu) || descRu.includes("С первых мгновений композиция завораживает")) {
+      descRu = `Эксклюзивный подарочный набор ${name} от парфюмерного дома ${brand}. Включает коллекцию оригинальных селективных композиций в фирменном футляре. Прекрасная возможность познакомиться с культовыми ароматами бренда и найти своего персонального фаворита.`;
+      descEn = `Exclusive fragrance discovery gift set ${name} by ${brand}. Features a curated collection of authentic niche miniatures in a presentation coffret.`;
+    }
+  } else {
+    if (isGenericOrShortDescription(descRu)) {
+      descRu = generatedDescs.descriptionRu;
+    }
+    if (isGenericOrShortDescription(descEn)) {
+      descEn = generatedDescs.descriptionEn;
+    }
   }
 
   const rawImage = p.rawImage || p.info?.rawImage || null;
@@ -1340,19 +1397,36 @@ export function ensurePerfumeEnrichment(p) {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
 
-  const rawName = p.name || p.title || "";
-  const nameVolMatch = rawName.match(/(\d+(?:\.\d+)?)\s*(ml|мл|fl\.?\s*oz)/i);
-  const resolvedVolume = nameVolMatch
-    ? `${nameVolMatch[1]} ${nameVolMatch[2].toLowerCase().includes("fl") ? "fl.oz" : "мл"}`
-    : (p.volume || p.info?.volume || "100 мл");
+  let resolvedVolume = p.volume || p.info?.volume;
+  if (!resolvedVolume || resolvedVolume === "100 мл") {
+    const multVolMatch = name.match(/(\d+)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(ml|мл)/i);
+    if (multVolMatch) {
+      resolvedVolume = `${multVolMatch[1]} × ${multVolMatch[2]} мл`;
+    } else {
+      const nameVolMatch = name.match(/(\d+(?:\.\d+)?)\s*(ml|мл|fl\.?\s*oz)/i);
+      resolvedVolume = nameVolMatch
+        ? `${nameVolMatch[1]} ${nameVolMatch[2].toLowerCase().includes("fl") ? "fl.oz" : "мл"}`
+        : (p.volume || p.info?.volume || "100 мл");
+    }
+  }
+
+  const setItems = p.setItems || p.info?.setItems || (isSet ? inferSetItems(name, brand) : null);
+  const concentration = isSet
+    ? (p.concentration && (p.concentration.includes("Набор") || p.concentration.includes("Set")) ? p.concentration : "Набор миниатюр (Set)")
+    : (p.concentration || "Eau De Parfum");
 
   return {
     ...p,
+    name,
+    title: name,
+    isSet,
+    setItems,
     volume: resolvedVolume,
     category,
     categoryRu,
     categoryEn,
     categoryName: categoryRu,
+    concentration,
     notesSummary: notesSummaryRu,
     notesSummaryRu,
     notesSummaryEn,
