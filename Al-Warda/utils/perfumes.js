@@ -1340,8 +1340,15 @@ export function ensurePerfumeEnrichment(p) {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
 
+  const rawName = p.name || p.title || "";
+  const nameVolMatch = rawName.match(/(\d+(?:\.\d+)?)\s*(ml|мл|fl\.?\s*oz)/i);
+  const resolvedVolume = nameVolMatch
+    ? `${nameVolMatch[1]} ${nameVolMatch[2].toLowerCase().includes("fl") ? "fl.oz" : "мл"}`
+    : (p.volume || p.info?.volume || "100 мл");
+
   return {
     ...p,
+    volume: resolvedVolume,
     category,
     categoryRu,
     categoryEn,
@@ -1729,11 +1736,65 @@ export const SAMPLE_VOLUMES = [
   { key: "10ml", ml: 10, labelRu: "10 мл", labelEn: "10 ml", descRu: "Люкс-миниатюра", descEn: "Deluxe decant", factor: 0.32, baseFee: 6.90, minPrice: 18.90 },
 ];
 
+export function isDecantablePerfume(p) {
+  if (!p) return false;
+  if (isPerfumeSet(p)) return false;
+
+  const text = `${p.name || ""} ${p.title || ""}`.toLowerCase();
+  // Exclude non-perfumes (deodorants, air fresheners, room sprays, body sprays, hair mists, etc.)
+  if (/(?:deodorant|deo\s*spray|air\s*freshener|room\s*spray|body\s*spray|body\s*mist|hair\s*mist|shower|lotion|bakhoor|bukhoor|incense)/i.test(text)) {
+    return false;
+  }
+
+  // Exclude items that are already small sample vials, roll-ons or miniatures (< 30ml)
+  if (/(?:^|[\s,!?.;:()<>"'-])(1|1\.5|2|3|5|8|10|12|15|20)\s*(ml|мл)(?:$|[\s,!?.;:()<>"'-])/i.test(text)) {
+    return false;
+  }
+  if (/(?:^|[\s,!?.;:()<>"'-])(пробник|отливант|виалка|семпл|сэмпл|sample|decant|vial|miniature|миниатюра)/i.test(text)) {
+    return false;
+  }
+
+  // If price is under 15 EUR or volume is less than 30ml, don't decant
+  const price = Number(p.price);
+  if (Number.isFinite(price) && price < 15) return false;
+
+  const volMatch = (p.volume || "").match(/(\d+(?:\.\d+)?)\s*(?:ml|мл)/i);
+  if (volMatch && parseFloat(volMatch[1]) < 30) return false;
+
+  return true;
+}
+
 export function getSamplePrice(perfumePrice, volumeKey = "1ml") {
-  const p = Number(perfumePrice) || 45;
+  const p = Math.max(1, Number(perfumePrice) || 45);
   const cfg = SAMPLE_VOLUMES.find((v) => v.key === volumeKey) || SAMPLE_VOLUMES[0];
   const raw = Math.round((p * cfg.factor + cfg.baseFee) * 10) / 10;
-  return Math.max(cfg.minPrice, raw);
+  let price = Math.max(cfg.minPrice, raw);
+
+  if (p < 25) {
+    // Progressive capping relative to full bottle price p to guarantee strict monotonicity:
+    // 1ml < 2ml < 5ml < 10ml < full bottle
+    const step = Math.max(0.2, Math.round((p / 6) * 10) / 10);
+    const cap10 = Math.max(step * 4, Math.round((p - step) * 10) / 10);
+    const cap5 = Math.max(step * 3, Math.round((cap10 - step) * 10) / 10);
+    const cap2 = Math.max(step * 2, Math.round((cap5 - step) * 10) / 10);
+    const cap1 = Math.max(step, Math.round((cap2 - step) * 10) / 10);
+
+    if (cfg.key === "10ml") return Math.min(price, cap10);
+    if (cfg.key === "5ml") return Math.min(price, cap5);
+    if (cfg.key === "2ml") return Math.min(price, cap2);
+    return Math.min(price, cap1);
+  }
+
+  // Standard progressive capping for p >= 25 so samples never cost more than full bottle
+  const cap10 = Math.max(4.0, Math.min(price, Math.round((p - 2.5) * 10) / 10, Math.round(p * 0.75 * 10) / 10));
+  const cap5 = Math.max(3.0, Math.min(price, Math.round((cap10 - 2.0) * 10) / 10, Math.round(p * 0.55 * 10) / 10));
+  const cap2 = Math.max(2.0, Math.min(price, Math.round((cap5 - 1.5) * 10) / 10, Math.round(p * 0.38 * 10) / 10));
+  const cap1 = Math.max(1.5, Math.min(price, Math.round((cap2 - 1.0) * 10) / 10, Math.round(p * 0.25 * 10) / 10));
+
+  if (cfg.key === "10ml") return cap10;
+  if (cfg.key === "5ml") return cap5;
+  if (cfg.key === "2ml") return cap2;
+  return cap1;
 }
 
 export function createSampleCartItem(perfume, volumeKey = "1ml", language = "ru") {

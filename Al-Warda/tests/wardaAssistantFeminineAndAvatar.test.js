@@ -372,3 +372,28 @@ test("processWardaChat understands desire queries like 'хочу чтото с �
   assert.ok(result.books.length > 0, "Should recognize intent and recommend berry perfumes");
   assert.equal(result.books[0].id, "orientica-berries-1", "Top match should be the berry perfume");
 });
+
+test("isDecantablePerfume and getSamplePrice enforce monotonicity: larger volume costs more, samples never exceed bottle", async () => {
+  const { getSamplePrice, isDecantablePerfume } = await import("../utils/perfumes.js");
+
+  // 1. In cheap products, small oils, or deodorants, decants are not offered
+  assert.equal(isDecantablePerfume({ name: "Al Haramain Black Oudh Parfum", price: 2.77, volume: "15 мл" }), false);
+  assert.equal(isDecantablePerfume({ name: "Ajmal Aristocrat Her 1.5ml", price: 0.52, volume: "1.5 мл" }), false);
+  assert.equal(isDecantablePerfume({ name: "Nabeel Master Ocean Deo Spray 200 Ml", price: 2.71, volume: "200 мл" }), false);
+
+  // 2. Full bottles >= 15 EUR are decantable
+  assert.equal(isDecantablePerfume({ name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" }), true);
+
+  // 3. Strict monotonicity for all prices: 1ml < 2ml < 5ml < 10ml < full bottle
+  for (const p of [15, 18, 20, 25, 30, 45, 60, 100, 250]) {
+    const p1 = getSamplePrice(p, "1ml");
+    const p2 = getSamplePrice(p, "2ml");
+    const p5 = getSamplePrice(p, "5ml");
+    const p10 = getSamplePrice(p, "10ml");
+
+    assert.ok(p1 < p2, `1ml (${p1}) should be strictly less than 2ml (${p2}) for bottle ${p}`);
+    assert.ok(p2 < p5, `2ml (${p2}) should be strictly less than 5ml (${p5}) for bottle ${p}`);
+    assert.ok(p5 < p10, `5ml (${p5}) should be strictly less than 10ml (${p10}) for bottle ${p}`);
+    assert.ok(p10 < p, `10ml (${p10}) should be strictly less than bottle price (${p})`);
+  }
+});

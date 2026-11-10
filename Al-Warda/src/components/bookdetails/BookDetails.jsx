@@ -5,6 +5,7 @@ import {
   ensurePerfumeEnrichment,
   getHarmoniousNotes,
   isPerfumeSet,
+  isDecantablePerfume,
   SAMPLE_VOLUMES,
   getSamplePrice,
   createSampleCartItem,
@@ -80,7 +81,8 @@ export default function BookDetails() {
   }, [targetId]);
 
   const isSet = perfume ? isPerfumeSet(perfume) : false;
-  const activeSampleConfig = !isSet && selectedVolume !== "full"
+  const isDecantable = perfume ? isDecantablePerfume(perfume) : false;
+  const activeSampleConfig = isDecantable && selectedVolume !== "full"
     ? SAMPLE_VOLUMES.find((v) => v.key === selectedVolume)
     : null;
   const displayPrice = activeSampleConfig
@@ -256,20 +258,10 @@ export default function BookDetails() {
               {perfume.inStock === false && <span className="warda-stock-status">{language === "ru" ? "Под заказ" : "Pre-order"}</span>}
             </div>
 
-            {/* FORMAT / VOLUME SELECTOR: INLINE ROW UNDER PRICE */}
-            {!isSet && (
+            {/* FORMAT / VOLUME SELECTOR: INLINE ROW UNDER PRICE (ASCENDING ORDER) */}
+            {isDecantable && (
               <div className="warda-details-volumes" role="radiogroup" aria-label={isRu ? "Выбор объема" : "Select volume"}>
                 <div className="warda-details-volume-pills">
-                  <button
-                    type="button"
-                    className={`warda-volume-pill ${selectedVolume === "full" ? "active" : ""}`}
-                    onClick={() => setSelectedVolume("full")}
-                    role="radio"
-                    aria-checked={selectedVolume === "full"}
-                  >
-                    <span className="warda-volume-pill__title">{fullBottleVol}</span>
-                    <span className="warda-volume-pill__price">€{Number(perfume.price).toFixed(2)}</span>
-                  </button>
                   {SAMPLE_VOLUMES.map((sv) => {
                     const sPrice = getSamplePrice(perfume.price, sv.key);
                     return (
@@ -286,6 +278,16 @@ export default function BookDetails() {
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    className={`warda-volume-pill ${selectedVolume === "full" ? "active" : ""}`}
+                    onClick={() => setSelectedVolume("full")}
+                    role="radio"
+                    aria-checked={selectedVolume === "full"}
+                  >
+                    <span className="warda-volume-pill__title">{fullBottleVol}</span>
+                    <span className="warda-volume-pill__price">€{Number(perfume.price).toFixed(2)}</span>
+                  </button>
                 </div>
               </div>
             )}
