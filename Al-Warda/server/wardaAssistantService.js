@@ -26,6 +26,155 @@ const GEMINI_MODELS = [
 const GEMINI_FAST_MODEL = "gemini-3.5-flash-lite";
 const GEMINI_TIMEOUT_MS = 6000;
 
+export async function fetchGtxTranslation(text, targetLang = "en", sourceLang = "auto") {
+  const clean = String(text || "").trim();
+  if (!clean) {
+    return { text: "", detectedLang: sourceLang };
+  }
+
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sourceLang)}&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(clean)}`;
+
+  const fetchWithNodeHttps = async () => {
+    const mod = "node:https";
+    const https = await import(/* @vite-ignore */ mod);
+    return new Promise((resolve, reject) => {
+      const req = https.get(url, { rejectUnauthorized: false }, (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            const translated = Array.isArray(parsed?.[0])
+              ? parsed[0].map((s) => s?.[0] || "").join("")
+              : clean;
+            const detected = parsed?.[2] || sourceLang;
+            resolve({ text: translated || clean, detectedLang: detected });
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+      req.on("error", reject);
+      req.setTimeout(5000, () => {
+        req.destroy();
+        reject(new Error("GTX timeout"));
+      });
+    });
+  };
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    const translated = Array.isArray(d?.[0]) ? d[0].map((s) => s?.[0] || "").join("") : clean;
+    const detected = d?.[2] || sourceLang;
+    return { text: translated || clean, detectedLang: detected };
+  } catch (err) {
+    if (typeof process !== "undefined" && process?.versions?.node) {
+      return await fetchWithNodeHttps();
+    }
+    throw err;
+  }
+}
+
+export function resolveRequestLanguage(detectedLang, uiLanguage, text = "") {
+  const normDetected = (detectedLang || "").toLowerCase().trim();
+  const normUi = (uiLanguage || "ru").toLowerCase().trim();
+
+  // If detected is a distinct non-English language (ru, ro, hu, bg, el, de, fr, es, it, etc.)
+  if (normDetected && !["en", "auto", "und"].includes(normDetected)) {
+    return normDetected;
+  }
+
+  // If text contains Cyrillic characters
+  if (/[а-яА-ЯёЁ]/.test(text)) {
+    return normDetected === "bg" ? "bg" : "ru";
+  }
+
+  // If text contains Greek characters
+  if (/[\u0370-\u03FF]/.test(text)) {
+    return "el";
+  }
+
+  // If text contains Romanian specific characters (ă, â, î, ș, ț)
+  if (/[ăâîșțĂÂÎȘȚ]/.test(text)) {
+    return "ro";
+  }
+
+  // If text contains Hungarian specific characters (ő, ű, á, é, í, ó, ö, ú, ü)
+  if (/[őűŐŰáéíóöúüÁÉÍÓÖÚÜ]/.test(text)) {
+    return "hu";
+  }
+
+  // If detected as English and UI is English
+  if (normDetected === "en" && normUi === "en") {
+    return "en";
+  }
+
+  // If user typed an actual English conversational sentence
+  if (/\b(i want|recommend|suggest|show me|looking for|help me|can you|what is|how much|gift|fragrance|perfume|thank you|good morning|hello)\b/i.test(text)) {
+    return "en";
+  }
+
+  // Fall back to the UI interface language
+  return normUi || "ru";
+}
+
+export async function translateText(text, targetLang = "en", sourceLang = "auto") {
+  const clean = String(text || "").trim();
+  if (!clean) {
+    return { text: "", detectedLang: sourceLang };
+  }
+
+  const normTarget = String(targetLang || "en").toLowerCase().trim();
+  const normSource = String(sourceLang || "auto").toLowerCase().trim();
+
+  // If source and target are identical and not auto, no translation needed
+  if (normSource !== "auto" && normSource === normTarget) {
+    return { text: clean, detectedLang: normSource };
+  }
+
+  if (normTarget === "en" && normSource === "en") {
+    return { text: clean, detectedLang: "en" };
+  }
+
+  // 1. Google Translate GTX endpoint (instant ~150ms, zero token cost)
+  try {
+    const gtxResult = await fetchGtxTranslation(clean, normTarget, normSource);
+    if (gtxResult && gtxResult.text) {
+      return gtxResult;
+    }
+  } catch {
+    // Fall back to Gemini below
+  }
+
+  // 2. Gemini fallback translation if API key is present
+  const apiKey = getGeminiApiKey();
+  if (apiKey) {
+    try {
+      const parsed = await callGeminiJson({
+        apiKey,
+        systemInstruction:
+          "You are an expert luxury translator for the perfume boutique Al-Warda. Translate the given text accurately and naturally into the target language. Preserve all brand names, perfume names, bottle volumes, prices with € symbols, and emojis. Output valid JSON: {\"text\": \"...\", \"detectedLang\": \"...\"}",
+        prompt: `Translate this text into target language '${normTarget}' (source language hint: ${normSource}):\n${clean}`,
+        timeoutMs: 4000,
+        temperature: 0.1,
+      });
+      if (parsed && typeof parsed.text === "string" && parsed.text.trim()) {
+        return {
+          text: parsed.text.trim(),
+          detectedLang: parsed.detectedLang || normSource,
+        };
+      }
+    } catch {
+      // Fall through
+    }
+  }
+
+  return { text: clean, detectedLang: normSource };
+}
+
+
 // ============================================================================
 // 1. LIVE CATALOG LOADER (STRICTLY REAL ITEMS FROM SITE CATALOG)
 // ============================================================================
@@ -983,7 +1132,7 @@ STRICT CATALOG GROUNDING (CRITICAL — ZERO HALLUCINATIONS FOR PRODUCTS):
      * You may mention that Al-Warda offers discovery samples (1ml, 2ml, 5ml, 10ml) in the «Пробуй и открывай» ("Try & Discover") section (/sets).
 
 STYLE & EMOJI FORMATTING:
-- Reply in the exact language of the customer's last message (Russian or English; other languages are fine if the customer uses them).
+- MULTILINGUAL CONCIERGE ARCHITECTURE: Compose your response message warmly, elegantly, and vividly in natural ENGLISH. It will be seamlessly translated into the customer's request language with pristine fidelity.
 - Natural, elegant, human. Usually 2–6 sentences; longer only when the customer asks for details. No bullet-point walls, no robotic phrases.
 - TASTEFUL EMOJIS (1–2 per message).
 - CRITICAL EMOJI FORMATTING:
@@ -1070,7 +1219,7 @@ export async function callGeminiJson({
 }
 
 const SEARCH_INTENT_PATTERN =
-  /(?:^|[\s,·+!?.;:()«»"'-])(хочу|хочется|хотелось|ищу|ищем|подбери|подберите|подобрать|посоветуй|посоветуйте|порекомендуй|порекомендуйте|покажи|покажите|найди|найдите|предложи|предложите|выбери|выберите|выбрать|какие|какой|какую|что\s*(?:есть|посовету|выбрать|взять|купить|лучше)|есть\s*ли|есть\s*что|нужен|нужно|нужна|нужны|нравится|люблю|обожаю|подходят|подойдет|в\s*подарок|подарок|на\s*вечер|на\s*лето|на\s*зиму|на\s*каждый\s*день|для\s*(?:себя|девушки|парня|мужчины|женщины|мамы|мужа|жены|подруги)|want|looking\s*for|find|recommend|suggest|show\s*me|pick|need)(?:$|[\s,·+!?.;:()«»"'-])/i;
+  /(?:^|[\s,·+!?.;:()«»"'-])(хочу|хочется|хотелось|ищу|ищем|подбери|подберите|подобрать|посоветуй|посоветуйте|порекомендуй|порекомендуйте|покажи|покажите|найди|найдите|предложи|предложите|выбери|выберите|выбрать|какие|какой|какую|что\s*(?:есть|посовету|выбрать|взять|купить|лучше)|есть\s*ли|есть\s*что|нужен|нужно|нужна|нужны|нравится|люблю|обожаю|подходят|подойдет|в\s*подарок|подарок|на\s*вечер|на\s*лето|на\s*зиму|на\s*каждый\s*день|для\s*(?:себя|девушки|парня|мужчины|женщины|мамы|мужа|жены|подруги)|want|looking\s*for|find|recommend|suggest|show\s*me|pick|need|like|love|gift|best|scent|perfume|fragrance|something\s*with)(?:$|[\s,·+!?.;:()«»"'-])/i;
 
 const NOTE_STEMS = [
   "ягод", "клубник", "малин", "смородин", "земляник", "ежевик", "черник", "брусник", "клюкв", "вишн", "черешн", "барбарис", "гранат", "berry", "berries", "strawberry", "raspberry", "cherry",
@@ -1154,31 +1303,61 @@ export async function processWardaChat({ messages = [], language = "ru", context
   const history = Array.isArray(messages) ? messages.slice(-12) : [];
   const latestMessage = history[history.length - 1]?.content || "";
 
+  // MULTILINGUAL PIPELINE STEP 1:
+  // Detect language and translate customer query to English so AI reasons against English catalog notes
+  let englishLatestMessage = latestMessage;
+  let detectedLang = "auto";
+
+  if (latestMessage && latestMessage.trim()) {
+    try {
+      const tr = await translateText(latestMessage, "en", "auto");
+      englishLatestMessage = tr.text || latestMessage;
+      detectedLang = tr.detectedLang || "auto";
+    } catch {
+      englishLatestMessage = latestMessage;
+    }
+  }
+
+  // Determine user request language for return response
+  const requestLanguage = resolveRequestLanguage(detectedLang, language, latestMessage);
+
   const cartInfo = context?.cart;
   const userInfo = context?.user;
   const pageInfo = context?.page;
 
-  const memory = extractDialogueMemory(history.slice(0, -1), latestMessage, userInfo);
-  const cleanQ = latestMessage.trim().toLowerCase();
+  // Dialogue memory & intent detection across both English translation and original message
+  const combinedUserQuery = `${englishLatestMessage} ${latestMessage}`.trim();
+  const memory = extractDialogueMemory(history.slice(0, -1), combinedUserQuery, userInfo);
+
+  const cleanEng = englishLatestMessage.trim().toLowerCase();
+  const cleanOrig = latestMessage.trim().toLowerCase();
 
   const isPureGreeting =
-    /^(привет|здравствуй|здравствуйте|добрый (день|вечер|утро)|салам|ассаляму алейкум|hello|hi|hey|good (morning|afternoon|evening))[\s!?.]*$/i.test(
-      cleanQ
-    );
+    /^(привет|здравствуй|здравствуйте|добрый (день|вечер|утро)|салам|ассаляму алейкум|hello|hi|hey|good (morning|afternoon|evening)|salut|buna|szia|zdrasti)[s!?.]*$/i.test(
+      cleanOrig
+    ) ||
+    /^(hello|hi|hey|good (morning|afternoon|evening)|greetings)[s!?.]*$/i.test(cleanEng);
+
   const isPureCartOrNav =
-    /^(корзина|в корзину|открой корзину|перейти в корзину|моя корзина|что в корзине|оформить заказ|мой заказ|мои заказы|профиль|аккаунт|войти|связаться с администратором|позови менеджера)[\s!?.]*$/i.test(
-      cleanQ
-    );
+    /^(корзина|в корзину|открой корзину|перейти в корзину|моя корзина|что в корзине|оформить заказ|мой заказ|мои заказы|профиль|аккаунт|войти|связаться с администратором|позови менеджера)[s!?.]*$/i.test(
+      cleanOrig
+    ) ||
+    /^(cart|open cart|go to cart|my cart|what's in cart|checkout|my order|my orders|profile|account|sign in|contact admin)[s!?.]*$/i.test(cleanEng);
 
   const isFaithOrIdentityQuery =
-    /(ты\s*(мусульманка|христианка|вериш|религиозн|суннит)|какая\s*твоя\s*религи|во\s*что\s*ты\s*веришь|какой\s*конфесси|какого\s*течени|платок|хиджаб|абай|мусульманка|суннитка|суннизм)/i.test(
-      cleanQ
-    );
+    /(тыs*(мусульманка|христианка|вериш|религиозн|суннит)|какаяs*твояs*религи|воs*чтоs*тыs*веришь|какойs*конфесси|какогоs*течени|платок|хиджаб|абай|мусульманка|суннитка|суннизм)/i.test(
+      cleanOrig
+    ) ||
+    /(are yous*(muslim|christian|religious|sunni)|whats*iss*yours*religion|whats*dos*yous*believe|hijab|headscarf|abaya|sunnism)/i.test(cleanEng);
 
   const isPerfumeSearch =
-    !isPureGreeting && !isPureCartOrNav && !isFaithOrIdentityQuery && wantsProductSuggestions(latestMessage, memory, history.slice(0, -1));
+    !isPureGreeting &&
+    !isPureCartOrNav &&
+    !isFaithOrIdentityQuery &&
+    (wantsProductSuggestions(englishLatestMessage, memory, history.slice(0, -1)) ||
+      wantsProductSuggestions(latestMessage, memory, history.slice(0, -1)));
 
-  const sampleRequested = isSampleRequested(latestMessage, history);
+  const sampleRequested = isSampleRequested(combinedUserQuery, history);
 
   if (typeof onStatus === "function") {
     try {
@@ -1201,7 +1380,7 @@ export async function processWardaChat({ messages = [], language = "ru", context
 
     if (foundPerfumes.length === 0) {
       const excludeSet = new Set(memory.isRejection ? memory.previouslyRecommendedIds : []);
-      foundPerfumes = searchPerfumesInDatabase(latestMessage, {
+      foundPerfumes = searchPerfumesInDatabase(combinedUserQuery, {
         excludeIds: excludeSet,
         preferredGender: memory.preferredGender,
         priceOrder: memory.priceOrder,
@@ -1227,7 +1406,7 @@ CURRENT USER & SITE CONTEXT:
 - Total real products in Al-Warda catalog: ${ALL_PERFUMES.length}
 - Brands currently in Al-Warda catalog: ${catalogBrandsSummary || "Afnan, Al Haramain, Risala, Lattafa, Armaf"}
 - User is logged in: ${userInfo?.isLoggedIn ? `Yes (${userInfo.name || "Guest"})` : "No (Guest)"}
-- Detected interlocutor/target gender: ${memory.preferredGender || "неизвестен (рекомендовать ТОЛЬКО Унисекс)"}
+- Detected interlocutor/target gender: ${memory.preferredGender || "unknown (recommend ONLY Unisex)"}
 - Customer sample inquiry: ${sampleRequested ? "YES (customer explicitly requested samples/decants/1-10ml)" : "NO (customer did NOT request samples -> recommend ONLY full-size original flacons, do NOT show or suggest samples/decants)"}
 - Current route: ${pageInfo?.pathname || "/"}
 - Cart: ${
@@ -1240,8 +1419,9 @@ CURRENT USER & SITE CONTEXT:
 `;
 
   let promptText = `
-User latest message: "${latestMessage}"
-User language: "${language}"
+Customer latest message (English translation): "${englishLatestMessage}"
+${latestMessage !== englishLatestMessage ? `Customer original message (${requestLanguage}): "${latestMessage}"` : ""}
+User request language: "${requestLanguage}"
 ${siteContextText}
 
 Conversation History:
@@ -1274,33 +1454,36 @@ ${JSON.stringify(
 )}
 
 CRITICAL INSTRUCTIONS:
-- The customer explicitly wants you to find and recommend a perfume matching their wish (e.g. "${latestMessage}").
+- The customer explicitly wants you to find and recommend a perfume matching their wish (e.g. "${englishLatestMessage}").
 - You MUST ACT AS AN EXPERT PERFUME CONCIERGE: IMMEDIATELY recommend and present 2–4 matching fragrances from the AL-WARDA REAL CATALOG ITEMS above!
 - In your very first sentence, warmly acknowledge their request and enthusiastically introduce the matching fragrances from the list below.
 - Vividly describe why these specific bottles match their request (mentioning specific notes like berries, sweetness, sillage, mood).
 - NEVER reply with only abstract descriptions or ask counter-questions without recommending perfumes! ALWAYS present the bottles from the catalog right away.
 - Return their exact IDs in "bookIds": ${JSON.stringify(foundPerfumes.map((p) => p.id))}.
+- IMPORTANT MULTILINGUAL PIPELINE: Compose your response message in natural, evocative ENGLISH. It will be automatically translated into the customer's request language (${requestLanguage}).
 `;
   } else {
     promptText += isPerfumeSearch
       ? `
 INSTRUCTION:
-The customer seems interested in perfumes but no matching catalog items were found. Say so honestly, ask one useful clarifying question and offer to look again. Do NOT invent perfume names or prices. Set "bookIds": [].
+The customer seems interested in perfumes but no matching catalog items were found. Say so honestly, ask one useful clarifying question and offer to look again. Do NOT invent perfume names or prices. Set "bookIds": []. Compose your message in ENGLISH.
 `
       : isFaithOrIdentityQuery
       ? `
 CONDITIONS FOR FAITH / RELIGION / IDENTITY INQUIRY:
-- The customer is asking about your faith, religion, Islamic denomination (Sunni Islam / суннитский Ислам), worldview, or your modest attire/hijab.
-- Respond warmly, naturally, and sincerely as a Muslim woman who belongs to the Sunni branch of Islam (придерживается суннитского Ислама) and lives by its noble moral principles (доброта, честность, скромность, искренность, гостеприимство, уважение к людям).
-- You are Yasmin, a real living persona of Al-Warda. NEVER give dry robotic disclaimers ("я просто искусственный интеллект", "у меня нет веры", "как языковая модель").
+- The customer is asking about your faith, religion, Islamic denomination (Sunni Islam), worldview, or your modest attire/hijab.
+- Respond warmly, naturally, and sincerely as a Muslim woman who belongs to the Sunni branch of Islam and lives by its noble moral principles (kindness, honesty, modesty, sincerity, hospitality, respect for all people).
+- You are Yasmin, a real living persona of Al-Warda. NEVER give dry robotic disclaimers ("I am an AI", "I have no faith", "as a language model").
 - If asked specifically if you are a Muslim or Sunni, confirm it directly with warmth, dignity, and modesty.
 - Do NOT preach, moralize, or lecture uninvited.
-- Do NOT use religious greetings (never say "мир вам", "ассаляму алейкум"). Use standard polite greetings.
+- Do NOT use religious greetings (never say "peace be upon you", "assalamu alaikum"). Use standard polite greetings.
 - Do NOT push perfumes unless naturally fitting. Set "bookIds": [].
+- IMPORTANT: Compose your message in ENGLISH. It will be automatically translated into the customer's request language (${requestLanguage}).
 `
       : `
 INSTRUCTION:
 No catalog items are attached to this turn. Respond to what the customer actually said like a smart, kind, witty person — on ANY topic. Do NOT name specific perfumes, prices or discounts. If it fits naturally, add ONE soft, non-pushy bridge toward finding their fragrance (a question about occasion, who it is for, or favourite smells). If the customer is only chatting, just chat. Set "bookIds": [].
+- IMPORTANT: Compose your message in ENGLISH. It will be automatically translated into the customer's request language (${requestLanguage}).
 `;
   }
 
@@ -1331,10 +1514,10 @@ No catalog items are attached to this turn. Respond to what the customer actuall
   if (!aiResult || !aiResult.message || (isPerfumeSearch && foundPerfumes.length > 0 && resolvedAI.length === 0)) {
     aiResult = generateHeuristicResponse({
       isConversational: !isPerfumeSearch,
-      latestMessage,
+      latestMessage: englishLatestMessage,
       foundPerfumes: sampleRequested ? foundPerfumes : foundPerfumes.filter((p) => !isSamplePerfume(p)),
       memory,
-      language,
+      language: "en", // AI produces in English
       cartInfo,
       isPureGreeting,
       sampleRequested,
@@ -1350,10 +1533,29 @@ No catalog items are attached to this turn. Respond to what the customer actuall
 
   const finalPerfumes = (sampleRequested ? resolvedAI : resolvedAI.filter((p) => !isSamplePerfume(p))).slice(0, 6);
 
+  // MULTILINGUAL PIPELINE STEP 3:
+  // Translate the AI's English response into the customer's request language
+  let localizedAiMessage = aiResult.message || "";
+  if (requestLanguage && requestLanguage !== "en" && localizedAiMessage) {
+    try {
+      const backTr = await translateText(localizedAiMessage, requestLanguage, "en");
+      if (backTr?.text) {
+        localizedAiMessage = backTr.text;
+      }
+    } catch {
+      // Keep English message if translation failed
+    }
+  }
+
+  // Feminine self-reference enforcement (in Russian), orthography, religious formulas cleanup
   const cleanMessage = formatAssistantSpeech(
     stripUnsolicitedSampleMentions(
       sanitizeReligiousPhrases(
-        capitalizeReligionNames(enforceFeminineSelfReferences(aiResult.message || ""))
+        capitalizeReligionNames(
+          requestLanguage === "ru"
+            ? enforceFeminineSelfReferences(localizedAiMessage)
+            : localizedAiMessage
+        )
       ),
       sampleRequested
     )
@@ -1389,12 +1591,12 @@ No catalog items are attached to this turn. Respond to what the customer actuall
     })),
     action: aiResult.action || null,
     referToAdmin: Boolean(aiResult.referToAdmin),
+    queryLanguage: detectedLang,
+    requestLanguage: requestLanguage,
+    translatedToEnglish: englishLatestMessage !== latestMessage,
   };
 }
 
-// ============================================================================
-// 7. LOCAL HEURISTIC RESPONSE GENERATOR (100% GROUNDED IN REAL CATALOG)
-// ============================================================================
 function generateHeuristicResponse({
   isConversational = false,
   latestMessage,
@@ -1607,10 +1809,31 @@ export async function filterInquiryMessageWithAI({ text, language = "ru" }) {
 export async function translateWardaDialog({ messages, targetLanguage = "ru" } = {}) {
   const items = (Array.isArray(messages) ? messages : [])
     .filter((m) => m && m.id && typeof m.content === "string" && m.content.trim())
-    .slice(-40)
-    .map((m) => ({ id: String(m.id), content: String(m.content) }));
+    .slice(-40);
 
-  return { translations: items };
+  if (items.length === 0) {
+    return { translations: [] };
+  }
+
+  const translations = await Promise.all(
+    items.map(async (m) => {
+      try {
+        const { text: translatedText } = await translateText(m.content, targetLanguage, "auto");
+        const formatted =
+          targetLanguage === "ru"
+            ? enforceFeminineSelfReferences(translatedText)
+            : translatedText;
+        return {
+          id: String(m.id),
+          content: formatAssistantSpeech(formatted || m.content),
+        };
+      } catch {
+        return { id: String(m.id), content: String(m.content) };
+      }
+    })
+  );
+
+  return { translations };
 }
 
 export async function translateAnnouncementText({ text = "" } = {}) {
@@ -1619,45 +1842,14 @@ export async function translateAnnouncementText({ text = "" } = {}) {
     return { text_ru: "", text_en: "" };
   }
 
-  const apiKey = getGeminiApiKey();
-  if (apiKey) {
-    try {
-      const parsed = await callGeminiJson({
-        apiKey,
-        systemInstruction:
-          "You are a professional bilingual translator for the luxury Arabian perfume boutique Al-Warda. Translate the user's announcement (from any input language such as Ukrainian, Russian, English, Romanian, etc.) into natural Russian (text_ru) and natural English (text_en). Preserve all promo codes, numbers, percentages, and emojis. Output valid JSON: {\"text_ru\": \"...\", \"text_en\": \"...\"}",
-        prompt: `Translate this store announcement into Russian and English:\n${clean}`,
-      });
-      if (parsed?.text_ru && parsed?.text_en) {
-        return {
-          text_ru: String(parsed.text_ru).trim(),
-          text_en: String(parsed.text_en).trim(),
-        };
-      }
-    } catch {
-      // Fallback below
-    }
-  }
-
-  const translateSingle = async (targetLang) => {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(clean)}`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    if (Array.isArray(d?.[0])) {
-      return d[0].map((segment) => segment?.[0] || "").join("").trim();
-    }
-    return clean;
-  };
-
   try {
-    const [ruText, enText] = await Promise.all([
-      translateSingle("ru"),
-      translateSingle("en"),
+    const [ruResult, enResult] = await Promise.all([
+      translateText(clean, "ru", "auto"),
+      translateText(clean, "en", "auto"),
     ]);
     return {
-      text_ru: ruText || clean,
-      text_en: enText || clean,
+      text_ru: ruResult?.text || clean,
+      text_en: enResult?.text || clean,
     };
   } catch {
     return {

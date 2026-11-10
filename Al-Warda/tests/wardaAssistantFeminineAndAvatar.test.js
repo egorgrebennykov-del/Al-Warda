@@ -11,6 +11,9 @@ import {
   isSamplePerfume,
   isSampleRequested,
   stripUnsolicitedSampleMentions,
+  translateText,
+  resolveRequestLanguage,
+  translateWardaDialog,
 } from "../server/wardaAssistantService.js";
 
 test("enforceFeminineSelfReferences converts masculine self-references to feminine", () => {
@@ -623,4 +626,143 @@ test("samples page defaults to minimum available sample volume (1ml) when multip
   assert.equal(defaultVol, "1ml");
 });
 
+test("resolveRequestLanguage accurately detects query language across supported languages", () => {
+  assert.equal(resolveRequestLanguage("ru", "ru", "хочу сладкие духи"), "ru");
+  assert.equal(resolveRequestLanguage("hu", "ru", "szeretnék édes vaníliás parfümöt"), "hu");
+  assert.equal(resolveRequestLanguage("ro", "ru", "vreau un parfum dulce cu vanilie"), "ro");
+  assert.equal(resolveRequestLanguage("bg", "ru", "искам парфюм с ванилия"), "bg");
+  assert.equal(resolveRequestLanguage("el", "ru", "θέλω άρωμα με βανίλια"), "el");
+  assert.equal(resolveRequestLanguage("en", "en", "I want a sweet vanilla perfume"), "en");
+  // Brand name typed in English when UI is Russian defaults to Russian
+  assert.equal(resolveRequestLanguage("en", "ru", "Armaf Club De Nuit"), "ru");
+});
 
+test("translateText accurately translates fragrance queries to English and localized responses back", async () => {
+  // Query translation to English
+  const huTr = await translateText("szeretnék édes vaníliás parfümöt", "en", "auto");
+  assert.ok(huTr.text.toLowerCase().includes("vanilla"));
+  assert.equal(huTr.detectedLang, "hu");
+
+  const roTr = await translateText("vreau un parfum dulce cu vanilie", "en", "auto");
+  assert.ok(roTr.text.toLowerCase().includes("vanilla") || roTr.text.toLowerCase().includes("perfume") || roTr.text.toLowerCase().includes("scent"));
+  assert.equal(roTr.detectedLang, "ro");
+
+  const ruTr = await translateText("хочу сладкие духи с ванилью и ягодами", "en", "auto");
+  assert.ok(ruTr.text.toLowerCase().includes("vanilla"));
+  assert.equal(ruTr.detectedLang, "ru");
+
+  // Pass-through for already English
+  const enTr = await translateText("I want a sweet vanilla perfume", "en", "en");
+  assert.equal(enTr.text, "I want a sweet vanilla perfume");
+  assert.equal(enTr.detectedLang, "en");
+
+  // Localized translation back from English
+  const enReply = "I am delighted to recommend the exquisite Afnan Souvenir Floral Bouquet (24.09 €).";
+  const ruReply = await translateText(enReply, "ru", "en");
+  assert.ok(ruReply.text.includes("Afnan") || ruReply.text.includes("24"));
+
+  const roReply = await translateText(enReply, "ro", "en");
+  assert.ok(roReply.text.includes("Afnan") || roReply.text.includes("24"));
+});
+
+test("processWardaChat multilingual flow translates query to English, reasons with AI, and returns in request language", async () => {
+  const dummyCatalog = [
+    {
+      id: "afnan-souvenir-floral-100",
+      title: "Afnan Souvenir Floral Bouquet",
+      brand: "Afnan",
+      price: 24.09,
+      gender: "Женский",
+      category: "Цветочные",
+      notesSummary: "ваниль, ягоды, белые цветы, амбра",
+      topNotes: ["ваниль", "лесные ягоды"],
+      heartNotes: ["белые цветы"],
+      baseNotes: ["амбра", "мускус"],
+      longevity: "8-10 часов",
+      volume: "100 мл",
+      image: "https://example.com/afnan.png",
+      isSample: false,
+    },
+    {
+      id: "lattafa-khamrah-100",
+      title: "Lattafa Khamrah",
+      brand: "Lattafa",
+      price: 36.50,
+      gender: "Унисекс",
+      category: "Гурманские",
+      notesSummary: "корица, мускатный орех, финики, ваниль",
+      topNotes: ["корица", "мускатный орех"],
+      heartNotes: ["финики", "пралине"],
+      baseNotes: ["ваниль", "бобы тонка"],
+      longevity: "10-12 часов",
+      volume: "100 мл",
+      image: "https://example.com/khamrah.png",
+      isSample: false,
+    },
+  ];
+
+  // 1. Romanian user request
+  const roResult = await processWardaChat({
+    messages: [{ role: "user", content: "Vreau un parfum dulce cu vanilie" }],
+    language: "ro",
+    context: { catalog: dummyCatalog },
+  });
+  assert.equal(roResult.requestLanguage, "ro");
+  assert.equal(roResult.translatedToEnglish, true);
+  assert.ok(roResult.message.length > 10);
+  assert.ok(Array.isArray(roResult.books) && roResult.books.length > 0);
+
+  // 2. Hungarian user request
+  const huResult = await processWardaChat({
+    messages: [{ role: "user", content: "szeretnék édes vaníliás parfümöt" }],
+    language: "hu",
+    context: { catalog: dummyCatalog },
+  });
+  assert.equal(huResult.requestLanguage, "hu");
+  assert.equal(huResult.translatedToEnglish, true);
+  assert.ok(huResult.message.length > 10);
+  assert.ok(Array.isArray(huResult.books) && huResult.books.length > 0);
+
+  // 3. Russian user request
+  const ruResult = await processWardaChat({
+    messages: [{ role: "user", content: "хочу сладкие духи с ванилью" }],
+    language: "ru",
+    context: { catalog: dummyCatalog },
+  });
+  assert.equal(ruResult.requestLanguage, "ru");
+  assert.ok(ruResult.message.length > 10);
+  assert.ok(Array.isArray(ruResult.books) && ruResult.books.length > 0);
+  // Feminine speech check for Russian
+  assert.ok(!ruResult.message.includes("я рад ") && !ruResult.message.includes("я нашел "));
+
+  // 4. English user request (direct pass-through, no translation to English needed)
+  const enResult = await processWardaChat({
+    messages: [{ role: "user", content: "I want a sweet vanilla perfume" }],
+    language: "en",
+    context: { catalog: dummyCatalog },
+  });
+  assert.equal(enResult.requestLanguage, "en");
+  assert.equal(enResult.translatedToEnglish, false);
+  assert.ok(enResult.message.length > 10);
+  assert.ok(Array.isArray(enResult.books) && enResult.books.length > 0);
+});
+
+test("translateWardaDialog translates conversation history when user switches language", async () => {
+  const dialog = [
+    { id: "m1", role: "user", content: "Здравствуйте, ищу духи с ароматом ванили" },
+    { id: "m2", role: "assistant", content: "Здравствуйте! Я рада помочь вам с выбором. Посмотрите прекрасный аромат Afnan Souvenir Floral Bouquet (24.09 €)!" },
+  ];
+
+  const result = await translateWardaDialog({
+    messages: dialog,
+    targetLanguage: "en",
+  });
+
+  assert.ok(Array.isArray(result.translations));
+  assert.equal(result.translations.length, 2);
+  assert.equal(result.translations[0].id, "m1");
+  assert.equal(result.translations[1].id, "m2");
+  // English translation should contain vanilla
+  assert.ok(result.translations[0].content.toLowerCase().includes("vanilla"));
+  assert.ok(result.translations[1].content.includes("Afnan") || result.translations[1].content.includes("24"));
+});
