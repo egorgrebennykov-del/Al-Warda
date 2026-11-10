@@ -343,7 +343,7 @@ export default function Header({ theme, isLight, onSearch }) {
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         <i className="ri-user-settings-line" />
-                        <span>{t("nav.profileSettings")}</span>
+                        <span>{t("nav.profileSettings", language === "ru" ? "Профиль" : "Profile")}</span>
                       </Link>
                     </li>
                     <li className="nav__profile-item" role="none">
