@@ -243,6 +243,7 @@ function App() {
 
   useEffect(() => {
     document.body.classList.toggle("dark-theme", !lightTheme);
+    document.documentElement.classList.toggle("dark-theme", !lightTheme);
     setCookie(THEME_COOKIE_KEY, lightTheme ? "light" : "dark");
   }, [lightTheme]);
 
