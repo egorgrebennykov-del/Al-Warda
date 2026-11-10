@@ -107,18 +107,37 @@ export function resolveUserRoles(user) {
 
 export function formatRoleName(role, language = "ru") {
   const norm = String(role).trim().toLowerCase();
-  if (norm === "developer") return language === "ru" ? "Девелопер" : "Developer";
-  if (norm === "admin") return language === "ru" ? "Админ" : "Admin";
+  if (norm === "developer") {
+    if (language === "ru") return "Девелопер";
+    if (language === "bg") return "Разработчик";
+    if (language === "hu") return "Fejlesztő";
+    return "Developer";
+  }
+  if (norm === "admin") {
+    if (language === "ru") return "Админ";
+    if (language === "bg") return "Администратор";
+    if (language === "hu") return "Adminisztrátor";
+    return "Admin";
+  }
   if (norm === "vip") return "VIP";
-  return language === "ru" ? "Юзер" : "User";
+  if (language === "ru") return "Юзер";
+  if (language === "bg") return "Потребител";
+  if (language === "hu") return "Felhasználó";
+  return "User";
 }
 
 export function formatStatusName(status, language = "ru") {
   const norm = String(status).trim().toLowerCase();
   if (norm === "privileged" || norm === "привилегированный") {
-    return language === "ru" ? "Привилегированный" : "Privileged";
+    if (language === "ru") return "Привилегированный";
+    if (language === "bg") return "Привилегирован";
+    if (language === "hu") return "Kiemelt";
+    return "Privileged";
   }
-  return language === "ru" ? "Юзер" : "User";
+  if (language === "ru") return "Юзер";
+  if (language === "bg") return "Потребител";
+  if (language === "hu") return "Felhasználó";
+  return "User";
 }
 
 export const setUserCookie = (user = {}) => {

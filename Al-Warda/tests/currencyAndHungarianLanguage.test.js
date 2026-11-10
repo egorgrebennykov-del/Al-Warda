@@ -50,6 +50,50 @@ test("Hungarian language is registered in translations and has comprehensive key
   assert.equal(translations.hu["nav.bookPicks"], "Kollekció");
 });
 
+test("Bulgarian language is registered in translations and has comprehensive key coverage", () => {
+  assert.ok(translations.bg, "Bulgarian translation dictionary exists");
+  assert.ok(translations.ru, "Russian translation dictionary exists");
+
+  const ruKeys = Object.keys(translations.ru);
+  const bgKeys = Object.keys(translations.bg);
+
+  // Bulgarian dictionary must cover all keys
+  assert.equal(bgKeys.length, ruKeys.length, `Expected ${ruKeys.length} keys in Bulgarian, found ${bgKeys.length}`);
+  for (const key of ruKeys) {
+    assert.ok(translations.bg[key] !== undefined, `Missing Bulgarian key: ${key}`);
+  }
+
+  // Verify key translations in Bulgarian
+  assert.equal(translations.bg["nav.home"], "Начало");
+  assert.equal(translations.bg["nav.bookPicks"], "Колекция");
+  assert.equal(translations.bg["home.title"], "Оригинална ориенталска парфюмерия");
+  assert.equal(translations.bg["privileged.title"], "Контролен панел");
+});
+
+test("Language to default currency switching rule works correctly", () => {
+  function getAutoCurrencyForLanguage(lang, prevLang, currentCurrency) {
+    if (lang === "hu" && prevLang !== "hu") {
+      return "RON";
+    }
+    if (lang === "bg" && prevLang !== "bg") {
+      return "EUR";
+    }
+    return currentCurrency;
+  }
+
+  // Switching from Russian to Hungarian sets RON
+  assert.equal(getAutoCurrencyForLanguage("hu", "ru", "EUR"), "RON");
+
+  // Switching from Hungarian to Bulgarian sets EUR
+  assert.equal(getAutoCurrencyForLanguage("bg", "hu", "RON"), "EUR");
+
+  // Switching from English to Bulgarian sets EUR
+  assert.equal(getAutoCurrencyForLanguage("bg", "en", "HUF"), "EUR");
+
+  // Staying on Bulgarian keeps EUR
+  assert.equal(getAutoCurrencyForLanguage("bg", "bg", "EUR"), "EUR");
+});
+
 test("Rate sync logic correctly differentiates >= 5% jump, Monday weekly sync, and routine check", () => {
   const currentRate = 5.0;
 
