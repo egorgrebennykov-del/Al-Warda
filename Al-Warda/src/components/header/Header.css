@@ -207,6 +207,123 @@
 .nav__profile-item a:hover, .nav__profile-logout-btn:hover { background: #30271f; }
 .nav__profile-divider { height: 1px; margin: 0.4rem; background: #514638; }
 
+.warda-nav__dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.warda-nav__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 13rem;
+  max-width: 90vw;
+  overflow: hidden;
+  border: 1px solid #514638;
+  border-radius: 10px;
+  background: #191512;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  z-index: 220;
+  padding: 0.4rem;
+  animation: wardaDropdownFade 0.16s ease-out;
+}
+
+@keyframes wardaDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.warda-nav__dropdown-header {
+  padding: 0.45rem 0.75rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #baa98f;
+  border-bottom: 1px solid rgba(81, 70, 56, 0.6);
+  margin-bottom: 0.3rem;
+}
+
+.warda-nav__dropdown-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.warda-nav__dropdown-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #e0d2c0;
+  font-size: 0.85rem;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.warda-nav__dropdown-item-btn:hover {
+  background: #2b231b;
+  color: #f5dfb9;
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+.warda-nav__dropdown-item-btn--active {
+  background: rgba(212, 175, 55, 0.14) !important;
+  color: #f3e5ab !important;
+  font-weight: 600;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.warda-nav__dropdown-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.warda-nav__dropdown-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #baa98f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.warda-nav__dropdown-item-btn--active .warda-nav__dropdown-badge {
+  background: rgba(212, 175, 55, 0.25);
+  color: #ffd700;
+}
+
+.warda-nav__dropdown-item-name {
+  font-size: 0.84rem;
+}
+
+.warda-nav__dropdown-check {
+  color: #d4af37;
+  font-size: 1.05rem;
+  margin-left: 0.5rem;
+}
+
 @media (max-width: 1050px) {
   .warda-nav {
     display: flex !important;

@@ -13,15 +13,34 @@ const MessengerModal = lazy(() => import("../messenger/MessengerModal"));
 const navClass = ({ isActive }) =>
   isActive ? "nav__link active-link" : "nav__link";
 
+const LANGUAGES = [
+  { code: "ru", label: "Русский", short: "RU" },
+  { code: "en", label: "English", short: "EN" },
+  { code: "hu", label: "Magyar", short: "HU" },
+  { code: "bg", label: "Български", short: "BG" },
+  { code: "el", label: "Ελληνικά", short: "EL" },
+  { code: "ro", label: "Română", short: "RO" },
+];
+
+const CURRENCY_LIST = [
+  { code: "EUR", symbol: "€", nameKey: "currency.eur" },
+  { code: "RON", symbol: "lei", nameKey: "currency.ron" },
+  { code: "HUF", symbol: "Fr", nameKey: "currency.huf" },
+];
+
 export default function Header({ theme, isLight, onSearch }) {
   const navigate = useNavigate();
-  const { language, toggleLanguage, t } = useLanguage();
-  const { currency, toggleCurrency } = useCurrency();
+  const { language, setLanguage, toggleLanguage, t } = useLanguage();
+  const { currency, setCurrency, toggleCurrency } = useCurrency();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const profileMenuRef = useRef(null);
+  const langMenuRef = useRef(null);
+  const currencyMenuRef = useRef(null);
 
   const {
     user,
@@ -127,6 +146,16 @@ export default function Header({ theme, isLight, onSearch }) {
     };
   }, [isPrivilegedUser, isAdminOrDev, user?.id]);
 
+  const handleSelectLanguage = (code) => {
+    setLanguage(code);
+    setIsLangDropdownOpen(false);
+  };
+
+  const handleSelectCurrency = (code) => {
+    setCurrency(code);
+    setIsCurrencyDropdownOpen(false);
+  };
+
   useEffect(() => {
     const handleOutside = (e) => {
       if (
@@ -134,6 +163,18 @@ export default function Header({ theme, isLight, onSearch }) {
         !profileMenuRef.current.contains(e.target)
       ) {
         setIsDropdownOpen(false);
+      }
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(e.target)
+      ) {
+        setIsLangDropdownOpen(false);
+      }
+      if (
+        currencyMenuRef.current &&
+        !currencyMenuRef.current.contains(e.target)
+      ) {
+        setIsCurrencyDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -143,13 +184,17 @@ export default function Header({ theme, isLight, onSearch }) {
   }, []);
 
   useEffect(() => {
-    if (!isMenuOpen) return;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+        setIsDropdownOpen(false);
+        setIsLangDropdownOpen(false);
+        setIsCurrencyDropdownOpen(false);
+      }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [isMenuOpen]);
+  }, []);
 
   const handleLogout = () => {
     setIsDropdownOpen(false);
@@ -297,7 +342,11 @@ export default function Header({ theme, isLight, onSearch }) {
               <button
                 type="button"
                 className={`warda-nav__action-btn ${isDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                onClick={() => {
+                  setIsDropdownOpen((prev) => !prev);
+                  setIsLangDropdownOpen(false);
+                  setIsCurrencyDropdownOpen(false);
+                }}
                 aria-expanded={isDropdownOpen}
                 aria-label={t("nav.profile")}
                 title={t("nav.profile")}
@@ -390,44 +439,105 @@ export default function Header({ theme, isLight, onSearch }) {
             </Link>
           )}
 
-          <button
-            type="button"
-            className="warda-nav__lang-btn"
-            onClick={toggleLanguage}
-            title={
-              language === "ru"
-                ? "Switch to English"
-                : language === "en"
-                  ? "Váltás magyarra"
-                  : language === "hu"
-                    ? "Превключване на български"
-                    : language === "bg"
-                      ? "Αλλαγή στα ελληνικά"
-                      : language === "el"
-                        ? "Comută în limba română"
-                        : "Переключить на русский"
-            }
-          >
-            {language.toUpperCase()}
-          </button>
+          {/* Language Dropdown */}
+          <div className="warda-nav__dropdown-wrap" ref={langMenuRef}>
+            <button
+              type="button"
+              className={`warda-nav__lang-btn ${isLangDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+              onClick={() => {
+                setIsLangDropdownOpen((prev) => !prev);
+                setIsCurrencyDropdownOpen(false);
+                setIsDropdownOpen(false);
+              }}
+              title={t("nav.selectLanguage")}
+              aria-label={t("nav.selectLanguage")}
+              aria-haspopup="listbox"
+              aria-expanded={isLangDropdownOpen}
+            >
+              {language.toUpperCase()}
+            </button>
 
-          <button
-            type="button"
-            className="warda-nav__currency-btn"
-            onClick={toggleCurrency}
-            title={
-              currency === "EUR"
-                ? (language === "ru" ? "Валюта: EUR (€) • Нажмите для смены" : language === "hu" ? "Pénznem: EUR (€) • Kattintson a váltáshoz" : language === "bg" ? "Валута: EUR (€) • Кликнете за смяна" : language === "el" ? "Νόμισμα: EUR (€) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: EUR (€) • Click pentru schimbare" : "Currency: EUR (€) • Click to switch")
-                : currency === "RON"
-                  ? (language === "ru" ? "Валюта: RON (lei) • Нажмите для смены" : language === "hu" ? "Pénznem: RON (lei) • Kattintson a váltáshoz" : language === "bg" ? "Валута: RON (lei) • Кликнете за смяна" : language === "el" ? "Νόμισμα: RON (lei) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: RON (lei) • Click pentru schimbare" : "Currency: RON (lei) • Click to switch")
-                  : (language === "ru" ? "Валюта: HUF (Fr) • Нажмите для смены" : language === "hu" ? "Pénznem: HUF (Fr) • Kattintson a váltáshoz" : language === "bg" ? "Валута: HUF (Fr) • Кликнете за смяна" : language === "el" ? "Νόμισμα: HUF (Fr) • Κάντε κλικ για αλλαγή" : language === "ro" ? "Monedă: HUF (Fr) • Click pentru schimbare" : "Currency: HUF (Fr) • Click to switch")
-            }
-            aria-label={
-              currency === "EUR" ? "Currency EUR (€)" : currency === "RON" ? "Currency RON (lei)" : "Currency HUF (Fr)"
-            }
-          >
-            {currency === "EUR" ? "€" : currency === "RON" ? "lei" : "Fr"}
-          </button>
+            {isLangDropdownOpen && (
+              <div className="warda-nav__dropdown" role="listbox" aria-label={t("nav.selectLanguage")}>
+                <div className="warda-nav__dropdown-header">
+                  {t("nav.selectLanguage")}
+                </div>
+                <ul className="warda-nav__dropdown-list" role="none">
+                  {LANGUAGES.map((item) => {
+                    const isSelected = language === item.code;
+                    return (
+                      <li key={item.code} role="none">
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
+                          onClick={() => handleSelectLanguage(item.code)}
+                        >
+                          <span className="warda-nav__dropdown-item-left">
+                            <span className="warda-nav__dropdown-badge">{item.short}</span>
+                            <span className="warda-nav__dropdown-item-name">{item.label}</span>
+                          </span>
+                          {isSelected && <i className="ri-check-line warda-nav__dropdown-check" />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
+
+                    {/* Currency Dropdown */}
+          <div className="warda-nav__dropdown-wrap" ref={currencyMenuRef}>
+            <button
+              type="button"
+              className={`warda-nav__currency-btn ${isCurrencyDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+              onClick={() => {
+                setIsCurrencyDropdownOpen((prev) => !prev);
+                setIsLangDropdownOpen(false);
+                setIsDropdownOpen(false);
+              }}
+              title={t("nav.selectCurrency")}
+              aria-label={t("nav.selectCurrency")}
+              aria-haspopup="listbox"
+              aria-expanded={isCurrencyDropdownOpen}
+            >
+              {currency === "EUR" ? "€" : currency === "RON" ? "lei" : "Fr"}
+            </button>
+
+            {isCurrencyDropdownOpen && (
+              <div className="warda-nav__dropdown" role="listbox" aria-label={t("nav.selectCurrency")}>
+                <div className="warda-nav__dropdown-header">
+                  {t("nav.selectCurrency")}
+                </div>
+                <ul className="warda-nav__dropdown-list" role="none">
+                  {CURRENCY_LIST.map((item) => {
+                    const isSelected = currency === item.code;
+                    return (
+                      <li key={item.code} role="none">
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
+                          onClick={() => handleSelectCurrency(item.code)}
+                        >
+                          <span className="warda-nav__dropdown-item-left">
+                            <span className="warda-nav__dropdown-badge">{item.symbol}</span>
+                            <span className="warda-nav__dropdown-item-name">
+                              {t(item.nameKey)} ({item.code})
+                            </span>
+                          </span>
+                          {isSelected && <i className="ri-check-line warda-nav__dropdown-check" />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
