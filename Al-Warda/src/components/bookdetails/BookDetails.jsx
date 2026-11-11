@@ -106,7 +106,7 @@ export default function BookDetails() {
   const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
   const rawBottleVol = isSet
     ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || t("details.discoverySet"))
-    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "100 ml");
+    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "—");
   const fullBottleVol = formatVolume(rawBottleVol, language);
 
   const hasMultipleSizes = Array.isArray(perfume?.availableSizes) && perfume.availableSizes.length > 1;

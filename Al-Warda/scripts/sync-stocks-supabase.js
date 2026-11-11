@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { parseVolumeFromText } from "../utils/perfumes.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -293,34 +294,8 @@ function detectCategoryAndNotes(name, brand, gender) {
 }
 
 function extractVolume(name) {
-  if (!name || typeof name !== "string") return "100 мл / 3.4 FL.OZ.";
-  const multMatch = name.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (multMatch) {
-    const per = multMatch[2].replace(",", ".");
-    return `${multMatch[1]} × ${per} мл`;
-  }
-  const mlMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (mlMatch) {
-    const val = mlMatch[1].replace(",", ".");
-    const num = parseFloat(val);
-    const numStr = Number.isInteger(num) ? String(num) : String(num);
-    const oz = (num * 0.033814).toFixed(1);
-    return `${numStr} мл / ${oz} FL.OZ.`;
-  }
-  const ozMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
-  if (ozMatch) {
-    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
-    if (ozVal === 34) ozVal = 3.4;
-    let ml = Math.round(ozVal * 29.5735);
-    for (const std of [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]) {
-      if (Math.abs(ml - std) <= 3) {
-        ml = std;
-        break;
-      }
-    }
-    return `${ml} мл / ${ozVal} FL.OZ.`;
-  }
-  return "100 мл / 3.4 FL.OZ.";
+  // Strict shared parser: returns "" when the title states no size (never a fake 100 ml).
+  return parseVolumeFromText(name) || "";
 }
 
 function extractConcentration(name) {
@@ -337,7 +312,7 @@ function generateRussianDescription(name, brand, category, gender, notesSummary,
   const heartStr = (notes?.ru?.heart || []).join(", ") || notesSummary;
   const baseStr = (notes?.ru?.base || []).join(", ") || notesSummary;
   const audience = gender === "Унисекс" ? "для мужчин и женщин, ценящих селективную нишевую парфюмерию" : (gender === "Женский" ? "для утонченных женщин, предпочитающих комплиментарные и пленительные композиции" : "для уверенных в себе мужчин, выбирающих харизматичные и статусные ароматы");
-  return `${brand} ${name} — роскошный селективный аромат с Ближнего Востока (${category.toLowerCase()}), созданный в лучших традициях восточного парфюмерного искусства. ` +
+  return `${brand} ${name} — роскошный селективный аромат Ближнего Востока (${category.toLowerCase()}), созданный в лучших традициях восточного парфюмерного искусства. ` +
     `С первых мгновений композиция завораживает ярким вступлением верхних нот (${topStr}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: ${heartStr}. ` +
     `В финале аромат окутывает благородной, бархатистой базой (${baseStr}), формируя дорогой и узнаваемый шлейф. ` +
     `Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (${longevity}). Идеально подходит ${audience}. ` +

@@ -411,7 +411,7 @@ def generate_luxury_fallback_description(
     base_str_en = ", ".join(base_list) if isinstance(base_list, list) else str(base_list)
 
     desc_ru = (
-        f"{name} от парфюмерного дома {brand} — роскошный селективный аромат с Ближнего Востока, "
+        f"{name} от парфюмерного дома {brand} — роскошный селективный аромат Ближнего Востока, "
         f"созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений "
         f"композиция завораживает ярким вступлением верхних нот ({top_str_ru}), плавно раскрываясь "
         f"глубоким и многогранным сердцем из акцентов: {heart_str_ru}. В финале аромат окутывает "
@@ -1064,7 +1064,12 @@ def process_product(
         patch_stock(session, supabase_url, row, info)
         return image_url
     except WorkersDailyQuotaExceeded as error:
-        job.update({"status": "failed", "error": str(error), "failedAt": utc_now().isoformat()})
+        job.update({
+            "status": "pending",
+            "error": str(error),
+            "updatedAt": utc_now().isoformat(),
+        })
+        job.pop("startedAt", None)
         info[job_key] = job
         if account_pool and getattr(account_pool, "persist_quotas", False):
             info["imageGenerationAccountQuotas"] = account_pool.export_quotas()
@@ -1510,9 +1515,7 @@ def main():
             print("\nKeyboardInterrupt caught. Stopping batch and proceeding to publish...", flush=True)
             break
         except WorkersDailyQuotaExceeded as error:
-            failed += 1
-            configuration_failure = True
-            print(f"PROVIDER LIMIT: {error}. Batch stopped.", file=sys.stderr)
+            print(f"PROVIDER LIMIT: {error}. Item set to pending. Batch paused.", file=sys.stderr)
             break
         except WorkersConfigurationError as error:
             failed += 1

@@ -567,7 +567,7 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
   assert.equal(getPerfumeGtin(p5), "");
   assert.equal(
     getQogitaProductUrl(p5),
-    "https://www.qogita.com/products/4d22afe5141c40eda90ef76b853c2130/al-haramain-amber-oud-bleu-edition-3-pc-gift-set-for-unisex-luxury-cologne/"
+    "https://www.qogita.com/brands/al-haramain/"
   );
 
   // 7. Generic unknown perfume fallback to brand

@@ -323,7 +323,7 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
         gender_ru, gender_en = "Унисекс", "Unisex"
 
     desc_ru = (
-        f"{brand} {name} — роскошный селективный аромат с Ближнего Востока ({cat_ru.lower()}), созданный в лучших традициях восточного парфюмерного искусства. "
+        f"{brand} {name} — роскошный селективный аромат Ближнего Востока ({cat_ru.lower()}), созданный в лучших традициях восточного парфюмерного искусства. "
         f"С первых мгновений композиция завораживает ярким вступлением верхних нот ({', '.join(top_ru)}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: {', '.join(heart_ru)}. "
         f"В финале аромат окутывает благородной, бархатистой базой ({', '.join(base_ru)}), формируя дорогой и узнаваемый шлейф. "
         f"Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (10–14 часов). "
@@ -356,32 +356,10 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
     }
 
 def extract_volume(name):
-    if not name:
-        return "100 мл / 3.4 FL.OZ."
-    m_set = re.search(r'(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
-    if m_set:
-        count = m_set.group(1)
-        per = m_set.group(2).replace(',', '.')
-        return f"{count} × {per} мл"
-    m_ml = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:ml|мл)', name, re.I)
-    if m_ml:
-        val = m_ml.group(1).replace(',', '.')
-        num = float(val)
-        num_str = f"{num:g}"
-        oz = num * 0.033814
-        return f"{num_str} мл / {oz:.1f} FL.OZ."
-    m_oz = re.search(r'(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)', name, re.I)
-    if m_oz:
-        val = m_oz.group(1).replace(',', '.')
-        num_oz = float(val)
-        if num_oz == 34: num_oz = 3.4
-        ml = round(num_oz * 29.5735)
-        for std in [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]:
-            if abs(ml - std) <= 3:
-                ml = std
-                break
-        return f"{ml} мл / {num_oz:g} FL.OZ."
-    return "100 мл / 3.4 FL.OZ."
+    # Strict parser: returns "" if the Qogita title has no size (never a fake 100 ml).
+    from volume_parser import parse_volume
+    return parse_volume(name)
+
 
 def strip_volume_from_name(name):
     if not name or not isinstance(name, str):

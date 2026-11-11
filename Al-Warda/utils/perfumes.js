@@ -1304,42 +1304,130 @@ export function inferSetItems(perfumeName = "", brand = "") {
   return null;
 }
 
-export function extractVolumeFromName(name, fallbackVolume = null) {
-  if (!name || typeof name !== "string") return fallbackVolume;
+const STANDARD_ML_SIZES = [
+  1, 2, 3, 5, 6, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 55, 60, 65, 70, 75, 80,
+  85, 90, 100, 105, 110, 120, 125, 150, 200, 250, 300,
+];
 
-  // 1. Multi-item discovery sets: e.g. 5x2ml, 4 x 10 ml, 3*25ml
-  const multMatch = name.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (multMatch) {
-    const per = multMatch[2].replace(",", ".");
-    return `${multMatch[1]} × ${per} мл`;
+// Generic placeholder volumes written by old importers when the real size was unknown.
+// They must never be shown as a real bottle size.
+export function isPlaceholderVolume(volume) {
+  if (!volume) return true;
+  return /^\s*100\s*(?:ml|мл)\s*(?:EDP|\/\s*3[.,]4\s*FL\.?\s*OZ\.?)\s*$/i.test(String(volume));
+}
+
+function normalizeOunces(rawValue) {
+  const raw = String(rawValue).replace(",", ".");
+  let oz = parseFloat(raw);
+  if (!Number.isFinite(oz) || oz <= 0) return null;
+  // Qogita titles often lose the decimal point: "34 Oz" = 3.4, "27 Oz" = 2.7, "338 Oz" = 3.38
+  if (!raw.includes(".") && oz >= 10) {
+    oz = raw.length >= 3 ? oz / 100 : oz / 10;
   }
+  return oz > 0 && oz <= 34 ? oz : null;
+}
 
-  // 2. Explicit ml in name: e.g. 1.5ml, 1,5 ml, 15ml, 50ml, 60ml, 105ml
-  const mlMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (mlMatch) {
-    const val = mlMatch[1].replace(",", ".");
-    const num = parseFloat(val);
-    const numStr = Number.isInteger(num) ? String(num) : String(num);
-    const oz = (num * 0.033814).toFixed(1);
-    return `${numStr} мл / ${oz} FL.OZ.`;
-  }
-
-  // 3. Fl oz in name: e.g. 3.4 Fl Oz, 2.7 Fl Oz, 34 Fl Oz (typo for 3.4)
-  const ozMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
-  if (ozMatch) {
-    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
-    if (ozVal === 34) ozVal = 3.4;
-    let ml = Math.round(ozVal * 29.5735);
-    for (const std of [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]) {
-      if (Math.abs(ml - std) <= 3) {
-        ml = std;
-        break;
-      }
+function ouncesToMl(oz) {
+  const exact = oz * 29.5735;
+  let best = Math.round(exact);
+  let bestDiff = Infinity;
+  for (const std of STANDARD_ML_SIZES) {
+    const diff = Math.abs(exact - std);
+    if (diff <= Math.max(1, exact * 0.06) && diff < bestDiff) {
+      best = std;
+      bestDiff = diff;
     }
-    return `${ml} мл / ${ozVal} FL.OZ.`;
+  }
+  return best;
+}
+
+function formatVolumeNumber(num) {
+  return String(Math.round(num * 100) / 100);
+}
+
+// Fixes the awkward legacy phrase stored in older descriptions.
+export function fixDescriptionWording(text) {
+  if (!text || typeof text !== "string") return text;
+  return text.replace(/аромат\s+с\s+Ближнего\s+Востока/gi, "аромат Ближнего Востока");
+}
+
+/**
+ * Parses the real product size from a Qogita title / description.
+ * Supports ml, grams (perfume oils), fl oz, oz and ounce, plus discovery sets (5x2ml).
+ * Returns null when no size is explicitly stated - callers must not invent a size.
+ */
+export function parseVolumeFromText(text) {
+  if (!text || typeof text !== "string") return null;
+
+  const multMatch = text.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)(?![a-zа-я])/i);
+  if (multMatch) {
+    return `${multMatch[1]} × ${multMatch[2].replace(",", ".")} мл`;
   }
 
-  return fallbackVolume;
+  const mlMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл|milliliters?|millilitres?)(?![a-zа-я])/i);
+  if (mlMatch) {
+    const num = parseFloat(mlMatch[1].replace(",", "."));
+    if (num > 0) return `${formatVolumeNumber(num)} мл / ${(num * 0.033814).toFixed(1)} FL.OZ.`;
+  }
+
+  const ozMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)(?![a-zа-я])/i);
+  if (ozMatch) {
+    const oz = normalizeOunces(ozMatch[1]);
+    if (oz) return `${ouncesToMl(oz)} мл / ${formatVolumeNumber(oz)} FL.OZ.`;
+  }
+
+  const gramMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:g|gr|gm|grams?|г)(?![a-zа-я])/i);
+  if (gramMatch) {
+    const num = parseFloat(gramMatch[1].replace(",", "."));
+    if (num > 0 && num <= 500) return `${formatVolumeNumber(num)} г`;
+  }
+
+  return null;
+}
+
+export function extractVolumeFromName(name, fallbackVolume = null) {
+  return parseVolumeFromText(name) || fallbackVolume;
+}
+
+// The Qogita description column starts with the original, unstripped product title
+// ("Al Haramain Bahr For Men 0.4 Oz Concentrated Perfume Oil Mini - ...").
+function originalTitleFromDescription(desc) {
+  if (!desc || typeof desc !== "string") return "";
+  // RU template: "<title> - <русский текст>", EN template: "<title> by <brand> is an opulent ..."
+  let cut = desc.split(/[А-Яа-яЁё]/)[0];
+  cut = cut.split(/\s+is\s+an?\s+/i)[0];
+  return cut.slice(0, 220);
+}
+
+/**
+ * Resolves the real bottle size from every place the original Qogita title survives.
+ * Placeholder volumes ("100 мл EDP") are ignored, so a product never shows an invented size.
+ */
+export function resolvePerfumeVolume(p) {
+  if (!p) return null;
+  const info = p.info || {};
+  const isManual = Boolean(info.manual || info.imageGeneration?.manual);
+  const stored = info.volume || p.volume;
+  if (isManual && stored) return String(stored).trim();
+
+  const candidates = [
+    p.rawName,
+    p.name,
+    p.title,
+    info.originalName,
+    info.qogitaName,
+    info.title,
+    originalTitleFromDescription(p.rawDescription),
+    originalTitleFromDescription(info.descriptionEn),
+    originalTitleFromDescription(info.description),
+    originalTitleFromDescription(info.descriptionRu),
+  ];
+  for (const text of candidates) {
+    const parsed = parseVolumeFromText(text);
+    if (parsed) return parsed;
+  }
+  if (stored && !isPlaceholderVolume(stored)) return String(stored).trim();
+  return null;
 }
 
 export function stripVolumeFromName(name, preserveSetMultiplier = false) {
@@ -1477,12 +1565,8 @@ export function ensurePerfumeEnrichment(p) {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
 
-  const explicitVolFromName = extractVolumeFromName(name);
-  const rawVol = p.volume || p.info?.volume;
-  let resolvedVolume = explicitVolFromName;
-  if (!resolvedVolume) {
-    resolvedVolume = rawVol ? String(rawVol).trim() : "100 мл / 3.4 FL.OZ.";
-  }
+  // Real size only: parsed from the original Qogita title/description, never a 100 ml placeholder.
+  const resolvedVolume = resolvePerfumeVolume({ ...p, name });
 
   const setItems = p.setItems || p.info?.setItems || (isSet ? inferSetItems(name, brand) : null);
   const concentration = isSet
@@ -1518,8 +1602,8 @@ export function ensurePerfumeEnrichment(p) {
     topNotesEn: topEn,
     heartNotesEn: heartEn,
     baseNotesEn: baseEn,
-    description: descRu,
-    descriptionRu: descRu,
+    description: fixDescriptionWording(descRu),
+    descriptionRu: fixDescriptionWording(descRu),
     descriptionEn: descEn,
   };
 }
@@ -1619,7 +1703,9 @@ export async function fetchPerfumesFromSupabase() {
             price: Number(r.price) || 29.99,
             currency: r.currency || "EUR",
             priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
-            volume: extractVolumeFromName(rawPerfumeName, info.volume || r.volume || "100 мл / 3.4 FL.OZ."),
+            rawName: rawPerfumeName,
+            rawDescription: r.description || "",
+            volume: resolvePerfumeVolume({ rawName: rawPerfumeName, rawDescription: r.description, volume: r.volume, info }),
             concentration: info.concentration || r.concentration || "Eau De Parfum",
             gender: info.gender || r.gender || "Унисекс",
             genderRu: info.gender || r.gender || "Унисекс",
@@ -1649,8 +1735,8 @@ export async function fetchPerfumesFromSupabase() {
             topNotesEn,
             heartNotesEn,
             baseNotesEn,
-            description: descRu,
-            descriptionRu: descRu,
+            description: fixDescriptionWording(descRu),
+            descriptionRu: fixDescriptionWording(descRu),
             descriptionEn: descEn,
             info,
             minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
@@ -2058,15 +2144,12 @@ export function parseVolumeMl(val) {
   if (val == null) return null;
   if (typeof val === "number" && Number.isFinite(val) && val > 0) return val;
   const str = String(val);
-  const multMatch = str.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (multMatch) return parseFloat(multMatch[2].replace(",", "."));
-  const match = str.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
-  if (match) return parseFloat(match[1].replace(",", "."));
-  const ozMatch = str.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
-  if (ozMatch) {
-    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
-    if (ozVal === 34) ozVal = 3.4;
-    return Math.round(ozVal * 29.5735);
+  const parsed = parseVolumeFromText(str);
+  if (parsed) {
+    const multMatch = parsed.match(/×\s*(\d+(?:\.\d+)?)\s*мл/);
+    if (multMatch) return parseFloat(multMatch[1]);
+    const mlMatch = parsed.match(/^(\d+(?:\.\d+)?)\s*(?:мл|г)/);
+    if (mlMatch) return parseFloat(mlMatch[1]);
   }
   const numMatch = str.match(/^\s*(\d+(?:[.,]\d+)?)\s*$/);
   if (numMatch) return parseFloat(numMatch[1].replace(",", "."));
@@ -2095,11 +2178,12 @@ export function getPerfumeVolumeOptions(perfume) {
     }
   }
 
-  const bottleMl = parseVolumeMl(perfume.name) || parseVolumeMl(perfume.volume) || 100;
+  const knownBottleMl = parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
+  const bottleMl = knownBottleMl || 100;
   if (!optionsMap.has(bottleMl)) {
-    const rawBottleLabel = (perfume.volume && parseVolumeMl(perfume.volume) === bottleMl)
+    const rawBottleLabel = perfume.volume
       ? perfume.volume.split("/")[0].trim()
-      : `${bottleMl} мл`;
+      : (knownBottleMl ? `${bottleMl} мл` : "");
     optionsMap.set(bottleMl, {
       ml: bottleMl,
       key: "full",
@@ -2127,10 +2211,11 @@ export function getDefaultPerfumeVolumeOption(perfume) {
     };
   }
 
-  const bottleMl = parseVolumeMl(perfume.name) || parseVolumeMl(perfume.volume) || 100;
-  const rawBottleLabel = (perfume.volume && parseVolumeMl(perfume.volume) === bottleMl)
+  const knownBottleMl = parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
+  const bottleMl = knownBottleMl || 100;
+  const rawBottleLabel = perfume.volume
     ? perfume.volume.split("/")[0].trim()
-    : `${bottleMl} мл`;
+    : (knownBottleMl ? `${bottleMl} мл` : "");
   const hasMultipleSizes = Array.isArray(perfume.availableSizes) && perfume.availableSizes.length > 1;
 
   return {
@@ -2210,12 +2295,18 @@ export function getQogitaProductUrl(perfume) {
       "unisex", "fragrance", "perfume", "extrait", "ml", "oz", "100ml", "50ml",
       "90ml", "80ml", "60ml", "отливант", "пробник", "набор"
     ]);
-    const nameWords = normName.split("-").filter((w) => w && !stopWords.has(w));
+    // Brand words ("al", "haramain") must not count towards a match, otherwise any
+    // product of the same brand (e.g. a different gift set) can be picked by mistake.
+    const brandWords = new Set(slugifyPerfumeName(brand).split("-").filter(Boolean));
+    const nameWords = normName
+      .split("-")
+      .filter((w) => w && !stopWords.has(w) && !brandWords.has(w) && !/^\d/.test(w));
 
     if (nameWords.length > 0) {
       let bestSlug = null;
       let bestId = null;
       let bestScore = 0;
+      let bestExtra = Infinity;
 
       for (const [slug, id] of Object.entries(QOGITA_PRODUCTS_MAP)) {
         const slugWords = slug.split("-");
@@ -2223,14 +2314,22 @@ export function getQogitaProductUrl(perfume) {
         for (const w of nameWords) {
           if (slugWords.includes(w)) score++;
         }
-        if (score > bestScore) {
+        if (!score) continue;
+        // Prefer the slug with the fewest unrelated words ("khamrah" over "khamrah-qahwa").
+        const extra = slugWords.filter(
+          (w) => w && !stopWords.has(w) && !brandWords.has(w) && !/^\d/.test(w) && !nameWords.includes(w)
+        ).length;
+        if (score > bestScore || (score === bestScore && extra < bestExtra)) {
           bestScore = score;
+          bestExtra = extra;
           bestSlug = slug;
           bestId = id;
         }
       }
 
-      if (bestScore >= 2 && bestSlug && bestId) {
+      // Require (nearly) every distinctive word to match; otherwise fall back to the exact GTIN search.
+      const requiredScore = nameWords.length <= 2 ? nameWords.length : Math.ceil(nameWords.length * 0.8);
+      if (bestScore >= requiredScore && bestSlug && bestId) {
         return `https://www.qogita.com/products/${bestId}/${bestSlug}/`;
       }
     }
