@@ -333,7 +333,8 @@ export default function WardaAssistant() {
     setShowHelpOfferBubble(false);
     setEmotion("greeting");
 
-    const textToSubmit = autoSendText || pendingQueryRef.current;
+    const explicitText = typeof autoSendText === "string" ? autoSendText : null;
+    const textToSubmit = explicitText || pendingQueryRef.current;
     if (textToSubmit) {
       pendingQueryRef.current = null;
       setTimeout(() => {
@@ -391,7 +392,7 @@ export default function WardaAssistant() {
   };
 
   const handleSendMessage = async (textToSend) => {
-    const queryText = (textToSend || input).trim();
+    const queryText = (typeof textToSend === "string" ? textToSend : input).trim();
     if (!queryText || loading) return;
 
     setInput("");
@@ -1056,24 +1057,6 @@ export default function WardaAssistant() {
               <div ref={messagesEndRef} />
             </div>
 
-            {isTranslating && (
-              <div className="warda-translating-banner" role="status">
-                <i className="ri-translate-2 ri-spin" />
-                <span>
-                  {language === "ru"
-                    ? "Ясмин переводит диалог на русский..."
-                    : language === "hu"
-                    ? "Jázmin lefordítja a beszélgetést magyarra..."
-                    : language === "bg"
-                    ? "Ясмин превежда диалога на български..."
-                    : language === "el"
-                    ? "Η Yasmin μεταφράζει τον διάλογο στα ελληνικά..."
-                    : language === "ro"
-                    ? "Yasmin traduce dialogul în limba română..."
-                    : "Yasmin is translating the dialog into English..."}
-                </span>
-              </div>
-            )}
 
             {/* 5 Suggestion Questions in a Scrollable Row (When starting a new dialog) */}
             {isNewDialog && !loading && (
@@ -1111,7 +1094,7 @@ export default function WardaAssistant() {
                   onKeyDown={handleKeyDown}
                   placeholder={t("assistant.placeholder")}
                   rows={1}
-                  disabled={loading || isTranslating}
+                  disabled={loading}
                 />
                 <div className="warda-input-actions">
                   {(isTooLarge || isExpanded) && (
@@ -1136,7 +1119,7 @@ export default function WardaAssistant() {
                   <button
                     type="submit"
                     className="warda-send-btn"
-                    disabled={!input.trim() || loading || isTranslating}
+                    disabled={!input.trim() || loading}
                     aria-label={t("assistant.send")}
                     title={t("assistant.send")}
                   >
