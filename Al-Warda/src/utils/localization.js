@@ -685,26 +685,26 @@ export function formatFallbackDescription(name, brand, top, heart, base, lang = 
     return arr.map((n) => getLocalizedNote(n, l)).filter(Boolean).join(", ");
   };
 
-  const topStr = formatList(top) || (l === "ru" ? "бергамот, шафран" : "Bergamot, Saffron");
-  const heartStr = formatList(heart) || (l === "ru" ? "дамасская роза, жасмин" : "Damask Rose, Jasmine");
-  const baseStr = formatList(base) || (l === "ru" ? "благородный уд, амбра" : "Oud, Amber");
+  // Never invent notes. If the database has no pyramid, describe the fragrance
+  // without naming any notes.
+  const noteList = [formatList(top), formatList(heart), formatList(base)].filter(Boolean).join(", ");
   const safeName = name || (l === "ru" ? "Аромат" : "Fragrance");
   const safeBrand = brand || "Al Warda";
 
   if (l === "ru") {
-    return `${safeName} от легендарного дома ${safeBrand} — утонченное воплощение арабской парфюмерной традиции. Аромат раскрывается нотами ${topStr}, переходя в сердце из ${heartStr}, и оставляет благородный стойкий шлейф: ${baseStr}.`;
+    return `${safeName} от легендарного дома ${safeBrand} — утонченное воплощение арабской парфюмерной традиции.${noteList ? ` Аромат раскрывается нотами ${noteList}.` : ""}`;
   }
   if (l === "hu") {
-    return `A(z) ${safeBrand} ház ${safeName} alkotása az autentikus arab parfümkészítés mesterműve. Fejjegyeiben ${topStr} bontakozik ki, szívében ${heartStr} virágzik, alapjában pedig fenséges ${baseStr} illatjegyek ölelik körül.`;
+    return `A(z) ${safeBrand} ház ${safeName} alkotása az autentikus arab parfümkészítés mesterműve.${noteList ? ` Az illat ${noteList} jegyekkel bontakozik ki.` : ""}`;
   }
   if (l === "bg") {
-    return `${safeName} от легендарната къща ${safeBrand} е изискано въплъщение на арабската парфюмерийна традиция. Ароматът се разкрива с нотки на ${topStr}, преминава в сърцевина от ${heartStr} и оставя благороден дълготраен шлейф от ${baseStr}.`;
+    return `${safeName} от легендарната къща ${safeBrand} е изискано въплъщение на арабската парфюмерийна традиция.${noteList ? ` Ароматът се разкрива с нотки на ${noteList}.` : ""}`;
   }
   if (l === "el") {
-    return `Το ${safeName} από τον θρυλικό οίκο ${safeBrand} αποτελεί αυθεντικό αριστούργημα της ανατολίτικης αρωματοποιίας. Ανοίγει με νότες από ${topStr}, αποκαλύπτει καρδιά από ${heartStr} και καταλήγει σε πολυτελή βάση από ${baseStr}.`;
+    return `Το ${safeName} από τον θρυλικό οίκο ${safeBrand} αποτελεί αυθεντικό αριστούργημα της ανατολίτικης αρωματοποιίας.${noteList ? ` Το άρωμα ανοίγει με νότες από ${noteList}.` : ""}`;
   }
   if (l === "ro") {
-    return `${safeName} creat de celebra casă ${safeBrand} este o întruchipare rafinată a tradiției parfumeriei arabe. Debutează cu note de ${topStr}, trece într-o inimă de ${heartStr} și lasă un siaj nobil și persistent de ${baseStr}.`;
+    return `${safeName} creat de celebra casă ${safeBrand} este o întruchipare rafinată a tradiției parfumeriei arabe.${noteList ? ` Parfumul se deschide cu note de ${noteList}.` : ""}`;
   }
-  return `${safeName} by ${safeBrand} is an authentic luxury Arabian fragrance. Opening with notes of ${topStr}, unfolding into an alluring heart of ${heartStr}, enveloped in an opulent base of ${baseStr}.`;
+  return `${safeName} by ${safeBrand} is an authentic luxury Arabian fragrance.${noteList ? ` The fragrance unfolds with ${noteList}.` : ""}`;
 }

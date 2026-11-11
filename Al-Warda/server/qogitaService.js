@@ -409,18 +409,51 @@ export function mapQogitaProductToPerfume(qogitaItem) {
     originEn: "Middle East",
     categoryRu: "Восточные",
     categoryEn: "Oriental",
-    topNotes: ["Шафран", "Бергамот", "Розовый перец"],
-    heartNotes: ["Дамасская роза", "Благородный уд", "Амбра"],
-    baseNotes: ["Белый мускус", "Сандал", "Мадагаскарская ваниль"],
-    topNotesRu: ["Шафран", "Бергамот", "Розовый перец"],
-    heartNotesRu: ["Дамасская роза", "Благородный уд", "Амбра"],
-    baseNotesRu: ["Белый мускус", "Сандал", "Мадагаскарская ваниль"],
-    topNotesEn: ["Saffron", "Bergamot", "Pink Pepper"],
-    heartNotesEn: ["Damask Rose", "Precious Oud", "Amber"],
-    baseNotesEn: ["White Musk", "Sandalwood", "Madagascar Vanilla"],
-    description: `${brand} ${name} — роскошный селективный аромат Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.`,
-    descriptionRu: `${brand} ${name} — роскошный селективный аромат Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (Шафран, Бергамот, Розовый перец), плавно раскрываясь глубоким сердцем из Дамасской розы, Благородного уда и Амбры, и оставляя бархатистый шлейф из Белого мускуса, Сандала и Мадагаскарской ванили.`,
-    descriptionEn: `${brand} ${name} is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of Saffron, Bergamot, and Pink Pepper, unfolding into a rich heart of Damask Rose, Precious Oud, and Amber, and settling into a velvety trail of White Musk, Sandalwood, and Madagascar Vanilla.`,
+    description: `${brand} ${name} — селективный аромат Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. Композиция раскрывается постепенно и оставляет благородный, стойкий шлейф.`,
+    descriptionRu: `${brand} ${name} — селективный аромат Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. Композиция раскрывается постепенно и оставляет благородный, стойкий шлейф.`,
+    descriptionEn: `${brand} ${name} is a niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. The composition unfolds gradually, leaving a noble and long-lasting sillage.`,
+  };
+}
+
+/**
+ * Strip any note pyramid that was not verified against the fragrance database.
+ * Cached catalog entries contain invented notes, so they must never reach the UI.
+ */
+function applyVerifiedNotesOnly(product) {
+  const info = product?.info && typeof product.info === "object" ? product.info : {};
+  const notes =
+    info.notesVerified === true && info.notes && typeof info.notes === "object"
+      ? info.notes
+      : null;
+
+  const pick = (...values) => {
+    for (const value of values) {
+      if (Array.isArray(value) && value.length > 0) return value;
+    }
+    return [];
+  };
+
+  const topRu = pick(notes?.ru?.top, notes?.en?.top);
+  const heartRu = pick(notes?.ru?.heart, notes?.en?.heart);
+  const baseRu = pick(notes?.ru?.base, notes?.en?.base);
+  const topEn = pick(notes?.en?.top, topRu);
+  const heartEn = pick(notes?.en?.heart, heartRu);
+  const baseEn = pick(notes?.en?.base, baseRu);
+
+  return {
+    ...product,
+    topNotes: topRu,
+    heartNotes: heartRu,
+    baseNotes: baseRu,
+    topNotesRu: topRu,
+    heartNotesRu: heartRu,
+    baseNotesRu: baseRu,
+    topNotesEn: topEn,
+    heartNotesEn: heartEn,
+    baseNotesEn: baseEn,
+    notesVerified: Boolean(notes),
+    notesSource: info.notesSource || null,
+    notesLookup: info.notesLookup || null,
   };
 }
 
@@ -539,7 +572,7 @@ export async function getArabianDropshipPerfumes(params = {}) {
 
   return {
     count: results.length,
-    results,
+    results: results.map(applyVerifiedNotesOnly),
   };
 }
 

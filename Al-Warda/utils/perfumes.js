@@ -1229,18 +1229,44 @@ export function generateRichPerfumeDescriptions({
     ? `${cleanName} by the house of ${cleanBrand}`
     : `${cleanBrand} ${cleanName}`;
 
+  // Descriptions must never invent a note pyramid. When verified notes are missing,
+  // keep the text about the fragrance character only.
+  const ruClauses = [];
+  if (topStrRu) {
+    ruClauses.push(`С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются ${topStrRu}.`);
+  }
+  if (heartStrRu) {
+    ruClauses.push(`Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ${heartStrRu}, придающих звучанию глубину и объём.`);
+  }
+  if (baseStrRu) {
+    ruClauses.push(`В финале остаётся благородный, долгоиграющий шлейф (стойкость ${longevityRu}), сотканный из оттенков: ${baseStrRu}.`);
+  }
+  if (!ruClauses.length) {
+    ruClauses.push(`Композиция раскрывается постепенно и оставляет благородный, долгоиграющий шлейф (стойкость ${longevityRu}).`);
+  }
+
+  const enClauses = [];
+  if (topStrEn) {
+    enClauses.push(`From the very first spritz, the composition captivates with a vibrant opening of ${topStrEn}.`);
+  }
+  if (heartStrEn) {
+    enClauses.push(`As it warms on the skin, the fragrance reveals an alluring heart of ${heartStrEn}, lending remarkable depth and dimension.`);
+  }
+  if (baseStrEn) {
+    enClauses.push(`It settles into a velvety, long-lasting sillage (longevity ${longevityEn}) crafted from ${baseStrEn}.`);
+  }
+  if (!enClauses.length) {
+    enClauses.push(`The composition unfolds gradually and leaves a noble, long-lasting sillage (longevity ${longevityEn}).`);
+  }
+
   const descriptionRu =
     `${brandIntroRu} — ${moodRu} (${categoryRu.toLowerCase()}). ` +
-    `С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются ${topStrRu}. ` +
-    `Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ${heartStrRu}, придающих звучанию глубину и объём. ` +
-    `В финале остаётся благородный, долгоиграющий шлейф (стойкость ${longevityRu}), сотканный из оттенков: ${baseStrRu}. ` +
+    `${ruClauses.join(" ")} ` +
     `${audienceRu}`;
 
   const descriptionEn =
     `${brandIntroEn} is ${moodEn} (${categoryEn.toLowerCase()}). ` +
-    `From the very first spritz, the composition captivates with a vibrant opening of ${topStrEn}. ` +
-    `As it warms on the skin, the fragrance reveals an alluring heart of ${heartStrEn}, lending remarkable depth and dimension. ` +
-    `It settles into a velvety, long-lasting sillage (longevity ${longevityEn}) crafted from ${baseStrEn}. ` +
+    `${enClauses.join(" ")} ` +
     `${audienceEn}`;
 
   return { descriptionRu, descriptionEn };
@@ -1477,22 +1503,43 @@ export function ensurePerfumeEnrichment(p) {
 
   const brand = p.brand || "Al-Warda";
   const profile = inferPerfumeProfile(p);
+  const info = p.info && typeof p.info === "object" ? p.info : {};
+  const verifiedNotes =
+    info.notesVerified === true && info.notes && typeof info.notes === "object" ? info.notes : null;
 
-  const topRu = (Array.isArray(p.topNotesRu) && p.topNotesRu.length > 0)
-    ? p.topNotesRu
-    : (Array.isArray(p.topNotes) && p.topNotes.length > 0 ? p.topNotes : profile.ru.top);
+  const pickNotes = (...values) => {
+    for (const value of values) {
+      if (Array.isArray(value) && value.length > 0) return value;
+    }
+    return [];
+  };
 
-  const heartRu = (Array.isArray(p.heartNotesRu) && p.heartNotesRu.length > 0)
-    ? p.heartNotesRu
-    : (Array.isArray(p.heartNotes) && p.heartNotes.length > 0 ? p.heartNotes : profile.ru.heart);
-
-  const baseRu = (Array.isArray(p.baseNotesRu) && p.baseNotesRu.length > 0)
-    ? p.baseNotesRu
-    : (Array.isArray(p.baseNotes) && p.baseNotes.length > 0 ? p.baseNotes : profile.ru.base);
-
-  const topEn = (Array.isArray(p.topNotesEn) && p.topNotesEn.length > 0) ? p.topNotesEn : profile.en.top;
-  const heartEn = (Array.isArray(p.heartNotesEn) && p.heartNotesEn.length > 0) ? p.heartNotesEn : profile.en.heart;
-  const baseEn = (Array.isArray(p.baseNotesEn) && p.baseNotesEn.length > 0) ? p.baseNotesEn : profile.en.base;
+  // Only use notes that came from the store database / manual entry. Never fall back
+  // to a heuristic profile: an empty palette is better than an invented one. Cached
+  // catalog JSON contains invented notes, so its top-level arrays are trusted only
+  // when the product is explicitly marked as verified.
+  const notesTrusted = Boolean(verifiedNotes) || p.notesVerified === true;
+  const topRu = pickNotes(
+    verifiedNotes?.ru?.top,
+    verifiedNotes?.en?.top,
+    notesTrusted ? p.topNotesRu : null,
+    notesTrusted ? p.topNotes : null,
+  );
+  const heartRu = pickNotes(
+    verifiedNotes?.ru?.heart,
+    verifiedNotes?.en?.heart,
+    notesTrusted ? p.heartNotesRu : null,
+    notesTrusted ? p.heartNotes : null,
+  );
+  const baseRu = pickNotes(
+    verifiedNotes?.ru?.base,
+    verifiedNotes?.en?.base,
+    notesTrusted ? p.baseNotesRu : null,
+    notesTrusted ? p.baseNotes : null,
+  );
+  const topEn = pickNotes(verifiedNotes?.en?.top, notesTrusted ? p.topNotesEn : null, topRu);
+  const heartEn = pickNotes(verifiedNotes?.en?.heart, notesTrusted ? p.heartNotesEn : null, heartRu);
+  const baseEn = pickNotes(verifiedNotes?.en?.base, notesTrusted ? p.baseNotesEn : null, baseRu);
 
   const category = isSet ? "sets" : ((!p.category || p.category === "spicy") ? profile.category : p.category);
   const categoryRu = isSet ? "Подарочные наборы и сеты" : ((!p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные")
@@ -1502,18 +1549,25 @@ export function ensurePerfumeEnrichment(p) {
     ? profile.categoryEn
     : p.categoryEn);
 
+  const derivedSummaryRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)]
+    .filter(Boolean)
+    .join(" · ");
+  const derivedSummaryEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)]
+    .filter(Boolean)
+    .join(" · ");
+
   let notesSummaryRu = p.notesSummaryRu || p.notesSummary || "";
   if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu.includes("Элитный восточный парфюм") || notesSummaryRu === brand) {
     notesSummaryRu = isSet
       ? "Коллекция оригинальных тревел-миниатюр"
-      : [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)].join(" · ");
+      : derivedSummaryRu;
   }
 
   let notesSummaryEn = p.notesSummaryEn || "";
   if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn.includes("Элитный восточный парфюм") || notesSummaryEn === brand) {
     notesSummaryEn = isSet
       ? "Curated collection of travel miniatures"
-      : [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)].join(" · ");
+      : derivedSummaryEn;
   }
 
   const genderRu = p.genderRu || p.gender || "Унисекс";
@@ -1602,6 +1656,9 @@ export function ensurePerfumeEnrichment(p) {
     topNotesEn: topEn,
     heartNotesEn: heartEn,
     baseNotesEn: baseEn,
+    notesVerified: Boolean(verifiedNotes || p.notesVerified),
+    notesSource: info.notesSource || p.notesSource || null,
+    notesLookup: info.notesLookup || p.notesLookup || null,
     description: fixDescriptionWording(descRu),
     descriptionRu: fixDescriptionWording(descRu),
     descriptionEn: descEn,
@@ -1671,14 +1728,22 @@ export async function fetchPerfumesFromSupabase() {
           else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
           else if (catLower.includes("пряные") || catLower.includes("специи")) catSlug = "spicy";
 
-          const notesObj = info.notes || {};
-          const topNotesRu = notesObj.ru?.top || notesObj.top || (Array.isArray(r.top_notes) ? r.top_notes : (r.top_notes ? r.top_notes.split(",") : []));
-          const heartNotesRu = notesObj.ru?.heart || notesObj.heart || (Array.isArray(r.heart_notes) ? r.heart_notes : (r.heart_notes ? r.heart_notes.split(",") : []));
-          const baseNotesRu = notesObj.ru?.base || notesObj.base || (Array.isArray(r.base_notes) ? r.base_notes : (r.base_notes ? r.base_notes.split(",") : []));
+          // Notes are shown only when they were verified against the fragrance index
+          // (or entered manually). Never expose heuristic / AI-invented pyramids.
+          const notesVerified = info.notesVerified === true;
+          const notesObj = notesVerified && info.notes && typeof info.notes === "object" ? info.notes : {};
+          const asNotes = (value) => {
+            if (Array.isArray(value)) return value;
+            if (typeof value === "string" && value.trim()) return value.split(",").map((s) => s.trim()).filter(Boolean);
+            return [];
+          };
+          const topNotesRu = notesVerified ? (notesObj.ru?.top || notesObj.top || asNotes(r.top_notes)) : [];
+          const heartNotesRu = notesVerified ? (notesObj.ru?.heart || notesObj.heart || asNotes(r.heart_notes)) : [];
+          const baseNotesRu = notesVerified ? (notesObj.ru?.base || notesObj.base || asNotes(r.base_notes)) : [];
 
-          const topNotesEn = notesObj.en?.top || topNotesRu;
-          const heartNotesEn = notesObj.en?.heart || heartNotesRu;
-          const baseNotesEn = notesObj.en?.base || baseNotesRu;
+          const topNotesEn = notesVerified ? (notesObj.en?.top || topNotesRu) : [];
+          const heartNotesEn = notesVerified ? (notesObj.en?.heart || heartNotesRu) : [];
+          const baseNotesEn = notesVerified ? (notesObj.en?.base || baseNotesRu) : [];
 
           const descRu = info.descriptionRu || r.description || "Роскошный восточный аромат Al-Warda.";
           const descEn = info.descriptionEn || "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
@@ -1697,9 +1762,12 @@ export async function fetchPerfumesFromSupabase() {
             categoryRu: info.category || "Восточные",
             categoryEn: info.categoryEn || "Oriental",
             categoryName: info.category || "Восточные",
-            notesSummary: info.notesSummary || r.notes_summary || r.brand || "Шлейфовый восточный аромат",
-            notesSummaryRu: info.notesSummary || r.notes_summary || r.brand || "Шлейфовый восточный аромат",
-            notesSummaryEn: info.notesSummaryEn || info.notesSummary || r.brand || "Distinctive Oriental Sillage",
+            notesSummary: notesVerified ? (info.notesSummary || r.notes_summary || "") : "",
+            notesSummaryRu: notesVerified ? (info.notesSummary || r.notes_summary || "") : "",
+            notesSummaryEn: notesVerified ? (info.notesSummaryEn || info.notesSummary || "") : "",
+            notesVerified,
+            notesSource: info.notesSource || null,
+            notesLookup: info.notesLookup || null,
             price: Number(r.price) || 29.99,
             currency: r.currency || "EUR",
             priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),

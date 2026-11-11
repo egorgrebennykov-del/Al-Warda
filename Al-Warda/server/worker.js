@@ -21,6 +21,11 @@ import {
 } from "./productImageQueueAdmin.js";
 import { handleQogitaWorker } from "./qogitaWorker.js";
 import { handleProductImageActions } from "./productImageActions.js";
+import {
+  getFragranceNotes,
+  getFragranceNotesQueue,
+  refreshFragranceNotes,
+} from "./fragranceIndexService.js";
 
 const actionStatuses = {
   "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
@@ -41,45 +46,32 @@ function syncProcessEnv(env) {
 
 function enrichPerfumeObj(p) {
   if (!p) return p;
-  const name = (p.name || p.title || "").toLowerCase();
-  let topRu = p.topNotesRu || p.topNotes;
-  let heartRu = p.heartNotesRu || p.heartNotes;
-  let baseRu = p.baseNotesRu || p.baseNotes;
-  let topEn = p.topNotesEn || topRu;
-  let heartEn = p.heartNotesEn || heartRu;
-  let baseEn = p.baseNotesEn || baseRu;
+  // Notes are only trusted when they were verified against the fragrance database
+  // (or entered manually). The old heuristic fallback invented notes from the name,
+  // so it must never be used here.
+  const info = p.info && typeof p.info === "object" ? p.info : {};
+  const verifiedNotes = info.notesVerified === true && info.notes && typeof info.notes === "object"
+    ? info.notes
+    : null;
 
-  if (!topRu || !topRu.length) {
-    if (name.includes("vanilla") || name.includes("rose")) {
-      topRu = ["Розовый перец", "Ваниль", "Сладкий персик"];
-      heartRu = ["Дамасская роза", "Жасмин", "Лепестки фиалки"];
-      baseRu = ["Мадагаскарская ваниль", "Белый мускус", "Золотая амбра"];
-      topEn = ["Pink Pepper", "Vanilla", "Sweet Peach"];
-      heartEn = ["Damask Rose", "Jasmine", "Violet Petals"];
-      baseEn = ["Madagascar Vanilla", "White Musk", "Golden Amber"];
-    } else {
-      topRu = ["Шафран", "Бергамот", "Розовый перец"];
-      heartRu = ["Дамасская роза", "Благородный уд", "Амбра"];
-      baseRu = ["Белый мускус", "Сандал", "Мадагаскарская ваниль"];
-      topEn = ["Saffron", "Bergamot", "Pink Pepper"];
-      heartEn = ["Damask Rose", "Precious Oud", "Amber"];
-      baseEn = ["White Musk", "Sandalwood", "Madagascar Vanilla"];
+  const pick = (...values) => {
+    for (const value of values) {
+      if (Array.isArray(value) && value.length > 0) return value;
     }
-  }
+    return [];
+  };
 
-  let descRu = p.descriptionRu || p.description;
-  if (!descRu || descRu.includes("Сертифицированная оригинальная") || descRu.includes("в ОАЭ") || descRu.length < 160) {
-    descRu = `${p.name} от парфюмерного дома ${p.brand} — роскошный селективный аромат Ближнего Востока, созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений композиция завораживает ярким вступлением верхних нот (${topRu.join(", ")}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: ${heartRu.join(", ")}. В финале аромат окутывает благородной, бархатистой базой (${baseRu.join(", ")}), формируя дорогой, стойкий и узнаваемый шлейф.`;
-  }
-  let descEn = p.descriptionEn;
-  if (!descEn || descEn.includes("Сертифицированная оригинальная") || descEn.includes("in the UAE") || descEn.length < 160) {
-    descEn = `${p.name} by ${p.brand} is an opulent niche fragrance from the Middle East, crafted in the finest traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous top notes of ${(topEn || topRu).join(", ")}, seamlessly unfolding into a rich, multifaceted heart of ${(heartEn || heartRu).join(", ")}. As it settles on the skin, a velvety, resonant base of ${(baseEn || baseRu).join(", ")} emerges, leaving an unforgettable and long-lasting trail.`;
-  }
+  const topRu = pick(verifiedNotes?.ru?.top, verifiedNotes?.en?.top);
+  const heartRu = pick(verifiedNotes?.ru?.heart, verifiedNotes?.en?.heart);
+  const baseRu = pick(verifiedNotes?.ru?.base, verifiedNotes?.en?.base);
+  const topEn = pick(verifiedNotes?.en?.top, topRu);
+  const heartEn = pick(verifiedNotes?.en?.heart, heartRu);
+  const baseEn = pick(verifiedNotes?.en?.base, baseRu);
 
   return {
     ...p,
-    origin: "Ближний Восток",
-    originEn: "Middle East",
+    origin: p.origin || "Ближний Восток",
+    originEn: p.originEn || "Middle East",
     topNotes: topRu,
     heartNotes: heartRu,
     baseNotes: baseRu,
@@ -89,9 +81,9 @@ function enrichPerfumeObj(p) {
     topNotesEn: topEn,
     heartNotesEn: heartEn,
     baseNotesEn: baseEn,
-    description: descRu,
-    descriptionRu: descRu,
-    descriptionEn: descEn,
+    notesVerified: Boolean(verifiedNotes),
+    notesSource: info.notesSource || p.notesSource || null,
+    notesLookup: info.notesLookup || p.notesLookup || null,
   };
 }
 
@@ -146,6 +138,16 @@ export default {
 
     if (method === "GET" && pathname === "/health") {
       return jsonResponse({ ok: true, store: "Al-Warda Parfumes" });
+    }
+
+    if (method === "GET" && pathname === "/api/fragrance-index") {
+      return getFragranceNotes(request, env);
+    }
+    if (method === "GET" && pathname === "/api/admin/fragrance-notes/misses") {
+      return getFragranceNotesQueue(request, env);
+    }
+    if (method === "POST" && pathname === "/api/admin/fragrance-notes/refresh") {
+      return refreshFragranceNotes(request, env);
     }
 
     if (method === "GET" && pathname === "/api/admin/product-images/status") {
@@ -209,7 +211,9 @@ export default {
       if (q) {
         list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
       }
-      return jsonResponse({ count: list.length, results: list.map(completedProductPhoto) });
+      // Never leak invented note pyramids from the cached catalog: enrichPerfumeObj
+      // keeps only notes verified against the fragrance database.
+      return jsonResponse({ count: list.length, results: list.map((p) => completedProductPhoto(enrichPerfumeObj(p))) });
     }
 
     // Perfume list API
@@ -219,7 +223,7 @@ export default {
       if (q) {
         list = list.filter(p => p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
       }
-      return jsonResponse({ perfumes: list.map(completedProductPhoto) });
+      return jsonResponse({ perfumes: list.map((p) => completedProductPhoto(enrichPerfumeObj(p))) });
     }
 
     // Single perfume details API (supports direct ID, slug, or SEO URL with name)

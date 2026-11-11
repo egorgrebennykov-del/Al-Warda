@@ -371,6 +371,24 @@
   gap: 0.85rem;
 }
 
+.warda-pyramid-status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: rgba(232, 221, 199, 0.75);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.warda-pyramid-status i {
+  color: #d4af37;
+}
+
+.warda-pyramid-status--empty {
+  color: rgba(232, 221, 199, 0.55);
+}
+
 .warda-pyramid-step {
   display: flex;
   flex-direction: column;

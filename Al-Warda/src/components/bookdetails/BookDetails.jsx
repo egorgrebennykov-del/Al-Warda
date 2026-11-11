@@ -3,14 +3,12 @@ import { Link, useParams, useSearchParams, useNavigate } from "react-router";
 import {
   getPerfumeById,
   ensurePerfumeEnrichment,
-  getHarmoniousNotes,
   isPerfumeSet,
   inferSetItems,
   getPerfumeGtin,
   getQogitaProductUrl,
   getPerfumeVolumeOptions,
 } from "../../../utils/perfumes";
-import { addToCart } from "../../../utils/cart";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
 import { useCartState } from "../../hooks/useCartState";
@@ -21,11 +19,9 @@ import {
   getLocalizedGender,
   getLocalizedLongevity,
   getLocalizedNote,
-  getLocalizedSampleDesc,
   formatVolume,
   formatFallbackDescription,
 } from "../../utils/localization";
-import { OrnateCard, CornerBracket } from "../common/OrnateCard";
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
 
@@ -50,6 +46,7 @@ export default function BookDetails() {
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
+  const [indexLookup, setIndexLookup] = useState({ key: "", status: "idle", notes: null });
 
   useEffect(() => {
     setSelectedVolume("full");
@@ -100,6 +97,65 @@ export default function BookDetails() {
   }, [targetId]);
 
   const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
+  const hasStoredNotes = Boolean(
+    enrichedPerfume &&
+      ((enrichedPerfume.topNotesRu || enrichedPerfume.topNotes || []).length ||
+        (enrichedPerfume.heartNotesRu || enrichedPerfume.heartNotes || []).length ||
+        (enrichedPerfume.baseNotesRu || enrichedPerfume.baseNotes || []).length),
+  );
+
+  const perfumeId = perfume?.id ?? "";
+  const perfumeName = perfume?.name ?? "";
+  const perfumeBrand = perfume?.brand ?? "";
+  const lookupKey = `${targetId}|${perfumeId}`;
+
+  // Notes must come from the fragrance database. When a product has no verified
+  // pyramid yet, ask the server to resolve it in 10ML and persist the result.
+  useEffect(() => {
+    if (hasStoredNotes || (!perfumeId && !perfumeName)) return undefined;
+
+    const params = new URLSearchParams();
+    if (perfumeId && /^\d+$/.test(String(perfumeId))) params.set("id", String(perfumeId));
+    if (perfumeName) params.set("name", perfumeName);
+    if (perfumeBrand) params.set("brand", perfumeBrand);
+    if (!params.get("id") && !params.get("name")) return undefined;
+
+    let cancelled = false;
+    const key = lookupKey;
+    const run = async () => {
+      setIndexLookup({ key, status: "loading", notes: null });
+      try {
+        const response = await fetch(`/api/fragrance-index?${params.toString()}`, {
+          credentials: "same-origin",
+        });
+        const payload = await response.json().catch(() => null);
+        if (cancelled) return;
+        if (!response.ok || !payload) {
+          setIndexLookup({ key, status: "error", notes: null });
+          return;
+        }
+        if (payload.status === "found" && payload.notes) {
+          setIndexLookup({ key, status: "found", notes: payload.notes });
+          return;
+        }
+        setIndexLookup({
+          key,
+          status: payload.status === "not_found" ? "not_found" : "error",
+          notes: null,
+        });
+      } catch {
+        if (!cancelled) setIndexLookup({ key, status: "error", notes: null });
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [lookupKey, hasStoredNotes, perfumeId, perfumeName, perfumeBrand]);
+
+  const indexNotes = indexLookup.key === lookupKey ? indexLookup.notes : null;
+  const indexNotesState = indexLookup.key === lookupKey ? indexLookup.status : "idle";
+
   const perfumeGtin = isPriv && (perfume || enrichedPerfume) ? getPerfumeGtin(perfume || enrichedPerfume) : "";
   const qogitaUrl = isPriv && (perfume || enrichedPerfume) ? getQogitaProductUrl(perfume || enrichedPerfume) : null;
   const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
@@ -171,10 +227,12 @@ export default function BookDetails() {
     );
   }
 
-  const notesFallback = enrichedPerfume ? getHarmoniousNotes(enrichedPerfume) : null;
+  const indexNotesBucket = indexNotes
+    ? (indexNotes[language] || indexNotes.en || indexNotes.ru || null)
+    : null;
 
-  const resolveNotes = (notesRu, notesEn, fallbackNotes) => {
-    let raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || fallbackNotes || [];
+  const resolveNotes = (notesRu, notesEn, databaseNotes) => {
+    let raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || databaseNotes || [];
     if (typeof raw === "string") {
       raw = raw.split(",").map((s) => s.trim()).filter(Boolean);
     }
@@ -184,18 +242,27 @@ export default function BookDetails() {
   const topNotes = resolveNotes(
     enrichedPerfume?.topNotesRu || enrichedPerfume?.topNotes,
     enrichedPerfume?.topNotesEn,
-    notesFallback?.[language === "ru" ? "ru" : "en"]?.top
+    indexNotesBucket?.top
   );
   const heartNotes = resolveNotes(
     enrichedPerfume?.heartNotesRu || enrichedPerfume?.heartNotes,
     enrichedPerfume?.heartNotesEn,
-    notesFallback?.[language === "ru" ? "ru" : "en"]?.heart
+    indexNotesBucket?.heart
   );
   const baseNotes = resolveNotes(
     enrichedPerfume?.baseNotesRu || enrichedPerfume?.baseNotes,
     enrichedPerfume?.baseNotesEn,
-    notesFallback?.[language === "ru" ? "ru" : "en"]?.base
+    indexNotesBucket?.base
   );
+  const hasDisplayNotes = Boolean(topNotes.length || heartNotes.length || baseNotes.length);
+  const notesStatus =
+    hasDisplayNotes || hasStoredNotes
+      ? null
+      : indexNotesState === "loading"
+        ? "loading"
+        : indexNotesState === "found"
+          ? "not_found"
+          : "unavailable";
 
   let displayDesc =
     enrichedPerfume?.[`description_${language}`] ||
@@ -469,34 +536,46 @@ export default function BookDetails() {
                 <h3 className="warda-pyramid-title">
                   {t("details.pyramid")}
                 </h3>
-                <div className="warda-pyramid-grid">
-                  <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{t("details.topNotes")}</span>
-                    <div className="warda-notes-tags">
-                      {topNotes.map((n) => (
-                        <span key={n} className="warda-note-tag">{n}</span>
-                      ))}
+                {notesStatus === "loading" ? (
+                  <p className="warda-pyramid-status" role="status">
+                    <i className="ri-loader-4-line ri-spin" aria-hidden="true" />
+                    <span>{t("details.notesLoading", "Loading notes from the fragrance database…")}</span>
+                  </p>
+                ) : notesStatus ? (
+                  <p className="warda-pyramid-status warda-pyramid-status--empty">
+                    <i className="ri-information-line" aria-hidden="true" />
+                    <span>{t("details.notesUnavailable", "This fragrance is not in the notes database yet.")}</span>
+                  </p>
+                ) : (
+                  <div className="warda-pyramid-grid">
+                    <div className="warda-pyramid-step">
+                      <span className="warda-step-name">{t("details.topNotes")}</span>
+                      <div className="warda-notes-tags">
+                        {topNotes.map((n) => (
+                          <span key={n} className="warda-note-tag">{n}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{t("details.heartNotes")}</span>
-                    <div className="warda-notes-tags">
-                      {heartNotes.map((n) => (
-                        <span key={n} className="warda-note-tag">{n}</span>
-                      ))}
+                    <div className="warda-pyramid-step">
+                      <span className="warda-step-name">{t("details.heartNotes")}</span>
+                      <div className="warda-notes-tags">
+                        {heartNotes.map((n) => (
+                          <span key={n} className="warda-note-tag">{n}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="warda-pyramid-step">
-                    <span className="warda-step-name">{t("details.baseNotes")}</span>
-                    <div className="warda-notes-tags">
-                      {baseNotes.map((n) => (
-                        <span key={n} className="warda-note-tag">{n}</span>
-                      ))}
+                    <div className="warda-pyramid-step">
+                      <span className="warda-step-name">{t("details.baseNotes")}</span>
+                      <div className="warda-notes-tags">
+                        {baseNotes.map((n) => (
+                          <span key={n} className="warda-note-tag">{n}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 

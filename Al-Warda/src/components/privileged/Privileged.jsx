@@ -35,12 +35,13 @@ import {
   translateAnnouncementWithAI,
 } from "../../../utils/announcements";
 import BookImage from "../common/BookImage";
-import { RussianFlag, BritishFlag } from "../common/FlagIcon";
+import { RussianFlag, BritishFlag, HungarianFlag, BulgarianFlag, GreekFlag, RomanianFlag } from "../common/FlagIcon";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import QogitaManager from "./QogitaManager";
 import ProductImageQueue from "./ProductImageQueue";
+import FragranceNotesQueue from "./FragranceNotesQueue";
 import ProductsManager from "./ProductsManager";
 import "./Privileged.css";
 
@@ -96,6 +97,11 @@ const PRIVILEGED_TAB_ALIASES = {
   productimages: "product-images",
   images: "product-images",
   photos: "product-images",
+  "fragrance-notes": "fragrance-notes",
+  fragrancenotes: "fragrance-notes",
+  fragrance: "fragrance-notes",
+  notes: "fragrance-notes",
+  pyramids: "fragrance-notes",
   other: "other",
   misc: "other",
   settings: "other",
@@ -1276,7 +1282,15 @@ export default function Privileged() {
     }
 
     if (announcementType === "small") {
-      if (!announcementTextRu.trim()) {
+      const anyText = (
+        announcementTextRu.trim() ||
+        announcementTextEn.trim() ||
+        announcementTextHu.trim() ||
+        announcementTextBg.trim() ||
+        announcementTextEl.trim() ||
+        announcementTextRo.trim()
+      );
+      if (!anyText) {
         showNotice(
           language === "ru"
             ? "Введите текст объявления (на любом языке — ИИ переведёт его на языки сайта)"
@@ -1918,6 +1932,17 @@ export default function Privileged() {
         >
           <i className="ri-image-edit-line" />
           <span>{language === "ru" ? "Фото товаров" : "Product images"}</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "fragrance-notes"}
+          className={`privileged__nav-btn ${activeSection === "fragrance-notes" ? "privileged__nav-btn--active" : ""}`}
+          onClick={() => setActiveSection("fragrance-notes")}
+        >
+          <i className="ri-flask-line" />
+          <span>{language === "ru" ? "Ноты ароматов" : "Fragrance notes"}</span>
         </button>
 
         <button
@@ -4952,8 +4977,8 @@ export default function Privileged() {
                         <span>
                           {announcementType === "small"
                             ? language === "ru"
-                              ? "Текст объявления (на любом языке — ИИ переведёт на RU и EN)"
-                              : "Announcement Text (any language — AI auto-translates to RU & EN)"
+                              ? "Текст объявления (на любом языке — ИИ переведёт на все языки сайта)"
+                              : "Announcement Text (any language — AI auto-translates to all site languages)"
                             : language === "ru"
                               ? "Изображение большого плаката"
                               : "Poster Image"}
@@ -4967,9 +4992,13 @@ export default function Privileged() {
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <i className="ri-sparkling-2-fill" style={{ color: "#d4af37", fontSize: "1.15rem" }} />
                                 <strong>
-                                  {language === "ru"
-                                    ? "Введите объявление на любом языке (укр, рус, англ и др.)"
-                                    : "Enter announcement in any language (Ukrainian, Russian, English, etc.)"}
+                                  {announcementType === "small"
+                            ? language === "ru"
+                              ? "Введите объявление на любом языке (укр, рус, англ и др.) — ИИ переведёт на все языки сайта"
+                              : "Enter announcement in any language (Ukrainian, Russian, English, etc.) — AI translates to all site languages"
+                            : language === "ru"
+                              ? "Плакат (отображается на всех языках сайта)"
+                              : "Poster (displayed across all site languages)"}
                                 </strong>
                                 <span className="privileged__required-mark">*</span>
                               </div>
@@ -4977,81 +5006,138 @@ export default function Privileged() {
                                 type="button"
                                 className="privileged__copy-val-btn"
                                 onClick={handlePreviewAiTranslation}
-                                disabled={!announcementTextRu.trim() || translatingAnnouncement}
+                                disabled={
+                                  !(
+                                    announcementTextRu.trim() ||
+                                    announcementTextEn.trim() ||
+                                    announcementTextHu.trim() ||
+                                    announcementTextBg.trim() ||
+                                    announcementTextEl.trim() ||
+                                    announcementTextRo.trim()
+                                  ) || translatingAnnouncement
+                                }
                               >
                                 <i className={translatingAnnouncement ? "ri-loader-4-line privileged__button-spin" : "ri-translate-2"} />
                                 {language === "ru"
                                   ? translatingAnnouncement
                                     ? "ИИ переводит..."
-                                    : "Предпросмотр перевода ИИ (RU + EN)"
+                                    : "Предпросмотр перевода ИИ (RU + EN + HU + BG + EL + RO)"
                                   : translatingAnnouncement
                                     ? "AI translating..."
-                                    : "Preview AI Translation (RU + EN)"}
+                                    : "Preview AI Translation (all 6 languages)"}
                               </button>
                             </div>
 
-                            <div className="privileged__form-field">
-                              <label className="privileged__field-label">
-                                {language === "ru"
-                                  ? "Текст объявления (ИИ автоматически создаст русскую и английскую версии на сайте)"
-                                  : "Announcement Text (AI will automatically create Russian and English versions on the site)"}
-                                <span className="privileged__required-mark">*</span>
-                              </label>
-                              <textarea
-                                className="privileged__field-textarea"
-                                rows={3}
-                                required
-                                value={announcementTextRu}
-                                onChange={(e) => {
-                                  setAnnouncementTextRu(e.target.value);
-                                  setAnnouncementTextEn("");
-                                }}
-                                placeholder={
-                                  language === "ru"
-                                    ? "Например (на любом языке): Увага! Знижка 20% на всі східні парфуми за промокодом WARDA20! Бесплатная доставка от 50€!"
-                                    : "e.g. (in any language): Special offer! 20% off all Arabian perfumes with code WARDA20!"
-                                }
-                              />
-                            </div>
+<div className="privileged__form-field">
+                               <label className="privileged__field-label">
+                                 {language === "ru"
+                                   ? "Текст объявления (ИИ автоматически создаст версии на всех языках сайта)"
+                                   : "Announcement Text (AI will automatically create versions for all site languages)"}
+                                 <span className="privileged__required-mark">*</span>
+                               </label>
+                               <textarea
+                                 className="privileged__field-textarea"
+                                 rows={3}
+                                 required
+                                 value={announcementTextRu}
+                                 onChange={(e) => {
+                                   setAnnouncementTextRu(e.target.value);
+                                   setAnnouncementTextEn("");
+                                   setAnnouncementTextHu("");
+                                   setAnnouncementTextBg("");
+                                   setAnnouncementTextEl("");
+                                   setAnnouncementTextRo("");
+                                 }}
+                                 placeholder={
+                                   language === "ru"
+                                     ? "Например (на любом языке): Увага! Знижка 20% на всі східні парфуми за промокодом WARDA20! Бесплатная доставка от 50€!"
+                                     : "e.g. (in any language): Special offer! 20% off all Arabian perfumes with code WARDA20!"
+                                 }
+                               />
+                             </div>
 
-                            {announcementTextEn && (
-                              <div className="privileged__ann-small-preview-dual" style={{ marginTop: "8px", marginBottom: "10px" }}>
-                                <div className="privileged__ann-small-lang-item">
-                                  <span className="privileged__ann-lang-badge">
-                                    <RussianFlag width={16} height={11} /> RU
-                                  </span>
-                                  <span className="privileged__ann-text-preview">
-                                    {announcementTextRu}
-                                  </span>
-                                </div>
-                                <div className="privileged__ann-small-lang-item">
-                                  <span className="privileged__ann-lang-badge">
-                                    <BritishFlag width={16} height={11} /> EN
-                                  </span>
-                                  <span className="privileged__ann-text-preview">
-                                    {announcementTextEn}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
+                             {announcementTextEn && (
+                               <div className="privileged__ann-small-preview-dual" style={{ marginTop: "8px", marginBottom: "10px" }}>
+                                 <div className="privileged__ann-small-lang-item">
+                                   <span className="privileged__ann-lang-badge">
+                                     <RussianFlag width={16} height={11} /> RU
+                                   </span>
+                                   <span className="privileged__ann-text-preview">
+                                     {announcementTextRu}
+                                   </span>
+                                 </div>
+                                 <div className="privileged__ann-small-lang-item">
+                                   <span className="privileged__ann-lang-badge">
+                                     <BritishFlag width={16} height={11} /> EN
+                                   </span>
+                                   <span className="privileged__ann-text-preview">
+                                     {announcementTextEn}
+                                   </span>
+                                 </div>
+                                 {announcementTextHu && (
+                                   <div className="privileged__ann-small-lang-item">
+                                     <span className="privileged__ann-lang-badge">
+                                       <HungarianFlag width={16} height={11} /> HU
+                                     </span>
+                                     <span className="privileged__ann-text-preview">
+                                       {announcementTextHu}
+                                     </span>
+                                   </div>
+                                 )}
+                                 {announcementTextBg && (
+                                   <div className="privileged__ann-small-lang-item">
+                                     <span className="privileged__ann-lang-badge">
+                                       <BulgarianFlag width={16} height={11} /> BG
+                                     </span>
+                                     <span className="privileged__ann-text-preview">
+                                       {announcementTextBg}
+                                     </span>
+                                   </div>
+                                 )}
+                                 {announcementTextEl && (
+                                   <div className="privileged__ann-small-lang-item">
+                                     <span className="privileged__ann-lang-badge">
+                                       <GreekFlag width={16} height={11} /> EL
+                                     </span>
+                                     <span className="privileged__ann-text-preview">
+                                       {announcementTextEl}
+                                     </span>
+                                   </div>
+                                 )}
+                                 {announcementTextRo && (
+                                   <div className="privileged__ann-small-lang-item">
+                                     <span className="privileged__ann-lang-badge">
+                                       <RomanianFlag width={16} height={11} /> RO
+                                     </span>
+                                     <span className="privileged__ann-text-preview">
+                                       {announcementTextRo}
+                                     </span>
+                                   </div>
+                                 )}
+                               </div>
+                             )}
 
-                            <div className="privileged__form-field">
-                              <label className="privileged__field-label">
-                                {language === "ru"
-                                  ? "Ссылка при клике (необязательно)"
-                                  : "Click URL (optional)"}
-                              </label>
-                              <input
-                                type="text"
-                                className="privileged__field-input"
-                                value={announcementLinkUrlRu}
-                                onChange={(e) => {
-                                  setAnnouncementLinkUrlRu(e.target.value);
-                                  setAnnouncementLinkUrlEn(e.target.value);
-                                }}
-                                placeholder="/featured или https://..."
-                              />
-                            </div>
+                             <div className="privileged__form-field">
+                               <label className="privileged__field-label">
+                                 {language === "ru"
+                                   ? "Ссылка при клике (необязательно)"
+                                   : "Click URL (optional)"}
+                               </label>
+                               <input
+                                 type="text"
+                                 className="privileged__field-input"
+                                 value={announcementLinkUrlRu}
+                                 onChange={(e) => {
+                                   setAnnouncementLinkUrlRu(e.target.value);
+                                   setAnnouncementLinkUrlEn("");
+                                   setAnnouncementLinkUrlHu("");
+                                   setAnnouncementLinkUrlBg("");
+                                   setAnnouncementLinkUrlEl("");
+                                   setAnnouncementLinkUrlRo("");
+                                 }}
+                                 placeholder="/featured или https://..."
+                               />
+                             </div>
                           </div>
                         </div>
                       ) : (
@@ -5472,6 +5558,11 @@ export default function Privileged() {
         {activeSection === "product-images" && (
           <div className="privileged__panel">
             <ProductImageQueue language={language} onOpenQogita={() => setActiveSection("qogita")} />
+          </div>
+        )}
+        {activeSection === "fragrance-notes" && (
+          <div className="privileged__panel">
+            <FragranceNotesQueue language={language} />
           </div>
         )}
         {activeSection === "other" && (

@@ -36,6 +36,11 @@ import {
   saveSiteSettings,
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
+import {
+  getFragranceNotes,
+  getFragranceNotesQueue,
+  refreshFragranceNotes,
+} from "./fragranceIndexService.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
@@ -250,6 +255,39 @@ const server = createServer(async (req, res) => {
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/fragrance-index") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await getFragranceNotes(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/admin/fragrance-notes/misses") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await getFragranceNotesQueue(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/admin/fragrance-notes/refresh") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await refreshFragranceNotes(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
     }
     return;
   }

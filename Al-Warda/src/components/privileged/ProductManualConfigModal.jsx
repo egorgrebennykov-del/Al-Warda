@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ensurePerfumeEnrichment,
-  inferPerfumeProfile,
   generateRichPerfumeDescriptions,
   stripVolumeFromName,
   extractVolumeFromName,
@@ -111,6 +110,11 @@ export default function ProductManualConfigModal({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [notesOrigin, setNotesOrigin] = useState(
+    item?.info?.notesSource === "10ml" ? "10ml" : "manual",
+  );
+  const [notesFetchState, setNotesFetchState] = useState("idle");
+  const [notesFetchMessage, setNotesFetchMessage] = useState("");
 
   // Close on Escape key
   useEffect(() => {
@@ -150,54 +154,104 @@ export default function ProductManualConfigModal({
     setError("");
   };
 
-  // Re-generate notes and descriptions automatically
-  const handleRegenerateEnrichment = () => {
-    const currentCategory = CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0];
-    const profile = inferPerfumeProfile({
-      name,
-      brand,
-      category: categorySlug,
-    });
+  const markNotesManual = () => {
+    setNotesOrigin("manual");
+  };
 
-    const nextTopRu = profile.ru.top.join(", ");
-    const nextHeartRu = profile.ru.heart.join(", ");
-    const nextBaseRu = profile.ru.base.join(", ");
-    const nextTopEn = profile.en.top.join(", ");
-    const nextHeartEn = profile.en.heart.join(", ");
-    const nextBaseEn = profile.en.base.join(", ");
+  const bindNotesField = (setter) => (event) => {
+    markNotesManual();
+    setter(event.target.value);
+  };
 
-    setTopNotesRu(nextTopRu);
-    setHeartNotesRu(nextHeartRu);
-    setBaseNotesRu(nextBaseRu);
-    setTopNotesEn(nextTopEn);
-    setHeartNotesEn(nextHeartEn);
-    setBaseNotesEn(nextBaseEn);
+  // Load the note pyramid from the 10ML Fragrance Index. Notes are never guessed
+  // from the product name: if the database has no record, the fields stay empty.
+  const handleFetchNotesFromIndex = async () => {
+    if (!name.trim()) {
+      setError(isRussian ? "Сначала укажите название парфюма" : "Enter the perfume name first");
+      return;
+    }
+    setError("");
+    setNotesFetchState("loading");
+    setNotesFetchMessage("");
+    try {
+      const params = new URLSearchParams({ name: name.trim(), brand: brand.trim() });
+      if (!isNew && item?.id && /^\d+$/.test(String(item.id))) {
+        params.set("id", String(item.id));
+      }
+      const response = await fetch(`/api/fragrance-index?${params.toString()}`, {
+        credentials: "same-origin",
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+      if (payload.status !== "found" || !payload.notes) {
+        setNotesFetchState(payload.status === "not_found" ? "not_found" : "error");
+        setNotesFetchMessage(
+          payload.status === "not_found"
+            ? (isRussian
+              ? "Аромат не найден в базе 10ML. Заполните ноты вручную."
+              : "Fragrance was not found in the 10ML database. Enter the notes manually.")
+            : (payload.error || (isRussian ? "Не удалось получить ноты" : "Could not fetch notes")),
+        );
+        return;
+      }
 
-    const sumRu = [...profile.ru.top.slice(0, 2), ...profile.ru.heart.slice(0, 1), ...profile.ru.base.slice(0, 2)].join(" · ");
-    const sumEn = [...profile.en.top.slice(0, 2), ...profile.en.heart.slice(0, 1), ...profile.en.base.slice(0, 2)].join(" · ");
-    setNotesSummaryRu(sumRu);
-    setNotesSummaryEn(sumEn);
+      const en = payload.notes.en || payload.notes.ru || {};
+      const ru = payload.notes.ru || en;
+      const topEn = Array.isArray(en.top) ? en.top : [];
+      const heartEn = Array.isArray(en.heart) ? en.heart : [];
+      const baseEn = Array.isArray(en.base) ? en.base : [];
+      const topRu = Array.isArray(ru.top) && ru.top.length ? ru.top : topEn;
+      const heartRu = Array.isArray(ru.heart) && ru.heart.length ? ru.heart : heartEn;
+      const baseRu = Array.isArray(ru.base) && ru.base.length ? ru.base : baseEn;
 
-    const generatedDescs = generateRichPerfumeDescriptions({
-      name,
-      brand,
-      category: categorySlug,
-      categoryRu: currentCategory.ru,
-      categoryEn: currentCategory.en,
-      genderRu: gender,
-      genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
-      longevityRu: longevity,
-      longevityEn: "8–12 hours",
-      topRu: profile.ru.top,
-      heartRu: profile.ru.heart,
-      baseRu: profile.ru.base,
-      topEn: profile.en.top,
-      heartEn: profile.en.heart,
-      baseEn: profile.en.base,
-    });
+      setTopNotesRu(topRu.join(", "));
+      setHeartNotesRu(heartRu.join(", "));
+      setBaseNotesRu(baseRu.join(", "));
+      setTopNotesEn(topEn.join(", "));
+      setHeartNotesEn(heartEn.join(", "));
+      setBaseNotesEn(baseEn.join(", "));
 
-    setDescriptionRu(generatedDescs.descriptionRu);
-    setDescriptionEn(generatedDescs.descriptionEn);
+      const sumRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 1)].join(" · ");
+      const sumEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 1)].join(" · ");
+      setNotesSummaryRu(sumRu);
+      setNotesSummaryEn(sumEn);
+      setNotesOrigin("10ml");
+
+      const matchedLabel = payload.matched?.name
+        ? `${payload.matched.name}${payload.matched.house ? ` — ${payload.matched.house}` : ""}`
+        : "";
+      setNotesFetchState("found");
+      setNotesFetchMessage(
+        isRussian
+          ? `Ноты загружены из базы 10ML${matchedLabel ? `: ${matchedLabel}` : ""}.`
+          : `Notes loaded from the 10ML database${matchedLabel ? `: ${matchedLabel}` : ""}.`,
+      );
+
+      const generatedDescs = generateRichPerfumeDescriptions({
+        name,
+        brand,
+        category: categorySlug,
+        categoryRu: (CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0]).ru,
+        categoryEn: (CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0]).en,
+        genderRu: gender,
+        genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
+        longevityRu: longevity,
+        longevityEn: "8–12 hours",
+        topRu,
+        heartRu,
+        baseRu,
+        topEn,
+        heartEn,
+        baseEn,
+      });
+      setDescriptionRu(generatedDescs.descriptionRu);
+      setDescriptionEn(generatedDescs.descriptionEn);
+    } catch (err) {
+      setNotesFetchState("error");
+      setNotesFetchMessage(err.message || (isRussian ? "Не удалось получить ноты" : "Could not fetch notes"));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -239,6 +293,9 @@ export default function ProductManualConfigModal({
         topNotesEn: topNotesEn,
         heartNotesEn: heartNotesEn,
         baseNotesEn: baseNotesEn,
+        notesSource: notesOrigin,
+        notesVerified: [topNotesRu, heartNotesRu, baseNotesRu, topNotesEn, heartNotesEn, baseNotesEn]
+          .some((value) => String(value || "").trim().length > 0),
         descriptionRu: descriptionRu.trim(),
         descriptionEn: descriptionEn.trim(),
         image,
@@ -532,13 +589,28 @@ export default function ProductManualConfigModal({
               <button
                 type="button"
                 className="product-manual-modal__magic-btn"
-                onClick={handleRegenerateEnrichment}
-                title={isRussian ? "Автоматически обновить ноты и описания по названию и бренду" : "Regenerate harmonious notes and descriptions"}
+                onClick={handleFetchNotesFromIndex}
+                disabled={notesFetchState === "loading"}
+                title={isRussian ? "Загрузить официальные ноты из базы 10ML" : "Fetch official notes from the 10ML database"}
               >
-                <i className="ri-magic-line" />
-                {isRussian ? "Перегенерировать ноты и описания" : "Regenerate with AI"}
+                <i className={notesFetchState === "loading" ? "ri-loader-4-line ri-spin" : "ri-database-2-line"} />
+                {notesFetchState === "loading"
+                  ? (isRussian ? "Загрузка из базы…" : "Loading from database…")
+                  : (isRussian ? "Загрузить ноты из базы 10ML" : "Fetch notes from 10ML")}
               </button>
             </div>
+
+            {notesFetchMessage && (
+              <p
+                className={`product-manual-modal__notes-status ${
+                  notesFetchState === "found" ? "product-manual-modal__notes-status--ok" : "product-manual-modal__notes-status--warn"
+                }`}
+                role="status"
+              >
+                <i className={notesFetchState === "found" ? "ri-checkbox-circle-line" : "ri-information-line"} />
+                <span>{notesFetchMessage}</span>
+              </p>
+            )}
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
@@ -546,7 +618,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={notesSummaryRu}
-                  onChange={(e) => setNotesSummaryRu(e.target.value)}
+                  onChange={bindNotesField(setNotesSummaryRu)}
                   placeholder="Бергамот · Дамасская роза · Белый мускус"
                 />
               </div>
@@ -555,7 +627,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={notesSummaryEn}
-                  onChange={(e) => setNotesSummaryEn(e.target.value)}
+                  onChange={bindNotesField(setNotesSummaryEn)}
                   placeholder="Bergamot · Damask Rose · White Musk"
                 />
               </div>
@@ -567,7 +639,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={topNotesRu}
-                  onChange={(e) => setTopNotesRu(e.target.value)}
+                  onChange={bindNotesField(setTopNotesRu)}
                   placeholder="Шафран, Бергамот, Розовый перец"
                 />
               </div>
@@ -576,7 +648,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={topNotesEn}
-                  onChange={(e) => setTopNotesEn(e.target.value)}
+                  onChange={bindNotesField(setTopNotesEn)}
                   placeholder="Saffron, Bergamot, Pink Pepper"
                 />
               </div>
@@ -588,7 +660,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={heartNotesRu}
-                  onChange={(e) => setHeartNotesRu(e.target.value)}
+                  onChange={bindNotesField(setHeartNotesRu)}
                   placeholder="Дамасская роза, Уд, Золотая амбра"
                 />
               </div>
@@ -597,7 +669,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={heartNotesEn}
-                  onChange={(e) => setHeartNotesEn(e.target.value)}
+                  onChange={bindNotesField(setHeartNotesEn)}
                   placeholder="Damask Rose, Precious Oud, Golden Amber"
                 />
               </div>
@@ -609,7 +681,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={baseNotesRu}
-                  onChange={(e) => setBaseNotesRu(e.target.value)}
+                  onChange={bindNotesField(setBaseNotesRu)}
                   placeholder="Белый мускус, Сандал, Мадагаскарская ваниль"
                 />
               </div>
@@ -618,7 +690,7 @@ export default function ProductManualConfigModal({
                 <input
                   type="text"
                   value={baseNotesEn}
-                  onChange={(e) => setBaseNotesEn(e.target.value)}
+                  onChange={bindNotesField(setBaseNotesEn)}
                   placeholder="White Musk, Sandalwood, Madagascar Vanilla"
                 />
               </div>

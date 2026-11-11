@@ -4,13 +4,13 @@ class MissingServiceKeyError extends Error {
   }
 }
 
-function getServiceKey(env) {
+export function getServiceKey(env) {
   const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY;
   if (!key) throw new MissingServiceKeyError();
   return key;
 }
 
-function getSupabaseUrl(env) {
+export function getSupabaseUrl(env) {
   const url = env?.SUPABASE_URL || env?.VITE_SUPABASE_URL;
   if (!url) throw new Error("SUPABASE_URL is not configured on the server");
   return url.replace(/\/+$/, "");
@@ -156,7 +156,7 @@ async function fetchStockPage(env, key, from, to) {
   throw lastError || new Error("Could not load product image queue");
 }
 
-async function fetchAllStocks(env, key) {
+export async function fetchAllStocks(env, key) {
   const pageSize = 500;
   const first = await fetchStockPage(env, key, 0, pageSize - 1);
   const rows = [...first.rows];
@@ -868,6 +868,12 @@ export async function saveManualProductItem(request, env) {
       ? body.baseNotesEn
       : (body.baseNotesEn ? String(body.baseNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : baseNotesRu);
 
+    const hasNotes = [topNotesRu, heartNotesRu, baseNotesRu, topNotesEn, heartNotesEn, baseNotesEn]
+      .some((notes) => notes.length > 0);
+    const notesSource = hasNotes
+      ? (body.notesSource === "10ml" ? "10ml" : "manual")
+      : (existingInfo.notesSource || "manual");
+
     const updatedInfo = {
       ...existingInfo,
       category: body.categoryRu || body.category || existingInfo.category || "Восточные",
@@ -883,10 +889,22 @@ export async function saveManualProductItem(request, env) {
       sillageEn: body.sillageEn || existingInfo.sillageEn || "Noticeable, alluring sillage",
       notesSummary: body.notesSummary || body.notesSummaryRu || existingInfo.notesSummary || (topNotesRu.slice(0, 2).concat(heartNotesRu.slice(0, 1), baseNotesRu.slice(0, 2)).join(" · ")),
       notesSummaryEn: body.notesSummaryEn || existingInfo.notesSummaryEn || body.notesSummary || (topNotesEn.slice(0, 2).concat(heartNotesEn.slice(0, 1), baseNotesEn.slice(0, 2)).join(" · ")),
-      notes: {
-        ru: { top: topNotesRu, heart: heartNotesRu, base: baseNotesRu },
-        en: { top: topNotesEn, heart: heartNotesEn, base: baseNotesEn },
-      },
+      notes: hasNotes
+        ? {
+          ru: { top: topNotesRu, heart: heartNotesRu, base: baseNotesRu },
+          en: { top: topNotesEn, heart: heartNotesEn, base: baseNotesEn },
+        }
+        : existingInfo.notes,
+      notesVerified: hasNotes ? true : Boolean(existingInfo.notesVerified && existingInfo.notesSource === "manual"),
+      notesSource,
+      notesLookup: hasNotes
+        ? {
+          status: "found",
+          source: notesSource,
+          checkedAt: new Date().toISOString(),
+          matched: notesSource === "10ml" ? (existingInfo.notesLookup?.matched || null) : null,
+        }
+        : (existingInfo.notesLookup || null),
       descriptionRu: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
       descriptionEn: body.descriptionEn || existingInfo.descriptionEn || "",
       description: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
@@ -904,6 +922,15 @@ export async function saveManualProductItem(request, env) {
     };
 
     delete updatedInfo.imageGenerationReplacement;
+
+    const keepsExistingManualNotes =
+      !hasNotes && existingInfo.notesVerified === true && existingInfo.notesSource === "manual";
+    if (!hasNotes && !keepsExistingManualNotes) {
+      delete updatedInfo.notes;
+      delete updatedInfo.notesSummary;
+      delete updatedInfo.notesSummaryEn;
+      updatedInfo.notesVerified = false;
+    }
 
     invalidateProductImageQueueCache();
 
