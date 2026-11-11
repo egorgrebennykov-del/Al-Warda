@@ -1,0 +1,37 @@
+export function extractVolumeFromName(name, fallbackVolume = null) {
+  if (!name || typeof name !== "string") return fallbackVolume;
+
+  // 1. Multi-item discovery sets: e.g. 5x2ml, 4 x 10 ml, 3*25ml
+  const multMatch = name.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (multMatch) {
+    const per = multMatch[2].replace(",", ".");
+    return `${multMatch[1]} × ${per} мл`;
+  }
+
+  // 2. Explicit ml in name: e.g. 1.5ml, 1,5 ml, 15ml, 50ml, 60ml, 105ml
+  const mlMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл)/i);
+  if (mlMatch) {
+    const val = mlMatch[1].replace(",", ".");
+    const num = parseFloat(val);
+    const numStr = Number.isInteger(num) ? String(num) : String(num);
+    const oz = (num * 0.033814).toFixed(1);
+    return `${numStr} мл / ${oz} FL.OZ.`;
+  }
+
+  // 3. Fl oz in name: e.g. 3.4 Fl Oz, 2.7 Fl Oz, 34 Fl Oz (typo for 3.4)
+  const ozMatch = name.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz)/i);
+  if (ozMatch) {
+    let ozVal = parseFloat(ozMatch[1].replace(",", "."));
+    if (ozVal === 34) ozVal = 3.4;
+    let ml = Math.round(ozVal * 29.5735);
+    for (const std of [30, 50, 75, 80, 90, 100, 120, 125, 150, 200, 250]) {
+      if (Math.abs(ml - std) <= 3) {
+        ml = std;
+        break;
+      }
+    }
+    return `${ml} мл / ${ozVal} FL.OZ.`;
+  }
+
+  return fallbackVolume;
+}

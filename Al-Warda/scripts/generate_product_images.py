@@ -18,6 +18,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote, urlencode, urlparse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fragrance_notes import apply_verified_notes, fetch_verified_notes
+
 try:
     import requests
 except ImportError:
@@ -396,40 +399,49 @@ def generate_luxury_fallback_description(
     top_notes=None,
     heart_notes=None,
     base_notes=None,
+    top_notes_en=None,
+    heart_notes_en=None,
+    base_notes_en=None,
 ):
-    """Generate a rich, evocative multi-sentence description according to Al-Warda luxury standard."""
-    top_list = top_notes or ["Шафран", "Бергамот", "Розовый перец"]
-    heart_list = heart_notes or ["Дамасская роза", "Благородный уд", "Амбра"]
-    base_list = base_notes or ["Белый мускус", "Сандал", "Мадагаскарская ваниль"]
+    """Luxury description. Fragrance notes are mentioned ONLY when they are verified (passed in);
+    otherwise the text is note-free - notes are never guessed."""
 
-    top_str_ru = ", ".join(top_list) if isinstance(top_list, list) else str(top_list)
-    heart_str_ru = ", ".join(heart_list) if isinstance(heart_list, list) else str(heart_list)
-    base_str_ru = ", ".join(base_list) if isinstance(base_list, list) else str(base_list)
+    def join(values):
+        return ", ".join(values) if isinstance(values, list) else str(values or "")
 
-    top_str_en = ", ".join(top_list) if isinstance(top_list, list) else str(top_list)
-    heart_str_en = ", ".join(heart_list) if isinstance(heart_list, list) else str(heart_list)
-    base_str_en = ", ".join(base_list) if isinstance(base_list, list) else str(base_list)
-
+    has_notes = bool((top_notes or heart_notes or base_notes))
     desc_ru = (
         f"{name} от парфюмерного дома {brand} — роскошный селективный аромат Ближнего Востока, "
-        f"созданный в лучших традициях восточного парфюмерного искусства. С первых мгновений "
-        f"композиция завораживает ярким вступлением верхних нот ({top_str_ru}), плавно раскрываясь "
-        f"глубоким и многогранным сердцем из акцентов: {heart_str_ru}. В финале аромат окутывает "
-        f"благородной, бархатистой базой ({base_str_ru}), формируя дорогой, стойкий и узнаваемый шлейф."
+        f"созданный в лучших традициях восточного парфюмерного искусства."
     )
     desc_en = (
-        f"{name} by {brand} is an opulent niche fragrance from the Middle East, crafted in the finest "
-        f"traditions of oriental perfumery. From the very first spritz, the composition captivates with luminous "
-        f"top notes ({top_str_en}), seamlessly unfolding into a rich, multifaceted heart of {heart_str_en}. "
-        f"As it settles on the skin, a velvety, resonant base of {base_str_en} emerges, leaving an unforgettable "
-        f"and long-lasting trail."
+        f"{name} by {brand} is an opulent niche fragrance of the Middle East, crafted in the finest "
+        f"traditions of oriental perfumery."
     )
+    if has_notes:
+        parts_ru, parts_en = [], []
+        if top_notes:
+            parts_ru.append(f"верхние ноты — {join(top_notes)}")
+        if heart_notes:
+            parts_ru.append(f"сердце — {join(heart_notes)}")
+        if base_notes:
+            parts_ru.append(f"база — {join(base_notes)}")
+        if top_notes_en or top_notes:
+            parts_en.append(f"top notes of {join(top_notes_en or top_notes)}")
+        if heart_notes_en or heart_notes:
+            parts_en.append(f"a heart of {join(heart_notes_en or heart_notes)}")
+        if base_notes_en or base_notes:
+            parts_en.append(f"a base of {join(base_notes_en or base_notes)}")
+        desc_ru += " Нотный состав: " + "; ".join(parts_ru) + "."
+        desc_en += " The composition features " + ", ".join(parts_en) + "."
+    desc_ru += " Оригинальная продукция, поставляется в заводской упаковке."
+    desc_en += " Authentic product supplied in factory-sealed packaging."
     return {
         "descriptionRu": desc_ru,
         "descriptionEn": desc_en,
         "description": desc_ru,
         "notesSummary": notes_summary or f"{brand} — {category}",
-        "aiModel": "al-warda/luxury-fallback-v1",
+        "aiModel": "al-warda/luxury-fallback-v2",
     }
 
 
@@ -443,27 +455,33 @@ def generate_ai_perfume_description(
     """Generate a rich, evocative luxury description for the perfume using another AI (Gemini or Cloudflare Workers AI LLM), with a high-end luxury fallback."""
     name = (row.get("name") or info.get("name") or "Арабский парфюм").strip()
     brand = (row.get("brand") or info.get("brand") or "Al-Warda").strip()
-    notes_summary = (info.get("notesSummary") or info.get("notes") or "").strip()
+    notes_summary = str(info.get("notesSummary") or "").strip()
     category = (info.get("categoryRu") or info.get("category") or "Восточные").strip()
-    top_notes = info.get("topNotes") or info.get("topNotesRu") or []
-    heart_notes = info.get("heartNotes") or info.get("heartNotesRu") or []
-    base_notes = info.get("baseNotes") or info.get("baseNotesRu") or []
+    verified = bool(info.get("notesVerified"))
+    notes_ru = ((info.get("notes") or {}).get("ru") or {}) if verified else {}
+    notes_en = ((info.get("notes") or {}).get("en") or {}) if verified else {}
+    top_notes = notes_ru.get("top") or []
+    heart_notes = notes_ru.get("heart") or []
+    base_notes = notes_ru.get("base") or []
+    if not verified:
+        notes_summary = ""
 
     # 1. Try Google Gemini API if key is available in environment
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
     if gemini_key and requests_module:
-        for model in ("gemini-2.0-flash", "gemini-1.5-flash"):
+        for model in ("gemini-3.8-flash",):
             try:
                 prompt_text = (
                     f"Perfume Name: {name}\n"
                     f"Brand: {brand}\n"
                     f"Category: {category}\n"
-                    f"Known Notes: {notes_summary or 'precious oud, Damascus rose, amber, white musk, rare spices'}\n\n"
+                    f"Verified Notes: {notes_summary or 'NONE - do not mention any specific fragrance notes, ingredients or accords'}\n\n"
                     "Instructions for luxury fragrance copywriter:\n"
                     "1. Write an evocative luxury description in Russian (descriptionRu) and English (descriptionEn).\n"
                     "2. Russian: multi-sentence, rich and sophisticated, describing the opening notes, heart, base, and longevity. Must state provenance as 'Ближний Восток' (never mention UAE or Saudi Arabia).\n"
                     "3. English: poetic, niche luxury tone, stating origin as 'the Middle East'.\n"
-                    "4. Output valid JSON only with keys: descriptionRu, descriptionEn, notesSummary."
+                    "4. NEVER invent or guess fragrance notes. Mention only the Verified Notes above; if there are none, describe style and character without naming any ingredients.\n"
+                    "5. Output valid JSON only with keys: descriptionRu, descriptionEn, notesSummary (empty string if no verified notes)."
                 )
                 gemini_url = (
                     f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -509,6 +527,7 @@ def generate_ai_perfume_description(
                         "content": (
                             "You are an expert luxury fragrance copywriter for Al-Warda Parfumes (Middle Eastern niche fragrances). "
                             "Given a perfume name and brand, compose an enchanting, rich description in Russian (descriptionRu) and English (descriptionEn). "
+                            "Never invent fragrance notes: mention only verified notes if provided, otherwise name no ingredients. "
                             "Always refer to origin as 'Ближний Восток' in Russian and 'the Middle East' in English (never mention UAE, Dubai, or Saudi Arabia). "
                             "Respond with ONLY valid JSON: {\"descriptionRu\": \"...\", \"descriptionEn\": \"...\", \"notesSummary\": \"...\"}"
                         ),
@@ -518,7 +537,7 @@ def generate_ai_perfume_description(
                         "content": (
                             f"Perfume: {brand} {name}. "
                             f"Category: {category}. "
-                            f"Known notes: {notes_summary or 'oriental precious oud, amber, floral notes, musk'}."
+                            f"Verified notes: {notes_summary or 'NONE (do not name any ingredients or notes)'}."
                         ),
                     },
                 ],
@@ -569,6 +588,9 @@ def generate_ai_perfume_description(
         top_notes=top_notes,
         heart_notes=heart_notes,
         base_notes=base_notes,
+        top_notes_en=notes_en.get("top") or [],
+        heart_notes_en=notes_en.get("heart") or [],
+        base_notes_en=notes_en.get("base") or [],
     )
 
 
@@ -1024,6 +1046,16 @@ def process_product(
         output, original_size = transparent_product_image(edited_bytes, segmentation_session)
         image_url = save_generated_image(output)
 
+        # Fragrance notes: only from a verified public source, never guessed (cleared when not found)
+        try:
+            apply_verified_notes(
+                info,
+                fetch_verified_notes(requests, row.get("name") or "", row.get("brand") or ""),
+            )
+        except Exception as notes_err:
+            apply_verified_notes(info, None)
+            print(f"Warning: verified notes lookup failed for {row['id']}: {notes_err}", flush=True)
+
         # Generate an evocative luxury description with another AI right after image generation
         try:
             cur_acc_id = account_id
@@ -1046,7 +1078,7 @@ def process_product(
                 info["descriptionAiGenerated"] = True
                 info["descriptionModel"] = desc_result.get("aiModel")
                 info["descriptionGeneratedAt"] = now.isoformat()
-                if desc_result.get("notesSummary") and not info.get("notesSummary"):
+                if info.get("notesVerified") and desc_result.get("notesSummary") and not info.get("notesSummary"):
                     info["notesSummary"] = desc_result["notesSummary"]
                 print(f"DESCRIBED {row['id']}: AI ({desc_result.get('aiModel')}) generated luxury description", flush=True)
         except Exception as desc_err:

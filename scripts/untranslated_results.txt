@@ -1,0 +1,264 @@
+Al-Warda/src\components\bookdetails\BookDetails.jsx:177 let raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || fallbackNotes || [];
+Al-Warda/src\components\bookdetails\BookDetails.jsx:187 notesFallback?.[language === "ru" ? "ru" : "en"]?.top
+Al-Warda/src\components\bookdetails\BookDetails.jsx:192 notesFallback?.[language === "ru" ? "ru" : "en"]?.heart
+Al-Warda/src\components\bookdetails\BookDetails.jsx:197 notesFallback?.[language === "ru" ? "ru" : "en"]?.base
+Al-Warda/src\components\bookdetails\BookDetails.jsx:205 if (language === "ru") {
+Al-Warda/src\components\bookdetails\BookDetails.jsx:439 <p className="warda-set-item-desc">{item[`desc_${language}`] || item[`desc${language.charAt(0).toUpperCase() + language.slice(1)}`] || (lang
+Al-Warda/src\components\cart\Cart.jsx:15 if (language === "ru") {
+Al-Warda/src\components\checkout\Checkout.jsx:402 language === "ru"
+Al-Warda/src\components\common\PhoneInput.jsx:145 return language === "ru" ? c.ruName : c.name;
+Al-Warda/src\components\common\PhoneInput.jsx:267 language === "ru"
+Al-Warda/src\components\common\PhoneInput.jsx:289 {language === "ru"
+Al-Warda/src\components\messenger\MessengerModal.jsx:590 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : lan
+Al-Warda/src\components\messenger\MessengerModal.jsx:591 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото с
+Al-Warda/src\components\messenger\MessengerModal.jsx:595 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : lan
+Al-Warda/src\components\messenger\MessengerModal.jsx:596 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото с
+Al-Warda/src\components\messenger\MessengerModal.jsx:706 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за 
+Al-Warda/src\components\messenger\MessengerModal.jsx:707 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на поле
+Al-Warda/src\components\messenger\MessengerModal.jsx:711 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за 
+Al-Warda/src\components\messenger\MessengerModal.jsx:712 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на поле
+Al-Warda/src\components\privileged\Privileged.jsx:48 const locale = language === "ru" ? "ru-RU" : "en-US";
+Al-Warda/src\components\privileged\Privileged.jsx:59 const locale = language === "ru" ? "ru-RU" : "en-US";
+Al-Warda/src\components\privileged\Privileged.jsx:217 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:226 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:259 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:351 title: language === "ru" ? "Ошибка" : "Error",
+Al-Warda/src\components\privileged\Privileged.jsx:353 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:402 title: language === "ru" ? "Клиент передан" : "Client Transferred",
+Al-Warda/src\components\privileged\Privileged.jsx:404 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:412 title: language === "ru" ? "Ошибка передачи" : "Transfer Error",
+Al-Warda/src\components\privileged\Privileged.jsx:415 (language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:479 showNotice(language === "ru" ? "Введите целые числа не меньше 0" : "Enter whole numbers, 0 or greater", true);
+Al-Warda/src\components\privileged\Privileged.jsx:483 showNotice(language === "ru" ? "«От» не может быть больше «До»" : "\"From\" cannot exceed \"To\"", true);
+Al-Warda/src\components\privileged\Privileged.jsx:498 showNotice(language === "ru" ? "Настройка сохранена" : "Setting saved");
+Al-Warda/src\components\privileged\Privileged.jsx:682 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:751 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:803 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:831 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:859 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:865 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:872 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:879 language === "ru" ? "Ответ отправлен" : "Reply sent successfully",
+Al-Warda/src\components\privileged\Privileged.jsx:886 (language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:986 language === "ru" ? "Пользователи не выбраны" : "No Users Selected",
+Al-Warda/src\components\privileged\Privileged.jsx:1107 ? (language === "ru" ? "Бесплатная доставка" : "Free shipping")
+Al-Warda/src\components\privileged\Privileged.jsx:1120 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1134 title: language === "ru" ? "Удаление купона" : "Delete Coupon",
+Al-Warda/src\components\privileged\Privileged.jsx:1136 confirmText: language === "ru" ? "Удалить купон" : "Delete Coupon",
+Al-Warda/src\components\privileged\Privileged.jsx:1145 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1230 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1241 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1253 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1301 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1328 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1344 title: language === "ru" ? "Удаление объявления" : "Delete Announcement",
+Al-Warda/src\components\privileged\Privileged.jsx:1346 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1350 language === "ru" ? "Удалить объявление" : "Delete Announcement",
+Al-Warda/src\components\privileged\Privileged.jsx:1359 language === "ru" ? "Объявление удалено" : "Announcement deleted",
+Al-Warda/src\components\privileged\Privileged.jsx:1381 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1401 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1417 label: language === "ru" ? "Приостановлено" : "Paused",
+Al-Warda/src\components\privileged\Privileged.jsx:1428 label: language === "ru" ? "Истекло" : "Expired",
+Al-Warda/src\components\privileged\Privileged.jsx:1435 label: language === "ru" ? "Запланировано" : "Scheduled",
+Al-Warda/src\components\privileged\Privileged.jsx:1441 label: language === "ru" ? "Активно" : "Active",
+Al-Warda/src\components\privileged\Privileged.jsx:1756 <span>{language === "ru" ? "Мессенджер" : "Messenger"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:1772 <span>{language === "ru" ? "Объявления" : "Announcements"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:1805 <span>{language === "ru" ? "Товары" : "Products"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:1816 <span>{language === "ru" ? "Фото товаров" : "Product images"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:1827 <span>{language === "ru" ? "Прочее" : "Other"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:1869 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1887 {language === "ru" ? "Статус" : "Status"}
+Al-Warda/src\components\privileged\Privileged.jsx:1890 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:1897 {language === "ru" ? "Роли" : "Roles"}
+Al-Warda/src\components\privileged\Privileged.jsx:1900 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2096 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2099 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2113 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2116 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2134 title={`${has ? (language === "ru" ? "Убрать роль " : "Remove role ") : language === "ru" ? "Назначить роль " : "Add role "}${formatRoleName
+Al-Warda/src\components\privileged\Privileged.jsx:2148 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2192 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2214 {language === "ru" ? "Имя" : "First Name"}{" "}
+Al-Warda/src\components\privileged\Privileged.jsx:2220 placeholder={language === "ru" ? "Введите имя" : "Enter first name"}
+Al-Warda/src\components\privileged\Privileged.jsx:2234 {language === "ru" ? "Фамилия" : "Last Name"}
+Al-Warda/src\components\privileged\Privileged.jsx:2239 placeholder={language === "ru" ? "Введите фамилию (необязательно)" : "Enter last name (optional)"}
+Al-Warda/src\components\privileged\Privileged.jsx:2254 {language === "ru" ? "Email или логин" : "Email or Login"}{" "}
+Al-Warda/src\components\privileged\Privileged.jsx:2260 placeholder={language === "ru" ? "ivan@al-warda.com или test_users" : "ivan@al-warda.com or test_users"}
+Al-Warda/src\components\privileged\Privileged.jsx:2271 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2279 {language === "ru" ? "Телефон" : "Phone"}
+Al-Warda/src\components\privileged\Privileged.jsx:2294 {language === "ru" ? "Необязательно" : "Optional"}
+Al-Warda/src\components\privileged\Privileged.jsx:2301 {language === "ru" ? "Пароль" : "Password"}{" "}
+Al-Warda/src\components\privileged\Privileged.jsx:2308 placeholder={language === "ru" ? "Придумайте пароль" : "Create password"}
+Al-Warda/src\components\privileged\Privileged.jsx:2331 title={language === "ru" ? "Сгенерировать безопасный пароль" : "Generate random password"}
+Al-Warda/src\components\privileged\Privileged.jsx:2334 <span>{language === "ru" ? "Сгенерировать" : "Generate"}</span>
+Al-Warda/src\components\privileged\Privileged.jsx:2341 {language === "ru" ? "Статус пользователя" : "User Status"}
+Al-Warda/src\components\privileged\Privileged.jsx:2361 {language === "ru" ? "Обычный пользователь" : "Standard User"}
+Al-Warda/src\components\privileged\Privileged.jsx:2364 {language === "ru" ? "Стандартный аккаунт покупателя" : "Regular customer account"}
+Al-Warda/src\components\privileged\Privileged.jsx:2390 {language === "ru" ? "Привилегированный" : "Privileged"}
+Al-Warda/src\components\privileged\Privileged.jsx:2393 {language === "ru" ? "Доступ к панели управления" : "Access to dashboard & tools"}
+Al-Warda/src\components\privileged\Privileged.jsx:2403 {language === "ru" ? "Назначить роли" : "Assign Roles"}
+Al-Warda/src\components\privileged\Privileged.jsx:2452 {language === "ru" ? "Отмена" : "Cancel"}
+Al-Warda/src\components\privileged\Privileged.jsx:2461 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2464 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2509 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:2554 title={`${has ? (language === "ru" ? "Убрать роль " : "Remove role ") : language === "ru" ? "Назначить роль " : "Add role "}${formatRoleName
+Al-Warda/src\components\privileged\Privileged.jsx:3806 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3811 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3823 {language === "ru" ? "Все" : "All"} ({inquiries.length})
+Al-Warda/src\components\privileged\Privileged.jsx:3830 {language === "ru" ? "Непрочитанные" : "Unread"} (
+Al-Warda/src\components\privileged\Privileged.jsx:3843 {language === "ru" ? "Гости" : "Guests"} (
+Al-Warda/src\components\privileged\Privileged.jsx:3856 {language === "ru" ? "Зарегистрированные" : "Registered"} (
+Al-Warda/src\components\privileged\Privileged.jsx:3874 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3916 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3919 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3939 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3946 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3953 {language === "ru" ? "Админ: " : "Admin: "}
+Al-Warda/src\components\privileged\Privileged.jsx:3963 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:3985 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4020 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4029 {language === "ru" ? "Клиент" : "Registered"}
+Al-Warda/src\components\privileged\Privileged.jsx:4051 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4073 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4080 {language === "ru" ? "История передач" : "History"}
+Al-Warda/src\components\privileged\Privileged.jsx:4101 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4108 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4122 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4127 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4208 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4211 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4217 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4220 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4243 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4249 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4262 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4280 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4283 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4310 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4313 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4325 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4330 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4348 {language === "ru" ? "Объявления" : "Announcements"}
+Al-Warda/src\components\privileged\Privileged.jsx:4351 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4364 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4378 {language === "ru" ? "Все объявления" : "All Announcements"} (
+Al-Warda/src\components\privileged\Privileged.jsx:4387 {language === "ru" ? "Вставки вверху" : "Top Insets"} (
+Al-Warda/src\components\privileged\Privileged.jsx:4396 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4408 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4413 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4424 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4461 language === "ru" ? "Поднять выше" : "Move up"
+Al-Warda/src\components\privileged\Privileged.jsx:4474 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4505 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4508 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4528 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4531 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4551 language === "ru" ? "Редактировать" : "Edit"
+Al-Warda/src\components\privileged\Privileged.jsx:4560 title={language === "ru" ? "Удалить" : "Delete"}
+Al-Warda/src\components\privileged\Privileged.jsx:4600 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4635 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4673 {language === "ru" ? "Ссылки:" : "Links:"}
+Al-Warda/src\components\privileged\Privileged.jsx:4697 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4704 {language === "ru" ? "С:" : "From:"}
+Al-Warda/src\components\privileged\Privileged.jsx:4711 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4718 {language === "ru" ? "По:" : "Until:"}
+Al-Warda/src\components\privileged\Privileged.jsx:4758 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4761 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4766 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4789 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4807 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4812 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4830 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4835 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4850 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4853 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4866 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4879 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4891 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4906 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4936 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4959 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4968 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:4990 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5018 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5029 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5054 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5064 {language === "ru" ? "Начало показа" : "Start Date"}
+Al-Warda/src\components\privileged\Privileged.jsx:5075 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5084 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5101 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5121 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5135 {language === "ru" ? "Отмена" : "Cancel"}
+Al-Warda/src\components\privileged\Privileged.jsx:5145 {language === "ru" ? "Сохранение..." : "Saving..."}
+Al-Warda/src\components\privileged\Privileged.jsx:5151 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5154 : language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5235 {language === "ru" ? "Опасная зона" : "Danger zone"}
+Al-Warda/src\components\privileged\Privileged.jsx:5379 {language === "ru" ? "Прочее" : "Other"}
+Al-Warda/src\components\privileged\Privileged.jsx:5385 {language === "ru" ? "Допустимый минимальный заказ (шт.)" : "Allowed minimum order (pcs)"}
+Al-Warda/src\components\privileged\Privileged.jsx:5388 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5394 <label className="privileged__form-label">{language === "ru" ? "От (шт.)" : "From (pcs)"}</label>
+Al-Warda/src\components\privileged\Privileged.jsx:5406 <label className="privileged__form-label">{language === "ru" ? "До (шт.)" : "To (pcs)"}</label>
+Al-Warda/src\components\privileged\Privileged.jsx:5420 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5428 ? language === "ru" ? "Сохранение..." : "Saving..."
+Al-Warda/src\components\privileged\Privileged.jsx:5429 : language === "ru" ? "Сохранить" : "Save"}
+Al-Warda/src\components\privileged\Privileged.jsx:5452 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5467 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5473 {(language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5499 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5511 {language === "ru" ? "Отмена" : "Cancel"}
+Al-Warda/src\components\privileged\Privileged.jsx:5524 {language === "ru" ? "Подтвердить и запустить" : "Confirm and start"}
+Al-Warda/src\components\privileged\Privileged.jsx:5588 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5594 {language === "ru" ? "Клиент:" : "Client:"}
+Al-Warda/src\components\privileged\Privileged.jsx:5606 {language === "ru" ? "Гость" : "Guest"}
+Al-Warda/src\components\privileged\Privileged.jsx:5625 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5646 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5671 ? language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5683 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5691 language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5708 {language === "ru" ? "Отмена" : "Cancel"}
+Al-Warda/src\components\privileged\Privileged.jsx:5725 {language === "ru" ? "Передача..." : "Transferring..."}
+Al-Warda/src\components\privileged\Privileged.jsx:5732 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5761 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5767 {language === "ru" ? "Клиент:" : "Client:"}
+Al-Warda/src\components\privileged\Privileged.jsx:5779 {language === "ru" ? "Гость" : "Guest"}
+Al-Warda/src\components\privileged\Privileged.jsx:5799 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5810 {language === "ru" ? "Всего передач:" : "Total transfers:"}
+Al-Warda/src\components\privileged\Privileged.jsx:5826 {language === "ru"
+Al-Warda/src\components\privileged\Privileged.jsx:5890 {language === "ru" ? "Закрыть" : "Close"}
+Al-Warda/src\components\privileged\Privileged.jsx:5902 {language === "ru"
+Al-Warda/src\components\privileged\ProductImageQueue.jsx:212 const isRussian = language === "ru";
+Al-Warda/src\components\privileged\ProductManualConfigModal.jsx:34 const isRussian = language === "ru";
+Al-Warda/src\components\privileged\ProductsManager.jsx:7 const locale = language === "ru" ? "ru-RU" : "en-US";
+Al-Warda/src\components\privileged\ProductsManager.jsx:16 const isRussian = language === "ru";
+Al-Warda/src\components\privileged\QogitaManager.jsx:90 ? (language === "ru" ? "Сервер сайта не поддерживает API панели Qogita." : "The site server does not support the Qogita dashboard API.")
+Al-Warda/src\components\privileged\QogitaManager.jsx:91 : (language === "ru" ? `Не удалось получить статус Qogita: ${err.message}` : `Could not load Qogita status: ${err.message}`));
+Al-Warda/src\components\privileged\QogitaManager.jsx:125 setCartError(language === "ru" ? "Не удалось загрузить корзину через сайт." : "Could not load the cart through this site.");
+Al-Warda/src\components\privileged\QogitaManager.jsx:333 <i className="ri-error-warning-fill" /> {language === "ru" ? "API недоступен" : "API unavailable"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:350 {language === "ru" ? "Каталог Qogita" : "Qogita catalog"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:353 {language === "ru" ? "Корзина Qogita" : "Qogita cart"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:455 {language === "ru" ? "Открыть корзину в Qogita" : "Open cart in Qogita"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:737 <i className="ri-external-link-line" /> {language === "ru" ? "Товар на сайте Qogita ↗" : "View on Qogita ↗"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:748 <i className="ri-external-link-line" /> {language === "ru" ? "Открыть товар в Qogita ↗" : "Open product in Qogita ↗"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:831 title={language === "ru" ? "Открыть товар в Qogita" : "Open product in Qogita"}
+Al-Warda/src\components\privileged\QogitaManager.jsx:833 <i className="ri-external-link-line" /> {language === "ru" ? "В Qogita ↗" : "On Qogita ↗"}
+Al-Warda/src\components\profile\Profile.jsx:179 language === "ru"
+Al-Warda/src\components\sets\Sets.jsx:43 if (lang === "ru") return isDisc ? "ДИСКАВЕРИ СЕТ" : "ПОДАРОЧНЫЙ СЕТ";
+Al-Warda/src\components\sets\Sets.jsx:54 if (lang === "ru") {
+Al-Warda/src\components\sets\Sets.jsx:79 if (lang === "ru") return `Показано ${count} из ${total} предложений`;
+Al-Warda/src\components\testimonial\Testimonial.jsx:443 (language === "ru" ? item.feedback_ru : item.feedback_en) ||
+Al-Warda/src\components\warda\WardaAssistant.jsx:541 language === "ru"
+Al-Warda/src\components\warda\WardaAssistant.jsx:633 language === "ru"
+Al-Warda/src\components\warda\WardaAssistant.jsx:650 {language === "ru"
+Al-Warda/src\components\warda\WardaAssistant.jsx:852 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : lan
+Al-Warda/src\components\warda\WardaAssistant.jsx:853 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото с
+Al-Warda/src\components\warda\WardaAssistant.jsx:857 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : lan
+Al-Warda/src\components\warda\WardaAssistant.jsx:858 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото с
+Al-Warda/src\components\warda\WardaAssistant.jsx:1063 {language === "ru"
+Al-Warda/src\components\warda\WardaAssistant.jsx:1124 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за 
+Al-Warda/src\components\warda\WardaAssistant.jsx:1125 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на поле
+Al-Warda/src\components\warda\WardaAssistant.jsx:1129 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за 
+Al-Warda/src\components\warda\WardaAssistant.jsx:1130 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на поле
+Al-Warda/src\context\CurrencyProvider.jsx:70 (language === "ru" || language === "en" || language === "bg" || language === "el") &&
+Al-Warda/src\utils\localization.js:446 if (lang === "ru") return category.nameRu || category.name || category.nameEn;
+Al-Warda/src\utils\localization.js:612 if (lang === "ru") return note.nameRu || note.name || note.nameEn;
+Al-Warda/src\utils\localization.js:649 const unit = (lang === "ru" || lang === "bg") ? "мл" : "ml";

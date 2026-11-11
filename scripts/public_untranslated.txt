@@ -1,0 +1,152 @@
+BookDetails.jsx:214 displayDesc.includes("Сертифицированная оригинальная") ||
+Cart.jsx:18 if (mod100 >= 11 && mod100 <= 19) return `${n} парфюмов`;
+Cart.jsx:19 if (mod10 === 1) return `${n} парфюм`;
+Cart.jsx:20 if (mod10 >= 2 && mod10 <= 4) return `${n} парфюма`;
+Cart.jsx:21 return `${n} парфюмов`;
+Cart.jsx:24 return `${n} ${n === 1 ? "парфюм" : "парфюма"}`;
+Checkout.jsx:403 ? "Вы действительно хотите удалить этот сохранённый адрес доставки?"
+Checkout.jsx:407 ? "Сигурни ли сте, че искате да изтриете този запазен адрес за доставка?"
+Checkout.jsx:1024 {/* Coupon section: Directly above "Итого к оплате" */}
+PhoneInput.jsx:42 q.includes("изра") ||
+PhoneInput.jsx:44 ("израиль".startsWith(q) && q.length >= 2) ||
+PhoneInput.jsx:268 ? "Выбрать из сохранённых номеров"
+PhoneInput.jsx:272 ? "Избор от запазените номера"
+PhoneInput.jsx:290 ? "Сохранённые номера"
+PhoneInput.jsx:294 ? "Запазени телефонни номера"
+Featured.jsx:89 { id: "Women", nameRu: "Женский", nameEn: "Women" },
+Featured.jsx:90 { id: "Men", nameRu: "Мужской", nameEn: "Men" },
+Featured.jsx:91 { id: "Unisex", nameRu: "Унисекс", nameEn: "Unisex" },
+Featured.jsx:95 { id: "oud", nameRu: "Уд", nameEn: "Oud", keywords: ["уд", "агар", "oud", "agarwood"] },
+Featured.jsx:96 { id: "rose", nameRu: "Дамасская и таифская роза", nameEn: "Damask & Taif Rose", keywords: ["роза", "розы", "розе", "роз
+Featured.jsx:97 { id: "vanilla", nameRu: "Мадагаскарская ваниль", nameEn: "Vanilla", keywords: ["ванил", "vanil"] },
+Featured.jsx:98 { id: "amber", nameRu: "Золотая и серая амбра", nameEn: "Golden & Grey Amber", keywords: ["амбр", "amber", "ambrox"] },
+Featured.jsx:99 { id: "musk", nameRu: "Белый мускус", nameEn: "White Musk", keywords: ["мускус", "musk"] },
+Featured.jsx:100 { id: "saffron", nameRu: "Королевский шафран", nameEn: "Saffron", keywords: ["шафран", "saffron"] },
+Featured.jsx:101 { id: "bergamot", nameRu: "Сицилийский бергамот", nameEn: "Sicilian Bergamot", keywords: ["бергамот", "bergamot"] },
+Featured.jsx:102 { id: "sandalwood", nameRu: "Сандал", nameEn: "Sandalwood", keywords: ["сандал", "sandal"] },
+Featured.jsx:103 { id: "patchouli", nameRu: "Пачули", nameEn: "Patchouli", keywords: ["пачул", "patchouli"] },
+Featured.jsx:104 { id: "leather", nameRu: "Кожаный аккорд", nameEn: "Leather", keywords: ["кожа", "кожан", "leather"] },
+Featured.jsx:105 { id: "incense", nameRu: "Дымный ладан", nameEn: "Frankincense & Incense", keywords: ["ладан", "дым", "incense", "franki
+Featured.jsx:106 { id: "tonka", nameRu: "Бобы тонка", nameEn: "Tonka Bean", keywords: ["тонка", "tonka", "кумарин"] },
+Featured.jsx:107 { id: "caramel", nameRu: "Карамель", nameEn: "Caramel", keywords: ["карамел", "caramel"] },
+Featured.jsx:108 { id: "cardamom", nameRu: "Кардамон", nameEn: "Cardamom", keywords: ["кардамон", "cardamom"] },
+Featured.jsx:109 { id: "cinnamon", nameRu: "Корица", nameEn: "Cinnamon", keywords: ["кориц", "cinnamon"] },
+Featured.jsx:110 { id: "lavender", nameRu: "Французская лаванда", nameEn: "French Lavender", keywords: ["лаванд", "lavender", "khuzama"] 
+Featured.jsx:111 { id: "cedar", nameRu: "Благородный кедр", nameEn: "Cedarwood", keywords: ["кедр", "кипарис", "сосн", "елов", "cedar", "
+Featured.jsx:112 { id: "vetiver", nameRu: "Ветивер", nameEn: "Vetiver", keywords: ["ветивер", "vetiver"] },
+Featured.jsx:113 { id: "jasmine", nameRu: "Жасмин самбак", nameEn: "Jasmine Sambac", keywords: ["жасмин", "jasmine"] },
+Featured.jsx:114 { id: "iris", nameRu: "Ирис и пудра", nameEn: "Iris & Powder", keywords: ["ирис", "пудр", "iris", "powder"] },
+Featured.jsx:115 { id: "violet", nameRu: "Фиалка и пион", nameEn: "Violet & Peony", keywords: ["фиалк", "пион", "violet", "peony"] },
+Featured.jsx:116 { id: "orange-blossom", nameRu: "Флердоранж и нероли", nameEn: "Orange Blossom & Neroli", keywords: ["флердоранж", "неро
+Featured.jsx:117 { id: "ylang", nameRu: "Иланг-иланг", nameEn: "Ylang-Ylang", keywords: ["иланг", "ylang"] },
+Featured.jsx:118 { id: "peach", nameRu: "Сладкий персик", nameEn: "Sweet Peach", keywords: ["персик", "peach"] },
+Featured.jsx:119 { id: "cherry", nameRu: "Спелая вишня", nameEn: "Ripe Cherry", keywords: ["вишн", "cherry"] },
+Featured.jsx:120 { id: "pear", nameRu: "Сочная груша", nameEn: "Juicy Pear", keywords: ["груш", "pear"] },
+Featured.jsx:121 { id: "apple", nameRu: "Зеленое яблоко", nameEn: "Green Apple", keywords: ["яблок", "apple"] },
+Featured.jsx:122 { id: "berries", nameRu: "Черная смородина и малина", nameEn: "Blackcurrant & Raspberry", keywords: ["смородин", "малин"
+Featured.jsx:123 { id: "mandarin", nameRu: "Мандарин и апельсин", nameEn: "Mandarin & Orange", keywords: ["мандарин", "апельсин", "mandar
+Featured.jsx:124 { id: "grapefruit", nameRu: "Грейпфрут и лимон", nameEn: "Grapefruit & Lemon", keywords: ["грейпфрут", "лимон", "лайм", 
+Featured.jsx:125 { id: "pepper", nameRu: "Розовый и черный перец", nameEn: "Pink & Black Pepper", keywords: ["перец", "pepper"] },
+Featured.jsx:126 { id: "ginger", nameRu: "Имбирь и мускатный орех", nameEn: "Ginger & Nutmeg", keywords: ["имбир", "мускат", "гвоздик", "
+Featured.jsx:127 { id: "tobacco", nameRu: "Табачный лист", nameEn: "Tobacco Leaf", keywords: ["табак", "табач", "tobacco"] },
+Featured.jsx:128 { id: "coffee", nameRu: "Кофе", nameEn: "Coffee", keywords: ["кофе", "coffee"] },
+Featured.jsx:129 { id: "almond", nameRu: "Миндаль и пралине", nameEn: "Almond & Praline", keywords: ["миндал", "пралине", "кокос", "almon
+Featured.jsx:130 { id: "sea-breeze", nameRu: "Морской бриз", nameEn: "Sea Breeze", keywords: ["морск", "бриз", "акват", "sea breeze", "ma
+Featured.jsx:131 { id: "mint", nameRu: "Свежая мята и шалфей", nameEn: "Fresh Mint & Sage", keywords: ["мят", "шалфей", "геран", "mint", 
+Featured.jsx:132 { id: "oakmoss", nameRu: "Дубовый мох", nameEn: "Oakmoss", keywords: ["мох", "oakmoss", "берез", "birch"] },
+Featured.jsx:144 .replace(/розов\w*\s+перец\w*/gi, " ")
+Featured.jsx:145 .replace(/розмарин\w*|rosemary/gi, " ")
+Featured.jsx:146 .replace(/розов\w*\s+дерев\w*|rosewood/gi, " ")
+Featured.jsx:147 .replace(/тубероз\w*|tuberose/gi, " ");
+Featured.jsx:174 { id: "oriental", slug: "oriental", nameRu: "ВОСТОЧНЫЕ И АМБРОВЫЕ", nameEn: "ORIENTAL & AMBER" },
+Featured.jsx:175 { id: "woody", slug: "woody", nameRu: "ДРЕВЕСНЫЕ", nameEn: "WOODY" },
+Featured.jsx:176 { id: "fruity", slug: "fruity", nameRu: "ФРУКТОВЫЕ И ЯГОДНЫЕ", nameEn: "FRUITY & BERRY" },
+Featured.jsx:177 { id: "leather", slug: "leather", nameRu: "КОЖАНЫЕ", nameEn: "LEATHER" },
+Featured.jsx:178 { id: "musky", slug: "musky", nameRu: "МУСКУСНЫЕ И ПУДРОВЫЕ", nameEn: "MUSKY & POWDERY" },
+Featured.jsx:182 { id: "all", nameRu: "Все ароматы", nameEn: "All Items" },
+Featured.jsx:183 { id: "sets", nameRu: "Только сеты и наборы", nameEn: "Sets & Gifts Only" },
+Featured.jsx:184 { id: "bottles", nameRu: "Только флаконы", nameEn: "Bottles Only" },
+Featured.jsx:190 nameRu: "Максимальная (12–16+ ч)",
+Featured.jsx:198 long.includes("максимальная") ||
+Featured.jsx:201 conc.includes("масло") ||
+Featured.jsx:202 conc.includes("маслян")
+Featured.jsx:208 nameRu: "Очень высокая (10–14 ч)",
+Featured.jsx:215 long.includes("очень высокая") ||
+Featured.jsx:222 nameRu: "Высокая (8–12 ч)",
+Featured.jsx:231 long.includes("высокая") ||
+Featured.jsx:232 long.includes("стойкая свежесть")
+Featured.jsx:238 nameRu: "Умеренная (до 8-10 ч)",
+Featured.jsx:243 long.includes("умерен") ||
+Featured.jsx:244 long.includes("до 8") ||
+Featured.jsx:256 nameRu: "До 30 мл (аттары, мини)",
+Featured.jsx:262 nameRu: "50 мл (50–65 мл)",
+Featured.jsx:268 nameRu: "75–90 мл",
+Featured.jsx:274 nameRu: "100 мл (Классический)",
+Featured.jsx:280 nameRu: "Более 100 мл (120–250 мл)",
+Featured.jsx:602 return pCat === "fresh" || pCat === "aquatic" || pInfoCat.includes("свеж") || pInfoCat.includes("морск") || pInfoCat.inc
+Featured.jsx:605 return pCat === "fougere" || pCat === "woody-fougere" || pInfoCat.includes("фужер") || allNotesText.includes("лаванд") |
+Featured.jsx:608 return pCat === "citrus" || pCat === "citrus-fresh" || pInfoCat.includes("цитрус") || allNotesText.includes("грейпфрут")
+Featured.jsx:611 return pCat === "spicy" || pCat === "spices" || pInfoCat.includes("прян") || pInfoCat.includes("специ") || allNotesText.
+Featured.jsx:614 return pCat === "gourmand" || pInfoCat.includes("гурман") || allNotesText.includes("карамел") || allNotesText.includes("
+Featured.jsx:617 return pCat === "floral" || pInfoCat.includes("цвет") || pInfoCat.includes("роз") || allNotesText.includes("дамасская ро
+Featured.jsx:620 return pCat === "oud" || pCat === "wood" || pInfoCat.includes("уд") || pInfoCat.includes("древ") || allNotesText.include
+Featured.jsx:623 return pCat === "spicy" || pCat === "oud" || pCat === "gourmand" || pInfoCat.includes("восточ") || pInfoCat.includes("ам
+Featured.jsx:626 return pCat === "oud" || pCat === "fougere" || pInfoCat.includes("древ") || allNotesText.includes("сандал") || allNotesT
+Featured.jsx:629 return pInfoCat.includes("фрукт") || pInfoCat.includes("ягод") || pInfoCat.includes("вишн") || allNotesText.includes("пе
+Featured.jsx:632 return pInfoCat.includes("кож") || allNotesText.includes("кожа") || allNotesText.includes("leather");
+Featured.jsx:635 return pInfoCat.includes("мускус") || pInfoCat.includes("пудр") || allNotesText.includes("белый мускус") || allNotesText
+Featured.jsx:657 if (g === "Women") return pGender.includes("жен") || pGender.includes("women");
+Featured.jsx:658 if (g === "Men") return (pGender.includes("муж") || pGender.includes("men")) && !pGender.includes("women");
+Featured.jsx:659 return pGender.includes("уни") || pGender.includes("uni");
+Header.jsx:18 { code: "bg", label: "Български", short: "BG" },
+Header.jsx:23 { code: "ru", label: "Русский", short: "RU" },
+MessengerModal.jsx:158 ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() || activeUser?.email || "Пользователь"
+MessengerModal.jsx:159 : (nameOverride || guestName || localStorage.getItem(GUEST_NAME_KEY) || "Гость").trim();
+MessengerModal.jsx:381 const adminName = inquiry?.interlocutors_info?.adminName || "Администратор";
+MessengerModal.jsx:590 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване н
+MessengerModal.jsx:591 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "П
+MessengerModal.jsx:595 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване н
+MessengerModal.jsx:596 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "П
+MessengerModal.jsx:706 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "С
+MessengerModal.jsx:707 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? 
+MessengerModal.jsx:711 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "С
+MessengerModal.jsx:712 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? 
+Profile.jsx:76 {label || (isEmail ? "Email" : isPhone ? "Телефон" : "Информация")}
+Profile.jsx:107 title="Копировать"
+Profile.jsx:130 title="Копировать"
+Profile.jsx:180 ? `"${val}" скопировано в буфер обмена!`
+Profile.jsx:184 ? `"${val}" е копирано в клипборда!`
+Search.jsx:208 {/* Perfume Grid (Без фона) */}
+Sets.jsx:43 if (lang === "ru") return isDisc ? "ДИСКАВЕРИ СЕТ" : "ПОДАРОЧНЫЙ СЕТ";
+Sets.jsx:45 if (lang === "bg") return isDisc ? "ДИСКАВЪРИ КОМПЛЕКТ" : "ПОДАРЪЧЕН КОМПЛЕКТ";
+Sets.jsx:57 if (mod100 >= 11 && mod100 <= 19) return `${n} предложений`;
+Sets.jsx:58 if (mod10 === 1) return `${n} предложение`;
+Sets.jsx:59 if (mod10 >= 2 && mod10 <= 4) return `${n} предложения`;
+Sets.jsx:60 return `${n} предложений`;
+Sets.jsx:63 return `${n} ${n === 1 ? "предложение" : "предложения"}`;
+Sets.jsx:79 if (lang === "ru") return `Показано ${count} из ${total} предложений`;
+Sets.jsx:80 if (lang === "bg") return `Показани ${count} от ${total} предложения`;
+Sets.jsx:193 if (selectedGender === "women") return g.includes("жен") || g.includes("women") || g.includes("femme");
+Sets.jsx:194 if (selectedGender === "men") return (g.includes("муж") || g.includes("men") || g.includes("homme")) && !g.includes("wom
+Sets.jsx:195 if (selectedGender === "unisex") return g.includes("унисекс") || g.includes("unisex");
+Testimonial.jsx:116 userFirstName: user?.firstName || "Пользователь",
+WardaAssistant.jsx:39 /(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro|€)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+WardaAssistant.jsx:46 /(\d+(?:[.,]\d+)?)\s*(?:EUR|Eur|eur|евро|Евро|euro|Euro)(?![а-яёА-ЯЁa-zA-Z0-9])/gu,
+WardaAssistant.jsx:53 text = text.replace(/(\d+)\s*(ml|мл)(?![а-яёА-ЯЁa-zA-Z0-9])/giu, "$1\u00A0$2");
+WardaAssistant.jsx:63 text = text.replace(/(?<=^|[\s«"'(])([а-яёА-ЯЁa-zA-Z])\s+/gu, "$1\u00A0");
+WardaAssistant.jsx:542 ? "Ой, кажется, возникла ошибка соединения! 💜 Попробуйте повторить запрос."
+WardaAssistant.jsx:546 ? "Опа, възникна грешка при връзката! 💜 Моля, опитайте отново."
+WardaAssistant.jsx:634 ? "Нажмите, чтобы задать вопрос Ясмин"
+WardaAssistant.jsx:638 ? "Кликнете, за да попитате Ясмин"
+WardaAssistant.jsx:651 ? "Я с радостью отвечу на этот вопрос! Нажмите на меня 🤍"
+WardaAssistant.jsx:655 ? "С удоволствие ще отговоря на този въпрос! Кликнете върху мен 🤍"
+WardaAssistant.jsx:852 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване н
+WardaAssistant.jsx:853 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "П
+WardaAssistant.jsx:857 ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване н
+WardaAssistant.jsx:858 : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "П
+WardaAssistant.jsx:1064 ? "Ясмин переводит диалог на русский..."
+WardaAssistant.jsx:1068 ? "Ясмин превежда диалога на български..."
+WardaAssistant.jsx:1124 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "С
+WardaAssistant.jsx:1125 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? 
+WardaAssistant.jsx:1129 ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "С
+WardaAssistant.jsx:1130 : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? 

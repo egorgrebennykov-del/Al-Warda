@@ -1,0 +1,13 @@
+Language en has 0 untranslated Russian values:
+Language hu has 0 untranslated Russian values:
+Language el has 3 untranslated Russian values:
+  Key: featured.onlySets
+    el: Μόно σετ
+    ru: Только сеты
+  Key: featured.activePillSets
+    el: Μόно σετ
+    ru: Только сеты
+  Key: featured.activePillBottles
+    el: Μόно φιάλες
+    ru: Только флаконы
+Language ro has 0 untranslated Russian values:

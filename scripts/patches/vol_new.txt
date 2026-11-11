@@ -1,0 +1,117 @@
+const STANDARD_ML_SIZES = [
+  1, 2, 3, 5, 6, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 55, 60, 65, 70, 75, 80,
+  85, 90, 100, 105, 110, 120, 125, 150, 200, 250, 300,
+];
+
+// Generic placeholder volumes written by old importers when the real size was unknown.
+// They must never be shown as a real bottle size.
+export function isPlaceholderVolume(volume) {
+  if (!volume) return true;
+  return /^\s*100\s*(?:ml|мл)\s*(?:EDP|\/\s*3[.,]4\s*FL\.?\s*OZ\.?)\s*$/i.test(String(volume));
+}
+
+function normalizeOunces(rawValue) {
+  const raw = String(rawValue).replace(",", ".");
+  let oz = parseFloat(raw);
+  if (!Number.isFinite(oz) || oz <= 0) return null;
+  // Qogita titles often lose the decimal point: "34 Oz" = 3.4, "27 Oz" = 2.7, "338 Oz" = 3.38
+  if (!raw.includes(".") && oz >= 10) {
+    oz = raw.length >= 3 ? oz / 100 : oz / 10;
+  }
+  return oz > 0 && oz <= 34 ? oz : null;
+}
+
+function ouncesToMl(oz) {
+  const exact = oz * 29.5735;
+  let best = Math.round(exact);
+  let bestDiff = Infinity;
+  for (const std of STANDARD_ML_SIZES) {
+    const diff = Math.abs(exact - std);
+    if (diff <= Math.max(1, exact * 0.06) && diff < bestDiff) {
+      best = std;
+      bestDiff = diff;
+    }
+  }
+  return best;
+}
+
+function formatVolumeNumber(num) {
+  return String(Math.round(num * 100) / 100);
+}
+
+/**
+ * Parses the real product size from a Qogita title / description.
+ * Supports ml, grams (perfume oils), fl oz, oz and ounce, plus discovery sets (5x2ml).
+ * Returns null when no size is explicitly stated - callers must not invent a size.
+ */
+export function parseVolumeFromText(text) {
+  if (!text || typeof text !== "string") return null;
+
+  const multMatch = text.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)(?![a-zа-я])/i);
+  if (multMatch) {
+    return `${multMatch[1]} × ${multMatch[2].replace(",", ".")} мл`;
+  }
+
+  const mlMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл|milliliters?|millilitres?)(?![a-zа-я])/i);
+  if (mlMatch) {
+    const num = parseFloat(mlMatch[1].replace(",", "."));
+    if (num > 0) return `${formatVolumeNumber(num)} мл / ${(num * 0.033814).toFixed(1)} FL.OZ.`;
+  }
+
+  const ozMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)(?![a-zа-я])/i);
+  if (ozMatch) {
+    const oz = normalizeOunces(ozMatch[1]);
+    if (oz) return `${ouncesToMl(oz)} мл / ${formatVolumeNumber(oz)} FL.OZ.`;
+  }
+
+  const gramMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:g|gr|gm|grams?|г)(?![a-zа-я])/i);
+  if (gramMatch) {
+    const num = parseFloat(gramMatch[1].replace(",", "."));
+    if (num > 0 && num <= 500) return `${formatVolumeNumber(num)} г`;
+  }
+
+  return null;
+}
+
+export function extractVolumeFromName(name, fallbackVolume = null) {
+  return parseVolumeFromText(name) || fallbackVolume;
+}
+
+// The Qogita description column starts with the original, unstripped product title
+// ("Al Haramain Bahr For Men 0.4 Oz Concentrated Perfume Oil Mini - ...").
+function originalTitleFromDescription(desc) {
+  if (!desc || typeof desc !== "string") return "";
+  const cut = desc.split(/\s+[-–—]\s+|\s+by\s+|\s+от\s+/i)[0];
+  return cut.length <= 220 ? cut : desc.slice(0, 220);
+}
+
+/**
+ * Resolves the real bottle size from every place the original Qogita title survives.
+ * Placeholder volumes ("100 мл EDP") are ignored, so a product never shows an invented size.
+ */
+export function resolvePerfumeVolume(p) {
+  if (!p) return null;
+  const info = p.info || {};
+  const isManual = Boolean(info.manual || info.imageGeneration?.manual);
+  const stored = info.volume || p.volume;
+  if (isManual && stored) return String(stored).trim();
+
+  const candidates = [
+    p.rawName,
+    p.name,
+    p.title,
+    info.originalName,
+    info.qogitaName,
+    info.title,
+    originalTitleFromDescription(p.rawDescription),
+    originalTitleFromDescription(info.descriptionEn),
+    originalTitleFromDescription(info.description),
+    originalTitleFromDescription(info.descriptionRu),
+  ];
+  for (const text of candidates) {
+    const parsed = parseVolumeFromText(text);
+    if (parsed) return parsed;
+  }
+  if (stored && !isPlaceholderVolume(stored)) return String(stored).trim();
+  return null;
+}

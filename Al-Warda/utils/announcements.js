@@ -25,32 +25,69 @@ function safeParse(val) {
   return {};
 }
 
+// Site languages, in display order. All announcements are translated into every one.
+export const ANNOUNCEMENT_LANGS = ["ru", "en", "hu", "bg", "el", "ro"];
+
 /**
  * Normalizes an announcement row from Supabase.
- * Supports localized `content_ru` and `content_en` as well as legacy `content`.
+ * Supports localized `content_<lang>` for every site language as well as legacy `content`.
  */
 export function normalizeAnnouncement(row) {
   if (!row) return null;
 
-  const ru = safeParse(row.content_ru);
-  const en = safeParse(row.content_en);
+  const parsed = {};
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    parsed[lang] = safeParse(row[`content_${lang}`]);
+  }
   const legacy = safeParse(row.content);
 
   const type =
-    ru.type === "large" || en.type === "large" || legacy.type === "large"
+    parsed.ru.type === "large" ||
+    parsed.en.type === "large" ||
+    parsed.hu.type === "large" ||
+    parsed.bg.type === "large" ||
+    parsed.el.type === "large" ||
+    parsed.ro.type === "large" ||
+    legacy.type === "large"
       ? "large"
       : "small";
 
-  const order = Number(ru.order ?? en.order ?? legacy.order ?? 0);
+  const order = Number(
+    parsed.ru.order ?? parsed.en.order ?? parsed.hu.order ?? parsed.bg.order ??
+    parsed.el.order ?? parsed.ro.order ?? legacy.order ?? 0,
+  );
   const active =
-    (ru.active !== false) && (en.active !== false) && (legacy.active !== false);
+    parsed.ru.active !== false &&
+    parsed.en.active !== false &&
+    parsed.hu.active !== false &&
+    parsed.bg.active !== false &&
+    parsed.el.active !== false &&
+    parsed.ro.active !== false &&
+    legacy.active !== false;
 
-  const text_ru = ru.text || legacy.text || "";
-  const text_en = en.text || legacy.text || "";
-  const imageUrl_ru = ru.imageUrl || legacy.imageUrl || "";
-  const imageUrl_en = en.imageUrl || legacy.imageUrl || "";
-  const linkUrl_ru = ru.linkUrl || legacy.linkUrl || "";
-  const linkUrl_en = en.linkUrl || legacy.linkUrl || linkUrl_ru;
+  const langs = {};
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    const src = parsed[lang] || legacy;
+    langs[lang] = {
+      type,
+      text: src.text || legacy.text || "",
+      imageUrl: src.imageUrl || legacy.imageUrl || "",
+      linkUrl: src.linkUrl || legacy.linkUrl || "",
+    };
+  }
+
+  // Distinct language field accessors (text_/imageUrl_/linkUrl_<lang>)
+  const fields = {};
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    fields[`text_${lang}`] = langs[lang].text;
+    fields[`imageUrl_${lang}`] = langs[lang].imageUrl;
+    fields[`linkUrl_${lang}`] = langs[lang].linkUrl;
+  }
+
+  // Universal accessors with language fallback (default ru -> en)
+  const text = langs.ru.text || langs.en.text || "";
+  const imageUrl = langs.ru.imageUrl || langs.en.imageUrl || "";
+  const linkUrl = langs.ru.linkUrl || langs.en.linkUrl || "";
 
   return {
     id: row.id,
@@ -62,30 +99,18 @@ export function normalizeAnnouncement(row) {
     type,
     order,
     active,
-    // Localized content objects
-    ru: {
-      type,
-      text: text_ru,
-      imageUrl: imageUrl_ru,
-      linkUrl: linkUrl_ru,
-    },
-    en: {
-      type,
-      text: text_en,
-      imageUrl: imageUrl_en,
-      linkUrl: linkUrl_en,
-    },
-    // Distinct language field accessors
-    text_ru,
-    text_en,
-    imageUrl_ru,
-    imageUrl_en,
-    linkUrl_ru,
-    linkUrl_en,
+    // Localized content objects for every site language
+    ru: langs.ru,
+    en: langs.en,
+    hu: langs.hu,
+    bg: langs.bg,
+    el: langs.el,
+    ro: langs.ro,
+    ...fields,
     // Universal accessors with language fallback
-    text: text_ru || text_en,
-    imageUrl: imageUrl_ru || imageUrl_en,
-    linkUrl: linkUrl_ru || linkUrl_en,
+    text,
+    imageUrl,
+    linkUrl,
   };
 }
 
@@ -131,6 +156,38 @@ const DEFAULT_ACTIVE_ANNOUNCEMENTS = [
     content_en: {
       type: "small",
       text: "Al-Warda is currently under development, and real orders are not yet available. Use promo code TEST to get 100% off your entire order.",
+      imageUrl: "",
+      linkUrl: "",
+      order: 1,
+      active: true,
+    },
+    content_hu: {
+      type: "small",
+      text: "Az Al-Warda jelenleg fejlesztés alatt áll, a valórendelések még nem érhetők el. Használja a TEST promókódot, hogy a teljes rendszerre 100% kedvezményt kapjon.",
+      imageUrl: "",
+      linkUrl: "",
+      order: 1,
+      active: true,
+    },
+    content_bg: {
+      type: "small",
+      text: "Al-Warda все още е в разработка и реалните поръчки все още не са налични. Използвайте промокод TEST, за да получите 100% отстъпка по цялата поръчка.",
+      imageUrl: "",
+      linkUrl: "",
+      order: 1,
+      active: true,
+    },
+    content_el: {
+      type: "small",
+      text: "Το Al-Warda βρίσκεται ακόμα υπό ανάπτυξη και οι πραγματικές παραγγελίες δεν είναι ακόμα διαθέσιμες. Χρησιμοποιήστε τον κωδικό TEST για να λάβετε έκπτωση 100% σε ολόκληρη την παραγγελία σας.",
+      imageUrl: "",
+      linkUrl: "",
+      order: 1,
+      active: true,
+    },
+    content_ro: {
+      type: "small",
+      text: "Al-Warda este în curs de dezvoltare, iar comenzile reale nu sunt încă disponibile. Folosiți codul PROMO TEST pentru a primi 100% reducere la întreaga comandă.",
       imageUrl: "",
       linkUrl: "",
       order: 1,
@@ -241,12 +298,12 @@ export async function fetchActiveAnnouncements() {
 
 /**
  * Translate announcement text from any input language (e.g. Ukrainian, Russian, English, Romanian)
- * into the site's supported languages: Russian (text_ru) and English (text_en).
+ * into every site language: ru, en, hu, bg, el, ro.
  */
 export async function translateAnnouncementWithAI(rawText) {
   const clean = String(rawText || "").trim();
   if (!clean) {
-    return { text_ru: "", text_en: "" };
+    return Object.fromEntries(ANNOUNCEMENT_LANGS.map((l) => [l, ""]));
   }
 
   // 1. Try backend AI translation endpoint (/api/translate-announcement)
@@ -258,12 +315,14 @@ export async function translateAnnouncementWithAI(rawText) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data?.text_ru && data?.text_en) {
-        return {
-          text_ru: String(data.text_ru).trim(),
-          text_en: String(data.text_en).trim(),
-        };
+      const langs = {};
+      let ok = true;
+      for (const lang of ANNOUNCEMENT_LANGS) {
+        const val = String(data?.[`text_${lang}`] || data?.[lang] || "").trim();
+        if (!val) ok = false;
+        langs[lang] = val;
       }
+      if (ok) return langs;
     }
   } catch {
     // Fallback to direct client-side translation below
@@ -274,7 +333,8 @@ export async function translateAnnouncementWithAI(rawText) {
     typeof import.meta !== "undefined" && import.meta.env?.VITE_GEMINI_API_KEY;
   if (geminiKey) {
     try {
-      const prompt = `Translate the following store announcement (which may be written in Ukrainian, Russian, English, or any other language) into both Russian and English for the luxury Arabian perfume boutique "Al-Warda". Keep all promo codes, numbers, percentages, dates, and emojis intact. Return ONLY valid JSON: {"text_ru": "...", "text_en": "..."}\n\nInput announcement:\n${clean}`;
+      const langsList = ANNOUNCEMENT_LANGS.map((l) => `"${l}": "..."`).join(", ");
+      const prompt = `Translate the following store announcement (which may be written in Ukrainian, Russian, English, or any other language) into ALL of the following languages for the luxury Arabian perfume boutique "Al-Warda": Russian (ru), English (en), Hungarian (hu), Bulgarian (bg), Greek (el), Romanian (ro). Keep all promo codes, numbers, percentages, dates, and emojis intact. Return ONLY valid JSON: {${langsList}}\n\nInput announcement:\n${clean}`;
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`,
         {
@@ -296,12 +356,14 @@ export async function translateAnnouncementWithAI(rawText) {
           const parsed = JSON.parse(
             rawJson.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}")
           );
-          if (parsed?.text_ru && parsed?.text_en) {
-            return {
-              text_ru: String(parsed.text_ru).trim(),
-              text_en: String(parsed.text_en).trim(),
-            };
+          const langs = {};
+          let ok = true;
+          for (const lang of ANNOUNCEMENT_LANGS) {
+            const val = String(parsed?.[lang] || "").trim();
+            if (!val) ok = false;
+            langs[lang] = val;
           }
+          if (ok) return langs;
         }
       }
     } catch {
@@ -309,7 +371,7 @@ export async function translateAnnouncementWithAI(rawText) {
     }
   }
 
-  // 3. Direct Google neural translation fallback (supports Ukrainian, Russian, English, etc. without API key)
+  // 3. Direct Google neural translation fallback (supports many languages without API key)
   const translateSingle = async (targetLang) => {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(clean)}`;
     const r = await fetch(url);
@@ -322,71 +384,112 @@ export async function translateAnnouncementWithAI(rawText) {
   };
 
   try {
-    const [ruText, enText] = await Promise.all([
-      translateSingle("ru"),
-      translateSingle("en"),
-    ]);
-    return {
-      text_ru: ruText || clean,
-      text_en: enText || clean,
-    };
+    const langs = {};
+    await Promise.all(
+      ANNOUNCEMENT_LANGS.map(async (lang) => {
+        langs[lang] = (await translateSingle(lang)) || clean;
+      })
+    );
+    return langs;
   } catch {
-    return {
-      text_ru: clean,
-      text_en: clean,
-    };
+    return Object.fromEntries(ANNOUNCEMENT_LANGS.map((l) => [l, clean]));
   }
 }
 
 /**
  * Create a new announcement. If a single `text` (in any language) is provided,
- * AI automatically translates it into Russian (`text_ru`) and English (`text_en`).
+ * AI automatically translates it into every site language (ru, en, hu, bg, el, ro).
  * 'until' is mandatory!
  */
 export async function createAnnouncement({
   type = "small", // "small" | "large"
-  text_ru = "",
-  text_en = "",
-  imageUrl_ru = "",
-  imageUrl_en = "",
-  linkUrl_ru = "",
-  linkUrl_en = "",
+  text = "",
   order = 0,
   from = null,
   until,
   userId = null,
-  text = "",
   imageUrl = "",
   linkUrl = "",
   autoTranslate = true,
+  // Per-language overrides (optional)
+  text_ru = "",
+  text_en = "",
+  text_hu = "",
+  text_bg = "",
+  text_el = "",
+  text_ro = "",
+  imageUrl_ru = "",
+  imageUrl_en = "",
+  imageUrl_hu = "",
+  imageUrl_bg = "",
+  imageUrl_el = "",
+  imageUrl_ro = "",
+  linkUrl_ru = "",
+  linkUrl_en = "",
+  linkUrl_hu = "",
+  linkUrl_bg = "",
+  linkUrl_el = "",
+  linkUrl_ro = "",
 }) {
   if (!until) {
     throw new Error("Срок окончания показа объявления обязателен для заполнения");
   }
 
-  let final_text_ru = (text_ru || "").trim();
-  let final_text_en = (text_en || "").trim();
-  const sourceText = (text || final_text_ru || final_text_en).trim();
+  const explicitLangs = {
+    ru: text_ru,
+    en: text_en,
+    hu: text_hu,
+    bg: text_bg,
+    el: text_el,
+    ro: text_ro,
+  };
+  const sourceText = (text || Object.values(explicitLangs).join(" ")).trim();
 
-  if (type === "small" && sourceText && (autoTranslate || !final_text_ru || !final_text_en)) {
+  if (type === "small" && sourceText && (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))) {
     const translated = await translateAnnouncementWithAI(sourceText);
-    final_text_ru = translated.text_ru || sourceText;
-    final_text_en = translated.text_en || sourceText;
+    for (const lang of ANNOUNCEMENT_LANGS) {
+      if (!explicitLangs[lang]) {
+        explicitLangs[lang] = translated[lang] || sourceText;
+      }
+    }
   }
 
-  const final_image_ru = (imageUrl_ru || imageUrl || imageUrl_en || "").trim();
-  const final_image_en = (imageUrl_en || imageUrl || final_image_ru || "").trim();
-  const final_link_ru = (linkUrl_ru || linkUrl || linkUrl_en || "").trim();
-  const final_link_en = (linkUrl_en || linkUrl || final_link_ru || "").trim();
+  const explicitImages = {
+    ru: imageUrl_ru,
+    en: imageUrl_en,
+    hu: imageUrl_hu,
+    bg: imageUrl_bg,
+    el: imageUrl_el,
+    ro: imageUrl_ro,
+  };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    if (!explicitImages[lang]) {
+      explicitImages[lang] = imageUrl || "";
+    }
+  }
+
+  const explicitLinks = {
+    ru: linkUrl_ru,
+    en: linkUrl_en,
+    hu: linkUrl_hu,
+    bg: linkUrl_bg,
+    el: linkUrl_el,
+    ro: linkUrl_ro,
+  };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    if (!explicitLinks[lang]) {
+      explicitLinks[lang] = linkUrl || "";
+    }
+  }
 
   if (type === "small") {
-    if (!final_text_ru || !final_text_en) {
+    if (ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l])) {
       throw new Error("Для небольшого объявления введите текст на любом языке");
     }
   }
 
   if (type === "large") {
-    if (!final_image_ru) {
+    if (!explicitImages.ru) {
       throw new Error("Для большого объявления ссылка на фото обязательна");
     }
   }
@@ -394,31 +497,21 @@ export async function createAnnouncement({
   const fromDate = from ? new Date(from).toISOString() : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
-  const content_ru = {
-    type: type === "large" ? "large" : "small",
-    text: final_text_ru,
-    imageUrl: final_image_ru,
-    linkUrl: final_link_ru,
-    order: Number(order) || 0,
-    active: true,
-  };
-
-  const content_en = {
-    type: type === "large" ? "large" : "small",
-    text: final_text_en,
-    imageUrl: final_image_en,
-    linkUrl: final_link_en,
-    order: Number(order) || 0,
-    active: true,
-  };
-
   const payload = {
     user_id: userId || null,
     starts_at: fromDate,
     until: untilDate,
-    content_ru,
-    content_en,
   };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    payload[`content_${lang}`] = {
+      type: type === "large" ? "large" : "small",
+      text: explicitLangs[lang],
+      imageUrl: explicitImages[lang],
+      linkUrl: explicitLinks[lang],
+      order: Number(order) || 0,
+      active: true,
+    };
+  }
 
   const res = await fetch(TABLE_URL, {
     method: "POST",
@@ -437,53 +530,99 @@ export async function createAnnouncement({
 }
 
 /**
- * Update an existing announcement. Automatically translates any single-input text into RU & EN.
+ * Update an existing announcement. Automatically translates any single-input text into
+ * every site language (ru, en, hu, bg, el, ro).
  */
 export async function updateAnnouncement(id, {
   type = "small",
-  text_ru = "",
-  text_en = "",
-  imageUrl_ru = "",
-  imageUrl_en = "",
-  linkUrl_ru = "",
-  linkUrl_en = "",
+  text = "",
   order = 0,
   from,
   until,
   active = true,
-  text = "",
   imageUrl = "",
   linkUrl = "",
   autoTranslate = true,
+  // Per-language overrides (optional)
+  text_ru = "",
+  text_en = "",
+  text_hu = "",
+  text_bg = "",
+  text_el = "",
+  text_ro = "",
+  imageUrl_ru = "",
+  imageUrl_en = "",
+  imageUrl_hu = "",
+  imageUrl_bg = "",
+  imageUrl_el = "",
+  imageUrl_ro = "",
+  linkUrl_ru = "",
+  linkUrl_en = "",
+  linkUrl_hu = "",
+  linkUrl_bg = "",
+  linkUrl_el = "",
+  linkUrl_ro = "",
 }) {
   if (!id) throw new Error("ID объявления обязателен");
   if (!until) {
     throw new Error("Срок окончания показа объявления обязателен для заполнения");
   }
 
-  let final_text_ru = (text_ru || "").trim();
-  let final_text_en = (text_en || "").trim();
-  const sourceText = (text || final_text_ru || final_text_en).trim();
+  const explicitLangs = {
+    ru: text_ru,
+    en: text_en,
+    hu: text_hu,
+    bg: text_bg,
+    el: text_el,
+    ro: text_ro,
+  };
+  const sourceText = (text || Object.values(explicitLangs).join(" ")).trim();
 
-  if (type === "small" && sourceText && (autoTranslate || !final_text_ru || !final_text_en)) {
+  if (type === "small" && sourceText && (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))) {
     const translated = await translateAnnouncementWithAI(sourceText);
-    final_text_ru = translated.text_ru || sourceText;
-    final_text_en = translated.text_en || sourceText;
+    for (const lang of ANNOUNCEMENT_LANGS) {
+      if (!explicitLangs[lang]) {
+        explicitLangs[lang] = translated[lang] || sourceText;
+      }
+    }
   }
 
-  const final_image_ru = (imageUrl_ru || imageUrl || imageUrl_en || "").trim();
-  const final_image_en = (imageUrl_en || imageUrl || final_image_ru || "").trim();
-  const final_link_ru = (linkUrl_ru || linkUrl || linkUrl_en || "").trim();
-  const final_link_en = (linkUrl_en || linkUrl || final_link_ru || "").trim();
+  const explicitImages = {
+    ru: imageUrl_ru,
+    en: imageUrl_en,
+    hu: imageUrl_hu,
+    bg: imageUrl_bg,
+    el: imageUrl_el,
+    ro: imageUrl_ro,
+  };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    if (!explicitImages[lang]) {
+      explicitImages[lang] = imageUrl || "";
+    }
+  }
+
+  const explicitLinks = {
+    ru: linkUrl_ru,
+    en: linkUrl_en,
+    hu: linkUrl_hu,
+    bg: linkUrl_bg,
+    el: linkUrl_el,
+    ro: linkUrl_ro,
+  };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    if (!explicitLinks[lang]) {
+      explicitLinks[lang] = linkUrl || "";
+    }
+  }
 
   if (type === "small") {
-    if (!final_text_ru || !final_text_en) {
+    if (ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l])) {
       throw new Error("Для небольшого объявления введите текст на любом языке");
     }
   }
 
   if (type === "large") {
-    if (!final_image_ru) {
+    if (!explicitImages.ru) {
       throw new Error("Для большого объявления ссылка на фото обязательна");
     }
   }
@@ -491,30 +630,20 @@ export async function updateAnnouncement(id, {
   const fromDate = from ? new Date(from).toISOString() : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
-  const content_ru = {
-    type: type === "large" ? "large" : "small",
-    text: final_text_ru,
-    imageUrl: final_image_ru,
-    linkUrl: final_link_ru,
-    order: Number(order) || 0,
-    active: active !== false,
-  };
-
-  const content_en = {
-    type: type === "large" ? "large" : "small",
-    text: final_text_en,
-    imageUrl: final_image_en,
-    linkUrl: final_link_en,
-    order: Number(order) || 0,
-    active: active !== false,
-  };
-
   const payload = {
     starts_at: fromDate,
     until: untilDate,
-    content_ru,
-    content_en,
   };
+  for (const lang of ANNOUNCEMENT_LANGS) {
+    payload[`content_${lang}`] = {
+      type: type === "large" ? "large" : "small",
+      text: explicitLangs[lang],
+      imageUrl: explicitImages[lang],
+      linkUrl: explicitLinks[lang],
+      order: Number(order) || 0,
+      active: active !== false,
+    };
+  }
 
   const res = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
@@ -550,34 +679,29 @@ export async function deleteAnnouncement(id) {
 }
 
 /**
- * Reorder a list of announcements by index.
+ * Reorder a list of announcements by index. Preserves every localized variant.
  */
 export async function reorderAnnouncements(orderedList) {
   if (!Array.isArray(orderedList)) return;
 
   const promises = orderedList.map(async (item, idx) => {
     const newOrder = idx + 1;
-    const content_ru = {
-      type: item.type,
-      text: item.text_ru || item.ru?.text || item.text || "",
-      imageUrl: item.imageUrl_ru || item.ru?.imageUrl || item.imageUrl || "",
-      linkUrl: item.linkUrl_ru || item.ru?.linkUrl || item.linkUrl || "",
-      order: newOrder,
-      active: item.active !== false,
-    };
-    const content_en = {
-      type: item.type,
-      text: item.text_en || item.en?.text || item.text || "",
-      imageUrl: item.imageUrl_en || item.en?.imageUrl || item.imageUrl || "",
-      linkUrl: item.linkUrl_en || item.en?.linkUrl || item.linkUrl || "",
-      order: newOrder,
-      active: item.active !== false,
-    };
+    const payload = { order: newOrder };
+    for (const lang of ANNOUNCEMENT_LANGS) {
+      payload[`content_${lang}`] = {
+        type: item.type,
+        text: item[`text_${lang}`] || item[lang]?.text || item.text || "",
+        imageUrl: item[`imageUrl_${lang}`] || item[lang]?.imageUrl || item.imageUrl || "",
+        linkUrl: item[`linkUrl_${lang}`] || item[lang]?.linkUrl || item.linkUrl || "",
+        order: newOrder,
+        active: item.active !== false,
+      };
+    }
 
     return fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(item.id)}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify({ content_ru, content_en }),
+      body: JSON.stringify(payload),
     });
   });
 
