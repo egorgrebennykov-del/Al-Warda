@@ -61,10 +61,13 @@ export default function CurrencyProvider({ children }) {
     });
   };
 
-  // Rule: when switching to Hungarian (hu) or Romanian (ro), currency must automatically become leu (RON)
+  // Rule: when switching to Hungarian (hu), currency must automatically become forint (HUF)
+  // Rule: when switching to Romanian (ro), currency must automatically become leu (RON)
   // Rule: when switching to Russian (ru), English (en), Bulgarian (bg) or Greek (el), default currency is Euro (EUR)
   useEffect(() => {
-    if ((language === "hu" || language === "ro") && prevLangRef.current !== language) {
+    if (language === "hu" && prevLangRef.current !== language) {
+      setCurrency("HUF");
+    } else if (language === "ro" && prevLangRef.current !== language) {
       setCurrency("RON");
     } else if (
       (language === "ru" || language === "en" || language === "bg" || language === "el") &&
