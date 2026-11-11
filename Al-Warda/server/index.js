@@ -40,7 +40,7 @@ import {
   getFragranceNotes,
   getFragranceNotesQueue,
   refreshFragranceNotes,
-} from "./fragranceIndexService.js";
+} from "./deepseekNotesService.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
@@ -259,7 +259,7 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "GET" && pathname === "/api/fragrance-index") {
+  if (req.method === "GET" && pathname === "/api/fragrance-notes") {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await getFragranceNotes(request, process.env);

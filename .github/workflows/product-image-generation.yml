@@ -59,6 +59,7 @@ jobs:
       FIFTH_FREE_CONFIRMED: ${{ secrets.CLOUDFLARE_FIFTH_FREE_PLAN_CONFIRMED }}
       CLOUDFLARE_IMAGE_ACCOUNT: ${{ inputs.cloudflare_account || 'auto' }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
     steps:
       - name: Check required server secrets
         shell: bash

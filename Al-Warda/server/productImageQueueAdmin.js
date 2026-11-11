@@ -871,7 +871,7 @@ export async function saveManualProductItem(request, env) {
     const hasNotes = [topNotesRu, heartNotesRu, baseNotesRu, topNotesEn, heartNotesEn, baseNotesEn]
       .some((notes) => notes.length > 0);
     const notesSource = hasNotes
-      ? (body.notesSource === "10ml" ? "10ml" : "manual")
+      ? (body.notesSource === "deepseek" ? "deepseek" : "manual")
       : (existingInfo.notesSource || "manual");
 
     const updatedInfo = {
@@ -902,7 +902,6 @@ export async function saveManualProductItem(request, env) {
           status: "found",
           source: notesSource,
           checkedAt: new Date().toISOString(),
-          matched: notesSource === "10ml" ? (existingInfo.notesLookup?.matched || null) : null,
         }
         : (existingInfo.notesLookup || null),
       descriptionRu: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",

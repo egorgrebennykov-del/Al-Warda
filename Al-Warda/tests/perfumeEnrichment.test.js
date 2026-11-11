@@ -35,7 +35,7 @@ test("shows notes stored as verified in info", () => {
     ...basePerfume,
     info: {
       notesVerified: true,
-      notesSource: "10ml",
+      notesSource: "deepseek",
       notes: {
         ru: { top: ["Бергамот"], heart: ["Роза"], base: ["Уд"] },
         en: { top: ["Bergamot"], heart: ["Rose"], base: ["Oud"] },
@@ -44,7 +44,7 @@ test("shows notes stored as verified in info", () => {
   });
 
   assert.equal(enriched.notesVerified, true);
-  assert.equal(enriched.notesSource, "10ml");
+  assert.equal(enriched.notesSource, "deepseek");
   assert.deepEqual(enriched.topNotesRu, ["Бергамот"]);
   assert.deepEqual(enriched.heartNotesEn, ["Rose"]);
   assert.deepEqual(enriched.baseNotes, ["Уд"]);

@@ -685,7 +685,7 @@ export function formatFallbackDescription(name, brand, top, heart, base, lang = 
     return arr.map((n) => getLocalizedNote(n, l)).filter(Boolean).join(", ");
   };
 
-  // Never invent notes. If the database has no pyramid, describe the fragrance
+  // Never invent notes. If there is no generated pyramid, describe the fragrance
   // without naming any notes.
   const noteList = [formatList(top), formatList(heart), formatList(base)].filter(Boolean).join(", ");
   const safeName = name || (l === "ru" ? "Аромат" : "Fragrance");

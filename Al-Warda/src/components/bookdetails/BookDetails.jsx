@@ -109,8 +109,8 @@ export default function BookDetails() {
   const perfumeBrand = perfume?.brand ?? "";
   const lookupKey = `${targetId}|${perfumeId}`;
 
-  // Notes must come from the fragrance database. When a product has no verified
-  // pyramid yet, ask the server to resolve it in 10ML and persist the result.
+  // Every fragrance must have an olfactory pyramid. When a product has no notes
+  // yet, ask the server to generate them with DeepSeek and persist the result.
   useEffect(() => {
     if (hasStoredNotes || (!perfumeId && !perfumeName)) return undefined;
 
@@ -125,7 +125,7 @@ export default function BookDetails() {
     const run = async () => {
       setIndexLookup({ key, status: "loading", notes: null });
       try {
-        const response = await fetch(`/api/fragrance-index?${params.toString()}`, {
+        const response = await fetch(`/api/fragrance-notes?${params.toString()}`, {
           credentials: "same-origin",
         });
         const payload = await response.json().catch(() => null);
@@ -539,12 +539,12 @@ export default function BookDetails() {
                 {notesStatus === "loading" ? (
                   <p className="warda-pyramid-status" role="status">
                     <i className="ri-loader-4-line ri-spin" aria-hidden="true" />
-                    <span>{t("details.notesLoading", "Loading notes from the fragrance database…")}</span>
+                    <span>{t("details.notesLoading", "Generating fragrance notes…")}</span>
                   </p>
                 ) : notesStatus ? (
                   <p className="warda-pyramid-status warda-pyramid-status--empty">
                     <i className="ri-information-line" aria-hidden="true" />
-                    <span>{t("details.notesUnavailable", "This fragrance is not in the notes database yet.")}</span>
+                    <span>{t("details.notesUnavailable", "Notes for this fragrance are not available yet.")}</span>
                   </p>
                 ) : (
                   <div className="warda-pyramid-grid">

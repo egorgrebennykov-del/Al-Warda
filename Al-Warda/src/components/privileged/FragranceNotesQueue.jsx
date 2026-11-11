@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./FragranceNotesQueue.css";
 
-const STATUS_OPTIONS = ["all", "unchecked", "not_found", "unverified"];
+const STATUS_OPTIONS = ["all", "unchecked", "error", "not_found", "unverified"];
 
 function formatDateTime(isoString, isRussian) {
   if (!isoString) return "";
@@ -31,7 +31,7 @@ export default function FragranceNotesQueue({ language = "ru" }) {
   const isRussian = language === "ru";
 
   const [items, setItems] = useState([]);
-  const [counts, setCounts] = useState({ total: 0, unchecked: 0, notFound: 0, unverified: 0 });
+  const [counts, setCounts] = useState({ total: 0, unchecked: 0, error: 0, notFound: 0, unverified: 0, photoPending: 0 });
   const [statusFilter, setStatusFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,38 +42,40 @@ export default function FragranceNotesQueue({ language = "ru" }) {
   const [message, setMessage] = useState("");
 
   const labels = useMemo(() => ({
-    title: isRussian ? "Ноты из базы 10ML" : "Notes from the 10ML database",
+    title: isRussian ? "Ноты ароматов (DeepSeek)" : "Fragrance notes (DeepSeek)",
     subtitle: isRussian
-      ? "Товары, для которых в базе 10ML не нашлось проверенной пирамиды нот. Такие позиции не показывают выдуманные ноты на сайте."
-      : "Products that have no verified note pyramid in the 10ML database. These items never show invented notes on the storefront.",
+      ? "Товары без палитры нот. DeepSeek сгенерирует ноты только для товаров со сгенерированным фото (Qogita → фото → палитра → описание)."
+      : "Products without a note pyramid. DeepSeek generates notes only for products with a generated photo (Qogita → photo → palette → description).",
     refreshList: isRussian ? "Обновить список" : "Refresh list",
-    checkSelected: isRussian ? "Проверить выбранные" : "Check selected",
-    checkNext: isRussian ? "Проверить следующие 10" : "Check next 10",
+    checkSelected: isRussian ? "Сгенерировать выбранные" : "Generate selected",
+    checkNext: isRussian ? "Сгенерировать следующие 10" : "Generate next 10",
     search: isRussian ? "Поиск по названию или бренду" : "Search by name or brand",
     selectAll: isRussian ? "Выбрать все" : "Select all",
     clearSelection: isRussian ? "Снять выбор" : "Clear selection",
-    empty: isRussian ? "Все товары имеют проверенные ноты из базы." : "Every product has verified database notes.",
+    empty: isRussian ? "У всех товаров есть ноты." : "Every product has notes.",
     emptyFiltered: isRussian ? "По этому фильтру ничего не найдено." : "Nothing matches this filter.",
     selectedCount: (count) => (isRussian ? `Выбрано: ${count}` : `Selected: ${count}`),
-    checkOne: isRussian ? "Проверить" : "Check",
-    checking: isRussian ? "Проверяем…" : "Checking…",
+    checkOne: isRussian ? "Сгенерировать" : "Generate",
+    checking: isRussian ? "Генерируем…" : "Generating…",
     noImage: isRussian ? "Нет фото" : "No image",
-    matched: isRussian ? "Совпадение" : "Matched",
-    score: isRussian ? "Балл" : "Score",
+    photoPending: isRussian ? "Фото ещё не сгенерировано" : "Photo not generated yet",
     queryLabel: isRussian ? "Запрос" : "Query",
-    checkedAt: isRussian ? "Проверено" : "Checked",
-    never: isRussian ? "Ещё не проверялось" : "Never checked",
+    checkedAt: isRussian ? "Сгенерировано" : "Generated",
+    never: isRussian ? "Ещё не генерировались" : "Not generated yet",
     statusLabels: {
       all: isRussian ? "Все" : "All",
-      unchecked: isRussian ? "Не проверены" : "Unchecked",
-      not_found: isRussian ? "Не найдены" : "Not found",
-      unverified: isRussian ? "Без проверенных нот" : "Unverified",
+      unchecked: isRussian ? "Не сгенерированы" : "Not generated",
+      error: isRussian ? "Ошибки" : "Errors",
+      not_found: isRussian ? "Пустой ответ" : "Empty result",
+      unverified: isRussian ? "Без нот" : "No notes",
     },
     countLabels: {
       total: isRussian ? "Без нот" : "Missing notes",
-      unchecked: isRussian ? "Не проверены" : "Unchecked",
-      notFound: isRussian ? "Не найдены в 10ML" : "Not in 10ML",
-      unverified: isRussian ? "Без подтверждения" : "Unverified",
+      unchecked: isRussian ? "Не сгенерированы" : "Not generated",
+      error: isRussian ? "Ошибки" : "Errors",
+      notFound: isRussian ? "Пустой ответ" : "Empty result",
+      unverified: isRussian ? "Без нот" : "No notes",
+      photoPending: isRussian ? "Ожидают фото" : "Awaiting photo",
     },
   }), [isRussian]);
 
@@ -88,7 +90,7 @@ export default function FragranceNotesQueue({ language = "ru" }) {
     const payload = await readJson(response);
     const nextItems = Array.isArray(payload.items) ? payload.items : [];
     setItems(nextItems);
-    setCounts(payload.counts || { total: 0, unchecked: 0, notFound: 0, unverified: 0 });
+    setCounts(payload.counts || { total: 0, unchecked: 0, error: 0, notFound: 0, unverified: 0, photoPending: 0 });
     setSelected((current) => {
       const validIds = new Set(nextItems.map((item) => String(item.id)));
       return Object.fromEntries(
@@ -149,8 +151,10 @@ export default function FragranceNotesQueue({ language = "ru" }) {
       const payload = await readJson(response);
       setMessage(
         isRussian
-          ? `Проверено: ${payload.checked}. Найдено: ${payload.found}. Не найдено: ${payload.notFound}. Ошибок: ${payload.errors}.`
-          : `Checked: ${payload.checked}. Found: ${payload.found}. Not found: ${payload.notFound}. Errors: ${payload.errors}.`,
+          ? `Сгенерировано: ${payload.checked}. С нотами: ${payload.found}. Пустой ответ: ${payload.notFound}. Ошибок: ${payload.errors}.` +
+            (payload.photoPending ? ` Ожидают фото: ${payload.photoPending}.` : "")
+          : `Generated: ${payload.checked}. With notes: ${payload.found}. Empty result: ${payload.notFound}. Errors: ${payload.errors}.` +
+            (payload.photoPending ? ` Awaiting photo: ${payload.photoPending}.` : ""),
       );
       setSelected({});
       await loadQueue();
@@ -176,7 +180,7 @@ export default function FragranceNotesQueue({ language = "ru" }) {
       <header className="fragrance-notes__header">
         <div>
           <h2 className="fragrance-notes__title">
-            <i className="ri-database-2-line" />
+            <i className="ri-sparkling-2-line" />
             {labels.title}
           </h2>
           <p className="fragrance-notes__subtitle">{labels.subtitle}</p>
@@ -202,7 +206,7 @@ export default function FragranceNotesQueue({ language = "ru" }) {
             onClick={checkSelected}
             disabled={busy || !selectedIds.length}
           >
-            <i className="ri-search-eye-line" />
+            <i className="ri-sparkling-2-line" />
             {labels.checkSelected}
           </button>
           <button
@@ -327,18 +331,16 @@ export default function FragranceNotesQueue({ language = "ru" }) {
                       <i className="ri-time-line" />
                       {item.checkedAt ? formatDateTime(item.checkedAt, isRussian) : labels.never}
                     </span>
+                    {!item.photoReady && (
+                      <span title={labels.photoPending}>
+                        <i className="ri-image-line" />
+                        {labels.photoPending}
+                      </span>
+                    )}
                     {item.query && (
                       <span>
                         <i className="ri-search-line" />
                         {labels.queryLabel}: {item.query}
-                      </span>
-                    )}
-                    {item.matchedName && (
-                      <span>
-                        <i className="ri-link" />
-                        {labels.matched}: {item.matchedName}
-                        {item.matchedHouse ? ` — ${item.matchedHouse}` : ""}
-                        {item.score != null ? ` (${labels.score}: ${item.score})` : ""}
                       </span>
                     )}
                   </div>
@@ -347,9 +349,10 @@ export default function FragranceNotesQueue({ language = "ru" }) {
                   type="button"
                   className="fragrance-notes__btn fragrance-notes__btn--small"
                   onClick={() => checkOne(item.id)}
-                  disabled={busy || Boolean(busyIds[String(item.id)])}
+                  disabled={busy || !item.photoReady || Boolean(busyIds[String(item.id)])}
+                  title={item.photoReady ? "" : labels.photoPending}
                 >
-                  <i className={`ri-search-eye-line ${busyIds[String(item.id)] ? "ri-spin" : ""}`} />
+                  <i className={`ri-sparkling-2-line ${busyIds[String(item.id)] ? "ri-spin" : ""}`} />
                   {busyIds[String(item.id)] ? labels.checking : labels.checkOne}
                 </button>
               </li>
