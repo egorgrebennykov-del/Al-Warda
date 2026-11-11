@@ -431,10 +431,22 @@ export default function Privileged() {
   const [announcementType, setAnnouncementType] = useState("small"); // "small" | "large"
   const [announcementTextRu, setAnnouncementTextRu] = useState("");
   const [announcementTextEn, setAnnouncementTextEn] = useState("");
+  const [announcementTextHu, setAnnouncementTextHu] = useState("");
+  const [announcementTextBg, setAnnouncementTextBg] = useState("");
+  const [announcementTextEl, setAnnouncementTextEl] = useState("");
+  const [announcementTextRo, setAnnouncementTextRo] = useState("");
   const [announcementImageUrlRu, setAnnouncementImageUrlRu] = useState("");
   const [announcementImageUrlEn, setAnnouncementImageUrlEn] = useState("");
+  const [announcementImageUrlHu, setAnnouncementImageUrlHu] = useState("");
+  const [announcementImageUrlBg, setAnnouncementImageUrlBg] = useState("");
+  const [announcementImageUrlEl, setAnnouncementImageUrlEl] = useState("");
+  const [announcementImageUrlRo, setAnnouncementImageUrlRo] = useState("");
   const [announcementLinkUrlRu, setAnnouncementLinkUrlRu] = useState("");
   const [announcementLinkUrlEn, setAnnouncementLinkUrlEn] = useState("");
+  const [announcementLinkUrlHu, setAnnouncementLinkUrlHu] = useState("");
+  const [announcementLinkUrlBg, setAnnouncementLinkUrlBg] = useState("");
+  const [announcementLinkUrlEl, setAnnouncementLinkUrlEl] = useState("");
+  const [announcementLinkUrlRo, setAnnouncementLinkUrlRo] = useState("");
   const [announcementFrom, setAnnouncementFrom] = useState("");
   const [announcementUntil, setAnnouncementUntil] = useState("");
   const [announcementActive, setAnnouncementActive] = useState(true);
@@ -1164,10 +1176,22 @@ export default function Privileged() {
     setAnnouncementType("small");
     setAnnouncementTextRu("");
     setAnnouncementTextEn("");
+    setAnnouncementTextHu("");
+    setAnnouncementTextBg("");
+    setAnnouncementTextEl("");
+    setAnnouncementTextRo("");
     setAnnouncementImageUrlRu("");
     setAnnouncementImageUrlEn("");
+    setAnnouncementImageUrlHu("");
+    setAnnouncementImageUrlBg("");
+    setAnnouncementImageUrlEl("");
+    setAnnouncementImageUrlRo("");
     setAnnouncementLinkUrlRu("");
     setAnnouncementLinkUrlEn("");
+    setAnnouncementLinkUrlHu("");
+    setAnnouncementLinkUrlBg("");
+    setAnnouncementLinkUrlEl("");
+    setAnnouncementLinkUrlRo("");
     setAnnouncementFrom(formatIsoForInput(now));
     // Default until to +7 days
     const defaultUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -1193,14 +1217,26 @@ export default function Privileged() {
     setAnnouncementType(ann.type || "small");
     setAnnouncementTextRu(ann.text_ru || ann.ru?.text || ann.text || ann.text_en || "");
     setAnnouncementTextEn(ann.text_en || ann.en?.text || "");
+    setAnnouncementTextHu(ann.text_hu || ann.hu?.text || "");
+    setAnnouncementTextBg(ann.text_bg || ann.bg?.text || "");
+    setAnnouncementTextEl(ann.text_el || ann.el?.text || "");
+    setAnnouncementTextRo(ann.text_ro || ann.ro?.text || "");
     setAnnouncementImageUrlRu(
       ann.imageUrl_ru || ann.ru?.imageUrl || ann.imageUrl || ann.imageUrl_en || "",
     );
     setAnnouncementImageUrlEn(ann.imageUrl_en || ann.en?.imageUrl || "");
+    setAnnouncementImageUrlHu(ann.imageUrl_hu || ann.hu?.imageUrl || "");
+    setAnnouncementImageUrlBg(ann.imageUrl_bg || ann.bg?.imageUrl || "");
+    setAnnouncementImageUrlEl(ann.imageUrl_el || ann.el?.imageUrl || "");
+    setAnnouncementImageUrlRo(ann.imageUrl_ro || ann.ro?.imageUrl || "");
     setAnnouncementLinkUrlRu(
       ann.linkUrl_ru || ann.ru?.linkUrl || ann.linkUrl || ann.linkUrl_en || "",
     );
     setAnnouncementLinkUrlEn(ann.linkUrl_en || ann.en?.linkUrl || "");
+    setAnnouncementLinkUrlHu(ann.linkUrl_hu || ann.hu?.linkUrl || "");
+    setAnnouncementLinkUrlBg(ann.linkUrl_bg || ann.bg?.linkUrl || "");
+    setAnnouncementLinkUrlEl(ann.linkUrl_el || ann.el?.linkUrl || "");
+    setAnnouncementLinkUrlRo(ann.linkUrl_ro || ann.ro?.linkUrl || "");
     setAnnouncementFrom(formatIsoForInput(ann.from));
     setAnnouncementUntil(formatIsoForInput(ann.until));
     setAnnouncementActive(ann.active !== false);
@@ -1215,6 +1251,10 @@ export default function Privileged() {
       const translated = await translateAnnouncementWithAI(raw);
       if (translated.text_ru) setAnnouncementTextRu(translated.text_ru);
       if (translated.text_en) setAnnouncementTextEn(translated.text_en);
+      if (translated.text_hu) setAnnouncementTextHu(translated.text_hu);
+      if (translated.text_bg) setAnnouncementTextBg(translated.text_bg);
+      if (translated.text_el) setAnnouncementTextEl(translated.text_el);
+      if (translated.text_ro) setAnnouncementTextRo(translated.text_ro);
     } catch (err) {
       console.warn("AI translation preview error:", err);
     } finally {
@@ -1261,30 +1301,83 @@ export default function Privileged() {
 
     setSavingAnnouncement(true);
     try {
-      let finalTextRu = announcementTextRu.trim();
-      let finalTextEn = announcementTextEn.trim();
+      const explicitLangs = {
+        ru: announcementTextRu.trim(),
+        en: announcementTextEn.trim(),
+        hu: announcementTextHu.trim(),
+        bg: announcementTextBg.trim(),
+        el: announcementTextEl.trim(),
+        ro: announcementTextRo.trim(),
+      };
 
       if (announcementType === "small") {
-        const translated = await translateAnnouncementWithAI(finalTextRu);
-        finalTextRu = translated.text_ru || finalTextRu;
-        finalTextEn = translated.text_en || finalTextRu;
+        const sourceText = Object.values(explicitLangs).find(Boolean) || "";
+        if (!sourceText) {
+          showNotice(
+            language === "ru"
+              ? "Введите текст объявления (на любом языке — ИИ переведёт его на языки сайта)"
+              : "Please enter the announcement text (in any language — AI will translate it)",
+            true,
+          );
+          return;
+        }
+        const translated = await translateAnnouncementWithAI(sourceText);
+        for (const lang of ANNOUNCEMENT_LANGS) {
+          if (!explicitLangs[lang]) {
+            explicitLangs[lang] = translated[lang] || sourceText;
+          }
+        }
       }
 
-      const finalImgRu = announcementImageUrlRu.trim();
-      const finalImgEn = (announcementImageUrlEn || announcementImageUrlRu).trim();
-      const finalLinkRu = announcementLinkUrlRu.trim();
-      const finalLinkEn = (announcementLinkUrlEn || announcementLinkUrlRu).trim();
+      const explicitImages = {
+        ru: announcementImageUrlRu.trim(),
+        en: announcementImageUrlEn.trim(),
+        hu: announcementImageUrlHu.trim(),
+        bg: announcementImageUrlBg.trim(),
+        el: announcementImageUrlEl.trim(),
+        ro: announcementImageUrlRo.trim(),
+      };
+      for (const lang of ANNOUNCEMENT_LANGS) {
+        if (!explicitImages[lang]) {
+          explicitImages[lang] = explicitImages.ru || "";
+        }
+      }
+
+      const explicitLinks = {
+        ru: announcementLinkUrlRu.trim(),
+        en: announcementLinkUrlEn.trim(),
+        hu: announcementLinkUrlHu.trim(),
+        bg: announcementLinkUrlBg.trim(),
+        el: announcementLinkUrlEl.trim(),
+        ro: announcementLinkUrlRo.trim(),
+      };
+      for (const lang of ANNOUNCEMENT_LANGS) {
+        if (!explicitLinks[lang]) {
+          explicitLinks[lang] = explicitLinks.ru || "";
+        }
+      }
 
       if (editingAnnouncement) {
         const updated = await updateAnnouncement(editingAnnouncement.id, {
           type: announcementType,
-          text: finalTextRu,
-          text_ru: finalTextRu,
-          text_en: finalTextEn,
-          imageUrl_ru: finalImgRu,
-          imageUrl_en: finalImgEn,
-          linkUrl_ru: finalLinkRu,
-          linkUrl_en: finalLinkEn,
+          text_ru: explicitLangs.ru,
+          text_en: explicitLangs.en,
+          text_hu: explicitLangs.hu,
+          text_bg: explicitLangs.bg,
+          text_el: explicitLangs.el,
+          text_ro: explicitLangs.ro,
+          imageUrl_ru: explicitImages.ru,
+          imageUrl_en: explicitImages.en,
+          imageUrl_hu: explicitImages.hu,
+          imageUrl_bg: explicitImages.bg,
+          imageUrl_el: explicitImages.el,
+          imageUrl_ro: explicitImages.ro,
+          linkUrl_ru: explicitLinks.ru,
+          linkUrl_en: explicitLinks.en,
+          linkUrl_hu: explicitLinks.hu,
+          linkUrl_bg: explicitLinks.bg,
+          linkUrl_el: explicitLinks.el,
+          linkUrl_ro: explicitLinks.ro,
           from: announcementFrom || new Date().toISOString(),
           until: announcementUntil,
           active: announcementActive,
@@ -1299,8 +1392,8 @@ export default function Privileged() {
         );
         showNotice(
           language === "ru"
-            ? "Объявление переведено ИИ на RU и EN и успешно обновлено"
-            : "Announcement translated by AI into RU & EN and updated",
+            ? "Объявление переведено ИИ на все языки сайта и успешно обновлено"
+            : "Announcement translated by AI into all site languages and updated",
         );
       } else {
         const maxOrder = announcements.reduce(
@@ -1309,13 +1402,24 @@ export default function Privileged() {
         );
         const created = await createAnnouncement({
           type: announcementType,
-          text: finalTextRu,
-          text_ru: finalTextRu,
-          text_en: finalTextEn,
-          imageUrl_ru: finalImgRu,
-          imageUrl_en: finalImgEn,
-          linkUrl_ru: finalLinkRu,
-          linkUrl_en: finalLinkEn,
+          text_ru: explicitLangs.ru,
+          text_en: explicitLangs.en,
+          text_hu: explicitLangs.hu,
+          text_bg: explicitLangs.bg,
+          text_el: explicitLangs.el,
+          text_ro: explicitLangs.ro,
+          imageUrl_ru: explicitImages.ru,
+          imageUrl_en: explicitImages.en,
+          imageUrl_hu: explicitImages.hu,
+          imageUrl_bg: explicitImages.bg,
+          imageUrl_el: explicitImages.el,
+          imageUrl_ro: explicitImages.ro,
+          linkUrl_ru: explicitLinks.ru,
+          linkUrl_en: explicitLinks.en,
+          linkUrl_hu: explicitLinks.hu,
+          linkUrl_bg: explicitLinks.bg,
+          linkUrl_el: explicitLinks.el,
+          linkUrl_ro: explicitLinks.ro,
           from: announcementFrom || new Date().toISOString(),
           until: announcementUntil,
           order: maxOrder + 1,
@@ -1326,8 +1430,8 @@ export default function Privileged() {
         setAnnouncements((prev) => [...prev, created]);
         showNotice(
           language === "ru"
-            ? "Объявление переведено ИИ на русский и английский и размещено на сайте"
-            : "Announcement translated by AI into Russian & English and published",
+            ? "Объявление переведено ИИ на все языки сайта и размещено на сайте"
+            : "Announcement translated by AI into all site languages and published",
         );
       }
       setAnnouncementModalOpen(false);
