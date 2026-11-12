@@ -156,8 +156,8 @@ def main():
         out_path = os.path.join(public_dir, f"{h}.png")
         dist_path = os.path.join(dist_dir, f"{h}.png")
         img = process_single(url, session)
-        img.save(out_path, format="PNG")
-        img.save(dist_path, format="PNG")
+        img.save(out_path, format="PNG", optimize=True)
+        img.save(dist_path, format="PNG", optimize=True)
         print(out_path)
         return
 
@@ -186,8 +186,8 @@ def main():
 
         try:
             img = process_single(url, session)
-            img.save(target_pub, format="PNG")
-            img.save(target_dist, format="PNG")
+            img.save(target_pub, format="PNG", optimize=True)
+            img.save(target_dist, format="PNG", optimize=True)
             processed += 1
             if processed % 15 == 0:
                 print(f"[{processed}/{total}] Rendered: {item.get('name', 'Perfume')}")

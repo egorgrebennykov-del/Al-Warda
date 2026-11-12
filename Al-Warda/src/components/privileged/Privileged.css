@@ -215,6 +215,10 @@
   border-radius: 1rem;
   padding: 1.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .privileged__panel-header {
