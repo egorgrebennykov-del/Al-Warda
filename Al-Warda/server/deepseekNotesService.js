@@ -15,6 +15,8 @@ import {
   requirePrivilegedUser,
 } from "./productImageQueueAdmin.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
+import { isPerfumeSet } from "../utils/perfumes.js";
+import { withGeminiDescriptions } from "./geminiDescriptionService.js";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const DEEPSEEK_MODEL = "deepseek-chat";
@@ -190,8 +192,10 @@ function buildMessages(name, brand) {
         '"topRu":["..."],"heartRu":["..."],"baseRu":["..."]}\n' +
         "Rules:\n" +
         "- 3 to 8 notes per layer.\n" +
+        "- Every array element must be ONE single note. Never combine two notes into one element using \"and\", \"и\", \"&\", \"/\" or a comma.\n" +
+        '  Split each combined entry into separate elements: ["Grapefruit","Lemon"], NOT ["Grapefruit and Lemon"]; ["Ginger","Nutmeg"], NOT ["Ginger and Nutmeg"].\n' +
         "- top/heart/base must contain English note names.\n" +
-        "- topRu/heartRu/baseRu must contain the same notes translated to Russian.\n" +
+        "- topRu/heartRu/baseRu must contain the same notes translated to Russian, also one note per element: [\"Грейпфрут\",\"Лимон\"], NOT [\"Грейпфрут и лимон\"].\n" +
         "- Use the real notes of this fragrance when known; otherwise give the most plausible notes for its fragrance family.\n" +
         "- Return every key even if a layer is short.",
     },
@@ -447,6 +451,7 @@ export async function lookupAndPersist({
   brand,
   force = false,
   persistErrors = false,
+  generateDescription = true,
 } = {}) {
   const databaseId = isDatabaseId(id) ? String(id) : "";
   let row = null;
@@ -494,7 +499,29 @@ export async function lookupAndPersist({
       lookup.status === "not_found" ||
       (persistErrors && lookup.status === "error"));
   if (shouldPersist) {
-    const updatedInfo = buildNotesInfo(info, lookup);
+    let updatedInfo = buildNotesInfo(info, lookup);
+    // Pipeline step 4: once the aroma palette is confirmed, Gemini writes the
+    // description from that palette (Qogita -> photo -> palette -> description).
+    if (lookup.status === "found" && generateDescription) {
+      try {
+        updatedInfo = await withGeminiDescriptions(updatedInfo, {
+          name,
+          brand,
+          notes: updatedInfo.notes,
+          env,
+          overwrite: force,
+        });
+        if (updatedInfo.descriptionSource === "gemini") {
+          lookup.descriptions = {
+            ru: updatedInfo.descriptionRu,
+            en: updatedInfo.descriptionEn,
+            source: "gemini",
+          };
+        }
+      } catch (error) {
+        console.warn("Could not generate Gemini description:", error?.message || error);
+      }
+    }
     try {
       await patchStockInfo(env, databaseId, updatedInfo);
     } catch (error) {
@@ -502,6 +529,24 @@ export async function lookupAndPersist({
     }
   }
   return lookup;
+}
+
+function isSetRow(row, info) {
+  return isPerfumeSet({
+    name: row.name,
+    title: row.name,
+    volume: info.volume,
+    category: info.category,
+    categorySlug: info.categorySlug,
+    isSet: info.isSet,
+  });
+}
+
+/** Trim heavy internal keys; the manual-setup modal only needs product data. */
+function slimInfo(info) {
+  const { imageGeneration, fragranceResearch, notesLookup, ...rest } =
+    info && typeof info === "object" ? info : {};
+  return rest;
 }
 
 function queueItem(row, supabaseUrl) {
@@ -522,6 +567,9 @@ function queueItem(row, supabaseUrl) {
     name: row.name || "",
     brand: row.brand || "",
     image: row.image || info.rawImage || null,
+    rawImage: info.rawImage || null,
+    info: slimInfo(info),
+    isSet: isSetRow(row, info),
     status,
     photoReady: hasCompletedGeneratedImage(row, supabaseUrl),
     checkedAt: lookup.checkedAt || null,
@@ -550,6 +598,16 @@ export async function getFragranceNotesQueue(request, env) {
       notFound: items.filter((item) => item.status === "not_found").length,
       unverified: items.filter((item) => item.status === "unverified").length,
       photoPending: items.filter((item) => !item.photoReady).length,
+      sets: items.filter((item) => item.isSet).length,
+      readyToGenerate: items.filter(
+        (item) => item.photoReady && !item.isSet && item.status === "unchecked",
+      ).length,
+      problem: items.filter(
+        (item) =>
+          item.photoReady &&
+          !item.isSet &&
+          (item.status === "error" || item.status === "not_found" || item.status === "unverified"),
+      ).length,
     };
 
     const filtered = items.filter((item) => {
@@ -585,18 +643,21 @@ export async function refreshFragranceNotes(request, env) {
       .filter(Boolean);
 
     // Pipeline rule: the aroma palette is generated only for products whose
-    // photo has already been generated. The queue still shows every product
-    // without notes, but pending-photo rows are reported, not generated.
-    const eligibleRows = missingRows.filter((row) => row.photoReady);
+    // photo has already been generated, and never for sets. The queue still
+    // shows every product without notes, but pending-photo and set rows are
+    // reported, not generated.
+    const eligibleRows = missingRows.filter((row) => row.photoReady && !row.isSet);
     const pendingPhotoRows = missingRows.filter((row) => !row.photoReady);
 
     let targets = [];
     let skipped = [];
+    let setSkipped = [];
     if (Array.isArray(body.ids) && body.ids.length) {
       const requested = new Set(body.ids.map((id) => String(id)));
       for (const row of missingRows) {
         if (!requested.has(String(row.id))) continue;
-        if (row.photoReady) targets.push(row);
+        if (row.isSet) setSkipped.push(row);
+        else if (row.photoReady) targets.push(row);
         else skipped.push(row);
       }
       targets = targets.slice(0, limit);
@@ -604,7 +665,8 @@ export async function refreshFragranceNotes(request, env) {
     } else if (body.id !== undefined && body.id !== null && body.id !== "") {
       for (const row of missingRows) {
         if (String(row.id) !== String(body.id)) continue;
-        if (row.photoReady) targets.push(row);
+        if (row.isSet) setSkipped.push(row);
+        else if (row.photoReady) targets.push(row);
         else skipped.push(row);
       }
     } else {
@@ -612,6 +674,16 @@ export async function refreshFragranceNotes(request, env) {
     }
 
     const results = [];
+    for (const row of setSkipped) {
+      results.push({
+        id: row.id,
+        name: row.name,
+        brand: row.brand,
+        status: "skipped_set",
+        notes: null,
+        error: "Sets are excluded from aroma palette generation",
+      });
+    }
     for (const row of skipped) {
       results.push({
         id: row.id,
@@ -653,11 +725,12 @@ export async function refreshFragranceNotes(request, env) {
     }
 
     return json({
-      checked: results.length,
+      checked: targets.length,
       found: results.filter((item) => item.status === "found").length,
       notFound: results.filter((item) => item.status === "not_found").length,
       errors: results.filter((item) => item.status === "error").length,
       photoPending: pendingPhotoRows.length,
+      setsSkipped: setSkipped.length,
       remaining: Math.max(0, eligibleRows.length - targets.length),
       results,
     });

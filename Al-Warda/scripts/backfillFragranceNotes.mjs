@@ -7,14 +7,24 @@
  * (pipeline: Qogita data -> photo generation -> aroma palette -> Gemini
  * description), and persists the result back into `stocks.info`.
  *
- * This script only PATCHes the `info` column (notes + lookup metadata). It
- * never touches prices, images or the catalog itself, and it is completely
- * separate from the Full Database Refresh pipeline.
+ * Sets (`isPerfumeSet`) are excluded from generation by default: they do not
+ * have a single aroma palette and are configured manually in the privileged
+ * panel. Pass `--include-sets` to override.
+ *
+ * This script only PATCHes the `info` column (notes + description + lookup
+ * metadata). It never touches prices, images or the catalog itself, and it is
+ * completely separate from the Full Database Refresh pipeline.
  *
  * Usage:
  *   node scripts/backfillFragranceNotes.mjs               # photo-ready rows missing notes
  *   node scripts/backfillFragranceNotes.mjs --limit 10    # smoke test
  *   node scripts/backfillFragranceNotes.mjs --force        # regenerate photo-ready rows
+ *   node scripts/backfillFragranceNotes.mjs --include-sets # also process sets
+ *   node scripts/backfillFragranceNotes.mjs --descriptions-only
+ *                                                         # step 4 only: rewrite the
+ *                                                         # description (Gemini) from the
+ *                                                         # palette of every photo-ready,
+ *                                                         # non-set product
  *   node scripts/backfillFragranceNotes.mjs --prune-missing-photo
  *                                                         # drop DeepSeek notes from rows
  *                                                         # whose photo is not completed
@@ -26,6 +36,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { buildNotesInfo, generateFragranceNotes } from "../server/deepseekNotesService.js";
+import { withGeminiDescriptions } from "../server/geminiDescriptionService.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,6 +61,7 @@ loadEnv();
 const SUPABASE_URL = (process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co").replace(/\/+$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 const PAGE_SIZE = 1000;
 const LOG_DIR = path.resolve(rootDir, "logs");
@@ -85,6 +97,20 @@ function hasVerifiedNotes(info) {
 
 function isPhotoReady(row) {
   return hasCompletedGeneratedImage(row, SUPABASE_URL);
+}
+
+// Sets have multiple fragrances and no single aroma palette, so they are
+// configured manually in the privileged panel instead of being generated.
+const SET_PATTERN = /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i;
+function isSetRow(row) {
+  const info = row.info && typeof row.info === "object" ? row.info : {};
+  if (info.isSet || info.category === "sets" || info.categorySlug === "sets") return true;
+  const text = `${row.name || ""} ${row.brand || ""} ${info.volume || ""}`.toLowerCase();
+  return (
+    SET_PATTERN.test(text) ||
+    /\+\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
+    /\b\d+\s*[x×]\s*\d+(\.\d+)?\s*ml\b/i.test(text)
+  );
 }
 
 /** Drop DeepSeek note state from a row whose photo is not completed yet. */
@@ -176,7 +202,7 @@ async function generateWithRetries(name, brand, attempts = 4) {
 }
 
 function parseArgs() {
-  const args = { limit: 0, concurrency: 8, force: false, brand: "", dryRun: false, pruneMissingPhoto: false };
+  const args = { limit: 0, concurrency: 8, force: false, brand: "", dryRun: false, pruneMissingPhoto: false, includeSets: false, descriptionsOnly: false };
   for (let i = 2; i < process.argv.length; i += 1) {
     const arg = process.argv[i];
     if (arg === "--limit") args.limit = Number(process.argv[++i]) || 0;
@@ -184,6 +210,8 @@ function parseArgs() {
     else if (arg === "--force") args.force = true;
     else if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--prune-missing-photo") args.pruneMissingPhoto = true;
+    else if (arg === "--include-sets") args.includeSets = true;
+    else if (arg === "--descriptions-only") args.descriptionsOnly = true;
     else if (arg === "--brand") args.brand = String(process.argv[++i] || "");
   }
   return args;
@@ -228,20 +256,97 @@ async function main() {
     return;
   }
 
-  const targets = rows.filter((row) => {
-    if (!isPhotoReady(row)) return false;
+  const photoReadyRows = rows.filter((row) => isPhotoReady(row));
+  const setRows = photoReadyRows.filter((row) => isSetRow(row));
+
+  // Pipeline step 4 for the whole catalog: rewrite the description with Gemini
+  // from the already-confirmed aroma palette. Boilerplate/template descriptions
+  // are replaced; rows already described by Gemini are left untouched.
+  if (args.descriptionsOnly) {
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required for --descriptions-only");
+
+    const descRows = photoReadyRows.filter((row) => {
+      if (isSetRow(row)) return false;
+      const info = row.info && typeof row.info === "object" ? row.info : {};
+      if (!hasVerifiedNotes(info)) return false;
+      if (info.descriptionSource === "gemini" && !args.force) return false;
+      if (args.brand && !String(row.brand || "").toLowerCase().includes(args.brand.toLowerCase())) return false;
+      return true;
+    });
+
+    log(`Descriptions-only: ${descRows.length} photo-ready rows with a palette need a Gemini description`);
+    if (args.limit > 0) descRows.length = Math.min(descRows.length, args.limit);
+
+    if (args.dryRun) {
+      for (const row of descRows.slice(0, 20)) log(`  would describe: [${row.id}] ${row.brand} — ${row.name}`);
+      log(`Dry run finished. ${descRows.length} rows would be described.`);
+      return;
+    }
+
+    const descCounters = { ok: 0, failed: 0 };
+    let descDone = 0;
+    let descIndex = 0;
+    const descStartedAt = Date.now();
+
+    async function descWorker() {
+      while (descIndex < descRows.length) {
+        const row = descRows[descIndex++];
+        try {
+          const info = row.info && typeof row.info === "object" ? row.info : {};
+          const updatedInfo = await withGeminiDescriptions(info, {
+            name: String(row.name || "").trim(),
+            brand: String(row.brand || "").trim(),
+            notes: info.notes,
+            env: { GEMINI_API_KEY },
+            overwrite: true,
+          });
+          if (updatedInfo.descriptionSource === "gemini") {
+            await patchStock(row.id, updatedInfo);
+            descCounters.ok += 1;
+          } else {
+            descCounters.failed += 1;
+            log(`  ✗ [${row.id}] ${row.name}: Gemini returned no description`);
+          }
+        } catch (error) {
+          descCounters.failed += 1;
+          log(`  ✗ [${row?.id}] ${row?.name}: ${String(error?.message || error).slice(0, 160)}`);
+        }
+        descDone += 1;
+        if (descDone % 25 === 0 || descDone === descRows.length) {
+          const elapsed = Math.max(1, (Date.now() - descStartedAt) / 1000);
+          const rate = descDone / elapsed;
+          const eta = Math.round((descRows.length - descDone) / Math.max(rate, 0.001));
+          log(
+            `Progress: ${descDone}/${descRows.length} (ok=${descCounters.ok} failed=${descCounters.failed}) ` +
+              `| ${rate.toFixed(2)} rows/s | ETA ~${Math.floor(eta / 60)}m ${eta % 60}s`,
+          );
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: Math.min(args.concurrency, Math.max(1, descRows.length)) }, descWorker));
+    const descSeconds = Math.round((Date.now() - descStartedAt) / 1000);
+    log(
+      `Finished descriptions: ok=${descCounters.ok} failed=${descCounters.failed} total=${descRows.length} ` +
+        `in ${Math.floor(descSeconds / 60)}m ${descSeconds % 60}s`,
+    );
+    return;
+  }
+
+  const targets = photoReadyRows.filter((row) => {
+    if (!args.includeSets && isSetRow(row)) return false;
     const info = row.info && typeof row.info === "object" ? row.info : {};
     if (!args.force && hasVerifiedNotes(info)) return false;
     if (args.brand && !String(row.brand || "").toLowerCase().includes(args.brand.toLowerCase())) return false;
     return true;
   });
 
-  const photoReadyCount = rows.filter((row) => isPhotoReady(row)).length;
   const uniqueFragrances = new Set(targets.map((row) => canonicalQuery(row.name, row.brand))).size;
   log(
-    `Photo-ready rows: ${photoReadyCount}; rows still missing verified DeepSeek notes: ${targets.length} ` +
-      `(${uniqueFragrances} unique fragrances)`,
+    `Photo-ready rows: ${photoReadyRows.length} (sets excluded: ${args.includeSets ? 0 : setRows.length}); ` +
+      `rows still missing verified DeepSeek notes: ${targets.length} (${uniqueFragrances} unique fragrances)`,
   );
+  log(GEMINI_API_KEY ? "Gemini descriptions: enabled (pipeline step 4)" : "Gemini descriptions: disabled (GEMINI_API_KEY missing)");
 
   if (args.limit > 0) {
     targets.length = Math.min(targets.length, args.limit);
@@ -288,7 +393,15 @@ async function main() {
           log(`  ✗ [${row.id}] ${name}: ${String(lookup?.error || lookup?.reason || "not found").slice(0, 160)}`);
         } else {
           const info = row.info && typeof row.info === "object" ? row.info : {};
-          const updatedInfo = buildNotesInfo(info, lookup);
+          let updatedInfo = buildNotesInfo(info, lookup);
+          // Pipeline step 4: Gemini writes the description from the aroma palette.
+          updatedInfo = await withGeminiDescriptions(updatedInfo, {
+            name,
+            brand,
+            notes: updatedInfo.notes,
+            env: { GEMINI_API_KEY },
+            overwrite: args.force,
+          });
           await patchStock(row.id, updatedInfo);
           counters.ok += 1;
         }

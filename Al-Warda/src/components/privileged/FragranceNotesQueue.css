@@ -86,9 +86,39 @@
   white-space: nowrap;
 }
 
+.fragrance-notes__btn--all {
+  background: #287c4b;
+  border-color: #287c4b;
+}
+
+.fragrance-notes__btn--all:hover:not(:disabled) {
+  background: #2f9160;
+}
+
+.fragrance-notes__btn--stop {
+  background: #b5473c;
+  border-color: #b5473c;
+}
+
+.fragrance-notes__btn--stop:hover:not(:disabled) {
+  background: #c8574c;
+}
+
+.fragrance-notes__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(40, 124, 75, 0.3);
+  border-radius: 0.6rem;
+  background: rgba(40, 124, 75, 0.08);
+  color: #22683f;
+  font-size: 0.84rem;
+}
+
 .fragrance-notes__counters {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.65rem;
 }
 
@@ -120,6 +150,18 @@
 
 .fragrance-notes__counter--unchecked strong {
   color: #a8832f;
+}
+
+.fragrance-notes__counter--problem strong {
+  color: #b5473c;
+}
+
+.fragrance-notes__counter--readyToGenerate strong {
+  color: #a8832f;
+}
+
+.fragrance-notes__counter--sets strong {
+  color: #5c4530;
 }
 
 .fragrance-notes__toolbar {
@@ -339,6 +381,96 @@
 .fragrance-notes__badge--unverified {
   background: rgba(104, 77, 53, 0.12);
   color: #5c4530;
+}
+
+.fragrance-notes__badge--error {
+  background: rgba(181, 71, 60, 0.12);
+  color: #9e2d24;
+}
+
+.fragrance-notes__badge--set {
+  background: rgba(56, 92, 138, 0.14);
+  color: #2f567f;
+}
+
+.fragrance-notes__check-spacer {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.fragrance-notes__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.fragrance-notes__btn--manual {
+  background: transparent;
+  border-color: #684d35;
+  color: #684d35;
+}
+
+.fragrance-notes__btn--manual:hover:not(:disabled) {
+  background: rgba(104, 77, 53, 0.08);
+}
+
+.fragrance-notes__group {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.fragrance-notes__group--errors {
+  padding: 0.9rem;
+  border: 1px solid rgba(181, 71, 60, 0.28);
+  border-radius: 0.85rem;
+  background: rgba(181, 71, 60, 0.04);
+}
+
+.fragrance-notes__group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fragrance-notes__group-title {
+  margin: 0;
+  color: #24201c;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fragrance-notes__group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #ece6de;
+  color: #4a453f;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.fragrance-notes__group--errors .fragrance-notes__group-count {
+  background: rgba(181, 71, 60, 0.15);
+  color: #9e2d24;
+}
+
+.fragrance-notes__group-hint {
+  margin: 0;
+  color: var(--text-secondary, #68645f);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.fragrance-notes__group-empty {
+  margin: 0;
+  padding: 0.6rem 0;
+  color: var(--text-secondary, #68645f);
+  font-size: 0.8rem;
 }
 
 .fragrance-notes__meta {
