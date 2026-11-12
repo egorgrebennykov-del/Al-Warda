@@ -511,7 +511,8 @@ test("extractVolumeFromName and ensurePerfumeEnrichment accurately extract expli
 });
 
 test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product page links for privileged users", async () => {
-  const { getPerfumeGtin, getQogitaProductUrl } = await import("../utils/perfumes.js");
+  const { getPerfumeGtin } = await import("../utils/perfumes.js");
+  const { getQogitaProductUrl } = await import("../utils/qogitaProductUrls.js");
   const { isPrivileged } = await import("../utils/auth.js");
 
   // 1. Privileged status verification

@@ -15,7 +15,7 @@ import {
   deleteQogitaWebhook,
   sendQogitaTestWebhook,
 } from "../../utils/qogitaApi";
-import { getQogitaProductUrl } from "../../../utils/perfumes";
+import { getQogitaProductUrl } from "../../../utils/qogitaProductUrls";
 import "./QogitaManager.css";
 
 const EXPORTS_STORAGE_KEY = "qogita-product-export-ids";

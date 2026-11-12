@@ -6,7 +6,6 @@ import {
   isPerfumeSet,
   inferSetItems,
   getPerfumeGtin,
-  getQogitaProductUrl,
   getPerfumeVolumeOptions,
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
@@ -47,6 +46,10 @@ export default function BookDetails() {
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
   const [indexLookup, setIndexLookup] = useState({ key: "", status: "idle", notes: null });
+
+  // The Qogita slug->id map (~350 KB) is only needed for the privileged admin link,
+  // so it is loaded on demand instead of shipping on every product page.
+  const [qogitaUrl, setQogitaUrl] = useState(null);
 
   useEffect(() => {
     setSelectedVolume("full");
@@ -156,8 +159,26 @@ export default function BookDetails() {
   const indexNotes = indexLookup.key === lookupKey ? indexLookup.notes : null;
   const indexNotesState = indexLookup.key === lookupKey ? indexLookup.status : "idle";
 
+  useEffect(() => {
+    const target = perfume || enrichedPerfume;
+    if (!isPriv || !target) {
+      setQogitaUrl(null);
+      return undefined;
+    }
+    let cancelled = false;
+    import("../../../utils/qogitaProductUrls")
+      .then(({ getQogitaProductUrl }) => {
+        if (!cancelled) setQogitaUrl(getQogitaProductUrl(target));
+      })
+      .catch(() => {
+        if (!cancelled) setQogitaUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isPriv, perfume]);
+
   const perfumeGtin = isPriv && (perfume || enrichedPerfume) ? getPerfumeGtin(perfume || enrichedPerfume) : "";
-  const qogitaUrl = isPriv && (perfume || enrichedPerfume) ? getQogitaProductUrl(perfume || enrichedPerfume) : null;
   const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
   const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
   const rawBottleVol = isSet

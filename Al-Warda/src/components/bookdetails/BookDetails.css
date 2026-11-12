@@ -491,9 +491,48 @@
 }
 
 @media screen and (max-width: 900px) {
+  .warda-details-page {
+    padding: 1.25rem 0 3rem;
+  }
+
   .warda-details-grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
+  }
+
+  .warda-details-skeleton-image {
+    height: 320px;
+  }
+
+  /* On mobile the image should fill the width and determine its own height
+     instead of living inside a fixed 620px box that leaves black gaps. */
+  .warda-details-img-wrap {
+    min-height: 300px;
+    height: auto;
+    padding: 0.25rem;
+  }
+
+  .warda-details-photo {
+    max-width: 100%;
+    max-height: none;
+    height: auto;
+  }
+
+  .warda-details-img {
+    max-width: 100%;
+    max-height: none;
+    height: auto;
+  }
+
+  .warda-details-aura {
+    width: 85%;
+    height: 85%;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .warda-details-img-wrap {
+    min-height: 260px;
   }
 }
 

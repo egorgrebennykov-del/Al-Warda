@@ -4,7 +4,16 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { formatPriceWithCurrency } from "../src/context/currencyUtils.js";
-import { translations } from "../src/context/translations.js";
+import ru from "../src/context/translations/ru.js";
+import en from "../src/context/translations/en.js";
+import hu from "../src/context/translations/hu.js";
+import bg from "../src/context/translations/bg.js";
+import el from "../src/context/translations/el.js";
+import ro from "../src/context/translations/ro.js";
+
+// The app bundle only ships the default language and loads the rest on demand,
+// so tests assemble the full dictionary set from the per-language modules.
+const translations = { ru, en, hu, bg, el, ro };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
