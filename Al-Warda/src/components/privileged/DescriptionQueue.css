@@ -7,18 +7,28 @@
   padding: 1.25rem;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
   border: 1px solid var(--border-color, #e7e2dc);
   border-radius: 1rem;
   background: var(--surface-color, #fff);
 }
 
+.description-queue * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
 .description-queue__header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.description-queue__header-top {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .description-queue__title {
@@ -236,14 +246,6 @@
   color: #b3261e;
 }
 
-.description-queue__loader {
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-  font-size: 1.5rem;
-  color: #c9a86a;
-}
-
 .description-queue__empty {
   padding: 2rem;
   text-align: center;
@@ -458,5 +460,72 @@
 
   .description-queue__item-actions {
     width: 100%;
+  }
+}
+
+@keyframes description-queue-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.description-queue__skeleton-stat,
+.description-queue__skeleton-row {
+  background: linear-gradient(90deg, #f1ece3 25%, #faf7f2 37%, #f1ece3 63%);
+  background-size: 400% 100%;
+  animation: description-queue-shimmer 1.4s ease infinite;
+  border-radius: 12px;
+}
+
+.description-queue__skeleton-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.description-queue__skeleton-stat {
+  flex: 1 1 160px;
+  height: 68px;
+  border: 1px solid #eae1d3;
+}
+
+.description-queue__skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.description-queue__skeleton-row {
+  height: 76px;
+  border: 1px solid #eae1d3;
+}
+
+.description-queue__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 0 0.25rem;
+  color: #8c8172;
+  font-size: 0.85rem;
+}
+
+.description-queue__spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #eae1d3;
+  border-top-color: #c9a86a;
+  animation: description-queue-spin 0.8s cubic-bezier(0.5, 0.15, 0.5, 0.85)
+    infinite;
+}
+
+@keyframes description-queue-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

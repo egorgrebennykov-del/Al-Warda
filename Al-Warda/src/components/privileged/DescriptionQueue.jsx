@@ -496,6 +496,17 @@ export default function DescriptionQueue({ language = "ru" }) {
   return (
     <section className="description-queue">
       <header className="description-queue__header">
+        <div className="description-queue__header-top">
+          <button
+            type="button"
+            className="description-queue__btn description-queue__btn--danger description-queue__btn--small"
+            onClick={clearAllDescriptions}
+            disabled={clearing || busy || autoRun || !counts.total}
+          >
+            <i className={`ri-delete-bin-line ${clearing ? "ri-spin" : ""}`} />
+            {labels.clearAll}
+          </button>
+        </div>
         <div>
           <h2 className="description-queue__title">
             <i className="ri-sparkling-2-line" />
@@ -503,54 +514,7 @@ export default function DescriptionQueue({ language = "ru" }) {
           </h2>
           <p className="description-queue__subtitle">{labels.subtitle}</p>
         </div>
-        <button
-          type="button"
-          className="description-queue__btn description-queue__btn--danger"
-          onClick={clearAllDescriptions}
-          disabled={clearing || busy || autoRun || !counts.total}
-        >
-          <i className={`ri-delete-bin-line ${clearing ? "ri-spin" : ""}`} />
-          {labels.clearAll}
-        </button>
       </header>
-
-      <div className="description-queue__stats">
-        <div className="description-queue__stat">
-          <span className="description-queue__stat-value">
-            {counts.total ?? 0}
-          </span>
-          <span className="description-queue__stat-label">
-            {labels.countLabels.total}
-          </span>
-        </div>
-        <div className="description-queue__stat">
-          <span className="description-queue__stat-value">
-            {counts.missing ?? 0}
-          </span>
-          <span className="description-queue__stat-label">
-            {labels.countLabels.missing}
-          </span>
-        </div>
-        <div className="description-queue__stat">
-          <span className="description-queue__stat-value">
-            {counts.generated ?? 0}
-          </span>
-          <span className="description-queue__stat-label">
-            {labels.countLabels.generated}
-          </span>
-        </div>
-      </div>
-
-      <div className="description-queue__toolbar">
-        <input
-          type="search"
-          className="description-queue__search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={labels.search}
-          aria-label={labels.search}
-        />
-      </div>
 
       {(error || message) && (
         <div
@@ -567,11 +531,64 @@ export default function DescriptionQueue({ language = "ru" }) {
       )}
 
       {loading ? (
-        <div className="description-queue__loader" role="status">
-          <i className="ri-loader-4-line ri-spin" />
+        <div
+          className="description-queue__loader"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="description-queue__spinner" />
+          <span>{isRussian ? "Загружаем список…" : "Loading the list…"}</span>
+          <div className="description-queue__skeleton-stats" aria-hidden="true">
+            <div className="description-queue__skeleton-stat" />
+            <div className="description-queue__skeleton-stat" />
+            <div className="description-queue__skeleton-stat" />
+          </div>
+          <div className="description-queue__skeleton-list" aria-hidden="true">
+            <div className="description-queue__skeleton-row" />
+            <div className="description-queue__skeleton-row" />
+            <div className="description-queue__skeleton-row" />
+          </div>
         </div>
       ) : (
         <>
+          <div className="description-queue__stats">
+            <div className="description-queue__stat">
+              <span className="description-queue__stat-value">
+                {counts.total ?? 0}
+              </span>
+              <span className="description-queue__stat-label">
+                {labels.countLabels.total}
+              </span>
+            </div>
+            <div className="description-queue__stat">
+              <span className="description-queue__stat-value">
+                {counts.missing ?? 0}
+              </span>
+              <span className="description-queue__stat-label">
+                {labels.countLabels.missing}
+              </span>
+            </div>
+            <div className="description-queue__stat">
+              <span className="description-queue__stat-value">
+                {counts.generated ?? 0}
+              </span>
+              <span className="description-queue__stat-label">
+                {labels.countLabels.generated}
+              </span>
+            </div>
+          </div>
+
+          <div className="description-queue__toolbar">
+            <input
+              type="search"
+              className="description-queue__search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={labels.search}
+              aria-label={labels.search}
+            />
+          </div>
+
           <section className="description-queue__group">
             <div className="description-queue__group-header">
               <div>
