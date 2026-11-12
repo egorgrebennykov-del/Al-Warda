@@ -14,23 +14,21 @@ import SmallAnnouncements from "./components/announcements/SmallAnnouncements";
 import { isLoggedIn } from "../utils/auth";
 import { useAuth } from "./context/AuthContext";
 import { getCookie, setCookie } from "../utils/cookies";
-import { getPerfumes } from "../utils/perfumes";
 import { fetchActiveAnnouncements } from "../utils/announcements";
 
-// Warm perfumes catalog when idle so initial React mount and paint are instantaneous
+// Warm perfumes catalog when idle so initial React mount and paint are instantaneous.
+// getPerfumes is imported dynamically here so utils/perfumes.js (heavy scent
+// pyramids + Supabase/Qogita fetch logic) stays OUT of the initial bundle.
 if (typeof window !== "undefined") {
-  const warmCatalog = () => {
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(() => {
-        getPerfumes().catch(() => {});
-      }, { timeout: 3500 });
-    } else {
-      setTimeout(() => {
-        getPerfumes().catch(() => {});
-      }, 1000);
-    }
+  const warmCatalog = async () => {
+    try {
+      const mod = await import("../utils/perfumes");
+      await mod.getPerfumes().catch(() => {});
+    } catch {}
   };
-  if (document.readyState === "complete") {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(warmCatalog, { timeout: 3500 });
+  } else if (document.readyState === "complete") {
     warmCatalog();
   } else {
     window.addEventListener("load", warmCatalog, { once: true });

@@ -375,7 +375,10 @@ const server = createServer(async (req, res) => {
     try {
       const q = urlObj.searchParams.get("q") || "";
       const brand = urlObj.searchParams.get("brand") || "";
-      const perfumes = await getArabianDropshipPerfumes({ query: q, brand });
+      const limit = urlObj.searchParams.get("limit") || undefined;
+      const offset = urlObj.searchParams.get("offset") || undefined;
+      const all = urlObj.searchParams.get("all") === "1";
+      const perfumes = await getArabianDropshipPerfumes({ query: q, brand, limit, offset, all });
       respond(res, 200, perfumes);
     } catch (err) {
       respond(res, 500, { error: err.message });

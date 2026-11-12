@@ -33,7 +33,7 @@ export function generatedImageFallback() {
 export default defineConfig({
   plugins: [react(), generatedImageFallback()],
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks(id) {

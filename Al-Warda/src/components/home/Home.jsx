@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
-  getBestSellerPerfumes,
   getCategories,
   getPerfumeUrl,
   getDefaultPerfumeVolumeOption,
   INITIAL_BEST_SELLERS,
-} from "../../../utils/perfumes";
+} from "../../../utils/perfumesLite";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -51,19 +50,29 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    getBestSellerPerfumes()
-      .then((items) => {
+    let getBestSellerPerfumes;
+
+    const loadBestSellersModule = async () => {
+      const mod = await import("../../../utils/perfumes");
+      getBestSellerPerfumes = mod.getBestSellerPerfumes;
+    };
+    loadBestSellersModule();
+
+    const fetchBestSellers = async () => {
+      if (cancelled || !getBestSellerPerfumes) return;
+      try {
+        const items = await getBestSellerPerfumes();
         if (!cancelled && Array.isArray(items) && items.length > 0) {
           setBestSellers(items.slice(0, 3));
         }
-      })
-      .catch((err) => console.warn("Could not load bestsellers:", err));
+      } catch (err) {
+        console.warn("Could not load bestsellers:", err);
+      }
+    };
 
-    const timer = window.setInterval(() => {
-      getBestSellerPerfumes()
-        .then((items) => { if (!cancelled) setBestSellers(items.slice(0, 3)); })
-        .catch((err) => console.warn("Could not refresh bestsellers:", err));
-    }, 30000);
+    fetchBestSellers();
+
+    const timer = window.setInterval(fetchBestSellers, 30000);
     return () => {
       cancelled = true;
       window.clearInterval(timer);

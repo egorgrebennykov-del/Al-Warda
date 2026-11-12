@@ -493,7 +493,7 @@ export async function getTransparentImageBuffer(rawUrl) {
  * Fetch and filter Arabian perfumes available for dropshipping
  */
 export async function getArabianDropshipPerfumes(params = {}) {
-  const { query = "", brand = "", inStockOnly = true } = params;
+  const { query = "", brand = "", inStockOnly = true, limit: limitParam, offset: offsetParam = 0, all = false } = params;
 
   // Refresh cache if stale
   if (!cachedArabianPerfumes || Date.now() - lastCacheTime > CACHE_TTL_MS) {
@@ -570,9 +570,17 @@ export async function getArabianDropshipPerfumes(params = {}) {
     );
   }
 
+  const limit = Number.isFinite(Number(limitParam)) && Number(limitParam) > 0
+    ? Math.min(Number(limitParam), 300)
+    : 96;
+  const offset = Math.max(Number(offsetParam) || 0, 0);
+  const sliced = all ? results : results.slice(offset, offset + limit);
   return {
     count: results.length,
-    results: results.map(applyVerifiedNotesOnly),
+    results: sliced.map(applyVerifiedNotesOnly),
+    limit: all ? results.length : limit,
+    offset: all ? 0 : offset,
+    all,
   };
 }
 

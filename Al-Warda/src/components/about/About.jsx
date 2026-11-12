@@ -132,7 +132,7 @@ export default function About() {
         <div className="warda-about-story__card">
           <div className="warda-about-story__visual">
             <img
-              src="/assets/img/al-warda-header-logo.png"
+              src="/assets/img/al-warda-header-logo.webp"
               alt="Al-Warda Emblem"
               className="warda-about-story__emblem"
             />
