@@ -43,6 +43,7 @@ import QogitaManager from "./QogitaManager";
 import ProductImageQueue from "./ProductImageQueue";
 import FragranceNotesQueue from "./FragranceNotesQueue";
 import ProductsManager from "./ProductsManager";
+import DescriptionQueue from "./DescriptionQueue";
 import "./Privileged.css";
 
 /**
