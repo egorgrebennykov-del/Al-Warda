@@ -35,7 +35,14 @@ import {
   translateAnnouncementWithAI,
 } from "../../../utils/announcements";
 import BookImage from "../common/BookImage";
-import { RussianFlag, BritishFlag, HungarianFlag, BulgarianFlag, GreekFlag, RomanianFlag } from "../common/FlagIcon";
+import {
+  RussianFlag,
+  BritishFlag,
+  HungarianFlag,
+  BulgarianFlag,
+  GreekFlag,
+  RomanianFlag,
+} from "../common/FlagIcon";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
@@ -58,9 +65,26 @@ function ProductsSection({ language }) {
   const [subTab, setSubTab] = useState("list");
 
   const subTabs = [
-    { key: "list", label: isRussian ? "Список товаров" : "Products list", icon: "ri-store-2-line" },
-    { key: "images", label: isRussian ? "Фото товаров" : "Product images", icon: "ri-image-edit-line" },
-    { key: "notes", label: isRussian ? "Ароматы" : "Fragrance notes", icon: "ri-flask-line" },
+    {
+      key: "list",
+      label: isRussian ? "Список товаров" : "Products list",
+      icon: "ri-store-2-line",
+    },
+    {
+      key: "images",
+      label: isRussian ? "Фото товаров" : "Product images",
+      icon: "ri-image-edit-line",
+    },
+    {
+      key: "notes",
+      label: isRussian ? "Ароматы" : "Fragrance notes",
+      icon: "ri-flask-line",
+    },
+    {
+      key: "descriptions",
+      label: isRussian ? "Описание товаров" : "Product descriptions",
+      icon: "ri-file-text-line",
+    },
   ];
 
   const subTabBtns = subTabs.map((tab) => (
@@ -85,9 +109,7 @@ function ProductsSection({ language }) {
 
       <div className="privileged__panel">
         {subTab === "list" && <ProductsManager language={language} />}
-        {subTab === "images" && (
-          <ProductImageQueue language={language} />
-        )}
+        {subTab === "images" && <ProductImageQueue language={language} />}
         {subTab === "notes" && <FragranceNotesQueue language={language} />}
         {subTab === "descriptions" && <DescriptionQueue language={language} />}
       </div>
@@ -176,14 +198,18 @@ export default function Privileged() {
   const { tab: routeTab } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user: authUser, isLoggedIn: loggedIn, isPrivileged: isPrivContext } = useAuth();
+  const {
+    user: authUser,
+    isLoggedIn: loggedIn,
+    isPrivileged: isPrivContext,
+  } = useAuth();
   const cookieUser = authUser || getCookieUser();
 
   const [checkingAuth, setCheckingAuth] = useState(
     !loggedIn ? false : !isPrivContext && !isPrivileged(cookieUser),
   );
-  const [isPrivilegedUser, setIsPrivilegedUser] = useState(() =>
-    isPrivContext || isPrivileged(cookieUser),
+  const [isPrivilegedUser, setIsPrivilegedUser] = useState(
+    () => isPrivContext || isPrivileged(cookieUser),
   );
 
   useEffect(() => {
@@ -193,7 +219,9 @@ export default function Privileged() {
     }
   }, [isPrivContext]);
 
-  const [activeSection, setActiveSectionState] = useState(() => resolvePrivilegedTab(routeTab));
+  const [activeSection, setActiveSectionState] = useState(() =>
+    resolvePrivilegedTab(routeTab),
+  );
 
   useEffect(() => {
     const resolved = resolvePrivilegedTab(routeTab);
@@ -217,7 +245,7 @@ export default function Privileged() {
         navigate(targetPath, { state: { preventScrollReset: true } });
       }
     },
-    [location.pathname, navigate]
+    [location.pathname, navigate],
   );
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -243,7 +271,8 @@ export default function Privileged() {
   const [creatingUser, setCreatingUser] = useState(false);
 
   const handleGeneratePassword = () => {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
     let pass = "";
     for (let i = 0; i < 12; i++) {
       pass += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -292,7 +321,9 @@ export default function Privileged() {
       const isPriv = createUserForm.status === "privileged";
       const sanitizedRoles = isPriv
         ? createUserForm.roles.filter(
-            (r) => r !== "user" && (r === "vip" || r === "admin" || r === "developer"),
+            (r) =>
+              r !== "user" &&
+              (r === "vip" || r === "admin" || r === "developer"),
           )
         : ["user"];
       const finalRoles =
@@ -529,7 +560,8 @@ export default function Privileged() {
     import("../../../utils/perfumes").then(async (mod) => {
       try {
         const all = await mod.getPerfumes({ refresh: true });
-        if (!cancelled) setCatalogMinOrders(all.map((p) => mod.getPerfumeMinOrder(p)));
+        if (!cancelled)
+          setCatalogMinOrders(all.map((p) => mod.getPerfumeMinOrder(p)));
       } catch {
         // ignore
       }
@@ -543,12 +575,27 @@ export default function Privileged() {
     e?.preventDefault();
     const from = minOrderFrom === "" ? 0 : Number(minOrderFrom);
     const to = minOrderTo === "" ? 0 : Number(minOrderTo);
-    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0) {
-      showNotice(language === "ru" ? "Введите целые числа не меньше 0" : "Enter whole numbers, 0 or greater", true);
+    if (
+      !Number.isInteger(from) ||
+      !Number.isInteger(to) ||
+      from < 0 ||
+      to < 0
+    ) {
+      showNotice(
+        language === "ru"
+          ? "Введите целые числа не меньше 0"
+          : "Enter whole numbers, 0 or greater",
+        true,
+      );
       return;
     }
     if (to > 0 && from > to) {
-      showNotice(language === "ru" ? "«От» не может быть больше «До»" : "\"From\" cannot exceed \"To\"", true);
+      showNotice(
+        language === "ru"
+          ? "«От» не может быть больше «До»"
+          : '"From" cannot exceed "To"',
+        true,
+      );
       return;
     }
     setSavingSettings(true);
@@ -830,17 +877,12 @@ export default function Privileged() {
     let newRoles;
 
     if (currentRoles.includes(roleToToggle)) {
-      newRoles = currentRoles.filter(
-        (r) => r !== roleToToggle && r !== "user",
-      );
+      newRoles = currentRoles.filter((r) => r !== roleToToggle && r !== "user");
       if (newRoles.length === 0) {
         newRoles = ["vip"];
       }
     } else {
-      newRoles = [
-        ...currentRoles.filter((r) => r !== "user"),
-        roleToToggle,
-      ];
+      newRoles = [...currentRoles.filter((r) => r !== "user"), roleToToggle];
     }
 
     try {
@@ -1088,8 +1130,7 @@ export default function Privileged() {
           couponType === "percent" ? Number(couponDiscount) || 10 : undefined,
         amount:
           couponType === "fixed" ? Number(couponFixedAmount) || 5 : undefined,
-        minAmount:
-          couponMinAmount !== "" ? Number(couponMinAmount) : undefined,
+        minAmount: couponMinAmount !== "" ? Number(couponMinAmount) : undefined,
         maxAmount:
           (couponType === "percent" || couponType === "fixed") &&
           couponMaxAmount !== ""
@@ -1172,7 +1213,9 @@ export default function Privileged() {
         name:
           couponName.trim() ||
           (couponType === "free_shipping"
-            ? (language === "ru" ? "Бесплатная доставка" : "Free shipping")
+            ? language === "ru"
+              ? "Бесплатная доставка"
+              : "Free shipping"
             : couponType === "gift"
               ? giftName.trim()
               : ""),
@@ -1271,14 +1314,20 @@ export default function Privileged() {
 
     setEditingAnnouncement(ann);
     setAnnouncementType(ann.type || "small");
-    setAnnouncementTextRu(ann.text_ru || ann.ru?.text || ann.text || ann.text_en || "");
+    setAnnouncementTextRu(
+      ann.text_ru || ann.ru?.text || ann.text || ann.text_en || "",
+    );
     setAnnouncementTextEn(ann.text_en || ann.en?.text || "");
     setAnnouncementTextHu(ann.text_hu || ann.hu?.text || "");
     setAnnouncementTextBg(ann.text_bg || ann.bg?.text || "");
     setAnnouncementTextEl(ann.text_el || ann.el?.text || "");
     setAnnouncementTextRo(ann.text_ro || ann.ro?.text || "");
     setAnnouncementImageUrlRu(
-      ann.imageUrl_ru || ann.ru?.imageUrl || ann.imageUrl || ann.imageUrl_en || "",
+      ann.imageUrl_ru ||
+        ann.ru?.imageUrl ||
+        ann.imageUrl ||
+        ann.imageUrl_en ||
+        "",
     );
     setAnnouncementImageUrlEn(ann.imageUrl_en || ann.en?.imageUrl || "");
     setAnnouncementImageUrlHu(ann.imageUrl_hu || ann.hu?.imageUrl || "");
@@ -1332,14 +1381,13 @@ export default function Privileged() {
     }
 
     if (announcementType === "small") {
-      const anyText = (
+      const anyText =
         announcementTextRu.trim() ||
         announcementTextEn.trim() ||
         announcementTextHu.trim() ||
         announcementTextBg.trim() ||
         announcementTextEl.trim() ||
-        announcementTextRo.trim()
-      );
+        announcementTextRo.trim();
       if (!anyText) {
         showNotice(
           language === "ru"
@@ -2023,9 +2071,7 @@ export default function Privileged() {
                 >
                   <i className="ri-user-add-line" />
                   <span>
-                    {language === "ru"
-                      ? "Создать пользователя"
-                      : "Create User"}
+                    {language === "ru" ? "Создать пользователя" : "Create User"}
                   </span>
                 </button>
               </div>
@@ -2363,7 +2409,10 @@ export default function Privileged() {
                     </button>
                   </div>
 
-                  <form onSubmit={handleCreateUser} className="privileged__create-user-form">
+                  <form
+                    onSubmit={handleCreateUser}
+                    className="privileged__create-user-form"
+                  >
                     <div className="privileged__create-user-body">
                       <div className="privileged__form-row-2">
                         <div className="privileged__form-group">
@@ -2374,7 +2423,11 @@ export default function Privileged() {
                           <input
                             type="text"
                             className="privileged__form-input"
-                            placeholder={language === "ru" ? "Введите имя" : "Enter first name"}
+                            placeholder={
+                              language === "ru"
+                                ? "Введите имя"
+                                : "Enter first name"
+                            }
                             value={createUserForm.firstName}
                             onChange={(e) =>
                               setCreateUserForm((prev) => ({
@@ -2393,7 +2446,11 @@ export default function Privileged() {
                           <input
                             type="text"
                             className="privileged__form-input"
-                            placeholder={language === "ru" ? "Введите фамилию (необязательно)" : "Enter last name (optional)"}
+                            placeholder={
+                              language === "ru"
+                                ? "Введите фамилию (необязательно)"
+                                : "Enter last name (optional)"
+                            }
                             value={createUserForm.lastName}
                             onChange={(e) =>
                               setCreateUserForm((prev) => ({
@@ -2408,13 +2465,19 @@ export default function Privileged() {
                       <div className="privileged__form-row-2">
                         <div className="privileged__form-group">
                           <label className="privileged__form-label">
-                            {language === "ru" ? "Email или логин" : "Email or Login"}{" "}
+                            {language === "ru"
+                              ? "Email или логин"
+                              : "Email or Login"}{" "}
                             <span className="privileged__required">*</span>
                           </label>
                           <input
                             type="text"
                             className="privileged__form-input"
-                            placeholder={language === "ru" ? "ivan@al-warda.com или test_users" : "ivan@al-warda.com or test_users"}
+                            placeholder={
+                              language === "ru"
+                                ? "ivan@al-warda.com или test_users"
+                                : "ivan@al-warda.com or test_users"
+                            }
                             value={createUserForm.email}
                             onChange={(e) =>
                               setCreateUserForm((prev) => ({
@@ -2462,7 +2525,11 @@ export default function Privileged() {
                           <input
                             type={showCreateUserPassword ? "text" : "password"}
                             className="privileged__form-input"
-                            placeholder={language === "ru" ? "Придумайте пароль" : "Create password"}
+                            placeholder={
+                              language === "ru"
+                                ? "Придумайте пароль"
+                                : "Create password"
+                            }
                             value={createUserForm.password}
                             onChange={(e) =>
                               setCreateUserForm((prev) => ({
@@ -2476,29 +2543,51 @@ export default function Privileged() {
                           <button
                             type="button"
                             className="privileged__pw-btn"
-                            onClick={() => setShowCreateUserPassword((prev) => !prev)}
-                            title={showCreateUserPassword ? "Скрыть пароль" : "Показать пароль"}
+                            onClick={() =>
+                              setShowCreateUserPassword((prev) => !prev)
+                            }
+                            title={
+                              showCreateUserPassword
+                                ? "Скрыть пароль"
+                                : "Показать пароль"
+                            }
                           >
-                            <i className={showCreateUserPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                            <i
+                              className={
+                                showCreateUserPassword
+                                  ? "ri-eye-off-line"
+                                  : "ri-eye-line"
+                              }
+                            />
                           </button>
                           <button
                             type="button"
                             className="privileged__pw-btn privileged__pw-btn--gen"
                             onClick={handleGeneratePassword}
-                            title={language === "ru" ? "Сгенерировать безопасный пароль" : "Generate random password"}
+                            title={
+                              language === "ru"
+                                ? "Сгенерировать безопасный пароль"
+                                : "Generate random password"
+                            }
                           >
                             <i className="ri-magic-line" />
-                            <span>{language === "ru" ? "Сгенерировать" : "Generate"}</span>
+                            <span>
+                              {language === "ru" ? "Сгенерировать" : "Generate"}
+                            </span>
                           </button>
                         </div>
                       </div>
 
                       <div className="privileged__form-group">
                         <label className="privileged__form-label">
-                          {language === "ru" ? "Статус пользователя" : "User Status"}
+                          {language === "ru"
+                            ? "Статус пользователя"
+                            : "User Status"}
                         </label>
                         <div className="privileged__radio-group">
-                          <label className={`privileged__radio-card ${createUserForm.status === "user" ? "privileged__radio-card--active" : ""}`}>
+                          <label
+                            className={`privileged__radio-card ${createUserForm.status === "user" ? "privileged__radio-card--active" : ""}`}
+                          >
                             <input
                               type="radio"
                               name="create-user-status"
@@ -2515,14 +2604,20 @@ export default function Privileged() {
                             <div className="privileged__radio-card-info">
                               <span className="privileged__radio-card-title">
                                 <i className="ri-user-line" />
-                                {language === "ru" ? "Обычный пользователь" : "Standard User"}
+                                {language === "ru"
+                                  ? "Обычный пользователь"
+                                  : "Standard User"}
                               </span>
                               <span className="privileged__radio-card-desc">
-                                {language === "ru" ? "Стандартный аккаунт покупателя" : "Regular customer account"}
+                                {language === "ru"
+                                  ? "Стандартный аккаунт покупателя"
+                                  : "Regular customer account"}
                               </span>
                             </div>
                           </label>
-                          <label className={`privileged__radio-card ${createUserForm.status === "privileged" ? "privileged__radio-card--active" : ""}`}>
+                          <label
+                            className={`privileged__radio-card ${createUserForm.status === "privileged" ? "privileged__radio-card--active" : ""}`}
+                          >
                             <input
                               type="radio"
                               name="create-user-status"
@@ -2531,12 +2626,17 @@ export default function Privileged() {
                               onChange={() =>
                                 setCreateUserForm((prev) => {
                                   const filtered = prev.roles.filter(
-                                    (r) => r !== "user" && (r === "vip" || r === "admin" || r === "developer"),
+                                    (r) =>
+                                      r !== "user" &&
+                                      (r === "vip" ||
+                                        r === "admin" ||
+                                        r === "developer"),
                                   );
                                   return {
                                     ...prev,
                                     status: "privileged",
-                                    roles: filtered.length > 0 ? filtered : ["vip"],
+                                    roles:
+                                      filtered.length > 0 ? filtered : ["vip"],
                                   };
                                 })
                               }
@@ -2544,10 +2644,14 @@ export default function Privileged() {
                             <div className="privileged__radio-card-info">
                               <span className="privileged__radio-card-title">
                                 <i className="ri-vip-crown-fill" />
-                                {language === "ru" ? "Привилегированный" : "Privileged"}
+                                {language === "ru"
+                                  ? "Привилегированный"
+                                  : "Privileged"}
                               </span>
                               <span className="privileged__radio-card-desc">
-                                {language === "ru" ? "Доступ к панели управления" : "Access to dashboard & tools"}
+                                {language === "ru"
+                                  ? "Доступ к панели управления"
+                                  : "Access to dashboard & tools"}
                               </span>
                             </div>
                           </label>
@@ -2557,12 +2661,15 @@ export default function Privileged() {
                       {createUserForm.status === "privileged" && (
                         <div className="privileged__form-group">
                           <label className="privileged__form-label">
-                            {language === "ru" ? "Назначить роли" : "Assign Roles"}
+                            {language === "ru"
+                              ? "Назначить роли"
+                              : "Assign Roles"}
                           </label>
                           <div className="privileged__roles-box">
                             <div className="privileged__roles-checkboxes">
                               {["vip", "admin", "developer"].map((roleKey) => {
-                                const isChecked = createUserForm.roles.includes(roleKey);
+                                const isChecked =
+                                  createUserForm.roles.includes(roleKey);
                                 return (
                                   <label
                                     key={roleKey}
@@ -2574,8 +2681,16 @@ export default function Privileged() {
                                       onChange={() => {
                                         setCreateUserForm((prev) => {
                                           let nextRoles = isChecked
-                                            ? prev.roles.filter((r) => r !== roleKey && r !== "user")
-                                            : [...prev.roles.filter((r) => r !== "user"), roleKey];
+                                            ? prev.roles.filter(
+                                                (r) =>
+                                                  r !== roleKey && r !== "user",
+                                              )
+                                            : [
+                                                ...prev.roles.filter(
+                                                  (r) => r !== "user",
+                                                ),
+                                                roleKey,
+                                              ];
                                           if (nextRoles.length === 0) {
                                             nextRoles = ["vip"];
                                           }
@@ -2586,7 +2701,10 @@ export default function Privileged() {
                                         });
                                       }}
                                     />
-                                    <span>{isChecked ? "✓ " : "+ "}{formatRoleName(roleKey, language)}</span>
+                                    <span>
+                                      {isChecked ? "✓ " : "+ "}
+                                      {formatRoleName(roleKey, language)}
+                                    </span>
                                   </label>
                                 );
                               })}
@@ -2879,7 +2997,8 @@ export default function Privileged() {
                           <div className="privileged__coupon-body">
                             <strong className="privileged__coupon-name">
                               {coupon.name ||
-                                (isFreeShipping && t("privileged.coupons.typeFreeShipping")) ||
+                                (isFreeShipping &&
+                                  t("privileged.coupons.typeFreeShipping")) ||
                                 (isGift && action.gift?.name) ||
                                 t("privileged.coupons.nameFallback")}
                             </strong>
@@ -2888,25 +3007,31 @@ export default function Privileged() {
                             <div className="privileged__coupon-tags">
                               {/* Usage mode tag */}
                               <span className="privileged__coupon-tag privileged__coupon-tag--usage">
-                                {action.usageType === "single" || action.maxUses === 1 ? (
+                                {action.usageType === "single" ||
+                                action.maxUses === 1 ? (
                                   <>
                                     <i className="ri-user-follow-line" />
                                     <span>
-                                      {t("privileged.coupons.singleBadge")} ({action.usedCount || 0}/1)
+                                      {t("privileged.coupons.singleBadge")} (
+                                      {action.usedCount || 0}/1)
                                     </span>
                                   </>
                                 ) : action.usageType === "limited" ? (
                                   <>
                                     <i className="ri-numbers-line" />
                                     <span>
-                                      {t("privileged.coupons.usedTimes")} {action.usedCount || 0} {t("privileged.coupons.timesOf")} {action.maxUses}
+                                      {t("privileged.coupons.usedTimes")}{" "}
+                                      {action.usedCount || 0}{" "}
+                                      {t("privileged.coupons.timesOf")}{" "}
+                                      {action.maxUses}
                                     </span>
                                   </>
                                 ) : (
                                   <>
                                     <i className="ri-repeat-line" />
                                     <span>
-                                      {t("privileged.coupons.unlimitedBadge")} ({action.usedCount || 0})
+                                      {t("privileged.coupons.unlimitedBadge")} (
+                                      {action.usedCount || 0})
                                     </span>
                                   </>
                                 )}
@@ -2931,8 +3056,12 @@ export default function Privileged() {
                                     <span>
                                       {action.applyScope === "with_shipping" ||
                                       action.applyToShipping
-                                        ? t("privileged.coupons.badgeWithShipping")
-                                        : t("privileged.coupons.badgeWithoutShipping")}
+                                        ? t(
+                                            "privileged.coupons.badgeWithShipping",
+                                          )
+                                        : t(
+                                            "privileged.coupons.badgeWithoutShipping",
+                                          )}
                                     </span>
                                   </span>
                                 )}
@@ -3565,9 +3694,7 @@ export default function Privileged() {
                               "privileged.coupons.minAmountPlaceholder",
                             )}
                             value={couponMinAmount}
-                            onChange={(e) =>
-                              setCouponMinAmount(e.target.value)
-                            }
+                            onChange={(e) => setCouponMinAmount(e.target.value)}
                           />
                         </div>
                         {renderConditionFields()}
@@ -3615,9 +3742,7 @@ export default function Privileged() {
                         </div>
                         <span className="privileged__field-hint">
                           {couponApplyScope === "with_shipping"
-                            ? t(
-                                "privileged.coupons.applyScopeWithShippingHint",
-                              )
+                            ? t("privileged.coupons.applyScopeWithShippingHint")
                             : t(
                                 "privileged.coupons.applyScopeWithoutShippingHint",
                               )}
@@ -4814,16 +4939,16 @@ export default function Privileged() {
                                     <BritishFlag width={16} height={11} /> EN
                                   </span>
                                   <span className="privileged__ann-text-preview">
-                                    {ann.text_en ||
-                                      ann.en?.text ||
-                                      "—"}
+                                    {ann.text_en || ann.en?.text || "—"}
                                   </span>
                                 </div>
                               </div>
                             )}
                           </div>
 
-                          {(ann.linkUrl_ru || ann.linkUrl_en || ann.linkUrl) && (
+                          {(ann.linkUrl_ru ||
+                            ann.linkUrl_en ||
+                            ann.linkUrl) && (
                             <div className="privileged__ann-links-row">
                               <i className="ri-link" />
                               <span className="privileged__ann-link-label">
@@ -5014,21 +5139,45 @@ export default function Privileged() {
                       </div>
 
                       {announcementType === "small" ? (
-                        <div className="privileged__ann-lang-blocks" style={{ gridTemplateColumns: "1fr" }}>
+                        <div
+                          className="privileged__ann-lang-blocks"
+                          style={{ gridTemplateColumns: "1fr" }}
+                        >
                           <div className="privileged__ann-lang-card">
-                            <div className="privileged__ann-lang-card-header" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <i className="ri-sparkling-2-fill" style={{ color: "#d4af37", fontSize: "1.15rem" }} />
+                            <div
+                              className="privileged__ann-lang-card-header"
+                              style={{
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: "8px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <i
+                                  className="ri-sparkling-2-fill"
+                                  style={{
+                                    color: "#d4af37",
+                                    fontSize: "1.15rem",
+                                  }}
+                                />
                                 <strong>
                                   {announcementType === "small"
-                            ? language === "ru"
-                              ? "Введите объявление на любом языке (укр, рус, англ и др.) — ИИ переведёт на все языки сайта"
-                              : "Enter announcement in any language (Ukrainian, Russian, English, etc.) — AI translates to all site languages"
-                            : language === "ru"
-                              ? "Плакат (отображается на всех языках сайта)"
-                              : "Poster (displayed across all site languages)"}
+                                    ? language === "ru"
+                                      ? "Введите объявление на любом языке (укр, рус, англ и др.) — ИИ переведёт на все языки сайта"
+                                      : "Enter announcement in any language (Ukrainian, Russian, English, etc.) — AI translates to all site languages"
+                                    : language === "ru"
+                                      ? "Плакат (отображается на всех языках сайта)"
+                                      : "Poster (displayed across all site languages)"}
                                 </strong>
-                                <span className="privileged__required-mark">*</span>
+                                <span className="privileged__required-mark">
+                                  *
+                                </span>
                               </div>
                               <button
                                 type="button"
@@ -5045,7 +5194,13 @@ export default function Privileged() {
                                   ) || translatingAnnouncement
                                 }
                               >
-                                <i className={translatingAnnouncement ? "ri-loader-4-line privileged__button-spin" : "ri-translate-2"} />
+                                <i
+                                  className={
+                                    translatingAnnouncement
+                                      ? "ri-loader-4-line privileged__button-spin"
+                                      : "ri-translate-2"
+                                  }
+                                />
                                 {language === "ru"
                                   ? translatingAnnouncement
                                     ? "ИИ переводит..."
@@ -5056,129 +5211,150 @@ export default function Privileged() {
                               </button>
                             </div>
 
-<div className="privileged__form-field">
-                               <label className="privileged__field-label">
-                                 {language === "ru"
-                                   ? "Текст объявления (ИИ автоматически создаст версии на всех языках сайта)"
-                                   : "Announcement Text (AI will automatically create versions for all site languages)"}
-                                 <span className="privileged__required-mark">*</span>
-                               </label>
-                               <textarea
-                                 className="privileged__field-textarea"
-                                 rows={3}
-                                 required
-                                 value={announcementTextRu}
-                                 onChange={(e) => {
-                                   setAnnouncementTextRu(e.target.value);
-                                   setAnnouncementTextEn("");
-                                   setAnnouncementTextHu("");
-                                   setAnnouncementTextBg("");
-                                   setAnnouncementTextEl("");
-                                   setAnnouncementTextRo("");
-                                 }}
-                                 placeholder={
-                                   language === "ru"
-                                     ? "Например (на любом языке): Увага! Знижка 20% на всі східні парфуми за промокодом WARDA20! Бесплатная доставка от 50€!"
-                                     : "e.g. (in any language): Special offer! 20% off all Arabian perfumes with code WARDA20!"
-                                 }
-                               />
-                             </div>
+                            <div className="privileged__form-field">
+                              <label className="privileged__field-label">
+                                {language === "ru"
+                                  ? "Текст объявления (ИИ автоматически создаст версии на всех языках сайта)"
+                                  : "Announcement Text (AI will automatically create versions for all site languages)"}
+                                <span className="privileged__required-mark">
+                                  *
+                                </span>
+                              </label>
+                              <textarea
+                                className="privileged__field-textarea"
+                                rows={3}
+                                required
+                                value={announcementTextRu}
+                                onChange={(e) => {
+                                  setAnnouncementTextRu(e.target.value);
+                                  setAnnouncementTextEn("");
+                                  setAnnouncementTextHu("");
+                                  setAnnouncementTextBg("");
+                                  setAnnouncementTextEl("");
+                                  setAnnouncementTextRo("");
+                                }}
+                                placeholder={
+                                  language === "ru"
+                                    ? "Например (на любом языке): Увага! Знижка 20% на всі східні парфуми за промокодом WARDA20! Бесплатная доставка от 50€!"
+                                    : "e.g. (in any language): Special offer! 20% off all Arabian perfumes with code WARDA20!"
+                                }
+                              />
+                            </div>
 
-                             {announcementTextEn && (
-                               <div className="privileged__ann-small-preview-dual" style={{ marginTop: "8px", marginBottom: "10px" }}>
-                                 <div className="privileged__ann-small-lang-item">
-                                   <span className="privileged__ann-lang-badge">
-                                     <RussianFlag width={16} height={11} /> RU
-                                   </span>
-                                   <span className="privileged__ann-text-preview">
-                                     {announcementTextRu}
-                                   </span>
-                                 </div>
-                                 <div className="privileged__ann-small-lang-item">
-                                   <span className="privileged__ann-lang-badge">
-                                     <BritishFlag width={16} height={11} /> EN
-                                   </span>
-                                   <span className="privileged__ann-text-preview">
-                                     {announcementTextEn}
-                                   </span>
-                                 </div>
-                                 {announcementTextHu && (
-                                   <div className="privileged__ann-small-lang-item">
-                                     <span className="privileged__ann-lang-badge">
-                                       <HungarianFlag width={16} height={11} /> HU
-                                     </span>
-                                     <span className="privileged__ann-text-preview">
-                                       {announcementTextHu}
-                                     </span>
-                                   </div>
-                                 )}
-                                 {announcementTextBg && (
-                                   <div className="privileged__ann-small-lang-item">
-                                     <span className="privileged__ann-lang-badge">
-                                       <BulgarianFlag width={16} height={11} /> BG
-                                     </span>
-                                     <span className="privileged__ann-text-preview">
-                                       {announcementTextBg}
-                                     </span>
-                                   </div>
-                                 )}
-                                 {announcementTextEl && (
-                                   <div className="privileged__ann-small-lang-item">
-                                     <span className="privileged__ann-lang-badge">
-                                       <GreekFlag width={16} height={11} /> EL
-                                     </span>
-                                     <span className="privileged__ann-text-preview">
-                                       {announcementTextEl}
-                                     </span>
-                                   </div>
-                                 )}
-                                 {announcementTextRo && (
-                                   <div className="privileged__ann-small-lang-item">
-                                     <span className="privileged__ann-lang-badge">
-                                       <RomanianFlag width={16} height={11} /> RO
-                                     </span>
-                                     <span className="privileged__ann-text-preview">
-                                       {announcementTextRo}
-                                     </span>
-                                   </div>
-                                 )}
-                               </div>
-                             )}
+                            {announcementTextEn && (
+                              <div
+                                className="privileged__ann-small-preview-dual"
+                                style={{
+                                  marginTop: "8px",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                <div className="privileged__ann-small-lang-item">
+                                  <span className="privileged__ann-lang-badge">
+                                    <RussianFlag width={16} height={11} /> RU
+                                  </span>
+                                  <span className="privileged__ann-text-preview">
+                                    {announcementTextRu}
+                                  </span>
+                                </div>
+                                <div className="privileged__ann-small-lang-item">
+                                  <span className="privileged__ann-lang-badge">
+                                    <BritishFlag width={16} height={11} /> EN
+                                  </span>
+                                  <span className="privileged__ann-text-preview">
+                                    {announcementTextEn}
+                                  </span>
+                                </div>
+                                {announcementTextHu && (
+                                  <div className="privileged__ann-small-lang-item">
+                                    <span className="privileged__ann-lang-badge">
+                                      <HungarianFlag width={16} height={11} />{" "}
+                                      HU
+                                    </span>
+                                    <span className="privileged__ann-text-preview">
+                                      {announcementTextHu}
+                                    </span>
+                                  </div>
+                                )}
+                                {announcementTextBg && (
+                                  <div className="privileged__ann-small-lang-item">
+                                    <span className="privileged__ann-lang-badge">
+                                      <BulgarianFlag width={16} height={11} />{" "}
+                                      BG
+                                    </span>
+                                    <span className="privileged__ann-text-preview">
+                                      {announcementTextBg}
+                                    </span>
+                                  </div>
+                                )}
+                                {announcementTextEl && (
+                                  <div className="privileged__ann-small-lang-item">
+                                    <span className="privileged__ann-lang-badge">
+                                      <GreekFlag width={16} height={11} /> EL
+                                    </span>
+                                    <span className="privileged__ann-text-preview">
+                                      {announcementTextEl}
+                                    </span>
+                                  </div>
+                                )}
+                                {announcementTextRo && (
+                                  <div className="privileged__ann-small-lang-item">
+                                    <span className="privileged__ann-lang-badge">
+                                      <RomanianFlag width={16} height={11} /> RO
+                                    </span>
+                                    <span className="privileged__ann-text-preview">
+                                      {announcementTextRo}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
-                             <div className="privileged__form-field">
-                               <label className="privileged__field-label">
-                                 {language === "ru"
-                                   ? "Ссылка при клике (необязательно)"
-                                   : "Click URL (optional)"}
-                               </label>
-                               <input
-                                 type="text"
-                                 className="privileged__field-input"
-                                 value={announcementLinkUrlRu}
-                                 onChange={(e) => {
-                                   setAnnouncementLinkUrlRu(e.target.value);
-                                   setAnnouncementLinkUrlEn("");
-                                   setAnnouncementLinkUrlHu("");
-                                   setAnnouncementLinkUrlBg("");
-                                   setAnnouncementLinkUrlEl("");
-                                   setAnnouncementLinkUrlRo("");
-                                 }}
-                                 placeholder="/featured или https://..."
-                               />
-                             </div>
+                            <div className="privileged__form-field">
+                              <label className="privileged__field-label">
+                                {language === "ru"
+                                  ? "Ссылка при клике (необязательно)"
+                                  : "Click URL (optional)"}
+                              </label>
+                              <input
+                                type="text"
+                                className="privileged__field-input"
+                                value={announcementLinkUrlRu}
+                                onChange={(e) => {
+                                  setAnnouncementLinkUrlRu(e.target.value);
+                                  setAnnouncementLinkUrlEn("");
+                                  setAnnouncementLinkUrlHu("");
+                                  setAnnouncementLinkUrlBg("");
+                                  setAnnouncementLinkUrlEl("");
+                                  setAnnouncementLinkUrlRo("");
+                                }}
+                                placeholder="/featured или https://..."
+                              />
+                            </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="privileged__ann-lang-blocks" style={{ gridTemplateColumns: "1fr" }}>
+                        <div
+                          className="privileged__ann-lang-blocks"
+                          style={{ gridTemplateColumns: "1fr" }}
+                        >
                           <div className="privileged__ann-lang-card">
                             <div className="privileged__ann-lang-card-header">
-                              <i className="ri-image-2-line" style={{ color: "#d4af37", fontSize: "1.15rem" }} />
+                              <i
+                                className="ri-image-2-line"
+                                style={{
+                                  color: "#d4af37",
+                                  fontSize: "1.15rem",
+                                }}
+                              />
                               <strong>
                                 {language === "ru"
                                   ? "Плакат (отображается на всех языках сайта)"
                                   : "Poster (displayed across all site languages)"}
                               </strong>
-                              <span className="privileged__required-mark">*</span>
+                              <span className="privileged__required-mark">
+                                *
+                              </span>
                             </div>
 
                             <div className="privileged__form-field">
@@ -5186,7 +5362,9 @@ export default function Privileged() {
                                 {language === "ru"
                                   ? "Ссылка на фото плаката"
                                   : "Poster Image URL"}
-                                <span className="privileged__required-mark">*</span>
+                                <span className="privileged__required-mark">
+                                  *
+                                </span>
                               </label>
                               <input
                                 type="url"
@@ -5416,7 +5594,8 @@ export default function Privileged() {
                   file: ".github/workflows/qogita-smart-sync.yml",
                   descKey: "privileged.gitActions.wfSmartSyncDesc",
                   icon: "ri-refresh-line",
-                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/qogita-smart-sync.yml",
+                  actionUrl:
+                    "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/qogita-smart-sync.yml",
                 },
                 {
                   id: "brand-sync",
@@ -5424,7 +5603,8 @@ export default function Privileged() {
                   file: ".github/workflows/brand-sync.yml",
                   descKey: "privileged.gitActions.wfBrandSyncDesc",
                   icon: "ri-filter-3-line",
-                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/brand-sync.yml",
+                  actionUrl:
+                    "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/brand-sync.yml",
                 },
                 {
                   id: "full-database-refresh",
@@ -5432,7 +5612,8 @@ export default function Privileged() {
                   file: ".github/workflows/full-database-refresh.yml",
                   descKey: "privileged.gitActions.wfFullRefreshDesc",
                   icon: "ri-database-2-line",
-                  actionUrl: "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/full-database-refresh.yml",
+                  actionUrl:
+                    "https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/full-database-refresh.yml",
                   danger: true,
                 },
               ].map((wf) => {
@@ -5442,7 +5623,10 @@ export default function Privileged() {
                 const isError = info.status === "error";
 
                 return (
-                  <div className={`privileged__workflow-card ${wf.danger ? "privileged__workflow-card--danger" : ""}`} key={wf.id}>
+                  <div
+                    className={`privileged__workflow-card ${wf.danger ? "privileged__workflow-card--danger" : ""}`}
+                    key={wf.id}
+                  >
                     <div className="privileged__wf-icon-wrap">
                       <i className={wf.icon} />
                     </div>
@@ -5578,7 +5762,9 @@ export default function Privileged() {
             <QogitaManager language={language} />
           </div>
         )}
-        {activeSection === "products" && <ProductsSection language={language} />}
+        {activeSection === "products" && (
+          <ProductsSection language={language} />
+        )}
         {activeSection === "other" && (
           <div className="privileged__panel">
             <div className="privileged__panel-header">
@@ -5589,9 +5775,14 @@ export default function Privileged() {
                 </h2>
               </div>
             </div>
-            <form onSubmit={handleSaveSettings} style={{ display: "grid", gap: "1rem", maxWidth: 520 }}>
+            <form
+              onSubmit={handleSaveSettings}
+              style={{ display: "grid", gap: "1rem", maxWidth: 520 }}
+            >
               <strong>
-                {language === "ru" ? "Допустимый минимальный заказ (шт.)" : "Allowed minimum order (pcs)"}
+                {language === "ru"
+                  ? "Допустимый минимальный заказ (шт.)"
+                  : "Allowed minimum order (pcs)"}
               </strong>
               <p className="privileged__stats-text">
                 {language === "ru"
@@ -5600,7 +5791,9 @@ export default function Privileged() {
               </p>
               <div className="privileged__form-row-2">
                 <div className="privileged__form-group">
-                  <label className="privileged__form-label">{language === "ru" ? "От (шт.)" : "From (pcs)"}</label>
+                  <label className="privileged__form-label">
+                    {language === "ru" ? "От (шт.)" : "From (pcs)"}
+                  </label>
                   <input
                     type="number"
                     min="0"
@@ -5612,7 +5805,9 @@ export default function Privileged() {
                   />
                 </div>
                 <div className="privileged__form-group">
-                  <label className="privileged__form-label">{language === "ru" ? "До (шт.)" : "To (pcs)"}</label>
+                  <label className="privileged__form-label">
+                    {language === "ru" ? "До (шт.)" : "To (pcs)"}
+                  </label>
                   <input
                     type="number"
                     min="0"
@@ -5632,10 +5827,18 @@ export default function Privileged() {
                 </span>
               )}
               <div>
-                <button type="submit" className="button" disabled={savingSettings || !settingsLoaded}>
+                <button
+                  type="submit"
+                  className="button"
+                  disabled={savingSettings || !settingsLoaded}
+                >
                   {savingSettings
-                    ? language === "ru" ? "Сохранение..." : "Saving..."
-                    : language === "ru" ? "Сохранить" : "Save"}
+                    ? language === "ru"
+                      ? "Сохранение..."
+                      : "Saving..."
+                    : language === "ru"
+                      ? "Сохранить"
+                      : "Save"}
                 </button>
               </div>
             </form>
@@ -5730,7 +5933,9 @@ export default function Privileged() {
                 }}
               >
                 <i className="ri-play-fill" />
-                {language === "ru" ? "Подтвердить и запустить" : "Confirm and start"}
+                {language === "ru"
+                  ? "Подтвердить и запустить"
+                  : "Confirm and start"}
               </button>
             </div>
           </div>

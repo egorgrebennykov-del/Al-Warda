@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./DescriptionQueue.css";
 
 const STATUS_OPTIONS = ["all", "unchecked", "error", "not_found", "unverified"];
@@ -26,7 +27,9 @@ function formatDateTime(isoString, isRussian) {
 async function readJson(response) {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText || "non-JSON response"}`);
+    throw new Error(
+      `HTTP ${response.status}: ${response.statusText || "non-JSON response"}`,
+    );
   }
   const payload = await response.json();
   if (!response.ok) {
@@ -49,56 +52,573 @@ export default function DescriptionQueue({ language = "ru" }) {
   const [message, setMessage] = useState("");
   const [manualConfigItem, setManualConfigItem] = useState(null);
   const [autoRun, setAutoRun] = useState(false);
-  const [autoProgress, setAutoProgress] = useState({ processed: 0, found: 0, errors: 0 });
+  const [autoProgress, setAutoProgress] = useState({
+    processed: 0,
+    found: 0,
+    errors: 0,
+  });
   const autoRunRef = useRef(false);
 
-  const labels = useMemo(() => ({
-    title: isRussian ? "Описание товаров" : "Product descriptions",
-    subtitle: isRussian
-      ? "Пайплайн: данные Qogita -> генерация фото -> палитра ароматов -> описание (Gemini). "
-        + "Описание генерируется только для товаров с готовым фото и без реального описания."
-      : "Pipeline: Qogita data -> photo generation -> aroma palette -> description (Gemini). "
-        + "Descriptions are generated only for products with a completed photo and no real description yet.",
-    refreshList: isRussian ? "Обновить список" : "Refresh list",
-    generateSelected: isRussian ? "Сгенерировать выбранные" : "Generate selected",
-    generateNext: isRussian ? "Сгенерировать следующие 10" : "Generate next 10",
-    generateAll: isRussian ? "Сгенерировать все" : "Generate all",
-    stopAll: isRussian ? "Остановить" : "Stop",
-    batchProgress: (processed, remaining) =>
-      isRussian
-        ? `Массовая генерация: обработано ${processed}, осталось ~${remaining}`
-        : `Batch generation: ${processed} processed, ~${remaining} left`,
-    search: isRussian ? "Поиск по названию или бренду" : "Search by name or brand",
-    selectAll: isRussian ? "Выбрать все" : "Select all",
-    clearSelection: isRussian ? "Снять выбор" : "Clear selection",
-    empty: isRussian ? "У всех товаров есть описание." : "Every product has a description.",
-    emptyFiltered: isRussian ? "По этому фильтру ничего не найдено." : "Nothing matches this filter.",
-    selectedCount: (count) => (isRussian ? `Выбрано: ${count}` : `Selected: ${count}`),
-    generateOne: isRussian ? "Сгенерировать" : "Generate",
-    manual: isRussian ? "Настроить вручную" : "Manual setup",
-    checking: isRussian ? "Генерируем..." : "Generating...",
-    noImage: isRussian ? "Нет фото" : "No image",
-    photoPending: isRussian ? "Фото ещё не сгенерировано" : "Photo not generated yet",
-    setExcluded: isRussian ? "Сет - генерация не применяется" : "Set - generation skipped",
-    queryLabel: isRussian ? "Запрос" : "Query",
-    generatedAt: isRussian ? "Сгенерировано" : "Generated",
-    never: isRussian ? "Ещё не генерировались" : "Not generated yet",
-    groupPending: isRussian ? "Очередь генерации" : "Generation queue",
-    groupErrors: isRussian ? "Ошибки" : "Errors",
-    groupEmpty: isRussian ? "Пусто" : "Empty",
-    errorsHint: isRussian
-      ? "Товары без описания или с ошибкой генерации. Нажмите «Настроить вручную», чтобы задать описание самому."
-      : "Products without a description or with a generation error. Click Manual setup to enter the description yourself.",
-    statusLabels: {
-      all: isRussian ? "Все" : "All",
-      unchecked: isRussian ? "Не сгенерированы" : "Not generated",
-      error: isRussian ? "Ошибки" : "Errors",
-      not_found: isRussian ? "Пустой ответ" : "Empty result",
-      unverified: isRussian ? "Без описания" : "No description",
+  const labels = useMemo(
+    () => ({
+      title: isRussian ? "Описание товаров" : "Product descriptions",
+      subtitle: isRussian
+        ? "Пайплайн: данные Qogita -> генерация фото -> палитра ароматов -> описание (Gemini). " +
+          "Описание генерируется только для товаров с готовым фото и без реального описания."
+        : "Pipeline: Qogita data -> photo generation -> aroma palette -> description (Gemini). " +
+          "Descriptions are generated only for products with a completed photo and no real description yet.",
+      refreshList: isRussian ? "Обновить список" : "Refresh list",
+      generateSelected: isRussian
+        ? "Сгенерировать выбранные"
+        : "Generate selected",
+      generateNext: isRussian
+        ? "Сгенерировать следующие 10"
+        : "Generate next 10",
+      generateAll: isRussian ? "Сгенерировать все" : "Generate all",
+      stopAll: isRussian ? "Остановить" : "Stop",
+      batchProgress: (processed, remaining) =>
+        isRussian
+          ? `Массовая генерация: обработано ${processed}, осталось ~${remaining}`
+          : `Batch generation: ${processed} processed, ~${remaining} left`,
+      search: isRussian
+        ? "Поиск по названию или бренду"
+        : "Search by name or brand",
+      selectAll: isRussian ? "Выбрать все" : "Select all",
+      clearSelection: isRussian ? "Снять выбор" : "Clear selection",
+      empty: isRussian
+        ? "У всех товаров есть описание."
+        : "Every product has a description.",
+      emptyFiltered: isRussian
+        ? "По этому фильтру ничего не найдено."
+        : "Nothing matches this filter.",
+      selectedCount: (count) =>
+        isRussian ? `Выбрано: ${count}` : `Selected: ${count}`,
+      generateOne: isRussian ? "Сгенерировать" : "Generate",
+      manual: isRussian ? "Настроить вручную" : "Manual setup",
+      checking: isRussian ? "Генерируем..." : "Generating...",
+      noImage: isRussian ? "Нет фото" : "No image",
+      photoPending: isRussian
+        ? "Фото ещё не сгенерировано"
+        : "Photo not generated yet",
+      setExcluded: isRussian
+        ? "Сет - генерация не применяется"
+        : "Set - generation skipped",
+      queryLabel: isRussian ? "Запрос" : "Query",
+      generatedAt: isRussian ? "Сгенерировано" : "Generated",
+      never: isRussian ? "Ещё не генерировались" : "Not generated yet",
+      groupPending: isRussian ? "Очередь генерации" : "Generation queue",
+      groupErrors: isRussian ? "Ошибки" : "Errors",
+      groupEmpty: isRussian ? "Пусто" : "Empty",
+      errorsHint: isRussian
+        ? "Товары без описания или с ошибкой генерации. Нажмите «Настроить вручную», чтобы задать описание самому."
+        : "Products without a description or with a generation error. Click Manual setup to enter the description yourself.",
+      statusLabels: {
+        all: isRussian ? "Все" : "All",
+        unchecked: isRussian ? "Не сгенерированы" : "Not generated",
+        error: isRussian ? "Ошибки" : "Errors",
+        not_found: isRussian ? "Пустой ответ" : "Empty result",
+        unverified: isRussian ? "Без описания" : "No description",
+      },
+      countLabels: {
+        readyToGenerate: isRussian ? "Готовы к генерации" : "Ready to generate",
+        problem: isRussian ? "Ошибки" : "Errors",
+        total: isRussian ? "Всего без описания" : "Missing description",
+      },
+    }),
+    [isRussian],
+  );
+
+  const loadQueue = useCallback(async () => {
+    const params = new URLSearchParams();
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (query.trim()) params.set("q", query.trim());
+    const response = await fetch(
+      `/api/admin/descriptions/misses${params.toString() ? `?${params.toString()}` : ""}`,
+      { credentials: "same-origin" },
+    );
+    const payload = await readJson(response);
+    const nextItems = Array.isArray(payload.items) ? payload.items : [];
+    setItems(nextItems);
+    setCounts({ ...EMPTY_COUNTS, ...(payload.counts || {}) });
+    setSelected((current) => {
+      const validIds = new Set(nextItems.map((item) => String(item.id)));
+      return Object.fromEntries(
+        Object.entries(current).filter(
+          ([id, checked]) => checked && validIds.has(id),
+        ),
+      );
+    });
+    setError("");
+  }, [statusFilter, query]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      loadQueue()
+        .catch((loadError) => {
+          if (!cancelled)
+            setError(
+              loadError.message ||
+                (isRussian
+                  ? "Не удалось загрузить список"
+                  : "Could not load the list"),
+            );
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [loadQueue, isRussian]);
+
+  const problemCount =
+    (counts.error || 0) + (counts.notFound || 0) + (counts.unverified || 0);
+
+  const selectableItems = items;
+  const selectedIds = useMemo(
+    () => Object.keys(selected).filter((id) => selected[id]),
+    [selected],
+  );
+
+  const toggleSelect = (id) => {
+    setSelected((current) => ({
+      ...current,
+      [String(id)]: !current[String(id)],
+    }));
+  };
+
+  const toggleSelectAll = () => {
+    if (
+      selectedIds.length === selectableItems.length &&
+      selectableItems.length > 0
+    ) {
+      setSelected({});
+      return;
+    }
+    setSelected(
+      Object.fromEntries(
+        selectableItems.map((item) => [String(item.id), true]),
+      ),
+    );
+  };
+
+  const runRefresh = async (body, idsForSpinner = []) => {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    if (idsForSpinner.length) {
+      setBusyIds(
+        Object.fromEntries(idsForSpinner.map((id) => [String(id), true])),
+      );
+    }
+    try {
+      const response = await fetch("/api/admin/descriptions/refresh", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = await readJson(response);
+      setMessage(
+        isRussian
+          ? `Сгенерировано описаний: ${payload.found}. Пустой ответ: ${payload.notFound}. Ошибок: ${payload.errors}.`
+          : `Descriptions generated: ${payload.found}. Empty result: ${payload.notFound}. Errors: ${payload.errors}.`,
+      );
+      setSelected({});
+      await loadQueue();
+    } catch (refreshError) {
+      setError(
+        refreshError.message ||
+          (isRussian
+            ? "Не удалось сгенерировать описание"
+            : "Could not generate the description"),
+      );
+    } finally {
+      setBusy(false);
+      setBusyIds({});
+    }
+  };
+
+  const generateSelected = () => {
+    if (!selectedIds.length) return;
+    runRefresh({ ids: selectedIds }, selectedIds);
+  };
+
+  const generateNext = () => runRefresh({ limit: 10 });
+
+  const generateOne = (id) => runRefresh({ id }, [id]);
+
+  const fetchReadyCount = async () => {
+    const response = await fetch("/api/admin/descriptions/misses", {
+      credentials: "same-origin",
+    });
+    const payload = await readJson(response);
+    return Number(payload?.counts?.readyToGenerate) || 0;
+  };
+
+  // Walk the whole eligible queue (photo-ready, no description yet) in batches
+  // of 25 until nothing is left or the queue stops shrinking (the rest are
+  // permanent errors that belong in the Errors filter).
+  const generateAll = async () => {
+    if (autoRunRef.current) return;
+    autoRunRef.current = true;
+    setAutoRun(true);
+    setError("");
+    setMessage("");
+    const totals = { processed: 0, found: 0, errors: 0 };
+    setAutoProgress({ ...totals });
+    try {
+      while (autoRunRef.current) {
+        const before = await fetchReadyCount();
+        if (before === 0) break;
+        const response = await fetch("/api/admin/descriptions/refresh", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ limit: 25 }),
+        });
+        const payload = await readJson(response);
+        totals.processed += payload.checked || 0;
+        totals.found += payload.found || 0;
+        totals.errors += payload.errors || 0;
+        setAutoProgress({ ...totals });
+        await loadQueue().catch(() => {});
+        const after = await fetchReadyCount();
+        if (after === 0 || after >= before) break;
+      }
+    } catch (runError) {
+      setError(
+        runError.message ||
+          (isRussian
+            ? "Не удалось выполнить массовую генерацию"
+            : "Could not run the batch generation"),
+      );
+    } finally {
+      autoRunRef.current = false;
+      setAutoRun(false);
+      await loadQueue().catch(() => {});
+      setMessage(
+        isRussian
+          ? `Массовая генерация завершена. Обработано: ${totals.processed}. Описаний: ${totals.found}. Ошибок: ${totals.errors}.`
+          : `Batch generation finished. Processed: ${totals.processed}. Descriptions: ${totals.found}. Errors: ${totals.errors}.`,
+      );
+    }
+  };
+
+  const stopAll = () => {
+    autoRunRef.current = false;
+  };
+
+  useEffect(
+    () => () => {
+      autoRunRef.current = false;
     },
-    countLabels: {
-      readyToGenerate: isRussian ? "Готовы к генерации" : "Ready to generate",
-      problem: isRussian ? "Ошибки" : "Errors",
-      total: isRussian ? "Всего без описания" : "Missing description",
-    },
-  }), [isRussian]);
+    [],
+  );
+
+  const renderItem = (item) => {
+    const itemId = String(item.id);
+    const isBusy = Boolean(busyIds[itemId]);
+    const isError =
+      item.status === "error" ||
+      item.status === "not_found" ||
+      item.status === "unverified";
+    return (
+      <li
+        key={itemId}
+        className={`description-queue__item ${selected[itemId] ? "description-queue__item--selected" : ""}`}
+      >
+        <label className="description-queue__checkbox">
+          <input
+            type="checkbox"
+            checked={Boolean(selected[itemId])}
+            onChange={() => toggleSelect(item.id)}
+            aria-label={item.name}
+          />
+        </label>
+
+        <div className="description-queue__thumb">
+          {item.image ? (
+            <img
+              src={item.image}
+              alt=""
+              loading="lazy"
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <span className="description-queue__thumb-placeholder">
+              <i className="ri-image-line" />
+              <small>{labels.noImage}</small>
+            </span>
+          )}
+        </div>
+
+        <div className="description-queue__info">
+          <div className="description-queue__name">{item.name || "—"}</div>
+          <div className="description-queue__brand">{item.brand || "—"}</div>
+          <div className="description-queue__meta">
+            <span
+              className={`description-queue__badge description-queue__badge--${item.status}`}
+            >
+              {labels.statusLabels[item.status] || item.status}
+            </span>
+            <span className="description-queue__photo-ready">
+              <i className="ri-image-circle-line" />
+              {isRussian ? "Фото готово" : "Photo ready"}
+            </span>
+            <span>
+              <i className="ri-time-line" />
+              {item.checkedAt
+                ? formatDateTime(item.checkedAt, isRussian)
+                : labels.never}
+            </span>
+          </div>
+          {item.error && (
+            <div className="description-queue__item-error" title={item.error}>
+              {item.error}
+            </div>
+          )}
+        </div>
+
+        <div className="description-queue__item-actions">
+          <button
+            type="button"
+            className="description-queue__btn description-queue__btn--small"
+            onClick={() => generateOne(item.id)}
+            disabled={busy || isBusy}
+          >
+            <i className={`ri-sparkling-2-line ${isBusy ? "ri-spin" : ""}`} />
+            {isBusy ? labels.checking : labels.generateOne}
+          </button>
+          {isError && (
+            <button
+              type="button"
+              className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
+              onClick={() => setManualConfigItem(item)}
+              disabled={busy}
+              title={
+                isRussian
+                  ? "Настроить товар вручную"
+                  : "Configure the product manually"
+              }
+            >
+              <i className="ri-settings-3-line" />
+              {labels.manual}
+            </button>
+          )}
+        </div>
+      </li>
+    );
+  };
+
+  return (
+    <section className="description-queue">
+      <header className="description-queue__header">
+        <div>
+          <h2 className="description-queue__title">
+            <i className="ri-sparkling-2-line" />
+            {labels.title}
+          </h2>
+          <p className="description-queue__subtitle">{labels.subtitle}</p>
+        </div>
+      </header>
+
+      <div className="description-queue__stats">
+        <div className="description-queue__stat">
+          <span className="description-queue__stat-value">
+            {counts.total ?? 0}
+          </span>
+          <span className="description-queue__stat-label">
+            {labels.countLabels.total}
+          </span>
+        </div>
+        <div className="description-queue__stat">
+          <span className="description-queue__stat-value">
+            {counts.readyToGenerate ?? 0}
+          </span>
+          <span className="description-queue__stat-label">
+            {labels.countLabels.readyToGenerate}
+          </span>
+        </div>
+        <div className="description-queue__stat description-queue__stat--error">
+          <span className="description-queue__stat-value">{problemCount}</span>
+          <span className="description-queue__stat-label">
+            {labels.countLabels.problem}
+          </span>
+        </div>
+      </div>
+
+      <div className="description-queue__toolbar">
+        <div className="description-queue__filters" role="tablist">
+          {STATUS_OPTIONS.map((status) => (
+            <button
+              key={status}
+              type="button"
+              role="tab"
+              aria-selected={statusFilter === status}
+              className={`description-queue__filter ${statusFilter === status ? "description-queue__filter--active" : ""}`}
+              onClick={() => setStatusFilter(status)}
+            >
+              {labels.statusLabels[status]}
+            </button>
+          ))}
+        </div>
+        <input
+          type="search"
+          className="description-queue__search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={labels.search}
+          aria-label={labels.search}
+        />
+      </div>
+
+      <div className="description-queue__actions">
+        <label className="description-queue__select-all">
+          <input
+            type="checkbox"
+            checked={
+              selectedIds.length === selectableItems.length &&
+              selectableItems.length > 0
+            }
+            onChange={toggleSelectAll}
+            disabled={!selectableItems.length}
+          />
+          <span>{labels.selectAll}</span>
+        </label>
+        {selectedIds.length > 0 && (
+          <button
+            type="button"
+            className="description-queue__btn description-queue__btn--ghost description-queue__btn--small"
+            onClick={() => setSelected({})}
+          >
+            {labels.clearSelection}
+          </button>
+        )}
+        <span className="description-queue__selected">
+          {labels.selectedCount(selectedIds.length)}
+        </span>
+
+        <span className="description-queue__actions-spacer" />
+
+        <button
+          type="button"
+          className="description-queue__btn"
+          onClick={() => {
+            setLoading(true);
+            loadQueue()
+              .catch((loadError) => setError(loadError.message))
+              .finally(() => setLoading(false));
+          }}
+          disabled={loading || busy}
+        >
+          <i className={`ri-refresh-line ${loading ? "ri-spin" : ""}`} />
+          {labels.refreshList}
+        </button>
+        <button
+          type="button"
+          className="description-queue__btn description-queue__btn--primary"
+          onClick={generateSelected}
+          disabled={busy || !selectedIds.length}
+        >
+          <i className="ri-sparkling-2-line" />
+          {labels.generateSelected}
+        </button>
+        <button
+          type="button"
+          className="description-queue__btn"
+          onClick={generateNext}
+          disabled={busy || autoRun || !selectableItems.length}
+        >
+          <i className={`ri-play-list-line ${busy ? "ri-spin" : ""}`} />
+          {labels.generateNext}
+        </button>
+        {autoRun ? (
+          <button
+            type="button"
+            className="description-queue__btn description-queue__btn--danger"
+            onClick={stopAll}
+          >
+            <i className="ri-stop-circle-line" />
+            {labels.stopAll}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="description-queue__btn"
+            onClick={generateAll}
+            disabled={busy || (counts.readyToGenerate || 0) === 0}
+            title={labels.generateAll}
+          >
+            <i className="ri-flashlight-line" />
+            {labels.generateAll} ({counts.readyToGenerate || 0})
+          </button>
+        )}
+      </div>
+
+      {autoRun && (
+        <div className="description-queue__batch-progress" role="status">
+          <i className="ri-loader-4-line ri-spin" />
+          <span>
+            {labels.batchProgress(
+              autoProgress.processed,
+              counts.readyToGenerate || 0,
+            )}
+          </span>
+        </div>
+      )}
+
+      {(error || message) && (
+        <div
+          className={`description-queue__message ${error ? "description-queue__message--error" : "description-queue__message--success"}`}
+          role="status"
+        >
+          <i
+            className={
+              error ? "ri-error-warning-line" : "ri-checkbox-circle-line"
+            }
+          />
+          <span>{error || message}</span>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="description-queue__loader" role="status">
+          <i className="ri-loader-4-line ri-spin" />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="description-queue__empty">
+          {statusFilter === "all" && !query.trim()
+            ? labels.empty
+            : labels.emptyFiltered}
+        </div>
+      ) : (
+        <ul className="description-queue__list">
+          {items.map((item) => renderItem(item))}
+        </ul>
+      )}
+
+      {manualConfigItem && (
+        <ProductManualConfigModal
+          item={manualConfigItem}
+          language={language}
+          onClose={() => setManualConfigItem(null)}
+          onSaved={async (result) => {
+            setManualConfigItem(null);
+            setMessage(
+              isRussian
+                ? `Товар #${result.id} настроен вручную и сохранён в базе данных.`
+                : `Product #${result.id} was configured manually and saved to the database.`,
+            );
+            await loadQueue();
+          }}
+        />
+      )}
+    </section>
+  );
+}
