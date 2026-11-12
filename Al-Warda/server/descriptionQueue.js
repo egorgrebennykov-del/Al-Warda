@@ -1,4 +1,4 @@
-��/**
+/**
  * Gemini-powered perfume description queue (admin panel).
  *
  * Step 4 of the Al-Warda product pipeline:
