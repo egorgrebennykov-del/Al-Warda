@@ -284,3 +284,61 @@ async function readStockRow(env, id) {
   const rows = await response.json().catch(() => []);
   return Array.isArray(rows) ? rows[0] || null : null;
 }
+
+// Wipes only the Gemini-description fields (keeps photo, notes, everything
+// else) so the admin can regenerate the whole catalog from a clean slate.
+export async function clearDescriptions(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
+
+    const key = getServiceKey(env);
+    const supabaseUrl = getSupabaseUrl(env);
+    const rows = await fetchAllStocks(env, key);
+    const allItems = rows
+      .map((row) => queueItem(row, supabaseUrl))
+      .filter(Boolean);
+
+    let targets = allItems;
+    if (Array.isArray(body.ids) && body.ids.length) {
+      const requested = new Set(body.ids.map((id) => String(id)));
+      targets = allItems.filter((row) => requested.has(String(row.id)));
+    }
+
+    let cleared = 0;
+    const errors = [];
+    for (const row of targets) {
+      try {
+        const dbRow = await readStockRow(env, row.id);
+        const info =
+          dbRow?.info && typeof dbRow.info === "object" ? dbRow.info : {};
+        const {
+          descriptionRu,
+          descriptionEn,
+          descriptionSource,
+          descriptionsLookup,
+          descriptionLookup,
+          ...rest
+        } = info;
+        await patchStockInfo(env, row.id, rest);
+        cleared += 1;
+      } catch (error) {
+        errors.push({ id: row.id, error: error?.message || "Clear failed" });
+      }
+    }
+
+    return json({ cleared, errors: errors.length, details: errors });
+  } catch (error) {
+    return json(
+      { error: error?.message || "Could not clear descriptions" },
+      500,
+    );
+  }
+}

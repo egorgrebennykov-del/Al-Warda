@@ -29,6 +29,7 @@ import {
 import {
   getDescriptionQueue,
   refreshDescriptions,
+  clearDescriptions,
 } from "./descriptionQueue.js";
 
 const actionStatuses = {
@@ -176,6 +177,9 @@ export default {
       }
       if (method === "POST" && pathname === "/api/admin/descriptions/refresh") {
         return refreshDescriptions(request, env);
+      }
+      if (method === "POST" && pathname === "/api/admin/descriptions/clear") {
+        return clearDescriptions(request, env);
       }
 
       if (method === "GET" && pathname === "/api/admin/product-images/status") {

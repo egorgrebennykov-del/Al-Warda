@@ -11,7 +11,13 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import sharp from "sharp";
-import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById, getPerfumesByCategory, getBestSellers } from "../src/data/perfumesData.js";
+import {
+  PERFUMES,
+  PERFUME_CATEGORIES,
+  getPerfumeById,
+  getPerfumesByCategory,
+  getBestSellers,
+} from "../src/data/perfumesData.js";
 import {
   processWardaChat,
   filterInquiryMessageWithAI,
@@ -20,10 +26,19 @@ import {
   enrichPerfumeWithAI,
 } from "./wardaAssistantService.js";
 import { sendGuestInquiryEmail } from "./emailService.js";
-import { syncPerfumeCatalog, executeCatalogActionById } from "./catalogActionsService.js";
+import {
+  syncPerfumeCatalog,
+  executeCatalogActionById,
+} from "./catalogActionsService.js";
 import { setHttpAdapter } from "./httpClient.js";
 import qogitaClient, { QogitaClient } from "./qogitaClient.js";
-import { handleInboundWebhook, getWebhookLogs, mapQogitaProductToPerfume, getArabianDropshipPerfumes, getTransparentImageBuffer } from "./qogitaService.js";
+import {
+  handleInboundWebhook,
+  getWebhookLogs,
+  mapQogitaProductToPerfume,
+  getArabianDropshipPerfumes,
+  getTransparentImageBuffer,
+} from "./qogitaService.js";
 import { getOrGenerateFlaconByGtin } from "./productGeneratorService.js";
 import {
   getProductImageQueueStatus,
@@ -44,8 +59,12 @@ import {
 import {
   getDescriptionQueue,
   refreshDescriptions,
+  clearDescriptions,
 } from "./descriptionQueue.js";
-import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
+import {
+  createQogitaSessionCookie,
+  handleQogitaWorker,
+} from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
@@ -75,22 +94,38 @@ const ACTIONS = {
 };
 
 const actionStatuses = {
-  "qogita-smart-sync": { status: "idle", lastRun: null, error: null, output: "" },
+  "qogita-smart-sync": {
+    status: "idle",
+    lastRun: null,
+    error: null,
+    output: "",
+  },
   "brand-sync": { status: "idle", lastRun: null, error: null, output: "" },
-  "full-database-refresh": { status: "idle", lastRun: null, error: null, output: "" },
+  "full-database-refresh": {
+    status: "idle",
+    lastRun: null,
+    error: null,
+    output: "",
+  },
 };
 
 const PORT = Number(process.env.BOOK_COMPARE_PORT) || 3001;
 const MAX_BODY_SIZE = 5 * 1024 * 1024;
 
 function respond(res, status, payload, req) {
-  const jsonStr = typeof payload === "string" ? payload : JSON.stringify(payload);
-  const acceptEncoding = (req?.headers?.["accept-encoding"] || res._req?.headers?.["accept-encoding"] || "").toLowerCase();
+  const jsonStr =
+    typeof payload === "string" ? payload : JSON.stringify(payload);
+  const acceptEncoding = (
+    req?.headers?.["accept-encoding"] ||
+    res._req?.headers?.["accept-encoding"] ||
+    ""
+  ).toLowerCase();
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, X-Qogita-Signature",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, apikey, X-Qogita-Signature",
   };
 
   if (acceptEncoding.includes("gzip") && jsonStr.length > 1024) {
@@ -142,7 +177,10 @@ const server = createServer(async (req, res) => {
   const pathname = urlObj.pathname;
 
   // Static assets serving (dist / public assets)
-  if (req.method === "GET" && (pathname.startsWith("/assets/") || pathname.startsWith("/favicon"))) {
+  if (
+    req.method === "GET" &&
+    (pathname.startsWith("/assets/") || pathname.startsWith("/favicon"))
+  ) {
     const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, "");
     let filePath = path.join(appDir, "dist", safePath);
     if (!fs.existsSync(filePath)) {
@@ -161,7 +199,14 @@ const server = createServer(async (req, res) => {
         ".json": "application/json",
       };
       const contentType = mimeTypes[ext] || "application/octet-stream";
-      const isAsset = ext === ".png" || ext === ".jpg" || ext === ".jpeg" || ext === ".webp" || ext === ".svg" || ext === ".js" || ext === ".css";
+      const isAsset =
+        ext === ".png" ||
+        ext === ".jpg" ||
+        ext === ".jpeg" ||
+        ext === ".webp" ||
+        ext === ".svg" ||
+        ext === ".js" ||
+        ext === ".css";
       const cacheControl = isAsset
         ? "public, max-age=2592000, immutable"
         : "public, max-age=86400, stale-while-revalidate=604800";
@@ -186,7 +231,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if ((req.method === "POST" || req.method === "DELETE") && pathname === "/api/admin/product-images/failed") {
+  if (
+    (req.method === "POST" || req.method === "DELETE") &&
+    pathname === "/api/admin/product-images/failed"
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await deleteFailedProductItems(request, process.env);
@@ -197,7 +245,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === "/api/admin/product-images/requeue" && req.method === "POST") {
+  if (
+    pathname === "/api/admin/product-images/requeue" &&
+    req.method === "POST"
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await requeueFailedProductItems(request, process.env);
@@ -208,7 +259,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === "/api/admin/product-images/manual-save" && req.method === "POST") {
+  if (
+    pathname === "/api/admin/product-images/manual-save" &&
+    req.method === "POST"
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await saveManualProductItem(request, process.env);
@@ -230,7 +284,11 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if ((req.method === "POST" || req.method === "DELETE") && (pathname === "/api/admin/products/delete" || pathname === "/api/admin/products")) {
+  if (
+    (req.method === "POST" || req.method === "DELETE") &&
+    (pathname === "/api/admin/products/delete" ||
+      pathname === "/api/admin/products")
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await deleteAdminProducts(request, process.env);
@@ -241,10 +299,16 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === "/api/admin/settings" && (req.method === "GET" || req.method === "POST")) {
+  if (
+    pathname === "/api/admin/settings" &&
+    (req.method === "GET" || req.method === "POST")
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
-      const response = req.method === "GET" ? await getSiteSettings(request, process.env) : await saveSiteSettings(request, process.env);
+      const response =
+        req.method === "GET"
+          ? await getSiteSettings(request, process.env)
+          : await saveSiteSettings(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);
@@ -274,7 +338,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "GET" && pathname === "/api/admin/fragrance-notes/misses") {
+  if (
+    req.method === "GET" &&
+    pathname === "/api/admin/fragrance-notes/misses"
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await getFragranceNotesQueue(request, process.env);
@@ -285,7 +352,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && pathname === "/api/admin/fragrance-notes/refresh") {
+  if (
+    req.method === "POST" &&
+    pathname === "/api/admin/fragrance-notes/refresh"
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await refreshFragranceNotes(request, process.env);
@@ -318,6 +388,17 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && pathname === "/api/admin/descriptions/clear") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await clearDescriptions(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
   // Perfume catalog API
   if (req.method === "GET" && pathname === "/api/perfumes") {
     const category = urlObj.searchParams.get("category");
@@ -340,7 +421,11 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "GET" && (pathname === "/api/best-sellers" || pathname === "/api/perfumes/best-sellers")) {
+  if (
+    req.method === "GET" &&
+    (pathname === "/api/best-sellers" ||
+      pathname === "/api/perfumes/best-sellers")
+  ) {
     respond(res, 200, { bestSellers: getBestSellers() });
     return;
   }
@@ -397,14 +482,25 @@ const server = createServer(async (req, res) => {
   }
 
   // Arabian Perfumes for Dropshipping (strictly Arabian brands & perfumes)
-  if (req.method === "GET" && (pathname === "/api/stocks" || pathname === "/api/qogita/arabian-perfumes" || pathname === "/api/dropship-perfumes")) {
+  if (
+    req.method === "GET" &&
+    (pathname === "/api/stocks" ||
+      pathname === "/api/qogita/arabian-perfumes" ||
+      pathname === "/api/dropship-perfumes")
+  ) {
     try {
       const q = urlObj.searchParams.get("q") || "";
       const brand = urlObj.searchParams.get("brand") || "";
       const limit = urlObj.searchParams.get("limit") || undefined;
       const offset = urlObj.searchParams.get("offset") || undefined;
       const all = urlObj.searchParams.get("all") === "1";
-      const perfumes = await getArabianDropshipPerfumes({ query: q, brand, limit, offset, all });
+      const perfumes = await getArabianDropshipPerfumes({
+        query: q,
+        brand,
+        limit,
+        offset,
+        all,
+      });
       respond(res, 200, perfumes);
     } catch (err) {
       respond(res, 500, { error: err.message });
@@ -413,9 +509,14 @@ const server = createServer(async (req, res) => {
   }
 
   // Luxury GTIN Product Flacon Generator / Cache
-  if ((req.method === "GET" || req.method === "HEAD") && (pathname === "/api/product-image" || pathname === "/api/perfumes/product-image")) {
+  if (
+    (req.method === "GET" || req.method === "HEAD") &&
+    (pathname === "/api/product-image" ||
+      pathname === "/api/perfumes/product-image")
+  ) {
     try {
-      const gtin = urlObj.searchParams.get("gtin") || urlObj.searchParams.get("id");
+      const gtin =
+        urlObj.searchParams.get("gtin") || urlObj.searchParams.get("id");
       if (!gtin) {
         respond(res, 400, { error: "Missing gtin parameter" });
         return;
@@ -439,7 +540,11 @@ const server = createServer(async (req, res) => {
   }
 
   // Original photo proxy. The complete source image and its background are preserved.
-  if (req.method === "GET" && (pathname === "/api/transparent-image" || pathname === "/api/perfumes/transparent-image")) {
+  if (
+    req.method === "GET" &&
+    (pathname === "/api/transparent-image" ||
+      pathname === "/api/perfumes/transparent-image")
+  ) {
     try {
       const rawUrl = urlObj.searchParams.get("url");
       if (!rawUrl) {
@@ -469,19 +574,34 @@ const server = createServer(async (req, res) => {
   // Update credentials & test login
   if (req.method === "POST" && pathname === "/api/qogita/configure") {
     try {
-      const request = new Request(localRequestUrl(req), { method: req.method, headers: req.headers });
+      const request = new Request(localRequestUrl(req), {
+        method: req.method,
+        headers: req.headers,
+      });
       if (!isSameOrigin(request)) {
         respond(res, 403, { error: "Invalid request origin" }, req);
         return;
       }
       const body = await readJson(req);
-      const officialLogin = body.email && body.password &&
-        (!body.apiUrl || body.apiUrl.replace(/\/+$/, "") === "https://api.qogita.com");
+      const officialLogin =
+        body.email &&
+        body.password &&
+        (!body.apiUrl ||
+          body.apiUrl.replace(/\/+$/, "") === "https://api.qogita.com");
       let verifiedClient;
       if (officialLogin) {
-        verifiedClient = new QogitaClient({ email: body.email.trim(), password: body.password, apiUrl: "https://api.qogita.com", useEnvironmentCredentials: false });
+        verifiedClient = new QogitaClient({
+          email: body.email.trim(),
+          password: body.password,
+          apiUrl: "https://api.qogita.com",
+          useEnvironmentCredentials: false,
+        });
         await verifiedClient.login(true);
-        qogitaClient.setCredentials(body.email.trim(), body.password, "https://api.qogita.com");
+        qogitaClient.setCredentials(
+          body.email.trim(),
+          body.password,
+          "https://api.qogita.com",
+        );
         qogitaClient.accessToken = verifiedClient.accessToken;
         qogitaClient.tokenExpiresAt = verifiedClient.tokenExpiresAt;
       } else if (body.email && body.password) {
@@ -492,8 +612,12 @@ const server = createServer(async (req, res) => {
       }
       // Attempt login to test credentials
       if (!verifiedClient) await qogitaClient.login(true);
-      if (verifiedClient &&
-          (process.env.QOGITA_SESSION_SECRET || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+      if (
+        verifiedClient &&
+        (process.env.QOGITA_SESSION_SECRET ||
+          process.env.SUPABASE_SECRET_KEY ||
+          process.env.SUPABASE_SERVICE_ROLE_KEY)
+      ) {
         const cookie = await createQogitaSessionCookie(process.env, {
           token: verifiedClient.accessToken,
           expires: verifiedClient.tokenExpiresAt,
@@ -502,7 +626,9 @@ const server = createServer(async (req, res) => {
         });
         res.setHeader("Set-Cookie", cookie);
       } else {
-        console.warn("Qogita image-control session not created: official API URL and server session secret are required.");
+        console.warn(
+          "Qogita image-control session not created: official API URL and server session secret are required.",
+        );
       }
       respond(res, 200, {
         success: true,
@@ -524,7 +650,8 @@ const server = createServer(async (req, res) => {
     try {
       const categoryName = urlObj.searchParams.get("categoryName") || undefined;
       const brandName = urlObj.searchParams.get("brandName") || undefined;
-      const stockAvailability = urlObj.searchParams.get("stockAvailability") || undefined;
+      const stockAvailability =
+        urlObj.searchParams.get("stockAvailability") || undefined;
       const gtin = urlObj.searchParams.get("gtin") || undefined;
       const page = urlObj.searchParams.get("page") || 1;
       const page_size = urlObj.searchParams.get("page_size") || 20;
@@ -545,13 +672,16 @@ const server = createServer(async (req, res) => {
   }
 
   // Get offers for variant: /api/qogita/variants/:variantFid/offers
-  const variantOffersMatch = pathname.match(/^\/api\/qogita\/variants\/([^/]+)\/offers\/?$/);
+  const variantOffersMatch = pathname.match(
+    /^\/api\/qogita\/variants\/([^/]+)\/offers\/?$/,
+  );
   if (req.method === "GET" && variantOffersMatch) {
     try {
       const variantFid = decodeURIComponent(variantOffersMatch[1]);
       const page = urlObj.searchParams.get("page") || 1;
       const page_size = urlObj.searchParams.get("page_size") || 20;
-      const allocation_status = urlObj.searchParams.get("allocation_status") || undefined;
+      const allocation_status =
+        urlObj.searchParams.get("allocation_status") || undefined;
 
       const offers = await qogitaClient.getVariantOffers(variantFid, {
         page,
@@ -566,12 +696,17 @@ const server = createServer(async (req, res) => {
   }
 
   // Get supplier offer: /api/qogita/variants/:variantFid/suppliers/:supplierAlias/offers
-  const supplierOfferMatch = pathname.match(/^\/api\/qogita\/variants\/([^/]+)\/suppliers\/([^/]+)\/offers\/?$/);
+  const supplierOfferMatch = pathname.match(
+    /^\/api\/qogita\/variants\/([^/]+)\/suppliers\/([^/]+)\/offers\/?$/,
+  );
   if (req.method === "GET" && supplierOfferMatch) {
     try {
       const variantFid = decodeURIComponent(supplierOfferMatch[1]);
       const supplierAlias = decodeURIComponent(supplierOfferMatch[2]);
-      const offer = await qogitaClient.getSupplierOffer(variantFid, supplierAlias);
+      const offer = await qogitaClient.getSupplierOffer(
+        variantFid,
+        supplierAlias,
+      );
       respond(res, 200, offer);
     } catch (err) {
       respond(res, err.status || 500, { error: err.message, data: err.data });
@@ -619,11 +754,18 @@ const server = createServer(async (req, res) => {
 
       let result;
       if (allocationQid && allocationLineQid) {
-        result = await qogitaClient.updateCartLine(allocationQid, allocationLineQid, quantity);
+        result = await qogitaClient.updateCartLine(
+          allocationQid,
+          allocationLineQid,
+          quantity,
+        );
       } else if (offerQid) {
         result = await qogitaClient.updateOfferQuantity(offerQid, quantity);
       } else {
-        respond(res, 400, { error: "Provide either { allocationQid, allocationLineQid } or { offerQid }" });
+        respond(res, 400, {
+          error:
+            "Provide either { allocationQid, allocationLineQid } or { offerQid }",
+        });
         return;
       }
       respond(res, 200, { success: true, result });
@@ -641,11 +783,17 @@ const server = createServer(async (req, res) => {
 
       let result;
       if (allocationQid && allocationLineQid) {
-        result = await qogitaClient.removeCartLine(allocationQid, allocationLineQid);
+        result = await qogitaClient.removeCartLine(
+          allocationQid,
+          allocationLineQid,
+        );
       } else if (offerQid) {
         result = await qogitaClient.removeOfferFromCart(offerQid);
       } else {
-        respond(res, 400, { error: "Provide either { allocationQid, allocationLineQid } or { offerQid }" });
+        respond(res, 400, {
+          error:
+            "Provide either { allocationQid, allocationLineQid } or { offerQid }",
+        });
         return;
       }
       respond(res, 200, { success: true, result });
@@ -672,7 +820,10 @@ const server = createServer(async (req, res) => {
     try {
       const page = urlObj.searchParams.get("page") || 1;
       const page_size = urlObj.searchParams.get("page_size") || 20;
-      const result = await qogitaClient.listCatalogDownloads({ page, page_size });
+      const result = await qogitaClient.listCatalogDownloads({
+        page,
+        page_size,
+      });
       respond(res, 200, result);
     } catch (err) {
       respond(res, err.status || 500, { error: err.message, data: err.data });
@@ -681,7 +832,9 @@ const server = createServer(async (req, res) => {
   }
 
   // Check download status: GET /api/qogita/catalog/download/:qid/status
-  const downloadStatusMatch = pathname.match(/^\/api\/qogita\/catalog\/download\/([^/]+)\/status\/?$/);
+  const downloadStatusMatch = pathname.match(
+    /^\/api\/qogita\/catalog\/download\/([^/]+)\/status\/?$/,
+  );
   if (req.method === "GET" && downloadStatusMatch) {
     try {
       const qid = decodeURIComponent(downloadStatusMatch[1]);
@@ -719,7 +872,9 @@ const server = createServer(async (req, res) => {
   }
 
   // DELETE /api/qogita/webhooks/:qid
-  const deleteWebhookMatch = pathname.match(/^\/api\/qogita\/webhooks\/([^/]+)\/?$/);
+  const deleteWebhookMatch = pathname.match(
+    /^\/api\/qogita\/webhooks\/([^/]+)\/?$/,
+  );
   if (req.method === "DELETE" && deleteWebhookMatch) {
     try {
       const qid = decodeURIComponent(deleteWebhookMatch[1]);
@@ -743,10 +898,17 @@ const server = createServer(async (req, res) => {
   }
 
   // Inbound Webhook Receiver from Qogita: POST /api/qogita/webhooks/inbound
-  if (req.method === "POST" && (pathname === "/api/qogita/webhooks/inbound" || pathname === "/api/qogita/webhooks/callback")) {
+  if (
+    req.method === "POST" &&
+    (pathname === "/api/qogita/webhooks/inbound" ||
+      pathname === "/api/qogita/webhooks/callback")
+  ) {
     try {
       const rawBodyBuffer = await readRawBody(req);
-      const signatureHeader = req.headers["x-qogita-signature"] || req.headers["X-Qogita-Signature"] || "";
+      const signatureHeader =
+        req.headers["x-qogita-signature"] ||
+        req.headers["X-Qogita-Signature"] ||
+        "";
       const result = await handleInboundWebhook(rawBodyBuffer, signatureHeader);
       respond(res, 200, result);
     } catch (err) {
@@ -790,7 +952,10 @@ const server = createServer(async (req, res) => {
           };
         });
 
-      respond(res, 200, { success: true, message: `Действие ${actionId} запущено.` });
+      respond(res, 200, {
+        success: true,
+        message: `Действие ${actionId} запущено.`,
+      });
     } catch (err) {
       respond(res, 500, { error: err.message });
     }
@@ -798,7 +963,10 @@ const server = createServer(async (req, res) => {
   }
 
   // Chat / Assistant
-  if (req.method === "POST" && (pathname === "/api/warda-chat" || pathname === "/api/warda-chat")) {
+  if (
+    req.method === "POST" &&
+    (pathname === "/api/warda-chat" || pathname === "/api/warda-chat")
+  ) {
     try {
       const body = await readJson(req);
       const isSse = req.headers.accept?.includes("text/event-stream");
@@ -859,7 +1027,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && (pathname === "/api/warda-translate" || pathname === "/api/warda-translate")) {
+  if (
+    req.method === "POST" &&
+    (pathname === "/api/warda-translate" || pathname === "/api/warda-translate")
+  ) {
     try {
       const body = await readJson(req);
       const result = await translateWardaDialog({
@@ -913,7 +1084,11 @@ const server = createServer(async (req, res) => {
 
   // SPA Fallback for non-API GET requests
   const indexPath = path.join(appDir, "dist", "index.html");
-  if (req.method === "GET" && !pathname.startsWith("/api") && fs.existsSync(indexPath)) {
+  if (
+    req.method === "GET" &&
+    !pathname.startsWith("/api") &&
+    fs.existsSync(indexPath)
+  ) {
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
       "Access-Control-Allow-Origin": "*",

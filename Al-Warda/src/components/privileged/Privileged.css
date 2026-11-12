@@ -634,7 +634,10 @@
 .privileged__role-pill--clickable {
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .privileged__role-pill--clickable:hover {
@@ -798,7 +801,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .privileged__coupon-card:hover {
@@ -1879,6 +1884,7 @@
 .privileged__products-section {
   display: grid;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .privileged__sub-tabs {
@@ -2834,7 +2840,10 @@
   border-radius: 0.85rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .privileged__ann-card:hover {
@@ -3345,7 +3354,9 @@
   font-size: var(--normal-font-size) !important;
   font-family: inherit !important;
   outline: none !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease !important;
 }
 
 .privileged__field-input:focus,
@@ -3724,7 +3735,11 @@
   width: 44px !important;
   height: 44px !important;
   border-radius: 12px !important;
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(99, 102, 241, 0.2)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.12),
+    rgba(99, 102, 241, 0.2)
+  ) !important;
   color: #4f46e5 !important;
   display: flex !important;
   align-items: center !important;
@@ -3734,7 +3749,11 @@
 }
 
 .privileged__modal-header-icon--history {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(56, 189, 248, 0.2)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.12),
+    rgba(56, 189, 248, 0.2)
+  ) !important;
   color: #0284c7 !important;
 }
 
@@ -3851,7 +3870,9 @@
   cursor: pointer !important;
   font-family: inherit !important;
   box-sizing: border-box !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s !important;
 }
 
 .privileged__select:focus {
@@ -3873,7 +3894,9 @@
   font-family: inherit !important;
   outline: none !important;
   resize: vertical !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s !important;
 }
 
 .privileged__textarea:focus {
@@ -4180,7 +4203,10 @@
   font-family: inherit !important;
   outline: none !important;
   box-sizing: border-box !important;
-  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s !important;
 }
 
 .privileged__form-input:focus {
@@ -4245,14 +4271,22 @@
 }
 
 .privileged__pw-btn--gen {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1),
+    rgba(139, 92, 246, 0.15)
+  );
   border-color: rgba(99, 102, 241, 0.35);
   color: var(--first-color, #6366f1);
   font-weight: 600;
 }
 
 .privileged__pw-btn--gen:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.25));
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.2),
+    rgba(139, 92, 246, 0.25)
+  );
   border-color: var(--first-color, #6366f1);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
@@ -4298,7 +4332,11 @@
 
 .privileged__radio-card--active {
   border-color: #6366f1 !important;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.12)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.08),
+    rgba(139, 92, 246, 0.12)
+  ) !important;
   box-shadow: 0 0 0 1px #6366f1;
 }
 
