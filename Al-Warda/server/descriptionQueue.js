@@ -71,21 +71,36 @@ function hasRealDescription(info) {
   return !boilerplate.some((marker) => text.includes(marker));
 }
 
+// Whether this row already carries a description written specifically by the
+// Gemini pipeline below (as opposed to a supplier/manual/boilerplate one).
+function isGeminiGenerated(info) {
+  return (
+    info?.descriptionSource === "gemini" &&
+    Boolean(String(info?.descriptionRu || "").trim())
+  );
+}
+
 function queueItem(row, supabaseUrl) {
   const info = row.info && typeof row.info === "object" ? row.info : {};
-  if (hasRealDescription(info)) return null;
   if (isSetRow(row, info)) return null;
   if (!hasCompletedGeneratedImage(row, supabaseUrl)) return null;
 
-  const lookup = info.descriptionLookup && typeof info.descriptionLookup === "object" ? info.descriptionLookup : {};
-  const status =
-    lookup.status === "error"
+  const hasDescription = isGeminiGenerated(info);
+  // Historical typo: the writer below sets `descriptionsLookup` (plural); keep
+  // reading the singular form too in case older rows used it.
+  const lookup =
+    info.descriptionsLookup && typeof info.descriptionsLookup === "object"
+      ? info.descriptionsLookup
+      : info.descriptionLookup && typeof info.descriptionLookup === "object"
+        ? info.descriptionLookup
+        : {};
+  const status = hasDescription
+    ? "generated"
+    : lookup.status === "error"
       ? "error"
       : lookup.status === "not_found"
         ? "not_found"
-        : lookup.status === "found"
-          ? "unverified"
-          : "unchecked";
+        : "unchecked";
 
   return {
     id: row.id,
@@ -95,6 +110,9 @@ function queueItem(row, supabaseUrl) {
     rawImage: info.rawImage || null,
     info: slimInfo(info),
     status,
+    hasDescription,
+    descriptionRu: hasDescription ? info.descriptionRu || null : null,
+    descriptionEn: hasDescription ? info.descriptionEn || null : null,
     photoReady: true,
     checkedAt: lookup.checkedAt || null,
     error: lookup.error || null,
@@ -130,30 +148,37 @@ export async function getDescriptionQueue(request, env) {
 
     const key = getServiceKey(env);
     const rows = await fetchAllStocks(env, key);
-    const items = rows.map((row) => queueItem(row, getSupabaseUrl(env))).filter(Boolean);
+    const items = rows
+      .map((row) => queueItem(row, getSupabaseUrl(env)))
+      .filter(Boolean);
 
     const url = new URL(request.url);
     const query = (url.searchParams.get("q") || "").trim().toLowerCase();
-    const statusFilter = (url.searchParams.get("status") || "all").trim().toLowerCase();
-
-    const counts = {
-      total: items.length,
-      unchecked: items.filter((item) => item.status === "unchecked").length,
-      error: items.filter((item) => item.status === "error").length,
-      notFound: items.filter((item) => item.status === "not_found").length,
-      unverified: items.filter((item) => item.status === "unverified").length,
-      readyToGenerate: items.filter((item) => item.status === "unchecked").length,
-    };
 
     const filtered = items.filter((item) => {
-      if (statusFilter !== "all" && item.status !== statusFilter) return false;
-      if (query && !`${item.name} ${item.brand}`.toLowerCase().includes(query)) return false;
-      return true;
+      if (!query) return true;
+      return `${item.name} ${item.brand}`.toLowerCase().includes(query);
     });
+
+    const missing = filtered.filter((item) => !item.hasDescription);
+    const generated = filtered.filter((item) => item.hasDescription);
+
+    const counts = {
+      total: filtered.length,
+      generated: generated.length,
+      missing: missing.length,
+      unchecked: missing.filter((item) => item.status === "unchecked").length,
+      error: missing.filter((item) => item.status === "error").length,
+      notFound: missing.filter((item) => item.status === "not_found").length,
+      readyToGenerate: missing.length,
+    };
 
     return json({ counts, total: filtered.length, items: filtered });
   } catch (error) {
-    return json({ error: error?.message || "Could not load description queue" }, 500);
+    return json(
+      { error: error?.message || "Could not load description queue" },
+      500,
+    );
   }
 }
 
@@ -169,18 +194,25 @@ export async function refreshDescriptions(request, env) {
       body = {};
     }
 
-    const limit = Math.min(Math.max(Number(body.limit) || 25, 1), MAX_ADMIN_BATCH);
+    const limit = Math.min(
+      Math.max(Number(body.limit) || 25, 1),
+      MAX_ADMIN_BATCH,
+    );
     const key = getServiceKey(env);
     const supabaseUrl = getSupabaseUrl(env);
     const rows = await fetchAllStocks(env, key);
-    const missingRows = rows.map((row) => queueItem(row, supabaseUrl)).filter(Boolean);
+    const allItems = rows
+      .map((row) => queueItem(row, supabaseUrl))
+      .filter(Boolean);
+    const missingRows = allItems.filter((row) => !row.hasDescription);
 
     let targets = [];
     if (Array.isArray(body.ids) && body.ids.length) {
+      // Explicit ids may include already-generated rows (manual regeneration).
       const requested = new Set(body.ids.map((id) => String(id)));
-      targets = missingRows.filter((row) => requested.has(String(row.id)));
+      targets = allItems.filter((row) => requested.has(String(row.id)));
     } else if (body.id !== undefined && body.id !== null && body.id !== "") {
-      targets = missingRows.filter((row) => String(row.id) === String(body.id));
+      targets = allItems.filter((row) => String(row.id) === String(body.id));
     } else {
       targets = missingRows;
     }
@@ -190,7 +222,8 @@ export async function refreshDescriptions(request, env) {
     for (const row of targets) {
       try {
         const dbRow = await readStockRow(env, row.id);
-        const info = dbRow?.info && typeof dbRow.info === "object" ? dbRow.info : {};
+        const info =
+          dbRow?.info && typeof dbRow.info === "object" ? dbRow.info : {};
         const updatedInfo = await withGeminiDescriptions(info, {
           name: dbRow?.name || row.name,
           brand: dbRow?.brand || row.brand,
@@ -206,7 +239,8 @@ export async function refreshDescriptions(request, env) {
           id: row.id,
           name: dbRow?.name || row.name,
           brand: dbRow?.brand || row.brand,
-          status: updatedInfo.descriptionSource === "gemini" ? "found" : "not_found",
+          status:
+            updatedInfo.descriptionSource === "gemini" ? "found" : "not_found",
           descriptionRu: updatedInfo.descriptionRu || null,
           descriptionEn: updatedInfo.descriptionEn || null,
         });
@@ -230,7 +264,10 @@ export async function refreshDescriptions(request, env) {
       results,
     });
   } catch (error) {
-    return json({ error: error?.message || "Could not generate descriptions" }, 500);
+    return json(
+      { error: error?.message || "Could not generate descriptions" },
+      500,
+    );
   }
 }
 

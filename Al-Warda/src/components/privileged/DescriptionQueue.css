@@ -259,7 +259,9 @@
   border-radius: 12px;
   border: 1px solid #eae1d3;
   background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .description-queue__item:hover {
@@ -362,6 +364,11 @@
   color: #8a5c00;
 }
 
+.description-queue__badge--generated {
+  background: #eef8f0;
+  color: #1d6b34;
+}
+
 .description-queue__photo-ready {
   display: inline-flex;
   align-items: center;
@@ -380,6 +387,52 @@
 
 .description-queue__item-actions {
   flex: 0 0 auto;
+}
+
+.description-queue__check-spacer {
+  flex: 0 0 18px;
+  width: 18px;
+}
+
+.description-queue__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eae1d3;
+}
+
+.description-queue__group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.description-queue__group-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2c2418;
+}
+
+.description-queue__group-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #8c8172;
+  max-width: 640px;
+}
+
+.description-queue__group-count {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: #f1ece3;
+  color: #6b5f4d;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
