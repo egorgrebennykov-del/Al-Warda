@@ -545,10 +545,10 @@
   color: #a0a0ab;
 }
 
-/* Responsive Grid Breakpoints */
-@media (max-width: 1024px) {
+/* Responsive Grid Breakpoints — same as catalog (warda-shop-grid) */
+@media screen and (max-width: 1200px) {
   .search__grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.25rem;
   }
   .search__card-img-wrap {
@@ -556,10 +556,20 @@
   }
 }
 
-@media (max-width: 720px) {
+@media screen and (max-width: 992px) {
   .search__grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .search__card-img-wrap {
+    height: 155px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .search__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
   }
   .search {
     padding: 3.5rem 1rem 2rem !important;
@@ -576,10 +586,10 @@
   }
 }
 
-@media (max-width: 440px) {
+@media screen and (max-width: 440px) {
   .search__grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
   }
   .search__card {
     padding: 0.75rem 0.5rem 0.75rem;

@@ -358,7 +358,7 @@
     margin-left: auto !important;
     z-index: 2;
     order: 3;
-    gap: 0.2rem !important;
+    gap: 0.4rem !important;
   }
   .warda-nav__left {
     display: none;
@@ -407,21 +407,24 @@
   .warda-nav__menu-toggle {
     margin-right: 0.1rem;
   }
-  .warda-nav__right { gap: 0 !important; }
+  .warda-nav__right { gap: 0.4rem !important; }
   .warda-nav__action-btn,
   .warda-nav__lang-btn,
   .warda-nav__currency-btn,
   .warda-nav__menu-toggle {
-    width: 32px;
-    height: 38px;
-    font-size: 1.1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+    min-width: 40px;
   }
   .warda-nav__lang-btn,
   .warda-nav__currency-btn {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+    padding: 0 0.4rem;
+    min-width: 40px;
   }
   .warda-nav__crest-img {
-    width: 46px;
-    height: 52px;
+    width: 44px;
+    height: 50px;
   }
 }

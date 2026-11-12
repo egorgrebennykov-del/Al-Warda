@@ -492,12 +492,16 @@
 
 @media screen and (max-width: 900px) {
   .warda-details-page {
-    padding: 1.25rem 0 3rem;
+    padding: 0.9rem 0 2.5rem;
+  }
+
+  .warda-details-top-nav {
+    margin-bottom: 1.25rem;
   }
 
   .warda-details-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .warda-details-skeleton-image {
@@ -505,11 +509,11 @@
   }
 
   /* On mobile the image should fill the width and determine its own height
-     instead of living inside a fixed 620px box that leaves black gaps. */
+     instead of living inside a fixed box that leaves black gaps. */
   .warda-details-img-wrap {
-    min-height: 300px;
+    min-height: auto;
     height: auto;
-    padding: 0.25rem;
+    padding: 0.15rem;
   }
 
   .warda-details-photo {
@@ -532,7 +536,8 @@
 
 @media screen and (max-width: 600px) {
   .warda-details-img-wrap {
-    min-height: 260px;
+    min-height: auto;
+    padding: 0.1rem;
   }
 }
 
