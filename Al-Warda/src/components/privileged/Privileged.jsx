@@ -89,6 +89,7 @@ function ProductsSection({ language }) {
           <ProductImageQueue language={language} />
         )}
         {subTab === "notes" && <FragranceNotesQueue language={language} />}
+        {subTab === "descriptions" && <DescriptionQueue language={language} />}
       </div>
     </div>
   );
