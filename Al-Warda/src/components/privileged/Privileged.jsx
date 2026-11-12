@@ -45,6 +45,54 @@ import FragranceNotesQueue from "./FragranceNotesQueue";
 import ProductsManager from "./ProductsManager";
 import "./Privileged.css";
 
+/**
+ * Вкладка «Товары» содержит три подвкладки:
+ *   - Список товаров (управление каталогом)
+ *   - Фото товаров (генерация изображений)
+ *   - Ароматы (палитры ароматов)
+ * Подвкладки переключаются локально, без изменения URL-пути.
+ */
+function ProductsSection({ language }) {
+  const isRussian = language === "ru";
+  const [subTab, setSubTab] = useState("list");
+
+  const subTabs = [
+    { key: "list", label: isRussian ? "Список товаров" : "Products list", icon: "ri-store-2-line" },
+    { key: "images", label: isRussian ? "Фото товаров" : "Product images", icon: "ri-image-edit-line" },
+    { key: "notes", label: isRussian ? "Ароматы" : "Fragrance notes", icon: "ri-flask-line" },
+  ];
+
+  const subTabBtns = subTabs.map((tab) => (
+    <button
+      key={tab.key}
+      type="button"
+      role="tab"
+      aria-selected={subTab === tab.key}
+      className={`privileged__sub-tab ${subTab === tab.key ? "privileged__sub-tab--active" : ""}`}
+      onClick={() => setSubTab(tab.key)}
+    >
+      <i className={tab.icon} />
+      <span>{tab.label}</span>
+    </button>
+  ));
+
+  return (
+    <div className="privileged__products-section">
+      <div className="privileged__sub-tabs" role="tablist">
+        {subTabBtns}
+      </div>
+
+      <div className="privileged__panel">
+        {subTab === "list" && <ProductsManager language={language} />}
+        {subTab === "images" && (
+          <ProductImageQueue language={language} />
+        )}
+        {subTab === "notes" && <FragranceNotesQueue language={language} />}
+      </div>
+    </div>
+  );
+}
+
 function formatPrice(price, currency = "EUR", language = "ru") {
   const locale = language === "ru" ? "ru-RU" : "en-US";
   return new Intl.NumberFormat(locale, {
@@ -93,15 +141,15 @@ const PRIVILEGED_TAB_ALIASES = {
   stocks: "products",
   catalog: "products",
   qogita: "qogita",
-  "product-images": "product-images",
-  productimages: "product-images",
-  images: "product-images",
-  photos: "product-images",
-  "fragrance-notes": "fragrance-notes",
-  fragrancenotes: "fragrance-notes",
-  fragrance: "fragrance-notes",
-  notes: "fragrance-notes",
-  pyramids: "fragrance-notes",
+  "product-images": "products",
+  productimages: "products",
+  images: "products",
+  photos: "products",
+  "fragrance-notes": "products",
+  fragrancenotes: "products",
+  fragrance: "products",
+  notes: "products",
+  pyramids: "products",
   other: "other",
   misc: "other",
   settings: "other",
@@ -1921,28 +1969,6 @@ export default function Privileged() {
         >
           <i className="ri-store-2-line" />
           <span>{language === "ru" ? "Товары" : "Products"}</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeSection === "product-images"}
-          className={`privileged__nav-btn ${activeSection === "product-images" ? "privileged__nav-btn--active" : ""}`}
-          onClick={() => setActiveSection("product-images")}
-        >
-          <i className="ri-image-edit-line" />
-          <span>{language === "ru" ? "Фото товаров" : "Product images"}</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeSection === "fragrance-notes"}
-          className={`privileged__nav-btn ${activeSection === "fragrance-notes" ? "privileged__nav-btn--active" : ""}`}
-          onClick={() => setActiveSection("fragrance-notes")}
-        >
-          <i className="ri-flask-line" />
-          <span>{language === "ru" ? "Ноты ароматов" : "Fragrance notes"}</span>
         </button>
 
         <button
@@ -5550,21 +5576,7 @@ export default function Privileged() {
             <QogitaManager language={language} />
           </div>
         )}
-        {activeSection === "products" && (
-          <div className="privileged__panel">
-            <ProductsManager language={language} />
-          </div>
-        )}
-        {activeSection === "product-images" && (
-          <div className="privileged__panel">
-            <ProductImageQueue language={language} onOpenQogita={() => setActiveSection("qogita")} />
-          </div>
-        )}
-        {activeSection === "fragrance-notes" && (
-          <div className="privileged__panel">
-            <FragranceNotesQueue language={language} />
-          </div>
-        )}
+        {activeSection === "products" && <ProductsSection language={language} />}
         {activeSection === "other" && (
           <div className="privileged__panel">
             <div className="privileged__panel-header">

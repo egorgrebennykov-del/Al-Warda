@@ -1875,6 +1875,68 @@
   font-weight: 500;
 }
 
+/* Products sub-tabs (Список товаров / Фото товаров / Ароматы) */
+.privileged__products-section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.privileged__sub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  background-color: var(--body-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  width: fit-content;
+}
+
+.privileged__sub-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.55rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-color);
+  font-size: var(--small-font-size);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.privileged__sub-tab:hover {
+  color: var(--title-color);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.privileged__sub-tab--active {
+  background-color: var(--container-color);
+  color: var(--first-color);
+  border-color: var(--first-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 767px) {
+  .privileged__sub-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .privileged__sub-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .privileged__sub-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 767px) {
   .privileged__header {
     flex-direction: column;

@@ -41,6 +41,10 @@ import {
   getFragranceNotesQueue,
   refreshFragranceNotes,
 } from "./deepseekNotesService.js";
+import {
+  getDescriptionQueue,
+  refreshDescriptions,
+} from "./descriptionQueue.js";
 import { createQogitaSessionCookie, handleQogitaWorker } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
@@ -285,6 +289,28 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await refreshFragranceNotes(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/admin/descriptions/misses") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await getDescriptionQueue(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/admin/descriptions/refresh") {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await refreshDescriptions(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 500, { error: error.message }, req);
