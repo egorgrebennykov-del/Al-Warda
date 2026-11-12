@@ -133,12 +133,11 @@ function buildPrompt({ name, brand, notes, category }) {
   lines.push("Write the product description for this exact fragrance.");
   lines.push("Rules:");
   lines.push("- The description MUST be built from the aroma palette above.");
-  lines.push("- descriptionRu: 2 to 4 polished sentences in natural Russian.");
-  lines.push("- descriptionEn: the same description in natural English.");
-  lines.push("- Evocative and premium in tone; no exclamation marks, no marketing clichés.");
-  lines.push("- Never invent notes, accords, brands, ingredients or origins.");
-  lines.push('Respond with JSON only: {"descriptionRu":"...","descriptionEn":"..."}');
-
+  lines.push("- Write clear, premium descriptions in Russian and English.");
+  lines.push("- Do not invent notes, accords, brands, ingredients or origins.");
+  lines.push("- Use the same concise structure across all requested languages.");
+  lines.push("- Respond with JSON only, no markdown, no explanations.");
+  lines.push('Request JSON only: {"descriptionRu":"...","descriptionEn":"...","descriptionBg":"...","descriptionEl":"...","descriptionHu":"...","descriptionRo":"..."');
   return lines.join("\n");
 }
 

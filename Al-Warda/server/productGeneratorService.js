@@ -73,20 +73,30 @@ export async function generateProductFlacon({ gtin, name, brand, volume, concent
   const imageUrl = processOriginalPhoto(gtin, rawImage);
 
   try {
-    const { enrichPerfumeWithAI } = await import("./wardaAssistantService.js");
+    const { enrichPerfumeWithAI, withGeminiDescriptions } = await import("./wardaAssistantService.js");
     const aiDesc = await enrichPerfumeWithAI({
       name: name || product?.name || product?.title,
       brand: brand || product?.brand,
       notes: product?.notesSummary || product?.info?.notesSummary,
     });
+    const updatedInfo = await withGeminiDescriptions(product?.info, {
+      name: name || product?.name || product?.title,
+      brand: brand || product?.brand,
+      notes: product?.notesSummary || product?.info?.notesSummary,
+      category: product?.category,
+      env: { GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY },
+    });
     if (product) {
-      product.descriptionRu = aiDesc.descriptionRu;
-      product.descriptionEn = aiDesc.descriptionEn;
-      product.description = aiDesc.descriptionRu;
-      if (!product.info) product.info = {};
-      product.info.descriptionRu = aiDesc.descriptionRu;
-      product.info.descriptionEn = aiDesc.descriptionEn;
-      product.info.description = aiDesc.descriptionRu;
+      product.descriptionRu = updatedInfo.descriptionRu;
+      product.descriptionEn = updatedInfo.descriptionEn;
+      product.description = updatedInfo.descriptionRu;
+      product.info.descriptionRu = updatedInfo.descriptionRu;
+      product.info.descriptionEn = updatedInfo.descriptionEn;
+      product.info.descriptionBg = updatedInfo.descriptionBg;
+      product.info.descriptionEl = updatedInfo.descriptionEl;
+      product.info.descriptionHu = updatedInfo.descriptionHu;
+      product.info.descriptionRo = updatedInfo.descriptionRo;
+      product.info.description = updatedInfo.descriptionRu;
       product.info.descriptionAiGenerated = true;
     }
   } catch (err) {

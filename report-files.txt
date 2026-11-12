@@ -1,0 +1,3 @@
+@{FullName=C:\Users\testuser\Desktop\Al-Warda\Al-Warda\dist\data\cachedArabianPerfumes.json; Size=5849469}
+@{FullName=C:\Users\testuser\Desktop\Al-Warda\Al-Warda\public\data\cachedArabianPerfumes.json; Size=5849469}
+@{FullName=C:\Users\testuser\Desktop\Al-Warda\Al-Warda\server\data\cachedArabianPerfumes.json; Size=2527000}

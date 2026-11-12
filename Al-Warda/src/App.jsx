@@ -251,12 +251,11 @@ function App() {
     }
 
     if (shouldRestoreScroll) return;
+    // Do not force scroll-to-top when preventScrollReset is set (e.g. catalog filters, privileged tabs)
+    if (location.state?.preventScrollReset) return;
     // Do not force scroll-to-top when switching tabs inside /privileged, /priviledged, /admin, or /orders
     const path = location.pathname || "";
-    if (
-      /^\/(privileged|priviledged|admin|orders)\/[^/]+/i.test(path) &&
-      location.state?.preventScrollReset
-    ) {
+    if (/^\/(privileged|priviledged|admin|orders)\/[^/]+/i.test(path)) {
       return;
     }
     window.scrollTo(0, 0);
