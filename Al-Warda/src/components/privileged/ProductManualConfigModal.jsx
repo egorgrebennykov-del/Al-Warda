@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ensurePerfumeEnrichment,
   generateRichPerfumeDescriptions,
@@ -31,7 +31,6 @@ export default function ProductManualConfigModal({
   language = "ru",
 }) {
   const isRussian = language === "ru";
-  const fileInputRef = useRef(null);
 
   const isNew = !item?.id || item?.id === "new" || Boolean(item?.isNew);
 
@@ -104,9 +103,6 @@ export default function ProductManualConfigModal({
   const [descriptionEn, setDescriptionEn] = useState(initialData.descriptionEn);
 
   const [image, setImage] = useState(initialData.image);
-  const [imageData, setImageData] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [imageUrlInput, setImageUrlInput] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -131,29 +127,6 @@ export default function ProductManualConfigModal({
     setCategorySlug(slug);
   };
 
-  const handleFile = (file) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError(isRussian ? "Выберите файл изображения (PNG, JPG, WEBP)" : "Please select an image file (PNG, JPG, WEBP)");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImageData(e.target.result);
-      setImage(e.target.result);
-      setError("");
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleApplyUrl = () => {
-    if (!imageUrlInput.trim()) return;
-    setImage(imageUrlInput.trim());
-    setImageData(null);
-    setImageUrlInput("");
-    setError("");
-  };
-
   const markNotesManual = () => {
     setNotesOrigin("manual");
   };
@@ -163,9 +136,7 @@ export default function ProductManualConfigModal({
     setter(event.target.value);
   };
 
-  // Generate the note pyramid with DeepSeek. If the model cannot produce a
-  // pyramid, the fields stay empty and the admin can enter notes manually.
-  const handleGenerateNotes = async () => {
+  // Pre-fill initial state using existing product info and enrichment
     if (!name.trim()) {
       setError(isRussian ? "Сначала укажите название парфюма" : "Enter the perfume name first");
       return;
@@ -270,10 +241,6 @@ export default function ProductManualConfigModal({
       setError(isRussian ? "Укажите название парфюма" : "Perfume name is required");
       return;
     }
-    if (!image && !imageData) {
-      setError(isRussian ? "Добавьте фото флакона (загрузите файл или укажите ссылку)" : "Please add a flacon image");
-      return;
-    }
 
     setSaving(true);
     setError("");
@@ -308,8 +275,6 @@ export default function ProductManualConfigModal({
           .some((value) => String(value || "").trim().length > 0),
         descriptionRu: descriptionRu.trim(),
         descriptionEn: descriptionEn.trim(),
-        image,
-        imageData,
         inStock: true,
         minOrderQuantity: 1,
       };
@@ -377,107 +342,26 @@ export default function ProductManualConfigModal({
         </header>
 
         <form onSubmit={handleSubmit} className="product-manual-modal__body">
-          {/* SECTION 1: Product Image */}
+          {/* SECTION 1: Product Image (read-only preview) */}
           <div className="product-manual-modal__section">
             <div className="product-manual-modal__section-header">
               <h3 className="product-manual-modal__section-title">
                 <i className="ri-image-2-line" />
                 {isRussian ? "1. Фотография флакона" : "1. Flacon Visual"}
               </h3>
-              {item?.rawImage && (
-                <button
-                  type="button"
-                  className="product-manual-modal__qogita-btn"
-                  onClick={() => {
-                    setImage(item.rawImage);
-                    setImageData(null);
-                  }}
-                  title={isRussian ? "Использовать исходное фото Qogita" : "Use original Qogita image"}
-                >
-                  <i className="ri-image-line" />
-                  {isRussian ? "Взять фото поставщика (Qogita)" : "Use Qogita Photo"}
-                </button>
-              )}
             </div>
 
             <div className="product-manual-modal__image-layout">
               <div className="product-manual-modal__image-preview-wrap">
                 <div className={`product-manual-modal__image-preview ${image ? "product-manual-modal__image-preview--has-image" : ""}`}>
                   {image ? (
-                    <img src={image} alt={name || "Preview"} />
+                    <img src={image} alt={name || "Превью фото флакона"} />
                   ) : (
                     <div className="product-manual-modal__image-placeholder">
                       <i className="ri-image-add-line" />
                       <span>{isRussian ? "Нет изображения" : "No image selected"}</span>
                     </div>
                   )}
-                </div>
-                {image && (
-                  <button
-                    type="button"
-                    className="product-manual-modal__clear-btn"
-                    onClick={() => {
-                      setImage("");
-                      setImageData(null);
-                    }}
-                  >
-                    <i className="ri-delete-bin-line" />
-                    {isRussian ? "Удалить фото" : "Clear image"}
-                  </button>
-                )}
-              </div>
-
-              <div className="product-manual-modal__image-controls">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png, image/jpeg, image/webp"
-                  style={{ display: "none" }}
-                  onChange={(e) => handleFile(e.target.files?.[0])}
-                />
-                <div
-                  className={`product-manual-modal__dropzone ${isDragging ? "product-manual-modal__dropzone--dragging" : ""}`}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) handleFile(file);
-                  }}
-                >
-                  <i className="ri-upload-cloud-2-line" />
-                  <p>{isRussian ? "Нажмите для выбора файла или перетащите сюда" : "Click to select or drag and drop image"}</p>
-                  <span>PNG, JPG, WEBP (рекомендуется прозрачный или чистый фон)</span>
-                </div>
-
-                <div className="product-manual-modal__field">
-                  <label>{isRussian ? "Или укажите прямую ссылку на фото:" : "Or provide direct image URL:"}</label>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <input
-                      type="text"
-                      placeholder="https://example.com/perfume.png"
-                      value={imageUrlInput}
-                      onChange={(e) => setImageUrlInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleApplyUrl();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="product-manual-modal__magic-btn"
-                      onClick={handleApplyUrl}
-                    >
-                      {isRussian ? "Применить" : "Apply"}
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

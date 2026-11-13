@@ -295,15 +295,14 @@ describe("product image queue admin API", () => {
     const body = await res.json();
     assert.equal(body.ok, true);
     assert.equal(body.id, 42);
-    assert.ok(uploadedFile);
-    assert.ok(uploadedFile.url.includes("/storage/v1/object/product-images/manual-42-"));
+    assert.strictEqual(uploadedFile, null);
     assert.equal(patchedBody.name, "Yara Lattafa");
     assert.equal(patchedBody.brand, "Lattafa");
     assert.equal(patchedBody.price, 32.0);
     assert.equal(patchedBody.info.imageGeneration.status, "completed");
     assert.equal(patchedBody.info.imageGeneration.manual, true);
     assert.equal(patchedBody.info.imageGeneration.failed, false);
-    assert.ok(patchedBody.info.imageGeneration.imageUrl.includes("/storage/v1/object/public/product-images/manual-42-"));
+    assert.strictEqual(patchedBody.info.imageGeneration.imageUrl, "https://img.qogita.com/yara-raw.jpg");
 
     // Verify hasCompletedGeneratedImage recognizes the manually configured product
     assert.equal(
@@ -356,9 +355,8 @@ describe("product image queue admin API", () => {
     assert.equal(body.isNew, true);
     assert.equal(insertedBody.name, "Asad Lattafa");
     assert.equal(insertedBody.brand, "Lattafa");
-    assert.equal(insertedBody.image, "https://example.com/asad.png");
-    assert.equal(insertedBody.info.imageGeneration.status, "completed");
-    assert.equal(insertedBody.info.imageGeneration.manual, true);
+    assert.strictEqual(insertedBody.image, undefined);
+    assert.strictEqual(insertedBody.info.imageGeneration, undefined);
   });
 
   it("lists all admin products and allows deleting products", async () => {

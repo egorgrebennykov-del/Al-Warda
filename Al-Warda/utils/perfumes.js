@@ -18,12 +18,8 @@ const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v4";
 function resolveCardImage(img, gtin, rawImage) {
   if (img && /^https:\/\//i.test(img)) return img;
   if (img && isGeneratedProductImage(img)) return img;
-  if (gtin) return `/assets/img/products/${gtin}.jpg?v=${PRODUCT_IMAGE_VERSION}`;
   if (img && img.startsWith("/assets/img/")) {
     return `${img.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`;
-  }
-  if (rawImage && /^https?:\/\//i.test(rawImage)) {
-    return `/api/transparent-image?url=${encodeURIComponent(rawImage)}&v=${PRODUCT_IMAGE_VERSION}`;
   }
   return img || "";
 }

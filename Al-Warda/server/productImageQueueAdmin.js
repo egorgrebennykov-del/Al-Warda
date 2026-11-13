@@ -792,52 +792,36 @@ export async function saveManualProductItem(request, env) {
     }
 
     // 2. Resolve image
-    let finalImageUrl = (typeof body.image === "string" ? body.image.trim() : "") ||
-      existingRow.image ||
-      (typeof existingInfo.rawImage === "string" ? existingInfo.rawImage : "");
+    // Do not accept uploaded or newly supplied original photos on this endpoint.
+    // Manual photo upload was removed from the UI; only the already stored
+    // product image (rawImage or existingRow.image) may remain on the product.
+    const existingImage = (typeof existingInfo.rawImage === "string" ? existingInfo.rawImage : "") ||
+      (typeof existingRow.image === "string" ? existingRow.image : "");
 
-    // If base64 imageData provided, attempt to upload to Supabase Storage
+    // If base64 imageData is sent, it may contain an original photo that must
+    // not be stored or used as the product image. Ignore it deliberately.
     const base64Data = (typeof body.imageData === "string" && body.imageData.startsWith("data:image/"))
       ? body.imageData
-      : (typeof finalImageUrl === "string" && finalImageUrl.startsWith("data:image/") ? finalImageUrl : null);
+      : null;
 
-    if (base64Data) {
-      try {
-        const matches = base64Data.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
-        if (matches) {
-          const rawExt = matches[1].toLowerCase();
-          const ext = rawExt === "jpeg" ? "jpg" : (rawExt === "svg+xml" ? "svg" : rawExt);
-          const binaryStr = atob(matches[2]);
-          const buffer = new Uint8Array(binaryStr.length);
-          for (let i = 0; i < binaryStr.length; i++) {
-            buffer[i] = binaryStr.charCodeAt(i);
-          }
-          const filename = `manual-${id}-${Date.now()}.${ext}`;
-          const storageUrl = `${baseUrl}/storage/v1/object/product-images/${filename}`;
-          const storageRes = await fetch(storageUrl, {
-            method: "POST",
-            headers: {
-              apikey: key,
-              Authorization: `Bearer ${key}`,
-              "Content-Type": `image/${matches[1]}`,
-              "x-upsert": "true",
-            },
-            body: buffer,
-          });
-          if (storageRes.ok) {
-            finalImageUrl = `${baseUrl}/storage/v1/object/public/product-images/${filename}`;
-          } else {
-            finalImageUrl = base64Data;
-          }
-        }
-      } catch (uploadErr) {
-        console.warn("Storage upload failed, keeping inline data URL:", uploadErr);
-        finalImageUrl = base64Data;
+    let finalImageUrl = existingImage;
+
+    // External image URLs sent by the client must not replace the existing
+    // image. Reject them by ignoring body.image entirely.
+    if (body.image && typeof body.image === "string") {
+      const trimmedImage = body.image.trim();
+      if (trimmedImage !== finalImageUrl) {
+        console.warn(`[productImageQueueAdmin] Ignoring client-supplied image for manual save: ${trimmedImage}`);
       }
     }
 
+    if (base64Data) {
+      console.warn("Ignoring base64 imageData in manual-save request; original photo upload is disabled");
+    }
+
     if (!finalImageUrl) {
-      return json({ error: "Product image is required" }, 400);
+      // No image to set. Save product metadata without changing image/generation.
+      finalImageUrl = "";
     }
 
     const cleanName = (body.name || existingRow.name || "").trim();
@@ -910,14 +894,16 @@ export async function saveManualProductItem(request, env) {
       minOrderQuantity: 1,
       inStock: body.inStock !== false,
       manual: true,
-      imageGeneration: {
-        status: "completed",
-        imageUrl: finalImageUrl,
-        completedAt: new Date().toISOString(),
-        manual: true,
-        failed: false,
-        published: true,
-      },
+      imageGeneration: finalImageUrl
+        ? {
+            status: "completed",
+            imageUrl: finalImageUrl,
+            completedAt: new Date().toISOString(),
+            manual: true,
+            failed: false,
+            published: true,
+          }
+        : undefined,
     };
 
     delete updatedInfo.imageGenerationReplacement;
@@ -938,7 +924,6 @@ export async function saveManualProductItem(request, env) {
       brand,
       price,
       currency,
-      image: finalImageUrl,
       info: updatedInfo,
     };
 
