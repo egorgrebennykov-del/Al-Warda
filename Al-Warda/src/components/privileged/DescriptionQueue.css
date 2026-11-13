@@ -508,6 +508,38 @@
   font-weight: 600;
 }
 
+.description-queue__group-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.description-queue__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.35rem 0;
+}
+
+.description-queue__pagination-info {
+  font-size: 0.82rem;
+  color: #8c8172;
+}
+
+.description-queue__pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.description-queue__pagination-page {
+  font-size: 0.82rem;
+  color: #6b5f4d;
+}
+
 @media (max-width: 640px) {
   .description-queue {
     padding: 0.85rem;

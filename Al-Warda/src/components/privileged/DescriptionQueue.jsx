@@ -77,8 +77,16 @@ export default function DescriptionQueue({ language = "ru" }) {
   const [clearing, setClearing] = useState(false);
   const [viewingId, setViewingId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  // The full catalog can be thousands of rows; rendering them all at once makes
+  // the tab laggy and checkbox clicks feel unresponsive. Paginate instead.
+  const [missingPage, setMissingPage] = useState(1);
+  const [generatedPage, setGeneratedPage] = useState(1);
+  const [showGeneratedDescriptions, setShowGeneratedDescriptions] =
+    useState(false);
   const autoRunRef = useRef(false);
   const confirm = useConfirm();
+
+  const PAGE_SIZE = 100;
 
   const copyText = (id, text) => {
     if (!text) return;
@@ -159,6 +167,12 @@ export default function DescriptionQueue({ language = "ru" }) {
       regenerate: isRussian ? "Перегенерировать" : "Regenerate",
       viewDescription: isRussian ? "Показать описание" : "View description",
       hideDescription: isRussian ? "Скрыть описание" : "Hide description",
+      showAllDescriptions: isRussian
+        ? "Показать все описания"
+        : "Show all descriptions",
+      hideAllDescriptions: isRussian
+        ? "Скрыть все описания"
+        : "Hide all descriptions",
       copy: isRussian ? "Копировать" : "Copy",
       copied: isRussian ? "Скопировано" : "Copied",
       clearAll: isRussian ? "Очистить все описания" : "Clear all descriptions",
@@ -182,6 +196,14 @@ export default function DescriptionQueue({ language = "ru" }) {
         generated: isRussian ? "Уже сгенерировано" : "Already generated",
         missing: isRussian ? "Без описания" : "Missing description",
       },
+      showing: (from, to, total) =>
+        isRussian
+          ? `Показано ${from}–${to} из ${total}`
+          : `Showing ${from}–${to} of ${total}`,
+      prevPage: isRussian ? "Назад" : "Previous",
+      nextPage: isRussian ? "Вперёд" : "Next",
+      pageOf: (page, total) =>
+        isRussian ? `Страница ${page} из ${total}` : `Page ${page} of ${total}`,
     }),
     [isRussian],
   );
@@ -255,6 +277,32 @@ export default function DescriptionQueue({ language = "ru" }) {
     () => Object.keys(selected).filter((id) => selected[id]),
     [selected],
   );
+
+  // Paginate both lists so the DOM never holds thousands of rows at once.
+  const totalMissingPages = Math.max(
+    1,
+    Math.ceil(missingFiltered.length / PAGE_SIZE),
+  );
+  const currentMissingPage = Math.min(missingPage, totalMissingPages);
+  const visibleMissing = missingFiltered.slice(
+    (currentMissingPage - 1) * PAGE_SIZE,
+    currentMissingPage * PAGE_SIZE,
+  );
+  const totalGeneratedPages = Math.max(
+    1,
+    Math.ceil(generatedItems.length / PAGE_SIZE),
+  );
+  const currentGeneratedPage = Math.min(generatedPage, totalGeneratedPages);
+  const visibleGenerated = generatedItems.slice(
+    (currentGeneratedPage - 1) * PAGE_SIZE,
+    currentGeneratedPage * PAGE_SIZE,
+  );
+
+  // Reset pagination whenever the filter or search changes.
+  useEffect(() => {
+    setMissingPage(1);
+    setGeneratedPage(1);
+  }, [statusFilter, query]);
 
   const toggleSelect = (id) => {
     setSelected((current) => ({
@@ -445,11 +493,14 @@ export default function DescriptionQueue({ language = "ru" }) {
     [],
   );
 
-  const renderItem = (item, { selectable = false } = {}) => {
+  const renderItem = (
+    item,
+    { selectable = false, forceExpanded = false } = {},
+  ) => {
     const itemId = String(item.id);
     const isBusy = Boolean(busyIds[itemId]);
     const isError = item.status === "error" || item.status === "not_found";
-    const isViewing = viewingId === itemId;
+    const isViewing = forceExpanded || viewingId === itemId;
     const descriptions = extractDescriptions(item);
     const hasText = Boolean(descriptions.ru || descriptions.en);
     return (
@@ -525,7 +576,7 @@ export default function DescriptionQueue({ language = "ru" }) {
           </div>
 
           <div className="description-queue__item-actions">
-            {hasText && (
+            {hasText && !forceExpanded && (
               <button
                 type="button"
                 className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
@@ -870,11 +921,50 @@ export default function DescriptionQueue({ language = "ru" }) {
                   : labels.emptyFiltered}
               </div>
             ) : (
-              <ul className="description-queue__list">
-                {missingFiltered.map((item) =>
-                  renderItem(item, { selectable: true }),
-                )}
-              </ul>
+              <>
+                <ul className="description-queue__list">
+                  {visibleMissing.map((item) =>
+                    renderItem(item, { selectable: true }),
+                  )}
+                </ul>
+                <div className="description-queue__pagination">
+                  <span className="description-queue__pagination-info">
+                    {labels.showing(
+                      (currentMissingPage - 1) * PAGE_SIZE + 1,
+                      Math.min(
+                        currentMissingPage * PAGE_SIZE,
+                        missingFiltered.length,
+                      ),
+                      missingFiltered.length,
+                    )}
+                  </span>
+                  <div className="description-queue__pagination-controls">
+                    <button
+                      type="button"
+                      className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
+                      onClick={() => setMissingPage((p) => Math.max(1, p - 1))}
+                      disabled={currentMissingPage <= 1}
+                    >
+                      {labels.prevPage}
+                    </button>
+                    <span className="description-queue__pagination-page">
+                      {labels.pageOf(currentMissingPage, totalMissingPages)}
+                    </span>
+                    <button
+                      type="button"
+                      className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
+                      onClick={() =>
+                        setMissingPage((p) =>
+                          Math.min(totalMissingPages, p + 1),
+                        )
+                      }
+                      disabled={currentMissingPage >= totalMissingPages}
+                    >
+                      {labels.nextPage}
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </section>
 
@@ -888,9 +978,26 @@ export default function DescriptionQueue({ language = "ru" }) {
                   {labels.generatedSubtitle}
                 </p>
               </div>
-              <span className="description-queue__group-count">
-                {generatedItems.length}
-              </span>
+              <div className="description-queue__group-header-actions">
+                <span className="description-queue__group-count">
+                  {generatedItems.length}
+                </span>
+                {generatedItems.length > 0 && (
+                  <button
+                    type="button"
+                    className="description-queue__btn description-queue__btn--small"
+                    onClick={() => setShowGeneratedDescriptions((v) => !v)}
+                    aria-expanded={showGeneratedDescriptions}
+                  >
+                    <i
+                      className={`ri-${showGeneratedDescriptions ? "arrow-up-s-line" : "eye-line"}`}
+                    />
+                    {showGeneratedDescriptions
+                      ? labels.hideAllDescriptions
+                      : labels.showAllDescriptions}
+                  </button>
+                )}
+              </div>
             </div>
 
             {generatedItems.length === 0 ? (
@@ -898,11 +1005,55 @@ export default function DescriptionQueue({ language = "ru" }) {
                 {labels.groupEmpty}
               </div>
             ) : (
-              <ul className="description-queue__list">
-                {generatedItems.map((item) =>
-                  renderItem(item, { selectable: false }),
-                )}
-              </ul>
+              <>
+                <ul className="description-queue__list">
+                  {visibleGenerated.map((item) =>
+                    renderItem(item, {
+                      selectable: false,
+                      forceExpanded: showGeneratedDescriptions,
+                    }),
+                  )}
+                </ul>
+                <div className="description-queue__pagination">
+                  <span className="description-queue__pagination-info">
+                    {labels.showing(
+                      (currentGeneratedPage - 1) * PAGE_SIZE + 1,
+                      Math.min(
+                        currentGeneratedPage * PAGE_SIZE,
+                        generatedItems.length,
+                      ),
+                      generatedItems.length,
+                    )}
+                  </span>
+                  <div className="description-queue__pagination-controls">
+                    <button
+                      type="button"
+                      className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
+                      onClick={() =>
+                        setGeneratedPage((p) => Math.max(1, p - 1))
+                      }
+                      disabled={currentGeneratedPage <= 1}
+                    >
+                      {labels.prevPage}
+                    </button>
+                    <span className="description-queue__pagination-page">
+                      {labels.pageOf(currentGeneratedPage, totalGeneratedPages)}
+                    </span>
+                    <button
+                      type="button"
+                      className="description-queue__btn description-queue__btn--small description-queue__btn--ghost"
+                      onClick={() =>
+                        setGeneratedPage((p) =>
+                          Math.min(totalGeneratedPages, p + 1),
+                        )
+                      }
+                      disabled={currentGeneratedPage >= totalGeneratedPages}
+                    >
+                      {labels.nextPage}
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </section>
         </>
