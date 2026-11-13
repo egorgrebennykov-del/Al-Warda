@@ -58,7 +58,7 @@ describe("product image queue admin API", () => {
       { SUPABASE_URL: "https://supabase.example" },
     );
 
-    assert.equal(response.status, 503);
+    assert.equal(response.status, 500);
     assert.deepEqual(await response.json(), {
       error: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server",
       code: "SUPABASE_SERVICE_KEY_MISSING",

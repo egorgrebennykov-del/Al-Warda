@@ -463,7 +463,7 @@ export async function getProductImageQueueStatus(request, env) {
     }
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 500);
     }
     return json({ error: error.message || "Could not load queue status" }, 500);
   }
