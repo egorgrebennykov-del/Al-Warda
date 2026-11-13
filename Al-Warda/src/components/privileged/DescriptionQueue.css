@@ -446,6 +446,17 @@
   white-space: nowrap;
 }
 
+.description-queue__item-desc {
+  margin: 0.4rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #5f564a;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .description-queue__item-actions {
   flex: 0 0 auto;
 }

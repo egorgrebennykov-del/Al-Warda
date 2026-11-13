@@ -517,6 +517,11 @@ export default function DescriptionQueue({ language = "ru" }) {
                 {item.error}
               </div>
             )}
+            {hasText && (
+              <p className="description-queue__item-desc">
+                {descriptions.ru || descriptions.en}
+              </p>
+            )}
           </div>
 
           <div className="description-queue__item-actions">
