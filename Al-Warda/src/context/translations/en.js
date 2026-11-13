@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Sign In",
     "search.inputPlaceholder": "Search Arabian perfumes, brands, notes...",
     "search.popularFragrances": "Popular Arabian Fragrances",
-    "search.foundFragrances": "Arabian fragrances found:",
+    "search.foundFragrances": "Perfumes found:",
     "search.noFragrancesFound": "No fragrances found",
     "search.tryChoosingBrand": "Try choosing one of the popular Arabian brands above.",
     "search.viewAllResults": "View all results",

@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Σύνδεση",
     "search.inputPlaceholder": "Αναζήτηση αραβικών αρωμάτων, μαρκών, νοτών...",
     "search.popularFragrances": "Δημοφιλή αραβικά αρώματα",
-    "search.foundFragrances": "Βρέθηκαν αραβικά αρώματα:",
+    "search.foundFragrances": "Βρέθηκαν μυρωδικά:",
     "search.noFragrancesFound": "Δεν βρέθηκαν αρώματα για την αναζήτησή σας",
     "search.tryChoosingBrand": "Δοκιμάστε να επιλέξετε μία από τις δημοφιλείς αραβικές μάρκες παραπάνω.",
     "search.viewAllResults": "Προβολή όλων των αποτελεσμάτων",

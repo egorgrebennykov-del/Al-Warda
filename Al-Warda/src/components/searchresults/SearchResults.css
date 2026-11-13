@@ -101,6 +101,13 @@
   }
 }
 
+/* Золотистый спиннер загрузки для страницы поиска */
+.results__spinner--gold {
+  border-color: rgba(212, 175, 55, 0.2);
+  border-top-color: #d4af37;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
+}
+
 .results__grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

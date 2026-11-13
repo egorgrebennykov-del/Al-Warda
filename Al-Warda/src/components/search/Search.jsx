@@ -40,18 +40,16 @@ export default function Search({ show, onClose }) {
   useEffect(() => {
     if (!show) return;
     let active = true;
-    const refresh = () => {
-      getPerfumes({ refresh: true })
-        .then((data) => {
-          if (active && Array.isArray(data)) setAllPerfumes(data);
-        })
-        .catch((err) => console.warn("Could not refresh perfumes for search:", err));
-    };
-    refresh();
-    const timer = window.setInterval(refresh, 30000);
+    // Кэш-first: при повторных открытиях модалки данные показываются мгновенно из памяти,
+    // запрос к Supabase делается только если кэша ещё нет.
+    // Убран рефетч каждые 30 с с refresh: true — он был причиной повторных ~12-с ожиданий.
+    getPerfumes()
+      .then((data) => {
+        if (active && Array.isArray(data)) setAllPerfumes(data);
+      })
+      .catch((err) => console.warn("Could not refresh perfumes for search:", err));
     return () => {
       active = false;
-      window.clearInterval(timer);
     };
   }, [show]);
 

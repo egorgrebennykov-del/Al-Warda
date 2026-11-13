@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Autentificare",
     "search.inputPlaceholder": "Căutare parfumuri arăbești, branduri, note...",
     "search.popularFragrances": "Parfumuri arăbești populare",
-    "search.foundFragrances": "Parfumuri arăbești găsite:",
+    "search.foundFragrances": "Parfumuri găsite:",
     "search.noFragrancesFound": "Nu a fost găsit niciun parfum pentru căutarea dumneavoastră",
     "search.tryChoosingBrand": "Încercați să selectați unul dintre brandurile arăbești populare de mai sus.",
     "search.viewAllResults": "Vizualizați toate rezultatele",

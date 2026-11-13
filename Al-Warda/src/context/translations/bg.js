@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Вход в профила",
     "search.inputPlaceholder": "Търсене на арабски парфюми, марки, нотки...",
     "search.popularFragrances": "Популярни арабски аромати",
-    "search.foundFragrances": "Намерени арабски аромати:",
+    "search.foundFragrances": "Намерени парфюми:",
     "search.noFragrancesFound": "Няма намерени аромати по вашето запитване",
     "search.tryChoosingBrand": "Опитайте да изберете една от популярните арабски марки по-горе.",
     "search.viewAllResults": "Вижте всички резултати",

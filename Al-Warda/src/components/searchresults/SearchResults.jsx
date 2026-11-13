@@ -127,7 +127,10 @@ export default function SearchResults() {
     let cancelled = false;
     setLoading(true);
 
-    getPerfumes({ refresh: true })
+    // Кэш-first: при повторных заходах данные показываются мгновенно из памяти,
+    // запрос к Supabase делается только если кэша ещё нет (первый визит).
+    // Убран рефетч каждые 30 с с refresh: true — он был причиной повторных ~12-с ожиданий.
+    getPerfumes()
       .then((all) => {
         if (cancelled) return;
         setAllPerfumes((all || []).filter(hasCompletedGeneratedImage));
@@ -137,14 +140,8 @@ export default function SearchResults() {
         if (!cancelled) setLoading(false);
       });
 
-    const timer = window.setInterval(() => {
-      getPerfumes({ refresh: true })
-        .then((all) => { if (!cancelled) setAllPerfumes((all || []).filter(hasCompletedGeneratedImage)); })
-        .catch((err) => console.warn("Could not refresh search results:", err));
-    }, 30000);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
     };
   }, []);
 
@@ -236,8 +233,8 @@ export default function SearchResults() {
         </h1>
         <p className="results__count">
           {loading
-            ? t("search.selecting")
-            : `${results.length} ${t("search.foundCount")}`}
+            ? ""
+            : `${t("search.foundFragrances") || t("search.foundCount")} ${results.length}`}
         </p>
       </div>
 
@@ -273,10 +270,7 @@ export default function SearchResults() {
 
       {loading ? (
         <div className="results__loading-state" style={{ textAlign: "center", padding: "4rem 0" }}>
-          <div className="app-route-loader__spinner" style={{ margin: "0 auto 1rem" }} />
-          <p style={{ color: "#d4af37", fontFamily: "var(--second-font)" }}>
-            {t("search.selecting")}
-          </p>
+          <div className="results__spinner results__spinner--gold" style={{ margin: "0 auto 1rem" }} />
         </div>
       ) : results.length === 0 ? (
         <div className="results__empty" style={{ textAlign: "center", padding: "4rem 0" }}>

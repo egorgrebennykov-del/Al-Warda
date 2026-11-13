@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Войти в аккаунт",
     "search.inputPlaceholder": "Поиск арабских духов, брендов (Lattafa, Armaf...), нот...",
     "search.popularFragrances": "Популярные арабские ароматы",
-    "search.foundFragrances": "Найдено арабских ароматов:",
+    "search.foundFragrances": "Найдено духов:",
     "search.noFragrancesFound": "По вашему запросу ничего не найдено",
     "search.tryChoosingBrand": "Попробуйте выбрать один из популярных арабских брендов выше.",
     "search.viewAllResults": "Смотреть все результаты",

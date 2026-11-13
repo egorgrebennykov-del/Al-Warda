@@ -745,7 +745,7 @@ export default {
     "footer.signIn": "Bejelentkezés",
     "search.inputPlaceholder": "Arab parfümök, márkák, illatjegyek keresése...",
     "search.popularFragrances": "Népszerű arab illatok",
-    "search.foundFragrances": "Talált arab illatok:",
+    "search.foundFragrances": "Parfümök találva:",
     "search.noFragrancesFound": "Nem található illat a keresésre",
     "search.tryChoosingBrand": "Próbáljon kiválasztani egyet a fenti népszerű arab márkák közül.",
     "search.viewAllResults": "Összes eredmény megtekintése",
