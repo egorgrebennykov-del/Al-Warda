@@ -322,20 +322,13 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
     else:
         gender_ru, gender_en = "Унисекс", "Unisex"
 
-    desc_ru = (
-        f"{brand} {name} — роскошный селективный аромат Ближнего Востока ({cat_ru.lower()}), созданный в лучших традициях восточного парфюмерного искусства. "
-        f"С первых мгновений композиция завораживает ярким вступлением верхних нот ({', '.join(top_ru)}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: {', '.join(heart_ru)}. "
-        f"В финале аромат окутывает благородной, бархатистой базой ({', '.join(base_ru)}), формируя дорогой и узнаваемый шлейф. "
-        f"Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (10–14 часов). "
-        f"Оригинальная продукция от сертифицированных парфюмерных домов Ближнего Востока."
-    )
-    desc_en = (
-        f"{brand} {name} is an opulent niche fragrance from the Middle East ({cat_en.lower()}), crafted in the finest traditions of oriental perfumery. "
-        f"From the very first spritz, the composition captivates with luminous top notes of {', '.join(top_en)}, seamlessly unfolding into a rich, multifaceted heart of {', '.join(heart_en)}. "
-        f"As it settles on the skin, a velvety, resonant base of {', '.join(base_en)} emerges, leaving an unforgettable and sophisticated trail. "
-        f"Formulated with a high concentration of precious aromatic oils, it delivers remarkable longevity (10–14 hours). "
-        f"100% authentic creation sourced directly from certified perfume houses in the Middle East."
-    )
+    # Descriptions are generated later by Gemini from the VERIFIED aroma palette
+    # (see PRODUCT_DESCRIPTION_RULES.md and geminiDescriptionService.js). Writing a
+    # fake boilerplate description here violated the instruction (invented notes,
+    # invented longevity, generic phrases) and was never recognised as boilerplate,
+    # so it stuck on the site instead of being regenerated.
+    desc_ru = ""
+    desc_en = ""
     return {
         "category": cat_ru,
         "categoryEn": cat_en,

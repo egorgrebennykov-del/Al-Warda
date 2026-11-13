@@ -26,6 +26,35 @@ import { withGeminiDescriptions } from "./geminiDescriptionService.js";
 
 const MAX_ADMIN_BATCH = 25;
 
+// In-memory cache of the expensive full-stocks scan. Cloudflare Workers keep an
+// isolate warm across requests, so this avoids re-fetching every stock on every
+// admin page refresh (a common cause of transient 503s under CPU limits).
+let descriptionItemsCache = null;
+let descriptionItemsCacheTime = 0;
+const DESCRIPTION_ITEMS_CACHE_TTL_MS = 20_000;
+
+function invalidateDescriptionItemsCache() {
+  descriptionItemsCache = null;
+  descriptionItemsCacheTime = 0;
+}
+
+async function getDescriptionItems(env) {
+  const now = Date.now();
+  if (
+    descriptionItemsCache &&
+    now - descriptionItemsCacheTime < DESCRIPTION_ITEMS_CACHE_TTL_MS
+  ) {
+    return descriptionItemsCache;
+  }
+  const key = getServiceKey(env);
+  const rows = await fetchAllStocks(env, key);
+  descriptionItemsCache = rows
+    .map((row) => queueItem(row, getSupabaseUrl(env)))
+    .filter(Boolean);
+  descriptionItemsCacheTime = now;
+  return descriptionItemsCache;
+}
+
 function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
@@ -146,11 +175,7 @@ export async function getDescriptionQueue(request, env) {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
 
-    const key = getServiceKey(env);
-    const rows = await fetchAllStocks(env, key);
-    const items = rows
-      .map((row) => queueItem(row, getSupabaseUrl(env)))
-      .filter(Boolean);
+    const items = await getDescriptionItems(env);
 
     const url = new URL(request.url);
     const query = (url.searchParams.get("q") || "").trim().toLowerCase();
@@ -255,6 +280,7 @@ export async function refreshDescriptions(request, env) {
       }
     }
 
+    invalidateDescriptionItemsCache();
     return json({
       checked: targets.length,
       found: results.filter((item) => item.status === "found").length,
@@ -285,8 +311,32 @@ async function readStockRow(env, id) {
   return Array.isArray(rows) ? rows[0] || null : null;
 }
 
-// Wipes only the Gemini-description fields (keeps photo, notes, everything
+// Wipes every description-related field (keeps photos, notes/aromas, everything
 // else) so the admin can regenerate the whole catalog from a clean slate.
+const DESCRIPTION_FIELDS = [
+  "description",
+  "descriptionRu",
+  "descriptionEn",
+  "descriptionSource",
+  "descriptionsLookup",
+  "descriptionLookup",
+  "descriptionAiGenerated",
+  "descriptionModel",
+  "descriptionGeneratedAt",
+];
+
+function hasDescriptionFields(info) {
+  if (!info || typeof info !== "object") return false;
+  return DESCRIPTION_FIELDS.some((field) => field in info);
+}
+
+function stripDescriptionFields(info) {
+  if (!info || typeof info !== "object") return info;
+  const next = { ...info };
+  for (const field of DESCRIPTION_FIELDS) delete next[field];
+  return next;
+}
+
 export async function clearDescriptions(request, env) {
   try {
     const auth = await requirePrivilegedUser(request, env);
@@ -299,42 +349,37 @@ export async function clearDescriptions(request, env) {
       body = {};
     }
 
+    const limit = Math.min(Math.max(Number(body.limit) || 100, 1), 200);
     const key = getServiceKey(env);
-    const supabaseUrl = getSupabaseUrl(env);
     const rows = await fetchAllStocks(env, key);
-    const allItems = rows
-      .map((row) => queueItem(row, supabaseUrl))
-      .filter(Boolean);
+    const candidates = rows.filter((row) => hasDescriptionFields(row.info));
 
-    let targets = allItems;
+    let targets = candidates;
     if (Array.isArray(body.ids) && body.ids.length) {
       const requested = new Set(body.ids.map((id) => String(id)));
-      targets = allItems.filter((row) => requested.has(String(row.id)));
+      targets = candidates.filter((row) => requested.has(String(row.id)));
     }
+    targets = targets.slice(0, limit);
 
     let cleared = 0;
     const errors = [];
     for (const row of targets) {
       try {
-        const dbRow = await readStockRow(env, row.id);
-        const info =
-          dbRow?.info && typeof dbRow.info === "object" ? dbRow.info : {};
-        const {
-          descriptionRu,
-          descriptionEn,
-          descriptionSource,
-          descriptionsLookup,
-          descriptionLookup,
-          ...rest
-        } = info;
-        await patchStockInfo(env, row.id, rest);
+        await patchStockInfo(env, row.id, stripDescriptionFields(row.info));
         cleared += 1;
       } catch (error) {
         errors.push({ id: row.id, error: error?.message || "Clear failed" });
       }
     }
 
-    return json({ cleared, errors: errors.length, details: errors });
+    invalidateDescriptionItemsCache();
+    return json({
+      cleared,
+      errors: errors.length,
+      remaining: Math.max(0, candidates.length - cleared),
+      total: candidates.length,
+      details: errors,
+    });
   } catch (error) {
     return json(
       { error: error?.message || "Could not clear descriptions" },

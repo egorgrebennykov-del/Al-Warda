@@ -231,9 +231,18 @@
 }
 
 .description-queue__message {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
   padding: 0.65rem 0.9rem;
   border-radius: 10px;
   font-size: 0.85rem;
+}
+
+.description-queue__message span {
+  flex: 1 1 260px;
+  min-width: 0;
 }
 
 .description-queue__message--success {
@@ -244,6 +253,45 @@
 .description-queue__message--error {
   background: #fdecea;
   color: #b3261e;
+}
+
+.description-queue__detail {
+  padding: 0.85rem 1rem 0.85rem calc(18px + 0.85rem + 64px + 0.85rem);
+  border: 1px solid #eae1d3;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: #fdfbf7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.description-queue__detail-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.description-queue__detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.description-queue__detail-head strong {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b5f4d;
+}
+
+.description-queue__detail-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #3a3328;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .description-queue__empty {
@@ -460,6 +508,10 @@
 
   .description-queue__item-actions {
     width: 100%;
+  }
+
+  .description-queue__detail {
+    padding-left: 0.85rem;
   }
 }
 

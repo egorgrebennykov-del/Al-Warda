@@ -52,6 +52,11 @@ MODEL_STEPS = 4
 PAGE_SIZE = 500
 MAX_SOURCE_BYTES = 20 * 1024 * 1024
 MAX_SOURCE_PIXELS = 24_000_000
+# Fidelity guard: reject a generated image whose dominant product colour deviates
+# too far from the original source (median RGB of the product pixels). Only gross
+# mismatches (a different bottle / wrong colour) trip this, so faithful results
+# pass untouched.
+MAX_PRODUCT_COLOR_DISTANCE = 100
 STALE_PROCESSING_MINUTES = 30
 SCHEDULE_WAIT_WINDOW_SECONDS = 900
 UNPUBLISHED_ERROR = "Generated image was not published; generation must be retried"
@@ -445,6 +450,33 @@ def generate_luxury_fallback_description(
     }
 
 
+DESCRIPTION_RULES_PROMPT = (
+    "You are a professional fragrance copywriter and olfactory editor for Al-Warda, "
+    "a premium Arabian perfume boutique. Write elegant, informative, natural product "
+    "descriptions that feel written by an experienced fragrance specialist — never "
+    "AI-sounding and never copied wholesale supplier boilerplate.\n"
+    "For each language write an opening of 1-2 sentences capturing the fragrance's "
+    "overall character and its most distinctive contrast, then 2-3 paragraphs forming "
+    "one coherent olfactory story (top notes and first impression -> heart notes and "
+    "their development -> base notes and final character) — never three disconnected "
+    "ingredient lists.\n"
+    "Style: elegant, sensory, professional, concise and consistent; use real olfactory "
+    "vocabulary (e.g. sparkling citrus freshness, warm spicy depth, velvety floral "
+    "character, rich amber warmth, soft musky trail) and avoid reusing the same "
+    "phrases in every product.\n"
+    "Strict rules: build the text only from the supplied notes; never invent notes, "
+    "accords, ingredients, origins, seasons, occasions, audiences or wearing situations; "
+    "never invent longevity or projection (if supplied, present it as indicative); "
+    "never claim the fragrance smells like another perfume; never use generic AI "
+    "phrases ('a true masterpiece', 'a symphony of sensations', 'a journey into the "
+    "world of luxury'); never repeat the full notes list inside the narrative; never "
+    "use excessive marketing language; never change the product name or brand; if "
+    "information is missing, omit it.\n"
+    "State the origin as 'Ближний Восток' in Russian and 'the Middle East' in English "
+    "(never mention UAE, Dubai, or Saudi Arabia)."
+)
+
+
 def generate_ai_perfume_description(
     requests_module,
     row,
@@ -476,12 +508,11 @@ def generate_ai_perfume_description(
                     f"Brand: {brand}\n"
                     f"Category: {category}\n"
                     f"Verified Notes: {notes_summary or 'NONE - do not mention any specific fragrance notes, ingredients or accords'}\n\n"
-                    "Instructions for luxury fragrance copywriter:\n"
-                    "1. Write an evocative luxury description in Russian (descriptionRu) and English (descriptionEn).\n"
-                    "2. Russian: multi-sentence, rich and sophisticated, describing the opening notes, heart, base, and longevity. Must state provenance as 'Ближний Восток' (never mention UAE or Saudi Arabia).\n"
-                    "3. English: poetic, niche luxury tone, stating origin as 'the Middle East'.\n"
-                    "4. NEVER invent or guess fragrance notes. Mention only the Verified Notes above; if there are none, describe style and character without naming any ingredients.\n"
-                    "5. Output valid JSON only with keys: descriptionRu, descriptionEn, notesSummary (empty string if no verified notes)."
+                    f"{DESCRIPTION_RULES_PROMPT}\n\n"
+                    "Write the description in Russian (descriptionRu) and English "
+                    "(descriptionEn) following the rules above. "
+                    "Output valid JSON only with keys: descriptionRu, descriptionEn, "
+                    "notesSummary (empty string if no verified notes)."
                 )
                 gemini_url = (
                     f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -525,11 +556,8 @@ def generate_ai_perfume_description(
                     {
                         "role": "system",
                         "content": (
-                            "You are an expert luxury fragrance copywriter for Al-Warda Parfumes (Middle Eastern niche fragrances). "
-                            "Given a perfume name and brand, compose an enchanting, rich description in Russian (descriptionRu) and English (descriptionEn). "
-                            "Never invent fragrance notes: mention only verified notes if provided, otherwise name no ingredients. "
-                            "Always refer to origin as 'Ближний Восток' in Russian and 'the Middle East' in English (never mention UAE, Dubai, or Saudi Arabia). "
-                            "Respond with ONLY valid JSON: {\"descriptionRu\": \"...\", \"descriptionEn\": \"...\", \"notesSummary\": \"...\"}"
+                            DESCRIPTION_RULES_PROMPT
+                            + " Respond with ONLY valid JSON: {\"descriptionRu\": \"...\", \"descriptionEn\": \"...\", \"notesSummary\": \"...\"}"
                         ),
                     },
                     {
@@ -656,18 +684,16 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
 
 def build_edit_prompt():
     return (
-        "Use image 0 as the exact product reference. Create a premium photorealistic "
-        "three-dimensional perfume product photograph for a luxury online store. "
-        "Show one large, centered product from a natural front-facing three-quarter "
-        "angle with realistic depth, refined warm studio lighting, crisp glass and "
-        "metal reflections, and carefully controlled highlights. Gently improve "
-        "sharpness and material detail without redesigning the product. Preserve "
-        "the exact product identity, bottle and cap shape, proportions, colors, "
-        "liquid, packaging, logo, typography and every visible label detail. "
-        "Keep the complete product and cap visible, with a small clear margin on "
-        "every side. Place it against a plain, uniform light grey studio background "
-        "with no horizon or cast shadow, so the background can be removed cleanly. "
-        "No frames, pedestals, props, extra bottles, invented markings or text."
+        "Use image 0 strictly as a one-to-one product reference. Re-photograph this "
+        "EXACT product — do not redesign, replace, or reinterpret it. The output must "
+        "keep the same bottle, cap, glass shape, liquid color, label artwork, logo and "
+        "typography as image 0, unchanged. Never invent, rewrite, move or omit text, "
+        "labels, colors or details; never add extra bottles, props, frames or markings. "
+        "Present one large, centered product from a natural front-facing three-quarter "
+        "angle with realistic depth, refined warm studio lighting, crisp glass and metal "
+        "reflections, on a plain uniform light grey background with no horizon or cast "
+        "shadow. Keep the complete product and cap fully visible with a small clear "
+        "margin on every side."
     )
 
 
@@ -781,6 +807,55 @@ def transparent_product_image(image_bytes, segmentation_session):
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True)
     return output.getvalue(), cutout.size
+
+
+def product_dominant_color(image):
+    """Median RGB of the visible product pixels (ignoring background/transparency).
+
+    For an RGBA cutout the product is the opaque region; for an RGB source photo
+    it is everything that is not near-white or near-black (the packshot backdrop).
+    Returns None when no product pixels can be identified.
+    """
+    import numpy as np
+
+    arr = np.asarray(image)
+    if arr.ndim == 3 and arr.shape[2] == 4:
+        mask = arr[:, :, 3] > 128
+        pixels = arr[:, :, :3][mask]
+    else:
+        pixels = arr.reshape(-1, 3).astype(np.int16)
+        not_light = ~((pixels[:, 0] > 210) & (pixels[:, 1] > 210) & (pixels[:, 2] > 210))
+        not_dark = ~((pixels[:, 0] < 18) & (pixels[:, 1] < 18) & (pixels[:, 2] < 18))
+        pixels = pixels[not_light & not_dark]
+    if pixels.size == 0:
+        return None
+    return np.median(pixels, axis=0).astype(np.float64)
+
+
+def generated_image_matches_source(source_bytes, generated_png_bytes):
+    """True when the generated product keeps the source product's dominant colour.
+
+    Only a large colour deviation (a different bottle / wrong product) is treated
+    as a mismatch; anything else is accepted so faithful generations pass through.
+    """
+    import numpy as np
+
+    try:
+        source_image = decode_source(source_bytes)
+        with Image.open(io.BytesIO(generated_png_bytes)) as generated:
+            generated.load()
+            generated_image = generated.convert("RGBA")
+    except Exception:
+        # If the check itself cannot run, don't block generation.
+        return True
+
+    source_color = product_dominant_color(source_image)
+    generated_color = product_dominant_color(generated_image)
+    if source_color is None or generated_color is None:
+        return True
+
+    distance = float(np.linalg.norm(source_color - generated_color))
+    return distance <= MAX_PRODUCT_COLOR_DISTANCE
 
 
 def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024)):
@@ -1044,6 +1119,11 @@ def process_product(
             else generate_product_edit(requests, account_id, api_token, source_bytes)
         )
         output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+        if not generated_image_matches_source(source_bytes, output):
+            raise ValueError(
+                "Сгенерированное изображение не похоже на исходный товар "
+                "(доминирующий цвет продукта изменился); требуется повторная генерация"
+            )
         image_url = save_generated_image(output)
 
         # Fragrance notes: generated by DeepSeek from the name and brand (cleared when generation fails)

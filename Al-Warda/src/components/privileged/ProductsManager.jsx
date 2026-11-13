@@ -77,7 +77,9 @@ export default function ProductsManager({ language = "ru" }) {
     const map = new Map();
     for (const p of products) {
       const slug = p.categorySlug || "oud";
-      const name = isRussian ? (p.category || "Восточные") : (p.categoryEn || p.category || "Oriental");
+      const name = isRussian
+        ? p.category || "Восточные"
+        : p.categoryEn || p.category || "Oriental";
       if (!map.has(slug)) {
         map.set(slug, name);
       }
@@ -98,7 +100,13 @@ export default function ProductsManager({ language = "ru" }) {
           const matchId = String(p.id).includes(q);
           const matchCat = (p.category || "").toLowerCase().includes(q);
           const matchNotes = (p.notesSummary || "").toLowerCase().includes(q);
-          if (!matchName && !matchBrand && !matchId && !matchCat && !matchNotes) {
+          if (
+            !matchName &&
+            !matchBrand &&
+            !matchId &&
+            !matchCat &&
+            !matchNotes
+          ) {
             return false;
           }
         }
@@ -118,7 +126,8 @@ export default function ProductsManager({ language = "ru" }) {
 
         // Stock
         if (selectedStock === "in_stock" && p.inStock === false) return false;
-        if (selectedStock === "out_of_stock" && p.inStock !== false) return false;
+        if (selectedStock === "out_of_stock" && p.inStock !== false)
+          return false;
 
         return true;
       })
@@ -143,7 +152,14 @@ export default function ProductsManager({ language = "ru" }) {
         }
         return 0;
       });
-  }, [products, search, selectedBrand, selectedCategory, selectedStock, selectedSort]);
+  }, [
+    products,
+    search,
+    selectedBrand,
+    selectedCategory,
+    selectedStock,
+    selectedSort,
+  ]);
 
   const displayedProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -174,14 +190,19 @@ export default function ProductsManager({ language = "ru" }) {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
 
-      setProducts((prev) => prev.filter((p) => String(p.id) !== String(product.id)));
+      setProducts((prev) =>
+        prev.filter((p) => String(p.id) !== String(product.id)),
+      );
       setMessage(
         isRussian
           ? `Товар «${product.name}» (ID #${product.id}) успешно удалён из базы данных.`
           : `Product "${product.name}" (ID #${product.id}) deleted successfully.`,
       );
     } catch (err) {
-      setError(err.message || (isRussian ? "Не удалось удалить товар" : "Failed to delete product"));
+      setError(
+        err.message ||
+          (isRussian ? "Не удалось удалить товар" : "Failed to delete product"),
+      );
     } finally {
       setDeletingId(null);
     }
@@ -223,7 +244,9 @@ export default function ProductsManager({ language = "ru" }) {
             {isRussian ? "Каталог товаров магазина" : "Store Products Catalog"}
           </h2>
           <span className="products-manager__count-badge">
-            {isRussian ? `Всего: ${products.length}` : `Total: ${products.length}`}
+            {isRussian
+              ? `Всего: ${products.length}`
+              : `Total: ${products.length}`}
           </span>
         </div>
 
@@ -238,15 +261,32 @@ export default function ProductsManager({ language = "ru" }) {
       </div>
 
       {message && (
-        <div className="product-image-queue__message" role="status" style={{ background: "#eefbf1", color: "#1b6932", border: "1px solid #a3e6b5" }}>
-          <i className="ri-checkbox-circle-line" style={{ marginRight: "0.5rem" }} />
+        <div
+          className="product-image-queue__message"
+          role="status"
+          style={{
+            background: "#eefbf1",
+            color: "#1b6932",
+            border: "1px solid #a3e6b5",
+          }}
+        >
+          <i
+            className="ri-checkbox-circle-line"
+            style={{ marginRight: "0.5rem" }}
+          />
           {message}
         </div>
       )}
 
       {error && (
-        <div className="product-image-queue__message product-image-queue__message--error" role="alert">
-          <i className="ri-error-warning-line" style={{ marginRight: "0.5rem" }} />
+        <div
+          className="product-image-queue__message product-image-queue__message--error"
+          role="alert"
+        >
+          <i
+            className="ri-error-warning-line"
+            style={{ marginRight: "0.5rem" }}
+          />
           {error}
         </div>
       )}
@@ -264,7 +304,11 @@ export default function ProductsManager({ language = "ru" }) {
                 setSearch(e.target.value);
                 setVisibleCount(24);
               }}
-              placeholder={isRussian ? "Поиск по названию, бренду, нотам или ID..." : "Search by name, brand, notes or ID..."}
+              placeholder={
+                isRussian
+                  ? "Поиск по названию, бренду, нотам или ID..."
+                  : "Search by name, brand, notes or ID..."
+              }
             />
             {search && (
               <button
@@ -288,7 +332,9 @@ export default function ProductsManager({ language = "ru" }) {
               setVisibleCount(24);
             }}
           >
-            <option value="all">{isRussian ? "Все бренды" : "All brands"}</option>
+            <option value="all">
+              {isRussian ? "Все бренды" : "All brands"}
+            </option>
             {brands.map((b) => (
               <option key={b} value={b}>
                 {b}
@@ -304,7 +350,9 @@ export default function ProductsManager({ language = "ru" }) {
               setVisibleCount(24);
             }}
           >
-            <option value="all">{isRussian ? "Все категории" : "All categories"}</option>
+            <option value="all">
+              {isRussian ? "Все категории" : "All categories"}
+            </option>
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.name}
@@ -320,9 +368,15 @@ export default function ProductsManager({ language = "ru" }) {
               setVisibleCount(24);
             }}
           >
-            <option value="all">{isRussian ? "Любой статус" : "Any stock"}</option>
-            <option value="in_stock">{isRussian ? "В наличии" : "In stock"}</option>
-            <option value="out_of_stock">{isRussian ? "Нет в наличии" : "Out of stock"}</option>
+            <option value="all">
+              {isRussian ? "Любой статус" : "Any stock"}
+            </option>
+            <option value="in_stock">
+              {isRussian ? "В наличии" : "In stock"}
+            </option>
+            <option value="out_of_stock">
+              {isRussian ? "Нет в наличии" : "Out of stock"}
+            </option>
           </select>
 
           <select
@@ -330,12 +384,24 @@ export default function ProductsManager({ language = "ru" }) {
             value={selectedSort}
             onChange={(e) => setSelectedSort(e.target.value)}
           >
-            <option value="newest">{isRussian ? "Сначала новые (ID ↓)" : "Newest first"}</option>
-            <option value="oldest">{isRussian ? "Сначала старые (ID ↑)" : "Oldest first"}</option>
-            <option value="name_asc">{isRussian ? "Название (А–Я)" : "Name (A–Z)"}</option>
-            <option value="name_desc">{isRussian ? "Название (Я–А)" : "Name (Z–A)"}</option>
-            <option value="price_asc">{isRussian ? "Цена: по возрастанию" : "Price: Low to High"}</option>
-            <option value="price_desc">{isRussian ? "Цена: по убыванию" : "Price: High to Low"}</option>
+            <option value="newest">
+              {isRussian ? "Сначала новые (ID ↓)" : "Newest first"}
+            </option>
+            <option value="oldest">
+              {isRussian ? "Сначала старые (ID ↑)" : "Oldest first"}
+            </option>
+            <option value="name_asc">
+              {isRussian ? "Название (А–Я)" : "Name (A–Z)"}
+            </option>
+            <option value="name_desc">
+              {isRussian ? "Название (Я–А)" : "Name (Z–A)"}
+            </option>
+            <option value="price_asc">
+              {isRussian ? "Цена: по возрастанию" : "Price: Low to High"}
+            </option>
+            <option value="price_desc">
+              {isRussian ? "Цена: по убыванию" : "Price: High to Low"}
+            </option>
           </select>
 
           {hasActiveFilters && (
@@ -349,7 +415,13 @@ export default function ProductsManager({ language = "ru" }) {
             </button>
           )}
 
-          <span style={{ marginLeft: "auto", fontSize: "0.82rem", color: "#8c8172" }}>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: "0.82rem",
+              color: "#8c8172",
+            }}
+          >
             {isRussian
               ? `Найдено: ${filteredProducts.length}`
               : `Matches: ${filteredProducts.length}`}
@@ -361,7 +433,9 @@ export default function ProductsManager({ language = "ru" }) {
       {loading ? (
         <div className="products-manager__loading">
           <div className="product-image-queue__spinner" />
-          <span>{isRussian ? "Загрузка каталога товаров..." : "Loading products..."}</span>
+          <span>
+            {isRussian ? "Загрузка каталога товаров..." : "Loading products..."}
+          </span>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="products-manager__empty">
@@ -396,15 +470,22 @@ export default function ProductsManager({ language = "ru" }) {
                     )}
 
                     <div className="products-manager__card-badges">
-                      <span className="products-manager__brand-pill" title={p.brand}>
+                      <span
+                        className="products-manager__brand-pill"
+                        title={p.brand}
+                      >
                         {p.brand}
                       </span>
                       <span
                         className={`products-manager__stock-pill ${p.inStock ? "products-manager__stock-pill--in" : "products-manager__stock-pill--out"}`}
                       >
                         {p.inStock
-                          ? (isRussian ? "В наличии" : "In stock")
-                          : (isRussian ? "Под заказ" : "Out of stock")}
+                          ? isRussian
+                            ? "В наличии"
+                            : "In stock"
+                          : isRussian
+                            ? "Под заказ"
+                            : "Out of stock"}
                       </span>
                     </div>
                   </div>
@@ -448,7 +529,11 @@ export default function ProductsManager({ language = "ru" }) {
                       className="products-manager__delete-btn"
                       onClick={() => handleDelete(p)}
                       disabled={isDeleting}
-                      title={isRussian ? "Удалить товар из базы данных" : "Delete product from database"}
+                      title={
+                        isRussian
+                          ? "Удалить товар из базы данных"
+                          : "Delete product from database"
+                      }
                     >
                       {isDeleting ? (
                         <i className="ri-loader-4-line ri-spin" />
