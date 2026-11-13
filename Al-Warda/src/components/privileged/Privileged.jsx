@@ -63,6 +63,10 @@ import "./Privileged.css";
 function ProductsSection({ language }) {
   const isRussian = language === "ru";
   const [subTab, setSubTab] = useState("list");
+  // Lazy-mount each sub-tab on first visit and keep it mounted afterwards, so
+  // switching tabs never re-fetches the heavy stocks scan (each sub-tab fetches
+  // the full catalog on mount, which is what made tab switching feel slow).
+  const [mountedTabs, setMountedTabs] = useState({ list: true });
 
   const subTabs = [
     {
@@ -87,6 +91,11 @@ function ProductsSection({ language }) {
     },
   ];
 
+  const selectSubTab = (key) => {
+    setSubTab(key);
+    setMountedTabs((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+  };
+
   const subTabBtns = subTabs.map((tab) => (
     <button
       key={tab.key}
@@ -94,12 +103,16 @@ function ProductsSection({ language }) {
       role="tab"
       aria-selected={subTab === tab.key}
       className={`privileged__sub-tab ${subTab === tab.key ? "privileged__sub-tab--active" : ""}`}
-      onClick={() => setSubTab(tab.key)}
+      onClick={() => selectSubTab(tab.key)}
     >
       <i className={tab.icon} />
       <span>{tab.label}</span>
     </button>
   ));
+
+  const tabPanel = (key) => ({
+    style: { display: subTab === key ? "block" : "none" },
+  });
 
   return (
     <div className="privileged__products-section">
@@ -108,10 +121,26 @@ function ProductsSection({ language }) {
       </div>
 
       <div className="privileged__panel">
-        {subTab === "list" && <ProductsManager language={language} />}
-        {subTab === "images" && <ProductImageQueue language={language} />}
-        {subTab === "notes" && <FragranceNotesQueue language={language} />}
-        {subTab === "descriptions" && <DescriptionQueue language={language} />}
+        {mountedTabs.list && (
+          <div {...tabPanel("list")}>
+            <ProductsManager language={language} />
+          </div>
+        )}
+        {mountedTabs.images && (
+          <div {...tabPanel("images")}>
+            <ProductImageQueue language={language} />
+          </div>
+        )}
+        {mountedTabs.notes && (
+          <div {...tabPanel("notes")}>
+            <FragranceNotesQueue language={language} />
+          </div>
+        )}
+        {mountedTabs.descriptions && (
+          <div {...tabPanel("descriptions")}>
+            <DescriptionQueue language={language} />
+          </div>
+        )}
       </div>
     </div>
   );
