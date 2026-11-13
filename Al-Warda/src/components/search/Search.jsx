@@ -160,16 +160,6 @@ export default function Search({ show, onClose }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="search__clear-btn"
-              aria-label="Clear search"
-            >
-              ×
-            </button>
-          )}
         </form>
 
         {/* Quick Filter Tag Chips */}

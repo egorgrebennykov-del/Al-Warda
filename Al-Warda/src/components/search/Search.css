@@ -95,6 +95,14 @@
   color: rgba(247, 237, 226, 0.45);
 }
 
+/* Скрываем встроенный браузерный «×» очистки поля поиска — оставляем один крестик закрытия модалки */
+.search__input::-webkit-search-cancel-button,
+.search__input::-ms-clear,
+.search__input::-ms-reveal {
+  display: none;
+  appearance: none;
+}
+
 .search__clear-btn {
   background: transparent;
   border: none;
