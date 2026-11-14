@@ -155,7 +155,12 @@ export default {
 
       // PostgREST-style data layer (Supabase /rest/v1/*) translated to Nhost
       // Hasura GraphQL. Admin secret stays server-side; never sent to browser.
-      if (pathname.startsWith("/rest/v1/")) {
+      // Also accept /api/rest/v1/* — the /api/* asset route reliably reaches
+      // the Worker (see wrangler.jsonc run_worker_first).
+      if (
+        pathname.startsWith("/rest/v1/") ||
+        pathname.startsWith("/api/rest/v1/")
+      ) {
         return handleRestProxy(request, env);
       }
 

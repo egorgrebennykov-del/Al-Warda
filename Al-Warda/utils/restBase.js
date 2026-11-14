@@ -22,5 +22,10 @@ export function restOrigin() {
 }
 
 export function restUrl(table) {
-  return `${restOrigin()}/rest/v1/${table}`;
+  if (USE_SUPABASE) {
+    return `${restOrigin()}/rest/v1/${table}`;
+  }
+  // Nhost: route through the Worker's /api/* path (reliably reaches the Worker
+  // via run_worker_first), then normalized to /rest/v1/* inside the Worker.
+  return `${restOrigin()}/api/rest/v1/${table}`;
 }

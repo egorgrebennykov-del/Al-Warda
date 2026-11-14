@@ -469,6 +469,9 @@ export async function fetchCount(env, table, where = {}) {
 export async function handleRestProxy(request, env = {}) {
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
+  // Accept both /rest/v1/* and /api/rest/v1/* (the latter rides the /api/*
+  // asset route). Normalize to /rest/v1/* for the translator.
+  const pathname = url.pathname.replace(/^\/api\/rest\/v1\//, "/rest/v1/");
   let body = null;
   if (["POST", "PATCH", "PUT"].includes(method)) {
     body = await request.json().catch(() => ({}));
@@ -491,7 +494,7 @@ export async function handleRestProxy(request, env = {}) {
   try {
     const translated = translatePostgrest({
       method,
-      pathname: url.pathname,
+      pathname,
       searchParams: url.searchParams,
       body,
       limit,

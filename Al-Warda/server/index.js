@@ -227,7 +227,11 @@ const server = createServer(async (req, res) => {
   }
 
   // PostgREST-style data layer (Supabase /rest/v1/*) translated to Nhost Hasura.
-  if (pathname.startsWith("/rest/v1/")) {
+  // Also accept /api/rest/v1/* (the /api/* route reliably reaches the server).
+  if (
+    pathname.startsWith("/rest/v1/") ||
+    pathname.startsWith("/api/rest/v1/")
+  ) {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await handleRestProxy(request, process.env);
