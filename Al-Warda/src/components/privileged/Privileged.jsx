@@ -128,7 +128,10 @@ function ProductsSection({ language }) {
         )}
         {mountedTabs.images && (
           <div {...tabPanel("images")}>
-            <ProductImageQueue language={language} />
+            <ProductImageQueue
+              language={language}
+              active={subTab === "images"}
+            />
           </div>
         )}
         {mountedTabs.notes && (
@@ -726,7 +729,7 @@ export default function Privileged() {
     };
 
     fetchStatuses();
-    const interval = setInterval(fetchStatuses, 2000);
+    const interval = setInterval(fetchStatuses, 5000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -787,12 +790,16 @@ export default function Privileged() {
     };
 
     loadInquiries();
-    const interval = setInterval(loadInquiries, 4000);
+    // Refresh fast while the admin is actually looking at the messenger
+    // section; when elsewhere, keep the unread badge fresh with a much
+    // slower poll to avoid hammering the inquiries table.
+    const intervalMs = activeSection === "inquiries" ? 15000 : 60000;
+    const interval = setInterval(loadInquiries, intervalMs);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [isPrivilegedUser, selectedInquiryId]);
+  }, [isPrivilegedUser, selectedInquiryId, activeSection]);
 
   // Auto-select first inquiry if none is selected
   useEffect(() => {

@@ -4,7 +4,10 @@ import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductImageQueue.css";
 
 async function fetchActions(options = {}) {
-  return fetch("/api/admin/product-images/actions", { credentials: "same-origin", ...options });
+  return fetch("/api/admin/product-images/actions", {
+    credentials: "same-origin",
+    ...options,
+  });
 }
 
 function formatDuration(ms, isRussian = true, includeSeconds = true) {
@@ -22,7 +25,9 @@ function formatDuration(ms, isRussian = true, includeSeconds = true) {
   if (includeSeconds && hours === 0) {
     parts.push(`${seconds} ${isRussian ? "сек" : "s"}`);
   } else if (includeSeconds && parts.length > 0) {
-    parts.push(`${String(seconds).padStart(2, "0")} ${isRussian ? "сек" : "s"}`);
+    parts.push(
+      `${String(seconds).padStart(2, "0")} ${isRussian ? "сек" : "s"}`,
+    );
   }
   if (!parts.length) {
     return includeSeconds
@@ -46,7 +51,11 @@ function formatDateTime(isoString, isRussian = true) {
 
 function describeErrorSummary(errorText = "", isRussian = true) {
   const text = String(errorText || "");
-  if (/не парфюм|не содержит флакон|бижутер|браслет|украшен|non-perfume|jewelry|bracelet/i.test(text)) {
+  if (
+    /не парфюм|не содержит флакон|бижутер|браслет|украшен|non-perfume|jewelry|bracelet/i.test(
+      text,
+    )
+  ) {
     return isRussian
       ? "Отклонено: на изображении нет парфюма (бижутерия / посторонний предмет)"
       : "Rejected: no perfume bottle in image (jewelry / non-fragrance item)";
@@ -95,7 +104,11 @@ function GalleryImageItem({
   const currentSrc = imgStatus === "raw" ? rawCandidate : image.imageUrl;
 
   const handleImageError = () => {
-    if (imgStatus === "initial" && rawCandidate && rawCandidate !== image.imageUrl) {
+    if (
+      imgStatus === "initial" &&
+      rawCandidate &&
+      rawCandidate !== image.imageUrl
+    ) {
       setImgStatus("raw");
     } else {
       setImgStatus("failed");
@@ -105,7 +118,9 @@ function GalleryImageItem({
   return (
     <article
       className={`product-image-queue__gallery-item ${
-        imgStatus === "failed" ? "product-image-queue__gallery-item--failed" : ""
+        imgStatus === "failed"
+          ? "product-image-queue__gallery-item--failed"
+          : ""
       }`}
       key={image.id}
     >
@@ -150,14 +165,19 @@ function GalleryImageItem({
               {isRussian ? "Файл недоступен" : "Image missing"}
             </span>
             <span className="product-image-queue__broken-hint">
-              {isRussian ? "Файл не опубликован или удалён" : "Not published or missing"}
+              {isRussian
+                ? "Файл не опубликован или удалён"
+                : "Not published or missing"}
             </span>
           </div>
         ) : (
           <a href={currentSrc} target="_blank" rel="noopener noreferrer">
             <img
               src={currentSrc}
-              alt={image.name || (isRussian ? "Изображение товара" : "Product image")}
+              alt={
+                image.name ||
+                (isRussian ? "Изображение товара" : "Product image")
+              }
               loading="lazy"
               onError={handleImageError}
             />
@@ -165,14 +185,20 @@ function GalleryImageItem({
         )}
       </div>
 
-      <strong>{image.name || (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}</strong>
+      <strong>
+        {image.name ||
+          (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}
+      </strong>
       {image.brand && <span>{image.brand}</span>}
       {image.completedAt ? (
         <time dateTime={image.completedAt}>
-          {new Date(image.completedAt).toLocaleString(isRussian ? "ru-RU" : "en-US", {
-            dateStyle: "medium",
-            timeStyle: "medium",
-          })}
+          {new Date(image.completedAt).toLocaleString(
+            isRussian ? "ru-RU" : "en-US",
+            {
+              dateStyle: "medium",
+              timeStyle: "medium",
+            },
+          )}
         </time>
       ) : (
         <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>
@@ -197,7 +223,11 @@ function GalleryImageItem({
             type="button"
             className="product-image-queue__gallery-btn"
             onClick={() => onManualConfig(image)}
-            title={isRussian ? "Настроить вручную и загрузить фото" : "Manual setup and photo upload"}
+            title={
+              isRussian
+                ? "Настроить вручную и загрузить фото"
+                : "Manual setup and photo upload"
+            }
           >
             <i className="ri-settings-3-line" />
             {isRussian ? "Настроить" : "Manual setup"}
@@ -208,7 +238,11 @@ function GalleryImageItem({
   );
 }
 
-export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
+export default function ProductImageQueue({
+  language = "ru",
+  onOpenQogita,
+  active = true,
+}) {
   const isRussian = language === "ru";
   const [status, setStatus] = useState(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -252,11 +286,15 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
         if ([502, 503, 504].includes(response.status)) {
-          throw new Error(isRussian
-            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
-            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+          throw new Error(
+            isRussian
+              ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+              : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`,
+          );
         }
-        throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
+        throw new Error(
+          `GitHub Actions: HTTP ${response.status}, expected JSON`,
+        );
       }
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
@@ -265,18 +303,27 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       setActionError("");
       setNeedsQogita(false);
       setRunsLoaded(true);
-      const requested = deletionRequestedAt.current && payload.deletions.find(
-        (run) => Date.parse(run.createdAt) >= deletionRequestedAt.current - 5000,
-      );
+      const requested =
+        deletionRequestedAt.current &&
+        payload.deletions.find(
+          (run) =>
+            Date.parse(run.createdAt) >= deletionRequestedAt.current - 5000,
+        );
       if (requested?.status === "completed") {
         deletionRequestedAt.current = null;
         setDeletionPending(false);
         if (requested.conclusion !== "success") {
-          setActionError(isRussian
-            ? "Удаление завершилось с ошибкой. Откройте журнал GitHub Actions; часть изображений могла быть удалена."
-            : "Deletion failed. Check the GitHub Actions log; some images may have been deleted.");
+          setActionError(
+            isRussian
+              ? "Удаление завершилось с ошибкой. Откройте журнал GitHub Actions; часть изображений могла быть удалена."
+              : "Deletion failed. Check the GitHub Actions log; some images may have been deleted.",
+          );
         } else {
-          setActionMessage(isRussian ? "Удаление изображений завершено." : "Image deletion completed.");
+          setActionMessage(
+            isRussian
+              ? "Удаление изображений завершено."
+              : "Image deletion completed.",
+          );
         }
       }
     } catch (err) {
@@ -295,22 +342,37 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, count: Number(count), account, regenerateCompleted }),
+        body: JSON.stringify({
+          action,
+          count: Number(count),
+          account,
+          regenerateCompleted,
+        }),
       });
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
         if ([502, 503, 504].includes(response.status)) {
-          throw new Error(isRussian
-            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
-            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+          throw new Error(
+            isRussian
+              ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+              : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`,
+          );
         }
-        throw new Error(`GitHub Actions: HTTP ${response.status}, expected JSON`);
+        throw new Error(
+          `GitHub Actions: HTTP ${response.status}, expected JSON`,
+        );
       }
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
-      setActionMessage(action === "start"
-        ? (isRussian ? "Запуск отправлен в GitHub Actions." : "Workflow dispatch accepted.")
-        : (isRussian ? "Запрошена остановка. Все сгенерированные к этому моменту изображения будут сохранены и добавлены на сайт." : "Stop requested. All images generated up to this moment will be saved and published to the website."));
+      setActionMessage(
+        action === "start"
+          ? isRussian
+            ? "Запуск отправлен в GitHub Actions."
+            : "Workflow dispatch accepted."
+          : isRussian
+            ? "Запрошена остановка. Все сгенерированные к этому моменту изображения будут сохранены и добавлены на сайт."
+            : "Stop requested. All images generated up to this moment will be saved and published to the website.",
+      );
       await loadRuns();
     } catch (err) {
       setRunsLoaded(false);
@@ -320,49 +382,77 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     }
   };
 
-  const loadStatus = useCallback(async (options = {}) => {
-    const force = Boolean(options?.force);
-    try {
-      const url = force ? "/api/admin/product-images/status?force=1" : "/api/admin/product-images/status";
-      const response = await fetch(url, {
-        credentials: "same-origin",
-      });
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        if ([502, 503, 504].includes(response.status)) {
-          throw new Error(isRussian
-            ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
-            : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`);
+  const loadStatus = useCallback(
+    async (options = {}) => {
+      const force = Boolean(options?.force);
+      try {
+        const url = force
+          ? "/api/admin/product-images/status?force=1"
+          : "/api/admin/product-images/status";
+        const response = await fetch(url, {
+          credentials: "same-origin",
+        });
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          if ([502, 503, 504].includes(response.status)) {
+            throw new Error(
+              isRussian
+                ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
+                : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`,
+            );
+          }
+          throw new Error(
+            `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+          );
         }
-        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
-      }
-      const payload = await response.json();
-      if (!response.ok) {
-        if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
-          throw new Error(isRussian
-            ? "На сервере не настроен секрет SUPABASE_SERVICE_ROLE_KEY. Добавьте его в настройки Cloudflare Worker; секреты GitHub Actions на сервер не передаются."
-            : "SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Add it to the Cloudflare Worker secrets; GitHub Actions secrets are not shared with the server.");
+        const payload = await response.json();
+        if (!response.ok) {
+          if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
+            throw new Error(
+              isRussian
+                ? "На сервере не настроен секрет SUPABASE_SERVICE_ROLE_KEY. Добавьте его в настройки Cloudflare Worker; секреты GitHub Actions на сервер не передаются."
+                : "SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Add it to the Cloudflare Worker secrets; GitHub Actions secrets are not shared with the server.",
+            );
+          }
+          throw new Error(payload.error || `HTTP ${response.status}`);
         }
-        throw new Error(payload.error || `HTTP ${response.status}`);
+        setStatus(payload);
+        setNowMs(Date.now());
+        setSelectedImages((current) =>
+          Object.fromEntries(
+            Object.entries(current).filter(([id, imageUrl]) =>
+              payload.images.some(
+                (image) =>
+                  String(image.id) === id && image.imageUrl === imageUrl,
+              ),
+            ),
+          ),
+        );
+        const validFailedIds = new Set(
+          (payload.failedItems || []).map((item) => String(item.id)),
+        );
+        setSelectedFailed((current) =>
+          Object.fromEntries(
+            Object.entries(current).filter(
+              ([id, checked]) => checked && validFailedIds.has(String(id)),
+            ),
+          ),
+        );
+        setError("");
+      } catch (loadError) {
+        setStatus((current) => current);
+        setError(
+          loadError.message ||
+            (isRussian
+              ? "Не удалось загрузить очередь"
+              : "Could not load queue"),
+        );
+      } finally {
+        setLoading(false);
       }
-      setStatus(payload);
-      setNowMs(Date.now());
-      setSelectedImages((current) => Object.fromEntries(
-        Object.entries(current).filter(([id, imageUrl]) =>
-          payload.images.some((image) => String(image.id) === id && image.imageUrl === imageUrl)),
-      ));
-      const validFailedIds = new Set((payload.failedItems || []).map((item) => String(item.id)));
-      setSelectedFailed((current) => Object.fromEntries(
-        Object.entries(current).filter(([id, checked]) => checked && validFailedIds.has(String(id))),
-      ));
-      setError("");
-    } catch (loadError) {
-      setStatus((current) => current);
-      setError(loadError.message || (isRussian ? "Не удалось загрузить очередь" : "Could not load queue"));
-    } finally {
-      setLoading(false);
-    }
-  }, [isRussian]);
+    },
+    [isRussian],
+  );
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -377,10 +467,14 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   }, [refreshing, loadRuns, loadStatus]);
 
   const deleteFailedFromDb = async (explicitIds = null) => {
-    const ids = explicitIds || Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
+    const ids =
+      explicitIds ||
+      Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
     if (!ids.length) return;
     const approved = await confirm({
-      title: isRussian ? "Удалить товары с ошибками из БД" : "Delete failed items from DB",
+      title: isRussian
+        ? "Удалить товары с ошибками из БД"
+        : "Delete failed items from DB",
       message: isRussian
         ? `Удалить ${ids.length} поз. из базы данных (таблица stocks)? Эти товары будут полностью удалены из базы и очереди генерации.`
         : `Delete ${ids.length} items from the database (stocks table)? These products will be permanently removed from the database and generation queue.`,
@@ -399,7 +493,9 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         body: JSON.stringify({ ids }),
       });
       if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
+        throw new Error(
+          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+        );
       }
       const payload = await response.json();
       if (!response.ok) {
@@ -427,7 +523,9 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   };
 
   const requeueFailed = async (explicitIds = null) => {
-    const ids = explicitIds || Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
+    const ids =
+      explicitIds ||
+      Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
     if (!ids.length) return;
     setDeletingFailed(true);
     setBusy(true);
@@ -441,10 +539,13 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
         body: JSON.stringify({ ids }),
       });
       if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(`HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`);
+        throw new Error(
+          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+        );
       }
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+      if (!response.ok)
+        throw new Error(payload.error || `HTTP ${response.status}`);
       setSelectedFailed((current) => {
         const next = { ...current };
         for (const id of ids) delete next[String(id)];
@@ -465,10 +566,17 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   };
 
   const deleteImages = async () => {
-    const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({ id, imageUrl }));
+    const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({
+      id,
+      imageUrl,
+    }));
     if (!images.length) return;
     if (images.length > 400) {
-      setActionError(isRussian ? "За один раз можно удалить до 400 фото. Снимите часть отметок." : "You can delete up to 400 images at a time. Deselect some images.");
+      setActionError(
+        isRussian
+          ? "За один раз можно удалить до 400 фото. Снимите часть отметок."
+          : "You can delete up to 400 images at a time. Deselect some images.",
+      );
       return;
     }
     const approved = await confirm({
@@ -494,9 +602,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       deletionRequestedAt.current = Date.now();
       setDeletionPending(true);
       setSelectedImages({});
-      setActionMessage(isRussian
-        ? "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
-        : "Deletion queued in GitHub Actions. The list will update after it runs.");
+      setActionMessage(
+        isRussian
+          ? "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
+          : "Deletion queued in GitHub Actions. The list will update after it runs.",
+      );
       await loadStatus({ force: true });
       await loadRuns();
     } catch (err) {
@@ -507,10 +617,16 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     }
   };
 
-  const deleting = deletionSubmitting || deletionPending || deletions.some((run) => run.status !== "completed");
-  const hasActiveTasks = runs.some((run) => run.status !== "completed") || deleting || busy;
+  const deleting =
+    deletionSubmitting ||
+    deletionPending ||
+    deletions.some((run) => run.status !== "completed");
+  const hasActiveTasks =
+    runs.some((run) => run.status !== "completed") || deleting || busy;
 
   useEffect(() => {
+    if (!active) return undefined;
+
     const initialLoad = window.setTimeout(() => {
       loadStatus();
       loadRuns();
@@ -526,16 +642,26 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
       window.clearTimeout(initialLoad);
       window.clearInterval(timer);
     };
-  }, [loadStatus, loadRuns, hasActiveTasks]);
+  }, [loadStatus, loadRuns, hasActiveTasks, active]);
   const selectableImages = (status?.images || []).filter(
-    (image) => /^\d{1,20}$/.test(String(image.id)) && /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl),
+    (image) =>
+      /^\d{1,20}$/.test(String(image.id)) &&
+      /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(
+        image.imageUrl,
+      ),
   );
-  const allSelected = selectableImages.length > 0 &&
-    selectableImages.every((image) => selectedImages[image.id] === image.imageUrl);
+  const allSelected =
+    selectableImages.length > 0 &&
+    selectableImages.every(
+      (image) => selectedImages[image.id] === image.imageUrl,
+    );
 
   const failedItems = status?.failedItems || [];
-  const selectedFailedIds = Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
-  const allFailedSelected = failedItems.length > 0 &&
+  const selectedFailedIds = Object.keys(selectedFailed).filter(
+    (id) => selectedFailed[id],
+  );
+  const allFailedSelected =
+    failedItems.length > 0 &&
     failedItems.every((item) => Boolean(selectedFailed[String(item.id)]));
 
   const progress = status?.total
@@ -544,11 +670,16 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
 
   const liveAccounts = (status?.accounts || []).map((item) => {
     const availableAtMs = item.availableAt ? Date.parse(item.availableAt) : 0;
-    const partialAtMs = item.partialAvailableAt ? Date.parse(item.partialAvailableAt) : 0;
+    const partialAtMs = item.partialAvailableAt
+      ? Date.parse(item.partialAvailableAt)
+      : 0;
     const isAvailable = !availableAtMs || nowMs >= availableAtMs;
     const remainingMs = isAvailable ? 0 : Math.max(0, availableAtMs - nowMs);
-    const partialRemainingMs = partialAtMs && nowMs < partialAtMs ? Math.max(0, partialAtMs - nowMs) : 0;
-    const partialReady = Boolean(partialAtMs && !isAvailable && nowMs >= partialAtMs);
+    const partialRemainingMs =
+      partialAtMs && nowMs < partialAtMs ? Math.max(0, partialAtMs - nowMs) : 0;
+    const partialReady = Boolean(
+      partialAtMs && !isAvailable && nowMs >= partialAtMs,
+    );
     return {
       ...item,
       isAvailable,
@@ -559,14 +690,18 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
   });
 
   const unavailableAccounts = liveAccounts.filter((item) => !item.isAvailable);
-  const availableAccountsCount = liveAccounts.length - unavailableAccounts.length;
-  const allAccountsAvailable = liveAccounts.length > 0 && unavailableAccounts.length === 0;
-  const nextAvailableAccount = [...unavailableAccounts].sort(
-    (a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt),
-  )[0] || null;
-  const lastAvailableAccount = [...unavailableAccounts].sort(
-    (a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt),
-  ).at(-1) || null;
+  const availableAccountsCount =
+    liveAccounts.length - unavailableAccounts.length;
+  const allAccountsAvailable =
+    liveAccounts.length > 0 && unavailableAccounts.length === 0;
+  const nextAvailableAccount =
+    [...unavailableAccounts].sort(
+      (a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt),
+    )[0] || null;
+  const lastAvailableAccount =
+    [...unavailableAccounts]
+      .sort((a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt))
+      .at(-1) || null;
   const waitingImagesCount = (status?.pending || 0) + (status?.failed || 0);
   const hasWaitingImages = waitingImagesCount > 0;
 
@@ -585,7 +720,11 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
     <section className="product-image-queue">
       <header className="product-image-queue__header">
         <div>
-          <h2>{isRussian ? "Генерация изображений товаров" : "Product image generation"}</h2>
+          <h2>
+            {isRussian
+              ? "Генерация изображений товаров"
+              : "Product image generation"}
+          </h2>
           <p>
             {isRussian
               ? "Flux создаёт студийное 3D-изображение по исходному фото, затем фон удаляется. Проверьте детали и края флакона."
@@ -599,18 +738,33 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
           rel="noopener noreferrer"
         >
           <i className="ri-external-link-line" />
-          {isRussian ? "Открыть запуск в GitHub Actions" : "Open GitHub Actions"}
+          {isRussian
+            ? "Открыть запуск в GitHub Actions"
+            : "Open GitHub Actions"}
         </a>
       </header>
 
       <div className="product-image-queue__controls">
         <label>
           {isRussian ? "Количество фото" : "Number of photos"}
-          <input type="number" min="1" max="100000" step="1" value={count} onChange={(e) => setCount(e.target.value)} />
+          <input
+            type="number"
+            min="1"
+            max="100000"
+            step="1"
+            value={count}
+            onChange={(e) => setCount(e.target.value)}
+          />
         </label>
         <label className="product-image-queue__regenerate">
-          <input type="checkbox" checked={regenerateCompleted} onChange={(e) => setRegenerateCompleted(e.target.checked)} />
-          {isRussian ? "Пересоздать готовые фото старой модели" : "Regenerate completed images from older models"}
+          <input
+            type="checkbox"
+            checked={regenerateCompleted}
+            onChange={(e) => setRegenerateCompleted(e.target.checked)}
+          />
+          {isRussian
+            ? "Пересоздать готовые фото старой модели"
+            : "Regenerate completed images from older models"}
         </label>
         <label>
           {isRussian ? "Аккаунт Cloudflare" : "Cloudflare account"}
@@ -618,461 +772,734 @@ export default function ProductImageQueue({ language = "ru", onOpenQogita }) {
             <option value="auto">
               {isRussian ? "Автоматически (все пять)" : "Automatic (all five)"}
               {liveAccounts.length > 0
-                ? (allAccountsAvailable
-                  ? (isRussian ? " — все 5 доступны" : " — all 5 available")
-                  : (isRussian
+                ? allAccountsAvailable
+                  ? isRussian
+                    ? " — все 5 доступны"
+                    : " — all 5 available"
+                  : isRussian
                     ? ` — все 5 через ${formatDuration(lastAvailableAccount?.remainingMs || 0, true, false)}`
-                    : ` — all 5 in ${formatDuration(lastAvailableAccount?.remainingMs || 0, false, false)}`))
+                    : ` — all 5 in ${formatDuration(lastAvailableAccount?.remainingMs || 0, false, false)}`
                 : ""}
             </option>
-            <option value="primary">{(isRussian ? "Основной" : "Primary") + accountOptionSuffix("primary")}</option>
-            <option value="secondary">{(isRussian ? "Второй" : "Secondary") + accountOptionSuffix("secondary")}</option>
-            <option value="third">{(isRussian ? "Третий" : "Third") + accountOptionSuffix("third")}</option>
-            <option value="fourth">{(isRussian ? "Четвёртый" : "Fourth") + accountOptionSuffix("fourth")}</option>
-            <option value="fifth">{(isRussian ? "Пятый" : "Fifth") + accountOptionSuffix("fifth")}</option>
+            <option value="primary">
+              {(isRussian ? "Основной" : "Primary") +
+                accountOptionSuffix("primary")}
+            </option>
+            <option value="secondary">
+              {(isRussian ? "Второй" : "Secondary") +
+                accountOptionSuffix("secondary")}
+            </option>
+            <option value="third">
+              {(isRussian ? "Третий" : "Third") + accountOptionSuffix("third")}
+            </option>
+            <option value="fourth">
+              {(isRussian ? "Четвёртый" : "Fourth") +
+                accountOptionSuffix("fourth")}
+            </option>
+            <option value="fifth">
+              {(isRussian ? "Пятый" : "Fifth") + accountOptionSuffix("fifth")}
+            </option>
           </select>
         </label>
-        <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || !Number.isInteger(Number(count)) || Number(count) < 1 || Number(count) > 100000} onClick={() => runAction("start")}>
+        <button
+          type="button"
+          className="product-image-queue__start"
+          disabled={
+            busy ||
+            deleting ||
+            !runsLoaded ||
+            runs.length > 0 ||
+            !Number.isInteger(Number(count)) ||
+            Number(count) < 1 ||
+            Number(count) > 100000
+          }
+          onClick={() => runAction("start")}
+        >
           {isRussian ? "Запустить" : "Start"}
         </button>
-        <button type="button" className="product-image-queue__start" disabled={busy || !runsLoaded || !runs.length} onClick={() => runAction("stop")}>
+        <button
+          type="button"
+          className="product-image-queue__start"
+          disabled={busy || !runsLoaded || !runs.length}
+          onClick={() => runAction("stop")}
+        >
           {isRussian ? "Остановить" : "Stop"}
         </button>
       </div>
-      {actionError && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
-        <span>{actionError}</span>
-        <button
-          type="button"
-          className="product-image-queue__retry-btn"
-          disabled={refreshing}
-          onClick={handleManualRefresh}
-          title={isRussian ? "Обновить статус очереди и задачи" : "Refresh queue and task status"}
+      {actionError && (
+        <div
+          className="product-image-queue__message product-image-queue__message--error"
+          role="alert"
         >
-          {refreshing ? (
-            <>
-              <span className="product-image-queue__btn-spinner" aria-hidden="true" />
-              <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
-            </>
-          ) : (
-            <>
-              <i className="ri-refresh-line" />
-              <span>{isRussian ? "Обновить статус" : "Retry"}</span>
-            </>
+          <span>{actionError}</span>
+          <button
+            type="button"
+            className="product-image-queue__retry-btn"
+            disabled={refreshing}
+            onClick={handleManualRefresh}
+            title={
+              isRussian
+                ? "Обновить статус очереди и задачи"
+                : "Refresh queue and task status"
+            }
+          >
+            {refreshing ? (
+              <>
+                <span
+                  className="product-image-queue__btn-spinner"
+                  aria-hidden="true"
+                />
+                <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
+              </>
+            ) : (
+              <>
+                <i className="ri-refresh-line" />
+                <span>{isRussian ? "Обновить статус" : "Retry"}</span>
+              </>
+            )}
+          </button>
+          {needsQogita && onOpenQogita && (
+            <button type="button" onClick={onOpenQogita}>
+              {isRussian ? "Открыть Qogita B2B" : "Open Qogita B2B"}
+            </button>
           )}
-        </button>
-        {needsQogita && onOpenQogita && <button type="button" onClick={onOpenQogita}>{isRussian ? "Открыть Qogita B2B" : "Open Qogita B2B"}</button>}
-      </div>}
-      {actionMessage && <div className="product-image-queue__message" role="status">{actionMessage}</div>}
-      {deleting && <div className="product-image-queue__deleting" role="status" aria-live="polite">
-        <span className="product-image-queue__spinner" aria-hidden="true" />
-        <span>
-          <strong>{isRussian ? "Удаление фотографий запущено" : "Image deletion in progress"}</strong>
-          <span>{isRussian ? "Задача выполняется в GitHub Actions. Дождитесь завершения." : "The GitHub Actions job is running or queued. Please wait for it to finish."}</span>
-        </span>
-      </div>}
-      {runs.map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">GitHub Actions: {run.status}</a>)}
-      {deletions.slice(0, 1).map((run) => <a key={run.id} href={run.url} target="_blank" rel="noopener noreferrer">
-        {isRussian ? "Удаление фото" : "Image deletion"}: {run.status === "completed" ? run.conclusion : run.status}
-        {run.status === "completed" && run.conclusion !== "success"
-          ? (isRussian ? " — возможен частичный результат, проверьте журнал" : " — partial results possible, check the log")
-          : ""}
-      </a>)}
-      {error && <div className="product-image-queue__message product-image-queue__message--error" role="alert">
-        <span>{error}</span>
-        <button
-          type="button"
-          className="product-image-queue__retry-btn"
-          disabled={refreshing}
-          onClick={handleManualRefresh}
-          title={isRussian ? "Обновить статус очереди и задачи" : "Refresh queue and task status"}
+        </div>
+      )}
+      {actionMessage && (
+        <div className="product-image-queue__message" role="status">
+          {actionMessage}
+        </div>
+      )}
+      {deleting && (
+        <div
+          className="product-image-queue__deleting"
+          role="status"
+          aria-live="polite"
         >
-          {refreshing ? (
-            <>
-              <span className="product-image-queue__btn-spinner" aria-hidden="true" />
-              <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
-            </>
-          ) : (
-            <>
-              <i className="ri-refresh-line" />
-              <span>{isRussian ? "Обновить статус" : "Retry"}</span>
-            </>
-          )}
-        </button>
-      </div>}
+          <span className="product-image-queue__spinner" aria-hidden="true" />
+          <span>
+            <strong>
+              {isRussian
+                ? "Удаление фотографий запущено"
+                : "Image deletion in progress"}
+            </strong>
+            <span>
+              {isRussian
+                ? "Задача выполняется в GitHub Actions. Дождитесь завершения."
+                : "The GitHub Actions job is running or queued. Please wait for it to finish."}
+            </span>
+          </span>
+        </div>
+      )}
+      {runs.map((run) => (
+        <a
+          key={run.id}
+          href={run.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub Actions: {run.status}
+        </a>
+      ))}
+      {deletions.slice(0, 1).map((run) => (
+        <a
+          key={run.id}
+          href={run.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {isRussian ? "Удаление фото" : "Image deletion"}:{" "}
+          {run.status === "completed" ? run.conclusion : run.status}
+          {run.status === "completed" && run.conclusion !== "success"
+            ? isRussian
+              ? " — возможен частичный результат, проверьте журнал"
+              : " — partial results possible, check the log"
+            : ""}
+        </a>
+      ))}
+      {error && (
+        <div
+          className="product-image-queue__message product-image-queue__message--error"
+          role="alert"
+        >
+          <span>{error}</span>
+          <button
+            type="button"
+            className="product-image-queue__retry-btn"
+            disabled={refreshing}
+            onClick={handleManualRefresh}
+            title={
+              isRussian
+                ? "Обновить статус очереди и задачи"
+                : "Refresh queue and task status"
+            }
+          >
+            {refreshing ? (
+              <>
+                <span
+                  className="product-image-queue__btn-spinner"
+                  aria-hidden="true"
+                />
+                <span>{isRussian ? "Обновление..." : "Refreshing..."}</span>
+              </>
+            ) : (
+              <>
+                <i className="ri-refresh-line" />
+                <span>{isRussian ? "Обновить статус" : "Retry"}</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
       {loading && !status && (
         <div className="product-image-queue__loading-state" role="status">
-          <span className="product-image-queue__btn-spinner" aria-hidden="true" />
+          <span
+            className="product-image-queue__btn-spinner"
+            aria-hidden="true"
+          />
           <span>{isRussian ? "Загрузка очереди..." : "Loading queue..."}</span>
         </div>
       )}
 
-      {status && <>
-      <div className="product-image-queue__progress-heading">
-        <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
-        <span>{status.completed.toLocaleString()} / {status.total.toLocaleString()} ({progress}%)</span>
-      </div>
-      <progress className="product-image-queue__progress" value={progress} max="100" />
-
-      <div className="product-image-queue__cards">
-        {[
-          ["pending", isRussian ? "Ожидают" : "Pending", "ri-time-line"],
-          ["processing", isRussian ? "В обработке" : "Processing", "ri-loader-4-line"],
-          ["completed", isRussian ? "Готово" : "Completed", "ri-checkbox-circle-line"],
-          ["failed", isRussian ? "Ошибки" : "Failed", "ri-error-warning-line"],
-        ].map(([key, label, icon]) => (
-          <div className={`product-image-queue__card product-image-queue__card--${key}`} key={key}>
-            <i className={icon} />
-            <span>{label}</span>
-            <strong>{status[key].toLocaleString()}</strong>
+      {status && (
+        <>
+          <div className="product-image-queue__progress-heading">
+            <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
+            <span>
+              {status.completed.toLocaleString()} /{" "}
+              {status.total.toLocaleString()} ({progress}%)
+            </span>
           </div>
-        ))}
-      </div>
+          <progress
+            className="product-image-queue__progress"
+            value={progress}
+            max="100"
+          />
 
-      {liveAccounts.length > 0 && (
-        <section className="product-image-queue__accounts" aria-labelledby="cloudflare-accounts-heading">
-          <div className="product-image-queue__accounts-header">
-            <div>
-              <h3 id="cloudflare-accounts-heading">
-                {isRussian
-                  ? "Лимиты аккаунтов Cloudflare Workers AI и автозапуск GitHub"
-                  : "Cloudflare Workers AI Account Quotas & GitHub Auto-Schedule"}
-              </h3>
-              <p>
-                {isRussian
-                  ? "Бесплатный лимит (10 000 Neurons на аккаунт) в API Cloudflare обновляется по скользящему 24-часовому окну с момента исчерпания. GitHub Actions проверяет очередь каждые 30 минут и автоматически запускает генерацию только тогда, когда в ожидании есть изображения и все 5 аккаунтов доступны."
-                  : "The free quota (10,000 Neurons per account) in Cloudflare Workers AI resets on a rolling 24-hour window after exhaustion. GitHub Actions checks every 30 minutes and automatically starts generation only when images are waiting and all 5 accounts are available."}
-              </p>
-            </div>
-            <div className={`product-image-queue__schedule-badge ${allAccountsAvailable && hasWaitingImages ? "product-image-queue__schedule-badge--ready" : "product-image-queue__schedule-badge--waiting"}`}>
-              <i className={allAccountsAvailable && hasWaitingImages ? "ri-play-circle-line" : "ri-timer-flash-line"} />
-              <div>
-                <strong>
-                  {!hasWaitingImages
-                    ? (isRussian ? "Автозапуск: нет ожидающих фото" : "Auto-run: no pending images")
-                    : allAccountsAvailable
-                      ? (isRussian ? "Все 5 аккаунтов доступны — автозапуск готов" : "All 5 accounts available — auto-run ready")
-                      : (isRussian
-                        ? `Все 5 аккаунтов будут доступны через ${formatDuration(lastAvailableAccount?.remainingMs || 0, true, true)}`
-                        : `All 5 accounts available in ${formatDuration(lastAvailableAccount?.remainingMs || 0, false, true)}`)}
-                </strong>
-                <span>
-                  {isRussian
-                    ? `Доступно аккаунтов: ${availableAccountsCount} из ${liveAccounts.length} • В очереди на генерацию: ${waitingImagesCount.toLocaleString()}`
-                    : `Available accounts: ${availableAccountsCount} of ${liveAccounts.length} • Waiting in queue: ${waitingImagesCount.toLocaleString()}`}
-                  {!allAccountsAvailable && lastAvailableAccount?.availableAt && (
-                    isRussian
-                      ? ` • Полный старт: ${formatDateTime(lastAvailableAccount.availableAt, true)}`
-                      : ` • Full start: ${formatDateTime(lastAvailableAccount.availableAt, false)}`
-                  )}
-                  {!allAccountsAvailable && nextAvailableAccount && nextAvailableAccount.id !== lastAvailableAccount?.id && (
-                    isRussian
-                      ? ` • Ближайший аккаунт через ${formatDuration(nextAvailableAccount.remainingMs, true, false)}`
-                      : ` • Next account in ${formatDuration(nextAvailableAccount.remainingMs, false, false)}`
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="product-image-queue__accounts-grid">
-            {liveAccounts.map((acc) => (
-              <article
-                key={acc.id}
-                className={`product-image-queue__account-card ${acc.isAvailable ? "product-image-queue__account-card--available" : "product-image-queue__account-card--cooldown"}`}
+          <div className="product-image-queue__cards">
+            {[
+              ["pending", isRussian ? "Ожидают" : "Pending", "ri-time-line"],
+              [
+                "processing",
+                isRussian ? "В обработке" : "Processing",
+                "ri-loader-4-line",
+              ],
+              [
+                "completed",
+                isRussian ? "Готово" : "Completed",
+                "ri-checkbox-circle-line",
+              ],
+              [
+                "failed",
+                isRussian ? "Ошибки" : "Failed",
+                "ri-error-warning-line",
+              ],
+            ].map(([key, label, icon]) => (
+              <div
+                className={`product-image-queue__card product-image-queue__card--${key}`}
+                key={key}
               >
-                <div className="product-image-queue__account-top">
-                  <strong>{isRussian ? acc.labelRu : acc.labelEn}</strong>
-                  <span className={`product-image-queue__account-pill ${acc.isAvailable ? "product-image-queue__account-pill--ok" : "product-image-queue__account-pill--wait"}`}>
-                    {acc.isAvailable
-                      ? (isRussian ? "Доступен" : "Available")
-                      : (isRussian
-                        ? `Будет доступно через ${formatDuration(acc.remainingMs, true, true)}`
-                        : `Available in ${formatDuration(acc.remainingMs, false, true)}`)}
-                  </span>
-                </div>
-                <div className="product-image-queue__account-meta">
-                  {acc.availableAt && !acc.isAvailable && (
-                    <div>
-                      <span>{isRussian ? "Полное обновление:" : "Full reset:"}</span>{" "}
-                      <strong>{formatDateTime(acc.availableAt, isRussian)}</strong>
-                    </div>
-                  )}
-                  {acc.partialAvailableAt && !acc.isAvailable && (
-                    <div className="product-image-queue__account-partial">
-                      {acc.partialReady
-                        ? (isRussian
-                          ? `Частичная квота (~140 фото) уже доступна (с ${formatDateTime(acc.partialAvailableAt, true)})`
-                          : `Partial quota (~140 photos) is already available (since ${formatDateTime(acc.partialAvailableAt, false)})`)
-                        : (isRussian
-                          ? `Частичная квота (~140 фото): будет доступно через ${formatDuration(acc.partialRemainingMs, true, false)} (${formatDateTime(acc.partialAvailableAt, true)})`
-                          : `Partial quota (~140 photos): available in ${formatDuration(acc.partialRemainingMs, false, false)} (${formatDateTime(acc.partialAvailableAt, false)})`)}
-                    </div>
-                  )}
-                  {acc.limitedAt && (
-                    <div>
-                      <span>
-                        {acc.isAvailable
-                          ? (isRussian ? "Предыдущий лимит:" : "Previous limit:")
-                          : (isRussian ? "Лимит исчерпан:" : "Limit reached:")}
-                      </span>{" "}
-                      <time dateTime={acc.limitedAt}>
-                        {formatDateTime(acc.limitedAt, isRussian)}
-                        {acc.isAvailable && (isRussian ? " (восстановлен)" : " (restored)")}
-                      </time>
-                    </div>
-                  )}
-                </div>
-              </article>
+                <i className={icon} />
+                <span>{label}</span>
+                <strong>{status[key].toLocaleString()}</strong>
+              </div>
             ))}
           </div>
-        </section>
-      )}
 
-      <div className="product-image-queue__quota">
-        <span>
-          {isRussian ? "Попытки сегодня (UTC)" : "Attempts today (UTC)"}:
-          {" "}<strong>{status.attemptedToday}</strong>
-        </span>
-      </div>
-      <p className="product-image-queue__footnote">
-        {isRussian
-          ? "В автоматическом режиме при лимите генератор переходит к следующему аккаунту; когда все пять достигнут лимита, задача остановится и запишет точное время восстановления (24 часа)."
-          : "In automatic mode the generator switches accounts on a provider limit; when all five reach their limit, the batch stops and records the exact 24-hour recovery time."}
-      </p>
+          {liveAccounts.length > 0 && (
+            <section
+              className="product-image-queue__accounts"
+              aria-labelledby="cloudflare-accounts-heading"
+            >
+              <div className="product-image-queue__accounts-header">
+                <div>
+                  <h3 id="cloudflare-accounts-heading">
+                    {isRussian
+                      ? "Лимиты аккаунтов Cloudflare Workers AI и автозапуск GitHub"
+                      : "Cloudflare Workers AI Account Quotas & GitHub Auto-Schedule"}
+                  </h3>
+                  <p>
+                    {isRussian
+                      ? "Бесплатный лимит (10 000 Neurons на аккаунт) в API Cloudflare обновляется по скользящему 24-часовому окну с момента исчерпания. GitHub Actions проверяет очередь каждые 30 минут и автоматически запускает генерацию только тогда, когда в ожидании есть изображения и все 5 аккаунтов доступны."
+                      : "The free quota (10,000 Neurons per account) in Cloudflare Workers AI resets on a rolling 24-hour window after exhaustion. GitHub Actions checks every 30 minutes and automatically starts generation only when images are waiting and all 5 accounts are available."}
+                  </p>
+                </div>
+                <div
+                  className={`product-image-queue__schedule-badge ${allAccountsAvailable && hasWaitingImages ? "product-image-queue__schedule-badge--ready" : "product-image-queue__schedule-badge--waiting"}`}
+                >
+                  <i
+                    className={
+                      allAccountsAvailable && hasWaitingImages
+                        ? "ri-play-circle-line"
+                        : "ri-timer-flash-line"
+                    }
+                  />
+                  <div>
+                    <strong>
+                      {!hasWaitingImages
+                        ? isRussian
+                          ? "Автозапуск: нет ожидающих фото"
+                          : "Auto-run: no pending images"
+                        : allAccountsAvailable
+                          ? isRussian
+                            ? "Все 5 аккаунтов доступны — автозапуск готов"
+                            : "All 5 accounts available — auto-run ready"
+                          : isRussian
+                            ? `Все 5 аккаунтов будут доступны через ${formatDuration(lastAvailableAccount?.remainingMs || 0, true, true)}`
+                            : `All 5 accounts available in ${formatDuration(lastAvailableAccount?.remainingMs || 0, false, true)}`}
+                    </strong>
+                    <span>
+                      {isRussian
+                        ? `Доступно аккаунтов: ${availableAccountsCount} из ${liveAccounts.length} • В очереди на генерацию: ${waitingImagesCount.toLocaleString()}`
+                        : `Available accounts: ${availableAccountsCount} of ${liveAccounts.length} • Waiting in queue: ${waitingImagesCount.toLocaleString()}`}
+                      {!allAccountsAvailable &&
+                        lastAvailableAccount?.availableAt &&
+                        (isRussian
+                          ? ` • Полный старт: ${formatDateTime(lastAvailableAccount.availableAt, true)}`
+                          : ` • Full start: ${formatDateTime(lastAvailableAccount.availableAt, false)}`)}
+                      {!allAccountsAvailable &&
+                        nextAvailableAccount &&
+                        nextAvailableAccount.id !== lastAvailableAccount?.id &&
+                        (isRussian
+                          ? ` • Ближайший аккаунт через ${formatDuration(nextAvailableAccount.remainingMs, true, false)}`
+                          : ` • Next account in ${formatDuration(nextAvailableAccount.remainingMs, false, false)}`)}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-      <section className="product-image-queue__failed" aria-labelledby="failed-images-heading">
-        <div className="product-image-queue__failed-header">
-          <div>
-            <h3 id="failed-images-heading">
-              {isRussian ? "Список ошибок генерации" : "Failed generation items"} ({failedItems.length})
+              <div className="product-image-queue__accounts-grid">
+                {liveAccounts.map((acc) => (
+                  <article
+                    key={acc.id}
+                    className={`product-image-queue__account-card ${acc.isAvailable ? "product-image-queue__account-card--available" : "product-image-queue__account-card--cooldown"}`}
+                  >
+                    <div className="product-image-queue__account-top">
+                      <strong>{isRussian ? acc.labelRu : acc.labelEn}</strong>
+                      <span
+                        className={`product-image-queue__account-pill ${acc.isAvailable ? "product-image-queue__account-pill--ok" : "product-image-queue__account-pill--wait"}`}
+                      >
+                        {acc.isAvailable
+                          ? isRussian
+                            ? "Доступен"
+                            : "Available"
+                          : isRussian
+                            ? `Будет доступно через ${formatDuration(acc.remainingMs, true, true)}`
+                            : `Available in ${formatDuration(acc.remainingMs, false, true)}`}
+                      </span>
+                    </div>
+                    <div className="product-image-queue__account-meta">
+                      {acc.availableAt && !acc.isAvailable && (
+                        <div>
+                          <span>
+                            {isRussian ? "Полное обновление:" : "Full reset:"}
+                          </span>{" "}
+                          <strong>
+                            {formatDateTime(acc.availableAt, isRussian)}
+                          </strong>
+                        </div>
+                      )}
+                      {acc.partialAvailableAt && !acc.isAvailable && (
+                        <div className="product-image-queue__account-partial">
+                          {acc.partialReady
+                            ? isRussian
+                              ? `Частичная квота (~140 фото) уже доступна (с ${formatDateTime(acc.partialAvailableAt, true)})`
+                              : `Partial quota (~140 photos) is already available (since ${formatDateTime(acc.partialAvailableAt, false)})`
+                            : isRussian
+                              ? `Частичная квота (~140 фото): будет доступно через ${formatDuration(acc.partialRemainingMs, true, false)} (${formatDateTime(acc.partialAvailableAt, true)})`
+                              : `Partial quota (~140 photos): available in ${formatDuration(acc.partialRemainingMs, false, false)} (${formatDateTime(acc.partialAvailableAt, false)})`}
+                        </div>
+                      )}
+                      {acc.limitedAt && (
+                        <div>
+                          <span>
+                            {acc.isAvailable
+                              ? isRussian
+                                ? "Предыдущий лимит:"
+                                : "Previous limit:"
+                              : isRussian
+                                ? "Лимит исчерпан:"
+                                : "Limit reached:"}
+                          </span>{" "}
+                          <time dateTime={acc.limitedAt}>
+                            {formatDateTime(acc.limitedAt, isRussian)}
+                            {acc.isAvailable &&
+                              (isRussian ? " (восстановлен)" : " (restored)")}
+                          </time>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="product-image-queue__quota">
+            <span>
+              {isRussian ? "Попытки сегодня (UTC)" : "Attempts today (UTC)"}:{" "}
+              <strong>{status.attemptedToday}</strong>
+            </span>
+          </div>
+          <p className="product-image-queue__footnote">
+            {isRussian
+              ? "В автоматическом режиме при лимите генератор переходит к следующему аккаунту; когда все пять достигнут лимита, задача остановится и запишет точное время восстановления (24 часа)."
+              : "In automatic mode the generator switches accounts on a provider limit; when all five reach their limit, the batch stops and records the exact 24-hour recovery time."}
+          </p>
+
+          <section
+            className="product-image-queue__failed"
+            aria-labelledby="failed-images-heading"
+          >
+            <div className="product-image-queue__failed-header">
+              <div>
+                <h3 id="failed-images-heading">
+                  {isRussian
+                    ? "Список ошибок генерации"
+                    : "Failed generation items"}{" "}
+                  ({failedItems.length})
+                </h3>
+                <p>
+                  {isRussian
+                    ? "Товары, при обработке которых возникла ошибка. Вы можете выбрать отдельные позиции или все сразу, вернуть их в ожидание или удалить из базы данных."
+                    : "Products that failed during image generation. You can select individual items or all at once, return them to pending or delete them from the database."}
+                </p>
+              </div>
+              {failedItems.length > 0 && (
+                <div className="product-image-queue__gallery-actions">
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    disabled={busy || deletingFailed}
+                    onClick={() => {
+                      if (allFailedSelected) {
+                        setSelectedFailed({});
+                      } else {
+                        setSelectedFailed(
+                          Object.fromEntries(
+                            failedItems.map((item) => [String(item.id), true]),
+                          ),
+                        );
+                      }
+                    }}
+                  >
+                    {allFailedSelected
+                      ? isRussian
+                        ? "Снять выделение"
+                        : "Deselect all"
+                      : isRussian
+                        ? `Выбрать все (${failedItems.length})`
+                        : `Select all (${failedItems.length})`}
+                  </button>
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    disabled={
+                      busy || deletingFailed || selectedFailedIds.length === 0
+                    }
+                    onClick={() => requeueFailed()}
+                  >
+                    <i className="ri-refresh-line" />
+                    {isRussian
+                      ? `Вернуть в ожидание (${selectedFailedIds.length})`
+                      : `Return to pending (${selectedFailedIds.length})`}
+                  </button>
+                  {selectedFailedIds.length === 1 && (
+                    <button
+                      type="button"
+                      className="product-image-queue__start product-image-queue__start--manual"
+                      disabled={busy || deletingFailed}
+                      onClick={() => {
+                        const target = failedItems.find(
+                          (i) => String(i.id) === selectedFailedIds[0],
+                        );
+                        if (target) setManualConfigItem(target);
+                      }}
+                      title={
+                        isRussian
+                          ? "Ручная настройка выбранного товара"
+                          : "Manual setup for selected item"
+                      }
+                    >
+                      <i className="ri-settings-3-line" />
+                      {isRussian ? "Ручная настройка (1)" : "Manual setup (1)"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="product-image-queue__start product-image-queue__start--danger"
+                    disabled={
+                      busy || deletingFailed || selectedFailedIds.length === 0
+                    }
+                    onClick={() => deleteFailedFromDb()}
+                  >
+                    <i className="ri-delete-bin-line" />
+                    {isRussian
+                      ? `Удалить выбранные из БД (${selectedFailedIds.length})`
+                      : `Delete selected from DB (${selectedFailedIds.length})`}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {failedItems.length === 0 ? (
+              <p className="product-image-queue__failed-empty">
+                {isRussian
+                  ? "Ошибок генерации сейчас нет."
+                  : "No failed generation items right now."}
+              </p>
+            ) : (
+              <>
+                <div className="product-image-queue__failed-list">
+                  {failedItems.slice(0, visibleFailed).map((item) => {
+                    const itemId = String(item.id);
+                    const checked = Boolean(selectedFailed[itemId]);
+                    const summary = describeErrorSummary(item.error, isRussian);
+                    return (
+                      <article
+                        key={itemId}
+                        className={`product-image-queue__failed-item ${checked ? "product-image-queue__failed-item--selected" : ""}`}
+                      >
+                        <div className="product-image-queue__failed-top">
+                          <label className="product-image-queue__failed-check">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={busy || deletingFailed}
+                              onChange={(e) => {
+                                const nextChecked = e.target.checked;
+                                setSelectedFailed((current) => {
+                                  const next = { ...current };
+                                  if (nextChecked) next[itemId] = true;
+                                  else delete next[itemId];
+                                  return next;
+                                });
+                              }}
+                            />
+                            <span>ID #{itemId}</span>
+                          </label>
+                          <button
+                            type="button"
+                            className="product-image-queue__failed-delete-one product-image-queue__failed-requeue-one"
+                            disabled={busy || deletingFailed}
+                            onClick={() => requeueFailed([itemId])}
+                          >
+                            <i className="ri-refresh-line" />
+                            {isRussian ? "В ожидание" : "To pending"}
+                          </button>
+                          <button
+                            type="button"
+                            className="product-image-queue__failed-manual-one"
+                            disabled={busy || deletingFailed}
+                            onClick={() => setManualConfigItem(item)}
+                            title={
+                              isRussian
+                                ? "Ручная настройка и добавление фото"
+                                : "Manual setup and photo upload"
+                            }
+                          >
+                            <i className="ri-settings-3-line" />
+                            {isRussian ? "Ручная настройка" : "Manual setup"}
+                          </button>
+                          <button
+                            type="button"
+                            className="product-image-queue__failed-delete-one"
+                            disabled={busy || deletingFailed}
+                            onClick={() => deleteFailedFromDb([itemId])}
+                          >
+                            <i className="ri-delete-bin-line" />
+                            {isRussian ? "Удалить из БД" : "Delete from DB"}
+                          </button>
+                        </div>
+
+                        <div className="product-image-queue__failed-body">
+                          {item.rawImage && (
+                            <a
+                              href={item.rawImage}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="product-image-queue__failed-thumb"
+                              title={
+                                isRussian
+                                  ? "Открыть исходное фото Qogita"
+                                  : "Open original Qogita photo"
+                              }
+                            >
+                              <img
+                                src={item.rawImage}
+                                alt={item.name || `ID ${itemId}`}
+                                loading="lazy"
+                              />
+                            </a>
+                          )}
+                          <div className="product-image-queue__failed-info">
+                            <strong>
+                              {item.name ||
+                                (isRussian
+                                  ? `Товар #${itemId}`
+                                  : `Product #${itemId}`)}
+                            </strong>
+                            {item.brand && (
+                              <span className="product-image-queue__failed-brand">
+                                {item.brand}
+                              </span>
+                            )}
+                            {summary && (
+                              <span className="product-image-queue__failed-badge">
+                                {summary}
+                              </span>
+                            )}
+                            <code className="product-image-queue__failed-code">
+                              {item.error}
+                            </code>
+                            {item.failedAt && (
+                              <time dateTime={item.failedAt}>
+                                {isRussian ? "Время ошибки: " : "Failed at: "}
+                                {new Date(item.failedAt).toLocaleString(
+                                  isRussian ? "ru-RU" : "en-US",
+                                  {
+                                    dateStyle: "medium",
+                                    timeStyle: "medium",
+                                  },
+                                )}
+                              </time>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+                {visibleFailed < failedItems.length && (
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    onClick={() => setVisibleFailed((current) => current + 24)}
+                  >
+                    {isRussian ? "Показать ещё ошибки" : "Show more errors"} (
+                    {failedItems.length - visibleFailed})
+                  </button>
+                )}
+              </>
+            )}
+          </section>
+
+          <section
+            className="product-image-queue__gallery"
+            aria-labelledby="generated-images-heading"
+          >
+            <h3 id="generated-images-heading">
+              {isRussian ? "Готовые изображения" : "Generated images"}
             </h3>
             <p>
               {isRussian
-                ? "Товары, при обработке которых возникла ошибка. Вы можете выбрать отдельные позиции или все сразу, вернуть их в ожидание или удалить из базы данных."
-                : "Products that failed during image generation. You can select individual items or all at once, return them to pending or delete them from the database."}
+                ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе."
+                : "Newest first. Publication completion time is shown in your time zone."}
             </p>
-          </div>
-          {failedItems.length > 0 && (
-            <div className="product-image-queue__gallery-actions">
-              <button
-                type="button"
-                className="product-image-queue__start"
-                disabled={busy || deletingFailed}
-                onClick={() => {
-                  if (allFailedSelected) {
-                    setSelectedFailed({});
-                  } else {
-                    setSelectedFailed(
-                      Object.fromEntries(failedItems.map((item) => [String(item.id), true])),
-                    );
-                  }
-                }}
-              >
-                {allFailedSelected
-                  ? (isRussian ? "Снять выделение" : "Deselect all")
-                  : (isRussian ? `Выбрать все (${failedItems.length})` : `Select all (${failedItems.length})`)}
-              </button>
-              <button
-                type="button"
-                className="product-image-queue__start"
-                disabled={busy || deletingFailed || selectedFailedIds.length === 0}
-                onClick={() => requeueFailed()}
-              >
-                <i className="ri-refresh-line" />
+            {status.images.length === 0 ? (
+              <p>
                 {isRussian
-                  ? `Вернуть в ожидание (${selectedFailedIds.length})`
-                  : `Return to pending (${selectedFailedIds.length})`}
-              </button>
-              {selectedFailedIds.length === 1 && (
-                <button
-                  type="button"
-                  className="product-image-queue__start product-image-queue__start--manual"
-                  disabled={busy || deletingFailed}
-                  onClick={() => {
-                    const target = failedItems.find((i) => String(i.id) === selectedFailedIds[0]);
-                    if (target) setManualConfigItem(target);
-                  }}
-                  title={isRussian ? "Ручная настройка выбранного товара" : "Manual setup for selected item"}
-                >
-                  <i className="ri-settings-3-line" />
-                  {isRussian ? "Ручная настройка (1)" : "Manual setup (1)"}
-                </button>
-              )}
-              <button
-                type="button"
-                className="product-image-queue__start product-image-queue__start--danger"
-                disabled={busy || deletingFailed || selectedFailedIds.length === 0}
-                onClick={() => deleteFailedFromDb()}
-              >
-                <i className="ri-delete-bin-line" />
-                {isRussian
-                  ? `Удалить выбранные из БД (${selectedFailedIds.length})`
-                  : `Delete selected from DB (${selectedFailedIds.length})`}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {failedItems.length === 0 ? (
-          <p className="product-image-queue__failed-empty">
-            {isRussian ? "Ошибок генерации сейчас нет." : "No failed generation items right now."}
-          </p>
-        ) : (
-          <>
-            <div className="product-image-queue__failed-list">
-              {failedItems.slice(0, visibleFailed).map((item) => {
-                const itemId = String(item.id);
-                const checked = Boolean(selectedFailed[itemId]);
-                const summary = describeErrorSummary(item.error, isRussian);
-                return (
-                  <article
-                    key={itemId}
-                    className={`product-image-queue__failed-item ${checked ? "product-image-queue__failed-item--selected" : ""}`}
+                  ? "Готовых изображений пока нет."
+                  : "No completed images yet."}
+              </p>
+            ) : (
+              <>
+                <div className="product-image-queue__gallery-actions">
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    disabled={!selectableImages.length}
+                    onClick={() => {
+                      setSelectedImages(
+                        allSelected
+                          ? {}
+                          : Object.fromEntries(
+                              selectableImages.map((image) => [
+                                image.id,
+                                image.imageUrl,
+                              ]),
+                            ),
+                      );
+                    }}
                   >
-                    <div className="product-image-queue__failed-top">
-                      <label className="product-image-queue__failed-check">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={busy || deletingFailed}
-                          onChange={(e) => {
-                            const nextChecked = e.target.checked;
-                            setSelectedFailed((current) => {
-                              const next = { ...current };
-                              if (nextChecked) next[itemId] = true;
-                              else delete next[itemId];
-                              return next;
-                            });
-                          }}
-                        />
-                        <span>ID #{itemId}</span>
-                      </label>
-                      <button
-                        type="button"
-                        className="product-image-queue__failed-delete-one product-image-queue__failed-requeue-one"
-                        disabled={busy || deletingFailed}
-                        onClick={() => requeueFailed([itemId])}
-                      >
-                        <i className="ri-refresh-line" />
-                        {isRussian ? "В ожидание" : "To pending"}
-                      </button>
-                      <button
-                        type="button"
-                        className="product-image-queue__failed-manual-one"
-                        disabled={busy || deletingFailed}
-                        onClick={() => setManualConfigItem(item)}
-                        title={isRussian ? "Ручная настройка и добавление фото" : "Manual setup and photo upload"}
-                      >
-                        <i className="ri-settings-3-line" />
-                        {isRussian ? "Ручная настройка" : "Manual setup"}
-                      </button>
-                      <button
-                        type="button"
-                        className="product-image-queue__failed-delete-one"
-                        disabled={busy || deletingFailed}
-                        onClick={() => deleteFailedFromDb([itemId])}
-                      >
-                        <i className="ri-delete-bin-line" />
-                        {isRussian ? "Удалить из БД" : "Delete from DB"}
-                      </button>
-                    </div>
-
-                    <div className="product-image-queue__failed-body">
-                      {item.rawImage && (
-                        <a
-                          href={item.rawImage}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="product-image-queue__failed-thumb"
-                          title={isRussian ? "Открыть исходное фото Qogita" : "Open original Qogita photo"}
-                        >
-                          <img src={item.rawImage} alt={item.name || `ID ${itemId}`} loading="lazy" />
-                        </a>
-                      )}
-                      <div className="product-image-queue__failed-info">
-                        <strong>{item.name || (isRussian ? `Товар #${itemId}` : `Product #${itemId}`)}</strong>
-                        {item.brand && <span className="product-image-queue__failed-brand">{item.brand}</span>}
-                        {summary && (
-                          <span className="product-image-queue__failed-badge">{summary}</span>
-                        )}
-                        <code className="product-image-queue__failed-code">{item.error}</code>
-                        {item.failedAt && (
-                          <time dateTime={item.failedAt}>
-                            {isRussian ? "Время ошибки: " : "Failed at: "}
-                            {new Date(item.failedAt).toLocaleString(isRussian ? "ru-RU" : "en-US", {
-                              dateStyle: "medium",
-                              timeStyle: "medium",
-                            })}
-                          </time>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-            {visibleFailed < failedItems.length && (
-              <button
-                type="button"
-                className="product-image-queue__start"
-                onClick={() => setVisibleFailed((current) => current + 24)}
-              >
-                {isRussian ? "Показать ещё ошибки" : "Show more errors"} ({failedItems.length - visibleFailed})
-              </button>
+                    {allSelected
+                      ? isRussian
+                        ? "Снять выделение"
+                        : "Deselect all"
+                      : isRussian
+                        ? "Выбрать все фото"
+                        : "Select all images"}
+                  </button>
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    disabled={
+                      busy ||
+                      deleting ||
+                      !runsLoaded ||
+                      runs.length > 0 ||
+                      Object.keys(selectedImages).length === 0
+                    }
+                    onClick={deleteImages}
+                  >
+                    {isRussian ? "Удалить выбранные" : "Delete selected"} (
+                    {Object.keys(selectedImages).length})
+                  </button>
+                  <a
+                    href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-delete.yml"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {isRussian ? "Статус удаления" : "Deletion status"}
+                  </a>
+                </div>
+                <p>
+                  {isRussian
+                    ? "Можно удалить до 400 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления."
+                    : "Delete up to 400 site-hosted images at a time. Wait for generation or the previous deletion to finish."}
+                </p>
+                <div className="product-image-queue__gallery-grid">
+                  {status.images.slice(0, visibleImages).map((image) => (
+                    <GalleryImageItem
+                      key={image.id}
+                      image={image}
+                      isRussian={isRussian}
+                      isSelected={selectedImages[image.id] === image.imageUrl}
+                      isDisabled={
+                        !/^\d{1,20}$/.test(String(image.id)) ||
+                        !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(
+                          image.imageUrl,
+                        )
+                      }
+                      onToggleSelect={(e) => {
+                        const checked = e.target.checked;
+                        setSelectedImages((current) => {
+                          const next = { ...current };
+                          if (checked) next[image.id] = image.imageUrl;
+                          else delete next[image.id];
+                          return next;
+                        });
+                      }}
+                      onRequeue={(id) => requeueFailed([id])}
+                      onManualConfig={(item) => setManualConfigItem(item)}
+                    />
+                  ))}
+                </div>
+                {visibleImages < status.images.length && (
+                  <button
+                    type="button"
+                    className="product-image-queue__start"
+                    onClick={() => setVisibleImages((count) => count + 24)}
+                  >
+                    {isRussian ? "Показать ещё" : "Show more"} (
+                    {status.images.length - visibleImages})
+                  </button>
+                )}
+              </>
             )}
-          </>
-        )}
-      </section>
-
-      <section className="product-image-queue__gallery" aria-labelledby="generated-images-heading">
-        <h3 id="generated-images-heading">{isRussian ? "Готовые изображения" : "Generated images"}</h3>
-        <p>{isRussian ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе." : "Newest first. Publication completion time is shown in your time zone."}</p>
-        {status.images.length === 0 ? <p>{isRussian ? "Готовых изображений пока нет." : "No completed images yet."}</p> : <>
-          <div className="product-image-queue__gallery-actions">
-            <button type="button" className="product-image-queue__start" disabled={!selectableImages.length} onClick={() => {
-              setSelectedImages(allSelected ? {} : Object.fromEntries(selectableImages.map((image) => [image.id, image.imageUrl])));
-            }}>
-              {allSelected ? (isRussian ? "Снять выделение" : "Deselect all") : (isRussian ? "Выбрать все фото" : "Select all images")}
-            </button>
-            <button type="button" className="product-image-queue__start" disabled={busy || deleting || !runsLoaded || runs.length > 0 || Object.keys(selectedImages).length === 0} onClick={deleteImages}>
-              {isRussian ? "Удалить выбранные" : "Delete selected"} ({Object.keys(selectedImages).length})
-            </button>
-            <a href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-delete.yml" target="_blank" rel="noopener noreferrer">
-              {isRussian ? "Статус удаления" : "Deletion status"}
-            </a>
-          </div>
-          <p>{isRussian ? "Можно удалить до 400 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления." : "Delete up to 400 site-hosted images at a time. Wait for generation or the previous deletion to finish."}</p>
-          <div className="product-image-queue__gallery-grid">
-            {status.images.slice(0, visibleImages).map((image) => (
-              <GalleryImageItem
-                key={image.id}
-                image={image}
-                isRussian={isRussian}
-                isSelected={selectedImages[image.id] === image.imageUrl}
-                isDisabled={
-                  !/^\d{1,20}$/.test(String(image.id)) ||
-                  !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(image.imageUrl)
-                }
-                onToggleSelect={(e) => {
-                  const checked = e.target.checked;
-                  setSelectedImages((current) => {
-                    const next = { ...current };
-                    if (checked) next[image.id] = image.imageUrl;
-                    else delete next[image.id];
-                    return next;
-                  });
-                }}
-                onRequeue={(id) => requeueFailed([id])}
-                onManualConfig={(item) => setManualConfigItem(item)}
-              />
-            ))}
-          </div>
-          {visibleImages < status.images.length && <button type="button" className="product-image-queue__start" onClick={() => setVisibleImages((count) => count + 24)}>
-            {isRussian ? "Показать ещё" : "Show more"} ({status.images.length - visibleImages})
-          </button>}
-        </>}
-      </section>
-      </>}
+          </section>
+        </>
+      )}
 
       {manualConfigItem && (
         <ProductManualConfigModal

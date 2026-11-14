@@ -7,6 +7,8 @@ import {
   saveManualProductItem,
   getAllAdminProducts,
   deleteAdminProducts,
+  invalidateAllStocksCache,
+  invalidatePrivilegedUserCache,
 } from "../server/productImageQueueAdmin.js";
 import { hasCompletedGeneratedImage } from "../utils/perfumes.js";
 
@@ -14,6 +16,8 @@ const originalFetch = globalThis.fetch;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  invalidateAllStocksCache();
+  invalidatePrivilegedUserCache();
 });
 function request(path, cookie = "", options = {}) {
   return new Request(`https://shop.example${path}`, {
@@ -73,10 +77,18 @@ describe("product image queue admin API", () => {
       const url = new URL(input);
       calls.push(url.pathname);
       if (url.pathname.endsWith("/rest/v1/user")) {
-        return Response.json([{ id: "admin-1", status: "privileged", role: "admin" }]);
+        return Response.json([
+          { id: "admin-1", status: "privileged", role: "admin" },
+        ]);
       }
       return Response.json([
-        { id: 1, info: { rawImage: "https://img.qogita.com/1.jpg", imageGeneration: { status: "completed" } } },
+        {
+          id: 1,
+          info: {
+            rawImage: "https://img.qogita.com/1.jpg",
+            imageGeneration: { status: "completed" },
+          },
+        },
         {
           id: 2,
           name: "Rose EDP",
@@ -98,7 +110,10 @@ describe("product image queue admin API", () => {
 
     const response = await getProductImageQueueStatus(
       request("/api/admin/product-images/status", userCookie()),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     const body = await response.json();
 
@@ -126,19 +141,71 @@ describe("product image queue admin API", () => {
       }
       assert.equal(url.searchParams.get("select"), "id,name,brand,image,info");
       return Response.json([
-        { id: 1, name: "Old", info: { imageGeneration: { status: "completed", imageUrl: "https://cdn.example/old.png", completedAt: "2025-01-01T12:00:00Z" } } },
-        { id: 2, name: "Unknown", image: "https://cdn.example/unknown.png", info: { imageGeneration: { status: "completed", completedAt: "invalid" } } },
-        { id: 3, name: "New", brand: "Brand", info: { imageGeneration: { status: "completed", imageUrl: "/assets/img/generated-products/new.png", completedAt: "2026-01-01T12:00:00Z" } } },
-        { id: 4, name: "Publishing", info: { imageGeneration: { status: "publishing", imageUrl: "https://cdn.example/pending.png" } } },
-        { id: 5, name: "Unsafe", info: { imageGeneration: { status: "completed", imageUrl: "javascript:alert(1)" } } },
+        {
+          id: 1,
+          name: "Old",
+          info: {
+            imageGeneration: {
+              status: "completed",
+              imageUrl: "https://cdn.example/old.png",
+              completedAt: "2025-01-01T12:00:00Z",
+            },
+          },
+        },
+        {
+          id: 2,
+          name: "Unknown",
+          image: "https://cdn.example/unknown.png",
+          info: {
+            imageGeneration: { status: "completed", completedAt: "invalid" },
+          },
+        },
+        {
+          id: 3,
+          name: "New",
+          brand: "Brand",
+          info: {
+            imageGeneration: {
+              status: "completed",
+              imageUrl: "/assets/img/generated-products/new.png",
+              completedAt: "2026-01-01T12:00:00Z",
+            },
+          },
+        },
+        {
+          id: 4,
+          name: "Publishing",
+          info: {
+            imageGeneration: {
+              status: "publishing",
+              imageUrl: "https://cdn.example/pending.png",
+            },
+          },
+        },
+        {
+          id: 5,
+          name: "Unsafe",
+          info: {
+            imageGeneration: {
+              status: "completed",
+              imageUrl: "javascript:alert(1)",
+            },
+          },
+        },
       ]);
     };
     const response = await getProductImageQueueStatus(
       request("/api/admin/product-images/status", userCookie()),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     const body = await response.json();
-    assert.deepEqual(body.images.map((image) => image.id), [3, 1, 2]);
+    assert.deepEqual(
+      body.images.map((image) => image.id),
+      [3, 1, 2],
+    );
     assert.equal(body.images[0].name, "New");
     assert.equal(body.images[0].brand, "Brand");
     assert.equal(body.images[2].completedAt, null);
@@ -169,7 +236,10 @@ describe("product image queue admin API", () => {
     };
     const response = await getProductImageQueueStatus(
       request("/api/admin/product-images/status", userCookie()),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     const body = await response.json();
     const fifth = body.accounts.find((acc) => acc.id === "fifth");
@@ -187,7 +257,10 @@ describe("product image queue admin API", () => {
       if (url.pathname.endsWith("/rest/v1/user")) {
         return Response.json([{ id: "admin-1", status: "privileged" }]);
       }
-      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "DELETE") {
+      if (
+        url.pathname.endsWith("/rest/v1/stocks") &&
+        init.method === "DELETE"
+      ) {
         deletedQueries.push(url.searchParams.get("id"));
         return new Response(null, { status: 204 });
       }
@@ -200,7 +273,10 @@ describe("product image queue admin API", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: ["5292", "5293", "5292", 4986] }),
       }),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     const payload = await res.json();
     assert.equal(res.status, 200);
@@ -213,16 +289,31 @@ describe("product image queue admin API", () => {
     const patched = [];
     globalThis.fetch = async (input, init = {}) => {
       const url = new URL(input);
-      if (url.pathname.endsWith("/rest/v1/user")) return Response.json([{ id: "admin-1", status: "privileged" }]);
+      if (url.pathname.endsWith("/rest/v1/user"))
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
       if (init.method === "PATCH") {
         patched.push(JSON.parse(init.body).info.imageGeneration);
         return new Response(null, { status: 204 });
       }
-      return Response.json([{ id: 7, info: { rawImage: "x", imageGeneration: { status: "failed", error: "e" } } }]);
+      return Response.json([
+        {
+          id: 7,
+          info: {
+            rawImage: "x",
+            imageGeneration: { status: "failed", error: "e" },
+          },
+        },
+      ]);
     };
     const res = await requeueFailedProductItems(
-      request("/api/admin/product-images/requeue", userCookie(), { method: "POST", body: JSON.stringify({ ids: ["7"] }) }),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "k" },
+      request("/api/admin/product-images/requeue", userCookie(), {
+        method: "POST",
+        body: JSON.stringify({ ids: ["7"] }),
+      }),
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "k",
+      },
     );
     assert.equal(res.status, 200);
     assert.equal((await res.json()).requeuedCount, 1);
@@ -246,7 +337,10 @@ describe("product image queue admin API", () => {
         patchedBody = JSON.parse(init.body);
         return Response.json([{ id: 42, ...patchedBody }]);
       }
-      if (url.pathname.endsWith("/rest/v1/stocks") && (!init.method || init.method === "GET")) {
+      if (
+        url.pathname.endsWith("/rest/v1/stocks") &&
+        (!init.method || init.method === "GET")
+      ) {
         return Response.json([
           {
             id: 42,
@@ -257,7 +351,10 @@ describe("product image queue admin API", () => {
             image: "https://img.qogita.com/yara-raw.jpg",
             info: {
               rawImage: "https://img.qogita.com/yara-raw.jpg",
-              imageGeneration: { status: "failed", error: "Flagged by AI safety filter" },
+              imageGeneration: {
+                status: "failed",
+                error: "Flagged by AI safety filter",
+              },
             },
           },
         ]);
@@ -285,10 +382,14 @@ describe("product image queue admin API", () => {
           baseNotes: ["Ваниль", "Сандал", "Мускус"],
           descriptionRu: "Роскошный восточный аромат Yara от Lattafa.",
           descriptionEn: "Exquisite oriental fragrance Yara by Lattafa.",
-          imageData: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          imageData:
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
         }),
       }),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
 
     assert.equal(res.status, 200);
@@ -302,7 +403,10 @@ describe("product image queue admin API", () => {
     assert.equal(patchedBody.info.imageGeneration.status, "completed");
     assert.equal(patchedBody.info.imageGeneration.manual, true);
     assert.equal(patchedBody.info.imageGeneration.failed, false);
-    assert.strictEqual(patchedBody.info.imageGeneration.imageUrl, "https://img.qogita.com/yara-raw.jpg");
+    assert.strictEqual(
+      patchedBody.info.imageGeneration.imageUrl,
+      "https://img.qogita.com/yara-raw.jpg",
+    );
 
     // Verify hasCompletedGeneratedImage recognizes the manually configured product
     assert.equal(
@@ -345,7 +449,10 @@ describe("product image queue admin API", () => {
           descriptionRu: "Восточный пряный мужской парфюм Asad.",
         }),
       }),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
 
     assert.equal(res.status, 200);
@@ -367,11 +474,17 @@ describe("product image queue admin API", () => {
       if (url.pathname.endsWith("/rest/v1/user")) {
         return Response.json([{ id: "admin-1", status: "privileged" }]);
       }
-      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "DELETE") {
+      if (
+        url.pathname.endsWith("/rest/v1/stocks") &&
+        init.method === "DELETE"
+      ) {
         deletedIdParam = url.searchParams.get("id");
         return new Response(null, { status: 204 });
       }
-      if (url.pathname.endsWith("/rest/v1/stocks") && (!init.method || init.method === "GET")) {
+      if (
+        url.pathname.endsWith("/rest/v1/stocks") &&
+        (!init.method || init.method === "GET")
+      ) {
         return Response.json([
           {
             id: 1,
@@ -398,7 +511,10 @@ describe("product image queue admin API", () => {
 
     const getRes = await getAllAdminProducts(
       request("/api/admin/products", userCookie()),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     assert.equal(getRes.status, 200);
     const getBody = await getRes.json();
@@ -412,7 +528,10 @@ describe("product image queue admin API", () => {
         method: "DELETE",
         body: JSON.stringify({ id: 2 }),
       }),
-      { SUPABASE_URL: "https://supabase.example", SUPABASE_SERVICE_ROLE_KEY: "server-only" },
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
     );
     assert.equal(delRes.status, 200);
     const delBody = await delRes.json();

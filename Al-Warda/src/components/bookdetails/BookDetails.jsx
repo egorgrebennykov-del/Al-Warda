@@ -34,7 +34,8 @@ export default function BookDetails() {
   const { user, isPrivileged: isPrivContext } = useAuth();
   const isPriv = Boolean(isPrivContext || checkIsPrivileged(user));
 
-  const idFromQuery = searchParams.get("url") || searchParams.get("q") || searchParams.get("id");
+  const idFromQuery =
+    searchParams.get("url") || searchParams.get("q") || searchParams.get("id");
   const targetId = bookId || idFromQuery || "raghba";
 
   const [perfume, setPerfume] = useState(null);
@@ -45,7 +46,11 @@ export default function BookDetails() {
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
-  const [indexLookup, setIndexLookup] = useState({ key: "", status: "idle", notes: null });
+  const [indexLookup, setIndexLookup] = useState({
+    key: "",
+    status: "idle",
+    notes: null,
+  });
 
   // The Qogita slug->id map (~350 KB) is only needed for the privileged admin link,
   // so it is loaded on demand instead of shipping on every product page.
@@ -70,7 +75,6 @@ export default function BookDetails() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isLightboxOpen]);
 
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -88,23 +92,18 @@ export default function BookDetails() {
         if (!cancelled) setLoading(false);
       });
 
-    const timer = window.setInterval(() => {
-      getPerfumeById(targetId, { refresh: true })
-        .then((item) => { if (!cancelled && item) setPerfume(item); })
-        .catch((err) => console.warn("Could not refresh product:", err));
-    }, 30000);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
     };
   }, [targetId]);
 
   const enrichedPerfume = perfume ? ensurePerfumeEnrichment(perfume) : null;
   const hasStoredNotes = Boolean(
     enrichedPerfume &&
-      ((enrichedPerfume.topNotesRu || enrichedPerfume.topNotes || []).length ||
-        (enrichedPerfume.heartNotesRu || enrichedPerfume.heartNotes || []).length ||
-        (enrichedPerfume.baseNotesRu || enrichedPerfume.baseNotes || []).length),
+    ((enrichedPerfume.topNotesRu || enrichedPerfume.topNotes || []).length ||
+      (enrichedPerfume.heartNotesRu || enrichedPerfume.heartNotes || [])
+        .length ||
+      (enrichedPerfume.baseNotesRu || enrichedPerfume.baseNotes || []).length),
   );
 
   const perfumeId = perfume?.id ?? "";
@@ -118,7 +117,8 @@ export default function BookDetails() {
     if (hasStoredNotes || (!perfumeId && !perfumeName)) return undefined;
 
     const params = new URLSearchParams();
-    if (perfumeId && /^\d+$/.test(String(perfumeId))) params.set("id", String(perfumeId));
+    if (perfumeId && /^\d+$/.test(String(perfumeId)))
+      params.set("id", String(perfumeId));
     if (perfumeName) params.set("name", perfumeName);
     if (perfumeBrand) params.set("brand", perfumeBrand);
     if (!params.get("id") && !params.get("name")) return undefined;
@@ -128,9 +128,12 @@ export default function BookDetails() {
     const run = async () => {
       setIndexLookup({ key, status: "loading", notes: null });
       try {
-        const response = await fetch(`/api/fragrance-notes?${params.toString()}`, {
-          credentials: "same-origin",
-        });
+        const response = await fetch(
+          `/api/fragrance-notes?${params.toString()}`,
+          {
+            credentials: "same-origin",
+          },
+        );
         const payload = await response.json().catch(() => null);
         if (cancelled) return;
         if (!response.ok || !payload) {
@@ -157,7 +160,8 @@ export default function BookDetails() {
   }, [lookupKey, hasStoredNotes, perfumeId, perfumeName, perfumeBrand]);
 
   const indexNotes = indexLookup.key === lookupKey ? indexLookup.notes : null;
-  const indexNotesState = indexLookup.key === lookupKey ? indexLookup.status : "idle";
+  const indexNotesState =
+    indexLookup.key === lookupKey ? indexLookup.status : "idle";
 
   useEffect(() => {
     const target = perfume || enrichedPerfume;
@@ -178,20 +182,35 @@ export default function BookDetails() {
     };
   }, [isPriv, perfume]);
 
-  const perfumeGtin = isPriv && (perfume || enrichedPerfume) ? getPerfumeGtin(perfume || enrichedPerfume) : "";
+  const perfumeGtin =
+    isPriv && (perfume || enrichedPerfume)
+      ? getPerfumeGtin(perfume || enrichedPerfume)
+      : "";
   const isSet = enrichedPerfume ? isPerfumeSet(enrichedPerfume) : false;
-  const setItems = enrichedPerfume?.setItems || (isSet ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand) : null);
+  const setItems =
+    enrichedPerfume?.setItems ||
+    (isSet
+      ? inferSetItems(enrichedPerfume?.name, enrichedPerfume?.brand)
+      : null);
   const rawBottleVol = isSet
-    ? (enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] || enrichedPerfume?.volume || t("details.discoverySet"))
-    : ((enrichedPerfume?.volume || "").split("/")[0].trim() || "—");
+    ? enrichedPerfume?.volume?.match(/\d+\s*[xX×]\s*\d+\s*(?:ml|мл)/i)?.[0] ||
+      enrichedPerfume?.volume ||
+      t("details.discoverySet")
+    : (enrichedPerfume?.volume || "").split("/")[0].trim() || "—";
   const fullBottleVol = formatVolume(rawBottleVol, language);
 
-  const hasMultipleSizes = Array.isArray(perfume?.availableSizes) && perfume.availableSizes.length > 1;
-  const perfumeVolumeOptions = hasMultipleSizes ? getPerfumeVolumeOptions(perfume) : [];
+  const hasMultipleSizes =
+    Array.isArray(perfume?.availableSizes) && perfume.availableSizes.length > 1;
+  const perfumeVolumeOptions = hasMultipleSizes
+    ? getPerfumeVolumeOptions(perfume)
+    : [];
   const selectedSizeOpt = hasMultipleSizes
-    ? perfumeVolumeOptions.find((o) => o.key === selectedVolume) || perfumeVolumeOptions[0]
+    ? perfumeVolumeOptions.find((o) => o.key === selectedVolume) ||
+      perfumeVolumeOptions[0]
     : null;
-  const displayPrice = selectedSizeOpt ? selectedSizeOpt.price : Number(perfume?.price || 0);
+  const displayPrice = selectedSizeOpt
+    ? selectedSizeOpt.price
+    : Number(perfume?.price || 0);
   const displayVolume = selectedSizeOpt
     ? formatVolume(selectedSizeOpt.ml, language)
     : fullBottleVol;
@@ -222,14 +241,24 @@ export default function BookDetails() {
 
   if (loading) {
     return (
-      <div className="warda-details-page warda-details-loading" role="status" aria-live="polite">
+      <div
+        className="warda-details-page warda-details-loading"
+        role="status"
+        aria-live="polite"
+      >
         <div className="container">
-          <span className="warda-details-sr-only">{t("details.loading", "Loading fragrance")}</span>
+          <span className="warda-details-sr-only">
+            {t("details.loading", "Loading fragrance")}
+          </span>
           <div className="warda-details-skeleton-nav" />
           <div className="warda-details-grid" aria-hidden="true">
             <div className="warda-details-skeleton-image" />
             <div className="warda-details-skeleton-info">
-              <span /><span /><span /><span /><span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
             </div>
           </div>
         </div>
@@ -249,33 +278,49 @@ export default function BookDetails() {
   }
 
   const indexNotesBucket = indexNotes
-    ? (indexNotes[language] || indexNotes.en || indexNotes.ru || null)
+    ? indexNotes[language] || indexNotes.en || indexNotes.ru || null
     : null;
 
   const resolveNotes = (notesRu, notesEn, databaseNotes) => {
-    let raw = (language === "ru" ? (notesRu?.length ? notesRu : notesEn) : (notesEn?.length ? notesEn : notesRu)) || databaseNotes || [];
+    let raw =
+      (language === "ru"
+        ? notesRu?.length
+          ? notesRu
+          : notesEn
+        : notesEn?.length
+          ? notesEn
+          : notesRu) ||
+      databaseNotes ||
+      [];
     if (typeof raw === "string") {
-      raw = raw.split(",").map((s) => s.trim()).filter(Boolean);
+      raw = raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
-    return (Array.isArray(raw) ? raw : []).map((n) => getLocalizedNote(n, language));
+    return (Array.isArray(raw) ? raw : []).map((n) =>
+      getLocalizedNote(n, language),
+    );
   };
 
   const topNotes = resolveNotes(
     enrichedPerfume?.topNotesRu || enrichedPerfume?.topNotes,
     enrichedPerfume?.topNotesEn,
-    indexNotesBucket?.top
+    indexNotesBucket?.top,
   );
   const heartNotes = resolveNotes(
     enrichedPerfume?.heartNotesRu || enrichedPerfume?.heartNotes,
     enrichedPerfume?.heartNotesEn,
-    indexNotesBucket?.heart
+    indexNotesBucket?.heart,
   );
   const baseNotes = resolveNotes(
     enrichedPerfume?.baseNotesRu || enrichedPerfume?.baseNotes,
     enrichedPerfume?.baseNotesEn,
-    indexNotesBucket?.base
+    indexNotesBucket?.base,
   );
-  const hasDisplayNotes = Boolean(topNotes.length || heartNotes.length || baseNotes.length);
+  const hasDisplayNotes = Boolean(
+    topNotes.length || heartNotes.length || baseNotes.length,
+  );
   const notesStatus =
     hasDisplayNotes || hasStoredNotes
       ? null
@@ -287,11 +332,14 @@ export default function BookDetails() {
 
   let displayDesc =
     enrichedPerfume?.[`description_${language}`] ||
-    enrichedPerfume?.[`description${language.charAt(0).toUpperCase() + language.slice(1)}`];
+    enrichedPerfume?.[
+      `description${language.charAt(0).toUpperCase() + language.slice(1)}`
+    ];
 
   if (!displayDesc) {
     if (language === "ru") {
-      displayDesc = enrichedPerfume?.descriptionRu || enrichedPerfume?.description;
+      displayDesc =
+        enrichedPerfume?.descriptionRu || enrichedPerfume?.description;
     } else if (language === "en") {
       displayDesc = enrichedPerfume?.descriptionEn;
     }
@@ -310,7 +358,7 @@ export default function BookDetails() {
       topNotes,
       heartNotes,
       baseNotes,
-      language
+      language,
     );
   }
 
@@ -352,7 +400,11 @@ export default function BookDetails() {
             >
               <i className="ri-shield-star-line" />
               <span>Qogita ↗</span>
-              {perfumeGtin && <span className="warda-privileged-gtin-label">{perfumeGtin}</span>}
+              {perfumeGtin && (
+                <span className="warda-privileged-gtin-label">
+                  {perfumeGtin}
+                </span>
+              )}
             </a>
           )}
         </div>
@@ -366,7 +418,10 @@ export default function BookDetails() {
                 onClick={() => setIsLightboxOpen(true)}
                 onMouseMove={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
-                  setZoomPoint({ x: (e.clientX - rect.left) / rect.width * 100, y: (e.clientY - rect.top) / rect.height * 100 });
+                  setZoomPoint({
+                    x: ((e.clientX - rect.left) / rect.width) * 100,
+                    y: ((e.clientY - rect.top) / rect.height) * 100,
+                  });
                 }}
                 role="button"
                 tabIndex={0}
@@ -385,7 +440,9 @@ export default function BookDetails() {
                     src={perfume?.image}
                     alt={perfume.name}
                     className="warda-details-img"
-                    style={{ transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%` }}
+                    style={{
+                      transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%`,
+                    }}
                     loading="eager"
                     decoding="async"
                     onError={(e) => {
@@ -416,7 +473,9 @@ export default function BookDetails() {
             <div className="warda-details-rating">
               <div className="warda-stars">★★★★★</div>
               <span className="warda-rating-num">{perfume.rating} / 5.0</span>
-              <span className="warda-reviews-count">({perfume.reviewsCount} {t("details.reviews")})</span>
+              <span className="warda-reviews-count">
+                ({perfume.reviewsCount} {t("details.reviews")})
+              </span>
             </div>
 
             {/* PRIVILEGED ACCESS: DIRECT QOGITA WHOLESALE PRODUCT LINK */}
@@ -480,7 +539,11 @@ export default function BookDetails() {
 
             {/* FORMAT / VOLUME SELECTOR: ONLY DISPLAYED IF MULTIPLE SIZES EXIST IN QOGITA */}
             {hasMultipleSizes && (
-              <div className="warda-details-volumes" role="radiogroup" aria-label={t("details.selectVolume")}>
+              <div
+                className="warda-details-volumes"
+                role="radiogroup"
+                aria-label={t("details.selectVolume")}
+              >
                 <div className="warda-details-volume-pills">
                   {perfumeVolumeOptions.map((opt) => (
                     <button
@@ -491,8 +554,12 @@ export default function BookDetails() {
                       role="radio"
                       aria-checked={selectedVolume === opt.key}
                     >
-                      <span className="warda-volume-pill__title">{formatVolume(opt.ml, language)}</span>
-                      <span className="warda-volume-pill__price">{formatPrice(opt.price)}</span>
+                      <span className="warda-volume-pill__title">
+                        {formatVolume(opt.ml, language)}
+                      </span>
+                      <span className="warda-volume-pill__price">
+                        {formatPrice(opt.price)}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -500,19 +567,26 @@ export default function BookDetails() {
             )}
 
             <div className="warda-details-price-row">
-              <span className="warda-details-price">{formatPrice(displayPrice)}</span>
-              {perfume.inStock === false && <span className="warda-stock-status">{t("details.preorder")}</span>}
+              <span className="warda-details-price">
+                {formatPrice(displayPrice)}
+              </span>
+              {perfume.inStock === false && (
+                <span className="warda-stock-status">
+                  {t("details.preorder")}
+                </span>
+              )}
             </div>
 
-            <p className="warda-details-desc">
-              {displayDesc}
-            </p>
+            <p className="warda-details-desc">{displayDesc}</p>
 
             {/* SET COMPOSITION / INCLUDED FRAGRANCES OR OLFACTORY PYRAMID */}
             {isSet ? (
               <div className="warda-set-composition">
                 <h3 className="warda-pyramid-title">
-                  <i className="ri-gift-2-line" style={{ marginRight: "0.5rem", color: "#d4af37" }} />
+                  <i
+                    className="ri-gift-2-line"
+                    style={{ marginRight: "0.5rem", color: "#d4af37" }}
+                  />
                   {t("details.setContents")}
                 </h3>
                 {setItems && setItems.length > 0 ? (
@@ -520,11 +594,21 @@ export default function BookDetails() {
                     {setItems.map((item, idx) => (
                       <div key={idx} className="warda-set-item-card">
                         <div className="warda-set-item-head">
-                          <span className="warda-set-item-badge">{formatVolume(item.volume || "10 ml", language)}</span>
+                          <span className="warda-set-item-badge">
+                            {formatVolume(item.volume || "10 ml", language)}
+                          </span>
                           <h4 className="warda-set-item-title">{item.name}</h4>
                         </div>
                         {(item.descRu || item.descEn) && (
-                          <p className="warda-set-item-desc">{item[`desc_${language}`] || item[`desc${language.charAt(0).toUpperCase() + language.slice(1)}`] || (language === "ru" ? item.descRu : (item.descEn || item.descRu))}</p>
+                          <p className="warda-set-item-desc">
+                            {item[`desc_${language}`] ||
+                              item[
+                                `desc${language.charAt(0).toUpperCase() + language.slice(1)}`
+                              ] ||
+                              (language === "ru"
+                                ? item.descRu
+                                : item.descEn || item.descRu)}
+                          </p>
                         )}
                       </div>
                     ))}
@@ -533,65 +617,79 @@ export default function BookDetails() {
                   <div className="warda-set-features">
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
-                      <span>
-                        {t("details.setFeature1")}
-                      </span>
+                      <span>{t("details.setFeature1")}</span>
                     </div>
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
-                      <span>
-                        {t("details.setFeature2")}
-                      </span>
+                      <span>{t("details.setFeature2")}</span>
                     </div>
                     <div className="warda-set-feature-row">
                       <span className="warda-set-feature-bullet">✦</span>
-                      <span>
-                        {t("details.setFeature3")}
-                      </span>
+                      <span>{t("details.setFeature3")}</span>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
               <div className="warda-pyramid">
-                <h3 className="warda-pyramid-title">
-                  {t("details.pyramid")}
-                </h3>
+                <h3 className="warda-pyramid-title">{t("details.pyramid")}</h3>
                 {notesStatus === "loading" ? (
                   <p className="warda-pyramid-status" role="status">
-                    <i className="ri-loader-4-line ri-spin" aria-hidden="true" />
-                    <span>{t("details.notesLoading", "Generating fragrance notes…")}</span>
+                    <i
+                      className="ri-loader-4-line ri-spin"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {t("details.notesLoading", "Generating fragrance notes…")}
+                    </span>
                   </p>
                 ) : notesStatus ? (
                   <p className="warda-pyramid-status warda-pyramid-status--empty">
                     <i className="ri-information-line" aria-hidden="true" />
-                    <span>{t("details.notesUnavailable", "Notes for this fragrance are not available yet.")}</span>
+                    <span>
+                      {t(
+                        "details.notesUnavailable",
+                        "Notes for this fragrance are not available yet.",
+                      )}
+                    </span>
                   </p>
                 ) : (
                   <div className="warda-pyramid-grid">
                     <div className="warda-pyramid-step">
-                      <span className="warda-step-name">{t("details.topNotes")}</span>
+                      <span className="warda-step-name">
+                        {t("details.topNotes")}
+                      </span>
                       <div className="warda-notes-tags">
                         {topNotes.map((n) => (
-                          <span key={n} className="warda-note-tag">{n}</span>
+                          <span key={n} className="warda-note-tag">
+                            {n}
+                          </span>
                         ))}
                       </div>
                     </div>
 
                     <div className="warda-pyramid-step">
-                      <span className="warda-step-name">{t("details.heartNotes")}</span>
+                      <span className="warda-step-name">
+                        {t("details.heartNotes")}
+                      </span>
                       <div className="warda-notes-tags">
                         {heartNotes.map((n) => (
-                          <span key={n} className="warda-note-tag">{n}</span>
+                          <span key={n} className="warda-note-tag">
+                            {n}
+                          </span>
                         ))}
                       </div>
                     </div>
 
                     <div className="warda-pyramid-step">
-                      <span className="warda-step-name">{t("details.baseNotes")}</span>
+                      <span className="warda-step-name">
+                        {t("details.baseNotes")}
+                      </span>
                       <div className="warda-notes-tags">
                         {baseNotes.map((n) => (
-                          <span key={n} className="warda-note-tag">{n}</span>
+                          <span key={n} className="warda-note-tag">
+                            {n}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -603,11 +701,17 @@ export default function BookDetails() {
             {/* SPECS ROW */}
             <div className="warda-specs-row">
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{isSet ? t("details.format") : t("details.volume")}</span>
-                <span className="warda-spec-val">{isSet ? t("details.discoverySet") : displayVolume}</span>
+                <span className="warda-spec-lbl">
+                  {isSet ? t("details.format") : t("details.volume")}
+                </span>
+                <span className="warda-spec-val">
+                  {isSet ? t("details.discoverySet") : displayVolume}
+                </span>
               </div>
               <div className="warda-spec-item">
-                <span className="warda-spec-lbl">{isSet ? t("details.included") : t("details.gender")}</span>
+                <span className="warda-spec-lbl">
+                  {isSet ? t("details.included") : t("details.gender")}
+                </span>
                 <span className="warda-spec-val">
                   {isSet
                     ? formatVolume(perfume.volume || "4 × 10 ml", language)
@@ -616,7 +720,9 @@ export default function BookDetails() {
               </div>
               <div className="warda-spec-item">
                 <span className="warda-spec-lbl">{t("details.longevity")}</span>
-                <span className="warda-spec-val">{getLocalizedLongevity(perfume.longevity, language)}</span>
+                <span className="warda-spec-val">
+                  {getLocalizedLongevity(perfume.longevity, language)}
+                </span>
               </div>
             </div>
 
@@ -643,7 +749,10 @@ export default function BookDetails() {
               </div>
 
               {(() => {
-                const inCart = isInCart(perfume, selectedSizeOpt ? selectedSizeOpt.key : "full");
+                const inCart = isInCart(
+                  perfume,
+                  selectedSizeOpt ? selectedSizeOpt.key : "full",
+                );
                 return (
                   <button
                     type="button"
@@ -653,8 +762,12 @@ export default function BookDetails() {
                   >
                     {inCart ? (
                       <>
-                        <span className="warda-btn__text-normal">{t("details.inBag")}</span>
-                        <span className="warda-btn__text-hover">{t("details.remove")}</span>
+                        <span className="warda-btn__text-normal">
+                          {t("details.inBag")}
+                        </span>
+                        <span className="warda-btn__text-hover">
+                          {t("details.remove")}
+                        </span>
                       </>
                     ) : isAdded ? (
                       t("details.addedToBag")

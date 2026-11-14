@@ -20,7 +20,9 @@ import "./Sets.css";
 
 function isDiscoveryOrMiniSet(item) {
   const txt = `${item?.name || ""} ${item?.title || ""}`.toLowerCase();
-  return /\b(discovery|mini|travel|sample|\d+\s*[x×]\s*[1-9]\d?\s*ml|pen\s*spray|pack\s+of)\b/i.test(txt);
+  return /\b(discovery|mini|travel|sample|\d+\s*[x×]\s*[1-9]\d?\s*ml|pen\s*spray|pack\s+of)\b/i.test(
+    txt,
+  );
 }
 
 function isMiniatureOrSample(item) {
@@ -31,7 +33,11 @@ function isMiniatureOrSample(item) {
 }
 
 function isSetOrDiscoveryProduct(item) {
-  return isPerfumeSet(item) || isDiscoveryOrMiniSet(item) || isMiniatureOrSample(item);
+  return (
+    isPerfumeSet(item) ||
+    isDiscoveryOrMiniSet(item) ||
+    isMiniatureOrSample(item)
+  );
 }
 
 function getSetBadgeLabel(item, language = "ru", t) {
@@ -42,7 +48,8 @@ function getSetBadgeLabel(item, language = "ru", t) {
   const lang = String(language || "ru").toLowerCase();
   if (lang === "ru") return isDisc ? "ДИСКАВЕРИ СЕТ" : "ПОДАРОЧНЫЙ СЕТ";
   if (lang === "hu") return isDisc ? "FELFEDEZŐ KÉSZLET" : "AJÁNDÉK SZETT";
-  if (lang === "bg") return isDisc ? "ДИСКАВЪРИ КОМПЛЕКТ" : "ПОДАРЪЧЕН КОМПЛЕКТ";
+  if (lang === "bg")
+    return isDisc ? "ДИСКАВЪРИ КОМПЛЕКТ" : "ПОДАРЪЧЕН КОМПЛЕКТ";
   if (lang === "el") return isDisc ? "DISCOVERY SET" : "ΣΕΤ ΔΩΡΟΥ";
   if (lang === "ro") return isDisc ? "DISCOVERY SET" : "SET CADOU";
   return isDisc ? "DISCOVERY SET" : "GIFT SET";
@@ -94,7 +101,9 @@ export default function Sets() {
   const { isInCart, toggleCart } = useCartState();
 
   const [allItems, setAllItems] = useState(() => getCachedPerfumes() || []);
-  const [loading, setLoading] = useState(() => (getCachedPerfumes() || []).length === 0);
+  const [loading, setLoading] = useState(
+    () => (getCachedPerfumes() || []).length === 0,
+  );
   const [addedIds, setAddedIds] = useState({});
   const [cardVolumes, setCardVolumes] = useState({});
   const [visibleCount, setVisibleCount] = useState(() => {
@@ -106,21 +115,39 @@ export default function Sets() {
     sessionStorage.setItem("warda_visible_sets", String(visibleCount));
   }, [visibleCount]);
 
-  const [selectedType, setSelectedType] = useState(() => searchParams.get("type") || "all");
-  const [selectedVolume, setSelectedVolume] = useState(() => searchParams.get("volume") || "all");
-  const [selectedBrand, setSelectedBrand] = useState(() => searchParams.get("brand") || "all");
-  const [selectedGender, setSelectedGender] = useState(() => searchParams.get("gender") || "all");
+  const [selectedType, setSelectedType] = useState(
+    () => searchParams.get("type") || "all",
+  );
+  const [selectedVolume, setSelectedVolume] = useState(
+    () => searchParams.get("volume") || "all",
+  );
+  const [selectedBrand, setSelectedBrand] = useState(
+    () => searchParams.get("brand") || "all",
+  );
+  const [selectedGender, setSelectedGender] = useState(
+    () => searchParams.get("gender") || "all",
+  );
   const [sortBy, setSortBy] = useState("popular");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams();
-    if (selectedType && selectedType !== "all") params.set("type", selectedType);
-    if (selectedVolume && selectedVolume !== "all") params.set("volume", selectedVolume);
-    if (selectedBrand && selectedBrand !== "all") params.set("brand", selectedBrand);
-    if (selectedGender && selectedGender !== "all") params.set("gender", selectedGender);
+    if (selectedType && selectedType !== "all")
+      params.set("type", selectedType);
+    if (selectedVolume && selectedVolume !== "all")
+      params.set("volume", selectedVolume);
+    if (selectedBrand && selectedBrand !== "all")
+      params.set("brand", selectedBrand);
+    if (selectedGender && selectedGender !== "all")
+      params.set("gender", selectedGender);
     setSearchParams(params, { replace: true, preventScrollReset: true });
-  }, [selectedType, selectedVolume, selectedBrand, selectedGender, setSearchParams]);
+  }, [
+    selectedType,
+    selectedVolume,
+    selectedBrand,
+    selectedGender,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,19 +165,8 @@ export default function Sets() {
         if (!cancelled) setLoading(false);
       });
 
-    const timer = window.setInterval(() => {
-      getPerfumes({ refresh: true })
-        .then((items) => {
-          if (!cancelled && items?.length) {
-            setAllItems((items || []).filter(hasCompletedGeneratedImage));
-          }
-        })
-        .catch(() => {});
-    }, 30000);
-
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
     };
   }, []);
 
@@ -176,23 +192,36 @@ export default function Sets() {
     if (selectedType === "discovery") {
       result = result.filter(isDiscoveryOrMiniSet);
     } else if (selectedType === "gift") {
-      result = result.filter((item) => isPerfumeSet(item) && !isDiscoveryOrMiniSet(item));
+      result = result.filter(
+        (item) => isPerfumeSet(item) && !isDiscoveryOrMiniSet(item),
+      );
     }
 
     // Filter by brand
     if (selectedBrand !== "all") {
       result = result.filter(
-        (item) => (item.brand || "").toLowerCase() === selectedBrand.toLowerCase()
+        (item) =>
+          (item.brand || "").toLowerCase() === selectedBrand.toLowerCase(),
       );
     }
 
     // Filter by gender
     if (selectedGender !== "all") {
       result = result.filter((item) => {
-        const g = `${item.gender || ""} ${item.genderRu || ""} ${item.genderEn || ""}`.toLowerCase();
-        if (selectedGender === "women") return g.includes("жен") || g.includes("women") || g.includes("femme");
-        if (selectedGender === "men") return (g.includes("муж") || g.includes("men") || g.includes("homme")) && !g.includes("women") && !g.includes("femme");
-        if (selectedGender === "unisex") return g.includes("унисекс") || g.includes("unisex");
+        const g =
+          `${item.gender || ""} ${item.genderRu || ""} ${item.genderEn || ""}`.toLowerCase();
+        if (selectedGender === "women")
+          return (
+            g.includes("жен") || g.includes("women") || g.includes("femme")
+          );
+        if (selectedGender === "men")
+          return (
+            (g.includes("муж") || g.includes("men") || g.includes("homme")) &&
+            !g.includes("women") &&
+            !g.includes("femme")
+          );
+        if (selectedGender === "unisex")
+          return g.includes("унисекс") || g.includes("unisex");
         return true;
       });
     }
@@ -205,7 +234,7 @@ export default function Sets() {
           (item.name || "").toLowerCase().includes(q) ||
           (item.title || "").toLowerCase().includes(q) ||
           (item.brand || "").toLowerCase().includes(q) ||
-          (item.notesSummary || "").toLowerCase().includes(q)
+          (item.notesSummary || "").toLowerCase().includes(q),
       );
     }
 
@@ -233,12 +262,26 @@ export default function Sets() {
     }
 
     return result;
-  }, [allSetItems, selectedType, selectedBrand, selectedGender, searchQuery, sortBy]);
+  }, [
+    allSetItems,
+    selectedType,
+    selectedBrand,
+    selectedGender,
+    searchQuery,
+    sortBy,
+  ]);
 
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [selectedType, selectedVolume, selectedBrand, selectedGender, searchQuery, sortBy]);
+  }, [
+    selectedType,
+    selectedVolume,
+    selectedBrand,
+    selectedGender,
+    searchQuery,
+    sortBy,
+  ]);
 
   const visibleItems = useMemo(() => {
     return filteredItems.slice(0, visibleCount);
@@ -297,12 +340,8 @@ export default function Sets() {
           <i className="ri-compass-3-line" />
           {t("sets.heroEyebrow")}
         </span>
-        <h1 className="warda-shop-title">
-          {t("sets.heroTitle")}
-        </h1>
-        <p className="warda-shop-subtitle">
-          {t("sets.heroSubtitle")}
-        </p>
+        <h1 className="warda-shop-title">{t("sets.heroTitle")}</h1>
+        <p className="warda-shop-subtitle">{t("sets.heroSubtitle")}</p>
 
         {/* LUXURY ASSURANCE BENEFITS */}
         <div className="warda-sets-benefits">
@@ -334,7 +373,11 @@ export default function Sets() {
           <div className="warda-sets-tabs" role="tablist">
             {[
               { id: "all", label: t("sets.tabAll"), icon: "ri-apps-2-line" },
-              { id: "discovery", label: t("sets.tabDiscovery"), icon: "ri-magic-line" },
+              {
+                id: "discovery",
+                label: t("sets.tabDiscovery"),
+                icon: "ri-magic-line",
+              },
               { id: "gift", label: t("sets.tabGift"), icon: "ri-gift-line" },
             ].map((tab) => (
               <button
@@ -371,8 +414,6 @@ export default function Sets() {
             </div>
 
             <div className="warda-sets-selects">
-              
-
               {/* BRAND FILTER */}
               {availableBrands.length > 1 && (
                 <select
@@ -436,14 +477,10 @@ export default function Sets() {
       />
 
       {loading ? (
-        <div className="warda-loading">
-          {t("sets.loading")}
-        </div>
+        <div className="warda-loading">{t("sets.loading")}</div>
       ) : filteredItems.length === 0 ? (
         <div className="warda-empty">
-          <p>
-            {t("sets.noOffers")}
-          </p>
+          <p>{t("sets.noOffers")}</p>
           <button
             type="button"
             className="warda-btn"
@@ -468,11 +505,19 @@ export default function Sets() {
                   onClick={() => handleCardClick(perfume)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && handleCardClick(perfume)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleCardClick(perfume)
+                  }
                 >
                   <div className="warda-perfume-card__media">
                     <span className="warda-set-card__badge">
-                      <i className={isDiscoveryOrMiniSet(perfume) ? "ri-sparkling-fill" : "ri-gift-2-fill"} />
+                      <i
+                        className={
+                          isDiscoveryOrMiniSet(perfume)
+                            ? "ri-sparkling-fill"
+                            : "ri-gift-2-fill"
+                        }
+                      />
                       {getSetBadgeLabel(perfume, language, t)}
                     </span>
 
@@ -486,7 +531,9 @@ export default function Sets() {
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          const card = e.currentTarget.closest(".warda-perfume-card");
+                          const card = e.currentTarget.closest(
+                            ".warda-perfume-card",
+                          );
                           if (card) card.style.display = "none";
                         }}
                       />
@@ -494,10 +541,15 @@ export default function Sets() {
                   </div>
 
                   <div className="warda-perfume-card__info">
-                    <h3 className="warda-perfume-card__title" title={perfume.name}>
+                    <h3
+                      className="warda-perfume-card__title"
+                      title={perfume.name}
+                    >
                       {perfume.name}
                     </h3>
-                    <p className="warda-perfume-card__notes">{perfume.brand || "Al-Warda"}</p>
+                    <p className="warda-perfume-card__notes">
+                      {perfume.brand || "Al-Warda"}
+                    </p>
 
                     <div className="warda-perfume-card__price">
                       {formatPrice(perfume.price)}
@@ -509,7 +561,11 @@ export default function Sets() {
                       type="button"
                       className={`warda-btn warda-btn--card ${inCart ? "warda-btn--in-cart" : isAdded ? "warda-btn--added" : ""}`}
                       onClick={(e) => handleAddToCartItem(perfume, e)}
-                      aria-label={inCart ? t("featured.remove") : `Add ${perfume.name} to cart`}
+                      aria-label={
+                        inCart
+                          ? t("featured.remove")
+                          : `Add ${perfume.name} to cart`
+                      }
                       title={inCart ? t("featured.remove") : undefined}
                     >
                       {inCart ? (
@@ -547,7 +603,11 @@ export default function Sets() {
                 </span>
               </button>
               <p className="warda-sets-load-more__hint">
-                {formatShowingOf(visibleItems.length, filteredItems.length, language)}
+                {formatShowingOf(
+                  visibleItems.length,
+                  filteredItems.length,
+                  language,
+                )}
               </p>
             </div>
           )}

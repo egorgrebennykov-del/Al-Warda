@@ -5,7 +5,10 @@ import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
 import { useConfirm } from "../../context/ConfirmContext";
-import { fetchUserInquiry, fetchAdminUnreadCount } from "../../../utils/inquiries";
+import {
+  fetchUserInquiry,
+  fetchAdminUnreadCount,
+} from "../../../utils/inquiries";
 import { getCartItemCount } from "../../../utils/cart";
 import "./Header.css";
 
@@ -79,7 +82,8 @@ export default function Header({ theme, isLight, onSearch }) {
     };
     updateCount();
     window.addEventListener("alwarda-cart-updated", updateCount);
-    return () => window.removeEventListener("alwarda-cart-updated", updateCount);
+    return () =>
+      window.removeEventListener("alwarda-cart-updated", updateCount);
   }, [user?.id]);
 
   useEffect(() => {
@@ -128,13 +132,18 @@ export default function Header({ theme, isLight, onSearch }) {
       }
     };
     const initTimer = setTimeout(checkUnread, 2000);
-    const interval = setInterval(checkUnread, 15000);
     const onUpdated = () => checkUnread();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") checkUnread();
+    };
     window.addEventListener("warda-inquiries-updated", onUpdated);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
     return () => {
       clearTimeout(initTimer);
-      clearInterval(interval);
       window.removeEventListener("warda-inquiries-updated", onUpdated);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
     };
   }, [loggedIn, user?.id, isAdminOrDev]);
 
@@ -150,13 +159,18 @@ export default function Header({ theme, isLight, onSearch }) {
       }
     };
     const initTimer = setTimeout(checkAdminUnread, 2000);
-    const interval = setInterval(checkAdminUnread, 15000);
     const onUpdated = () => checkAdminUnread();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") checkAdminUnread();
+    };
     window.addEventListener("warda-inquiries-updated", onUpdated);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
     return () => {
       clearTimeout(initTimer);
-      clearInterval(interval);
       window.removeEventListener("warda-inquiries-updated", onUpdated);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
     };
   }, [isPrivilegedUser, isAdminOrDev, user?.id]);
 
@@ -178,10 +192,7 @@ export default function Header({ theme, isLight, onSearch }) {
       ) {
         setIsDropdownOpen(false);
       }
-      if (
-        langMenuRef.current &&
-        !langMenuRef.current.contains(e.target)
-      ) {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
         setIsLangDropdownOpen(false);
       }
       if (
@@ -228,359 +239,400 @@ export default function Header({ theme, isLight, onSearch }) {
   return (
     <>
       <header className="header warda-header" id="header">
-      <nav className="nav container warda-nav">
-        <button
-          type="button"
-          className="warda-nav__menu-toggle"
-          onClick={() => setIsMenuOpen((open) => !open)}
-          aria-expanded={isMenuOpen}
-          aria-controls="warda-main-navigation"
-          aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
-        >
-          <i className={isMenuOpen ? "ri-close-line" : "ri-menu-line"} aria-hidden="true" />
-        </button>
-        {/* LEFT NAVIGATION LINKS */}
-        <div id="warda-main-navigation" className={`warda-nav__left ${isMenuOpen ? "warda-nav__left--open" : ""}`} onClick={(event) => {
-          if (event.target.closest("a")) setIsMenuOpen(false);
-        }}>
-          <ul className="warda-nav__links">
-            <li className="warda-nav__item">
-              <NavLink to="/" end className={navClass}>
-                <span>{t("nav.home").toUpperCase()}</span>
-              </NavLink>
-            </li>
-            <li className="warda-nav__item">
-              <NavLink to="/featured" className={navClass}>
-                <span>{t("nav.catalog").toUpperCase()}</span>
-              </NavLink>
-            </li>
-            <li className="warda-nav__item">
-              <NavLink to="/sets" className={navClass} title={t("nav.setsTitle")}>
-                <span>{t("nav.sets").toUpperCase()}</span>
-              </NavLink>
-            </li>
-            <li className="warda-nav__item">
-              <NavLink to="/about" className={navClass}>
-                <span>{t("nav.about").toUpperCase()}</span>
-              </NavLink>
-            </li>
-            <li className="warda-nav__item">
-              <NavLink to="/contacts" className={navClass}>
-                <span>{t("nav.contacts").toUpperCase()}</span>
-              </NavLink>
-            </li>
-            {(isPrivilegedUser || isAdminOrDev) && (
-              <li className="warda-nav__item warda-nav__item--privileged">
-                <NavLink
-                  to="/privileged"
-                  className={({ isActive }) =>
-                    `warda-nav__privileged-pill ${isActive ? "active" : ""}`
-                  }
-                  title={t("nav.privileged")}
-                >
-                  <i className="ri-vip-crown-fill" />
-                  <span>{t("nav.privileged").toUpperCase()}</span>
-                  {adminUnreadCount > 0 && (
-                    <span className="warda-nav__badge">{adminUnreadCount}</span>
-                  )}
-                </NavLink>
-              </li>
-            )}
-          </ul>
-        </div>
-
-        {/* CENTER PROMINENT LOGO - PURE EMBLEM WITHOUT ANY CIRCLES OR FRAMES */}
-        <div className="warda-nav__center">
-          <Link to="/" className="warda-nav__crest-logo" aria-label="Al-Warda Parfumes Home">
-            <picture>
-              <source
-                media="(max-width: 1050px)"
-                srcSet="/assets/img/al-warda-header-logo-mobile.webp"
-                type="image/webp"
-              />
-              <img
-                src="/assets/img/al-warda-header-logo.webp"
-                alt="Al-Warda Parfumes"
-                className="warda-nav__crest-img"
-                width="73"
-                height="80"
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-              />
-            </picture>
-          </Link>
-        </div>
-
-        {/* RIGHT ACTIONS: SEARCH, CART, CONCIERGE, PROFILE, LANG */}
-        <div className="warda-nav__right">
+        <nav className="nav container warda-nav">
           <button
             type="button"
-            className="warda-nav__action-btn"
-            onClick={onSearch}
-            title={t("nav.search") || "Search fragrances"}
-            aria-label="Search"
+            className="warda-nav__menu-toggle"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            aria-expanded={isMenuOpen}
+            aria-controls="warda-main-navigation"
+            aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
           >
-            <i className="ri-search-line" />
+            <i
+              className={isMenuOpen ? "ri-close-line" : "ri-menu-line"}
+              aria-hidden="true"
+            />
           </button>
-
-          <Link
-            to="/cart"
-            className="warda-nav__action-btn warda-nav__cart-btn"
-            aria-label={t("nav.cart") || "Shopping Bag"}
-            title={t("nav.cart") || "Shopping Bag"}
+          {/* LEFT NAVIGATION LINKS */}
+          <div
+            id="warda-main-navigation"
+            className={`warda-nav__left ${isMenuOpen ? "warda-nav__left--open" : ""}`}
+            onClick={(event) => {
+              if (event.target.closest("a")) setIsMenuOpen(false);
+            }}
           >
-            <i className="ri-shopping-bag-line" />
-            {cartCount > 0 && (
-              <span className="warda-nav__badge">{cartCount}</span>
-            )}
-          </Link>
+            <ul className="warda-nav__links">
+              <li className="warda-nav__item">
+                <NavLink to="/" end className={navClass}>
+                  <span>{t("nav.home").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              <li className="warda-nav__item">
+                <NavLink to="/featured" className={navClass}>
+                  <span>{t("nav.catalog").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              <li className="warda-nav__item">
+                <NavLink
+                  to="/sets"
+                  className={navClass}
+                  title={t("nav.setsTitle")}
+                >
+                  <span>{t("nav.sets").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              <li className="warda-nav__item">
+                <NavLink to="/about" className={navClass}>
+                  <span>{t("nav.about").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              <li className="warda-nav__item">
+                <NavLink to="/contacts" className={navClass}>
+                  <span>{t("nav.contacts").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              {(isPrivilegedUser || isAdminOrDev) && (
+                <li className="warda-nav__item warda-nav__item--privileged">
+                  <NavLink
+                    to="/privileged"
+                    className={({ isActive }) =>
+                      `warda-nav__privileged-pill ${isActive ? "active" : ""}`
+                    }
+                    title={t("nav.privileged")}
+                  >
+                    <i className="ri-vip-crown-fill" />
+                    <span>{t("nav.privileged").toUpperCase()}</span>
+                    {adminUnreadCount > 0 && (
+                      <span className="warda-nav__badge">
+                        {adminUnreadCount}
+                      </span>
+                    )}
+                  </NavLink>
+                </li>
+              )}
+            </ul>
+          </div>
 
-          {!isAdminOrDev && (
+          {/* CENTER PROMINENT LOGO - PURE EMBLEM WITHOUT ANY CIRCLES OR FRAMES */}
+          <div className="warda-nav__center">
+            <Link
+              to="/"
+              className="warda-nav__crest-logo"
+              aria-label="Al-Warda Parfumes Home"
+            >
+              <picture>
+                <source
+                  media="(max-width: 1050px)"
+                  srcSet="/assets/img/al-warda-header-logo-mobile.webp"
+                  type="image/webp"
+                />
+                <img
+                  src="/assets/img/al-warda-header-logo.webp"
+                  alt="Al-Warda Parfumes"
+                  className="warda-nav__crest-img"
+                  width="73"
+                  height="80"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
+            </Link>
+          </div>
+
+          {/* RIGHT ACTIONS: SEARCH, CART, CONCIERGE, PROFILE, LANG */}
+          <div className="warda-nav__right">
             <button
               type="button"
-              className={`warda-nav__action-btn ${adminAttention ? "warda-nav__action-btn--pulse" : ""}`}
-              onClick={() => {
-                setIsMessengerOpen((prev) => {
-                  const next = !prev;
-                  if (next) {
-                    window.dispatchEvent(new CustomEvent("warda-open-messenger"));
-                  }
-                  return next;
-                });
-                setAdminAttention(false);
-              }}
-              title={t("nav.concierge")}
-              aria-label={t("nav.concierge")}
+              className="warda-nav__action-btn"
+              onClick={onSearch}
+              title={t("nav.search") || "Search fragrances"}
+              aria-label="Search"
             >
-              <i className="ri-customer-service-2-line" />
-              {unreadCount > 0 && (
-                <span className="warda-nav__badge">{unreadCount}</span>
-              )}
+              <i className="ri-search-line" />
             </button>
-          )}
 
-          {loggedIn ? (
-            <div className="nav__profile-wrap" ref={profileMenuRef}>
+            <Link
+              to="/cart"
+              className="warda-nav__action-btn warda-nav__cart-btn"
+              aria-label={t("nav.cart") || "Shopping Bag"}
+              title={t("nav.cart") || "Shopping Bag"}
+            >
+              <i className="ri-shopping-bag-line" />
+              {cartCount > 0 && (
+                <span className="warda-nav__badge">{cartCount}</span>
+              )}
+            </Link>
+
+            {!isAdminOrDev && (
               <button
                 type="button"
-                className={`warda-nav__action-btn ${isDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+                className={`warda-nav__action-btn ${adminAttention ? "warda-nav__action-btn--pulse" : ""}`}
                 onClick={() => {
-                  setIsDropdownOpen((prev) => !prev);
-                  setIsLangDropdownOpen(false);
-                  setIsCurrencyDropdownOpen(false);
+                  setIsMessengerOpen((prev) => {
+                    const next = !prev;
+                    if (next) {
+                      window.dispatchEvent(
+                        new CustomEvent("warda-open-messenger"),
+                      );
+                    }
+                    return next;
+                  });
+                  setAdminAttention(false);
                 }}
-                aria-expanded={isDropdownOpen}
-                aria-label={t("nav.profile")}
-                title={t("nav.profile")}
+                title={t("nav.concierge")}
+                aria-label={t("nav.concierge")}
               >
-                <i className="ri-user-line" />
+                <i className="ri-customer-service-2-line" />
+                {unreadCount > 0 && (
+                  <span className="warda-nav__badge">{unreadCount}</span>
+                )}
               </button>
+            )}
 
-              {isDropdownOpen && (
-                <div className="nav__profile-dropdown" role="menu">
-                  {user?.firstName && (
-                    <div className="nav__profile-header">
-                      <span className="nav__profile-welcome">
-                        {t("nav.welcome")}
-                      </span>
-                      <div className="nav__profile-name-row">
-                        <span className="nav__profile-name">
-                          {user.firstName}
+            {loggedIn ? (
+              <div className="nav__profile-wrap" ref={profileMenuRef}>
+                <button
+                  type="button"
+                  className={`warda-nav__action-btn ${isDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+                  onClick={() => {
+                    setIsDropdownOpen((prev) => !prev);
+                    setIsLangDropdownOpen(false);
+                    setIsCurrencyDropdownOpen(false);
+                  }}
+                  aria-expanded={isDropdownOpen}
+                  aria-label={t("nav.profile")}
+                  title={t("nav.profile")}
+                >
+                  <i className="ri-user-line" />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="nav__profile-dropdown" role="menu">
+                    {user?.firstName && (
+                      <div className="nav__profile-header">
+                        <span className="nav__profile-welcome">
+                          {t("nav.welcome")}
+                        </span>
+                        <div className="nav__profile-name-row">
+                          <span className="nav__profile-name">
+                            {user.firstName}
+                          </span>
+                        </div>
+                        <span className="nav__profile-role">
+                          {formatRoleName(userRoles[0], language)}
                         </span>
                       </div>
-                      <span className="nav__profile-role">
-                        {formatRoleName(userRoles[0], language)}
-                      </span>
-                    </div>
-                  )}
-                  <ul className="nav__profile-list" role="none">
-                    {(isPrivilegedUser || isAdminOrDev) && (
+                    )}
+                    <ul className="nav__profile-list" role="none">
+                      {(isPrivilegedUser || isAdminOrDev) && (
+                        <li className="nav__profile-item" role="none">
+                          <Link
+                            to="/privileged"
+                            role="menuitem"
+                            onClick={() => setIsDropdownOpen(false)}
+                            style={{
+                              background:
+                                "linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 215, 0, 0.08))",
+                              border: "1px solid rgba(212, 175, 55, 0.4)",
+                              borderRadius: "6px",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            <i
+                              className="ri-vip-crown-fill"
+                              style={{ color: "#ffd700" }}
+                            />
+                            <span style={{ color: "#ffd700", fontWeight: 700 }}>
+                              {t("nav.privileged")}
+                            </span>
+                          </Link>
+                        </li>
+                      )}
                       <li className="nav__profile-item" role="none">
                         <Link
-                          to="/privileged"
+                          to="/profile"
                           role="menuitem"
                           onClick={() => setIsDropdownOpen(false)}
-                          style={{
-                            background: "linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 215, 0, 0.08))",
-                            border: "1px solid rgba(212, 175, 55, 0.4)",
-                            borderRadius: "6px",
-                            marginBottom: "6px"
-                          }}
                         >
-                          <i className="ri-vip-crown-fill" style={{ color: "#ffd700" }} />
-                          <span style={{ color: "#ffd700", fontWeight: 700 }}>
-                            {t("nav.privileged")}
-                          </span>
+                          <i className="ri-user-settings-line" />
+                          <span>{t("nav.profileSettings")}</span>
                         </Link>
                       </li>
-                    )}
-                    <li className="nav__profile-item" role="none">
-                      <Link
-                        to="/profile"
-                        role="menuitem"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <i className="ri-user-settings-line" />
-                        <span>{t("nav.profileSettings")}</span>
-                      </Link>
-                    </li>
-                    <li className="nav__profile-item" role="none">
-                      <Link
-                        to="/orders"
-                        role="menuitem"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <i className="ri-time-line" />
-                        <span>{t("nav.currentOrders")}</span>
-                      </Link>
-                    </li>
-                    <li className="nav__profile-divider" role="separator" />
-                    <li className="nav__profile-item" role="none">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        className="nav__profile-logout-btn"
-                        onClick={handleLogout}
-                      >
-                        <i className="ri-logout-box-r-line" />
-                        <span>{t("nav.logout")}</span>
-                      </button>
-                    </li>
+                      <li className="nav__profile-item" role="none">
+                        <Link
+                          to="/orders"
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <i className="ri-time-line" />
+                          <span>{t("nav.currentOrders")}</span>
+                        </Link>
+                      </li>
+                      <li className="nav__profile-divider" role="separator" />
+                      <li className="nav__profile-item" role="none">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="nav__profile-logout-btn"
+                          onClick={handleLogout}
+                        >
+                          <i className="ri-logout-box-r-line" />
+                          <span>{t("nav.logout")}</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="warda-nav__action-btn"
+                aria-label={t("nav.login")}
+                title={t("nav.login")}
+              >
+                <i className="ri-user-line" />
+              </Link>
+            )}
+
+            {/* Language Dropdown */}
+            <div className="warda-nav__dropdown-wrap" ref={langMenuRef}>
+              <button
+                type="button"
+                className={`warda-nav__lang-btn ${isLangDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+                onClick={() => {
+                  setIsLangDropdownOpen((prev) => !prev);
+                  setIsCurrencyDropdownOpen(false);
+                  setIsDropdownOpen(false);
+                }}
+                title={t("nav.selectLanguage")}
+                aria-label={t("nav.selectLanguage")}
+                aria-haspopup="listbox"
+                aria-expanded={isLangDropdownOpen}
+              >
+                {language.toUpperCase()}
+              </button>
+
+              {isLangDropdownOpen && (
+                <div
+                  className="warda-nav__dropdown"
+                  role="listbox"
+                  aria-label={t("nav.selectLanguage")}
+                >
+                  <div className="warda-nav__dropdown-header">
+                    {t("nav.selectLanguage")}
+                  </div>
+                  <ul className="warda-nav__dropdown-list" role="none">
+                    {sortedLanguages.map((item) => {
+                      const isSelected = language === item.code;
+                      return (
+                        <li key={item.code} role="none">
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
+                            onClick={() => handleSelectLanguage(item.code)}
+                          >
+                            <span className="warda-nav__dropdown-item-left">
+                              <span className="warda-nav__dropdown-badge">
+                                {item.short}
+                              </span>
+                              <span className="warda-nav__dropdown-item-name">
+                                {item.label}
+                              </span>
+                            </span>
+                            {isSelected && (
+                              <i className="ri-check-line warda-nav__dropdown-check" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
             </div>
-          ) : (
-            <Link
-              to="/login"
-              className="warda-nav__action-btn"
-              aria-label={t("nav.login")}
-              title={t("nav.login")}
-            >
-              <i className="ri-user-line" />
-            </Link>
-          )}
 
-          {/* Language Dropdown */}
-          <div className="warda-nav__dropdown-wrap" ref={langMenuRef}>
-            <button
-              type="button"
-              className={`warda-nav__lang-btn ${isLangDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
-              onClick={() => {
-                setIsLangDropdownOpen((prev) => !prev);
-                setIsCurrencyDropdownOpen(false);
-                setIsDropdownOpen(false);
-              }}
-              title={t("nav.selectLanguage")}
-              aria-label={t("nav.selectLanguage")}
-              aria-haspopup="listbox"
-              aria-expanded={isLangDropdownOpen}
-            >
-              {language.toUpperCase()}
-            </button>
+            {/* Currency Dropdown */}
+            <div className="warda-nav__dropdown-wrap" ref={currencyMenuRef}>
+              <button
+                type="button"
+                className={`warda-nav__currency-btn ${isCurrencyDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
+                onClick={() => {
+                  setIsCurrencyDropdownOpen((prev) => !prev);
+                  setIsLangDropdownOpen(false);
+                  setIsDropdownOpen(false);
+                }}
+                title={t("nav.selectCurrency")}
+                aria-label={t("nav.selectCurrency")}
+                aria-haspopup="listbox"
+                aria-expanded={isCurrencyDropdownOpen}
+              >
+                {currency === "EUR" ? "€" : currency === "RON" ? "lei" : "Fr"}
+              </button>
 
-            {isLangDropdownOpen && (
-              <div className="warda-nav__dropdown" role="listbox" aria-label={t("nav.selectLanguage")}>
-                <div className="warda-nav__dropdown-header">
-                  {t("nav.selectLanguage")}
-                </div>
-                <ul className="warda-nav__dropdown-list" role="none">
-                  {sortedLanguages.map((item) => {
-                    const isSelected = language === item.code;
-                    return (
-                      <li key={item.code} role="none">
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
-                          onClick={() => handleSelectLanguage(item.code)}
-                        >
-                          <span className="warda-nav__dropdown-item-left">
-                            <span className="warda-nav__dropdown-badge">{item.short}</span>
-                            <span className="warda-nav__dropdown-item-name">{item.label}</span>
-                          </span>
-                          {isSelected && <i className="ri-check-line warda-nav__dropdown-check" />}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-
-                    {/* Currency Dropdown */}
-          <div className="warda-nav__dropdown-wrap" ref={currencyMenuRef}>
-            <button
-              type="button"
-              className={`warda-nav__currency-btn ${isCurrencyDropdownOpen ? "warda-nav__action-btn--active" : ""}`}
-              onClick={() => {
-                setIsCurrencyDropdownOpen((prev) => !prev);
-                setIsLangDropdownOpen(false);
-                setIsDropdownOpen(false);
-              }}
-              title={t("nav.selectCurrency")}
-              aria-label={t("nav.selectCurrency")}
-              aria-haspopup="listbox"
-              aria-expanded={isCurrencyDropdownOpen}
-            >
-              {currency === "EUR" ? "€" : currency === "RON" ? "lei" : "Fr"}
-            </button>
-
-            {isCurrencyDropdownOpen && (
-              <div className="warda-nav__dropdown" role="listbox" aria-label={t("nav.selectCurrency")}>
-                <div className="warda-nav__dropdown-header">
-                  {t("nav.selectCurrency")}
-                </div>
-                <ul className="warda-nav__dropdown-list" role="none">
-                  {sortedCurrencies.map((item) => {
-                    const isSelected = currency === item.code;
-                    return (
-                      <li key={item.code} role="none">
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
-                          onClick={() => handleSelectCurrency(item.code)}
-                        >
-                          <span className="warda-nav__dropdown-item-left">
-                            <span className="warda-nav__dropdown-badge">{item.symbol}</span>
-                            <span className="warda-nav__dropdown-item-name">
-                              {t(item.nameKey)} ({item.code})
+              {isCurrencyDropdownOpen && (
+                <div
+                  className="warda-nav__dropdown"
+                  role="listbox"
+                  aria-label={t("nav.selectCurrency")}
+                >
+                  <div className="warda-nav__dropdown-header">
+                    {t("nav.selectCurrency")}
+                  </div>
+                  <ul className="warda-nav__dropdown-list" role="none">
+                    {sortedCurrencies.map((item) => {
+                      const isSelected = currency === item.code;
+                      return (
+                        <li key={item.code} role="none">
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            className={`warda-nav__dropdown-item-btn ${isSelected ? "warda-nav__dropdown-item-btn--active" : ""}`}
+                            onClick={() => handleSelectCurrency(item.code)}
+                          >
+                            <span className="warda-nav__dropdown-item-left">
+                              <span className="warda-nav__dropdown-badge">
+                                {item.symbol}
+                              </span>
+                              <span className="warda-nav__dropdown-item-name">
+                                {t(item.nameKey)} ({item.code})
+                              </span>
                             </span>
-                          </span>
-                          {isSelected && <i className="ri-check-line warda-nav__dropdown-check" />}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
+                            {isSelected && (
+                              <i className="ri-check-line warda-nav__dropdown-check" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
+        </nav>
+
+        {/* HORIZONTAL LINE SEPARATING HEADER FROM BODY WITH GAP IN THE CENTER */}
+        <div className="warda-header__divider-line" aria-hidden="true">
+          <span className="warda-header__line-half warda-header__line-half--left"></span>
+          <span className="warda-header__line-gap"></span>
+          <span className="warda-header__line-half warda-header__line-half--right"></span>
         </div>
-      </nav>
+      </header>
 
-      {/* HORIZONTAL LINE SEPARATING HEADER FROM BODY WITH GAP IN THE CENTER */}
-      <div className="warda-header__divider-line" aria-hidden="true">
-        <span className="warda-header__line-half warda-header__line-half--left"></span>
-        <span className="warda-header__line-gap"></span>
-        <span className="warda-header__line-half warda-header__line-half--right"></span>
-      </div>
-    </header>
-
-    {isMessengerOpen && (
-      <Suspense fallback={null}>
-        <MessengerModal
-          isOpen={isMessengerOpen}
-          onClose={() => setIsMessengerOpen(false)}
-          onUnreadChange={(cnt) => setUnreadCount(cnt)}
-        />
-      </Suspense>
-    )}
-  </>
+      {isMessengerOpen && (
+        <Suspense fallback={null}>
+          <MessengerModal
+            isOpen={isMessengerOpen}
+            onClose={() => setIsMessengerOpen(false)}
+            onUnreadChange={(cnt) => setUnreadCount(cnt)}
+          />
+        </Suspense>
+      )}
+    </>
   );
 }

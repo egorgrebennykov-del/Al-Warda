@@ -18,6 +18,7 @@ import {
   fetchAllStocks,
   getServiceKey,
   getSupabaseUrl,
+  invalidateAllStocksCache,
   requirePrivilegedUser,
 } from "./productImageQueueAdmin.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
@@ -36,6 +37,7 @@ const DESCRIPTION_ITEMS_CACHE_TTL_MS = 20_000;
 function invalidateDescriptionItemsCache() {
   descriptionItemsCache = null;
   descriptionItemsCacheTime = 0;
+  invalidateAllStocksCache();
 }
 
 async function getDescriptionItems(env) {

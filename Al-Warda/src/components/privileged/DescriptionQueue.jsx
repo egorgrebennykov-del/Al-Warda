@@ -815,7 +815,7 @@ export default function DescriptionQueue({ language = "ru" }) {
             </button>
           </div>
 
-          {(view === "missing" || query.trim()) && (
+          {view === "missing" && (
             <section className="description-queue__group">
               <div className="description-queue__group-header">
                 <div>
@@ -1009,7 +1009,7 @@ export default function DescriptionQueue({ language = "ru" }) {
             </section>
           )}
 
-          {(view === "generated" || query.trim()) && (
+          {view === "generated" && (
             <section className="description-queue__group">
               <div className="description-queue__group-header">
                 <div>

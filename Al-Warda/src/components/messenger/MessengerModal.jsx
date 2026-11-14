@@ -51,7 +51,9 @@ function formatTransferTime(isoStr, lang = "ru") {
 export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
   const { language, t } = useLanguage();
   const loggedIn = isLoggedIn();
-  const [currentUser, setCurrentUser] = useState(() => (loggedIn ? getCookieUser() : null));
+  const [currentUser, setCurrentUser] = useState(() =>
+    loggedIn ? getCookieUser() : null,
+  );
 
   const [guestEmail, setGuestEmail] = useState(() => {
     return localStorage.getItem(GUEST_EMAIL_KEY) || "";
@@ -70,7 +72,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
   const [inputText, setInputText] = useState("");
   const [isInputExpanded, setIsInputExpanded] = useState(false);
   const [isInputTooLarge, setIsInputTooLarge] = useState(false);
-  const [showTransferHistoryModal, setShowTransferHistoryModal] = useState(false);
+  const [showTransferHistoryModal, setShowTransferHistoryModal] =
+    useState(false);
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -100,7 +103,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
     const scrollHeight = textarea.scrollHeight;
 
     // Expand button appears as soon as content wraps past 1 line (~38px+), or length > 40, or has newline
-    const isLarge = scrollHeight > 38 || inputText.length > 40 || inputText.includes("\n");
+    const isLarge =
+      scrollHeight > 38 || inputText.length > 40 || inputText.includes("\n");
     setIsInputTooLarge(isLarge);
 
     if (isInputExpanded) {
@@ -124,7 +128,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         .then((p) => {
           if (p) setCurrentUser(p);
         })
-        .catch((pErr) => console.warn("Failed to fetch profile in messenger:", pErr));
+        .catch((pErr) =>
+          console.warn("Failed to fetch profile in messenger:", pErr),
+        );
     }
   }, [loggedIn]);
 
@@ -138,7 +144,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
 
     setSendError("");
     try {
-      let activeUser = loggedIn ? (currentUser || getCookieUser()) : null;
+      let activeUser = loggedIn ? currentUser || getCookieUser() : null;
       if (loggedIn && (!activeUser || !activeUser.email)) {
         try {
           const profile = await getProfile();
@@ -152,11 +158,25 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       }
 
       const targetEmail = loggedIn
-        ? (activeUser?.email || "")
-        : (emailOverride || guestEmail || localStorage.getItem(GUEST_EMAIL_KEY) || "").trim().toLowerCase();
+        ? activeUser?.email || ""
+        : (
+            emailOverride ||
+            guestEmail ||
+            localStorage.getItem(GUEST_EMAIL_KEY) ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
       const targetName = loggedIn
-        ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() || activeUser?.email || "Пользователь"
-        : (nameOverride || guestName || localStorage.getItem(GUEST_NAME_KEY) || "Гость").trim();
+        ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() ||
+          activeUser?.email ||
+          "Пользователь"
+        : (
+            nameOverride ||
+            guestName ||
+            localStorage.getItem(GUEST_NAME_KEY) ||
+            "Гость"
+          ).trim();
 
       if (!loggedIn && !targetEmail) return null;
 
@@ -180,9 +200,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       }
     } catch (err) {
       console.warn("Failed to ensure inquiry:", err);
-      setSendError(
-        err?.message || t("messenger.connectError")
-      );
+      setSendError(err?.message || t("messenger.connectError"));
     }
     return null;
   };
@@ -235,7 +253,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       } catch (err) {
         console.warn("Poll inquiry failed:", err);
       }
-    }, 3500);
+    }, 5000);
 
     pollTimerRef.current = interval;
     return () => clearInterval(interval);
@@ -286,20 +304,16 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
       if (!check.allowed) {
         if (check.redirectToWarda) {
           setWardaRedirectQuery(text);
-          setSendError(
-            check.reason || t("messenger.redirectWardaPrompt")
-          );
+          setSendError(check.reason || t("messenger.redirectWardaPrompt"));
           // Trigger Al-Warda's floating speech bubble with help offer
           window.dispatchEvent(
             new CustomEvent("warda-offer-help", {
               detail: { query: text },
-            })
+            }),
           );
         } else {
           setWardaRedirectQuery(null);
-          setSendError(
-            check.reason || t("messenger.rejectedPrompt")
-          );
+          setSendError(check.reason || t("messenger.rejectedPrompt"));
         }
         setSending(false);
         return;
@@ -316,13 +330,17 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
         throw new Error(t("messenger.initError"));
       }
 
-      const activeUser = loggedIn ? (currentUser || getCookieUser()) : null;
+      const activeUser = loggedIn ? currentUser || getCookieUser() : null;
       const optimisticMsg = {
         id: `opt_${Date.now()}`,
         sender: "user",
         senderName: loggedIn
-          ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() || activeUser?.email || t("auth.profile")
-          : guestName || localStorage.getItem(GUEST_NAME_KEY) || t("messenger.guest"),
+          ? `${activeUser?.firstName || ""} ${activeUser?.lastName || ""}`.trim() ||
+            activeUser?.email ||
+            t("auth.profile")
+          : guestName ||
+            localStorage.getItem(GUEST_NAME_KEY) ||
+            t("messenger.guest"),
         text,
         timestamp: new Date().toISOString(),
         deliveredViaEmail: false,
@@ -348,9 +366,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
     } catch (err) {
       console.error("Failed to send message:", err);
       setInputText(text);
-      setSendError(
-        err?.message || t("messenger.sendError")
-      );
+      setSendError(err?.message || t("messenger.sendError"));
     } finally {
       setSending(false);
     }
@@ -415,7 +431,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 >
                   <i className="ri-history-line" />
                   <span>
-                    {t("messenger.transfers")} ({inquiry.interlocutors_info.transferHistory.length})
+                    {t("messenger.transfers")} (
+                    {inquiry.interlocutors_info.transferHistory.length})
                   </span>
                 </button>
               )}
@@ -437,19 +454,13 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               <div className="warda-messenger-guest-icon">
                 <i className="ri-mail-send-line" />
               </div>
-              <h4>
-                {t("messenger.contactAdmin")}
-              </h4>
-              <p>
-                {t("messenger.guestPrompt")}
-              </p>
+              <h4>{t("messenger.contactAdmin")}</h4>
+              <p>{t("messenger.guestPrompt")}</p>
             </div>
 
             <form onSubmit={handleGuestSubmit}>
               <div className="warda-messenger-field">
-                <label>
-                  {t("messenger.yourEmail")} *
-                </label>
+                <label>{t("messenger.yourEmail")} *</label>
                 <input
                   type="email"
                   required
@@ -461,9 +472,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               </div>
 
               <div className="warda-messenger-field">
-                <label>
-                  {t("messenger.yourNameOptional")}
-                </label>
+                <label>{t("messenger.yourNameOptional")}</label>
                 <input
                   type="text"
                   placeholder={t("messenger.namePlaceholder")}
@@ -476,10 +485,7 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 <div className="warda-messenger-error">{emailError}</div>
               )}
 
-              <button
-                type="submit"
-                className="warda-messenger-submit-btn"
-              >
+              <button type="submit" className="warda-messenger-submit-btn">
                 <i className="ri-chat-1-line" />
                 {t("messenger.startChat")}
               </button>
@@ -510,18 +516,14 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
               {loading && messages.length === 0 ? (
                 <div className="warda-messenger-loading">
                   <i className="ri-loader-4-line ri-spin" />
-                  <span>
-                    {t("messenger.loadingMessages")}
-                  </span>
+                  <span>{t("messenger.loadingMessages")}</span>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="warda-messenger-empty">
                   <div className="warda-messenger-empty-icon">
                     <i className="ri-chat-smile-2-line" />
                   </div>
-                  <p>
-                    {t("messenger.emptyPrompt")}
-                  </p>
+                  <p>{t("messenger.emptyPrompt")}</p>
                 </div>
               ) : (
                 messages.map((msg, idx) => {
@@ -587,13 +589,53 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                             }}
                             title={
                               isMsgExpanded
-                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
-                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
+                                ? language === "ru"
+                                  ? "Свернуть сообщение"
+                                  : language === "hu"
+                                    ? "Üzenet összecsukása"
+                                    : language === "bg"
+                                      ? "Свиване на съобщението"
+                                      : language === "el"
+                                        ? "Σύμπτυξη μηνύματος"
+                                        : language === "ro"
+                                          ? "Restrânge mesajul"
+                                          : "Collapse message"
+                                : language === "ru"
+                                  ? "Раскрыть полностью"
+                                  : language === "hu"
+                                    ? "Teljes üzenet megjelenítése"
+                                    : language === "bg"
+                                      ? "Показване на цялото съобщение"
+                                      : language === "el"
+                                        ? "Εμφάνιση πλήρους μηνύματος"
+                                        : language === "ro"
+                                          ? "Afișează mesajul complet"
+                                          : "Show full message"
                             }
                             aria-label={
                               isMsgExpanded
-                                ? (language === "ru" ? "Свернуть сообщение" : language === "hu" ? "Üzenet összecsukása" : language === "bg" ? "Свиване на съобщението" : language === "el" ? "Σύμπτυξη μηνύματος" : language === "ro" ? "Restrânge mesajul" : "Collapse message")
-                                : (language === "ru" ? "Раскрыть полностью" : language === "hu" ? "Teljes üzenet megjelenítése" : language === "bg" ? "Показване на цялото съобщение" : language === "el" ? "Εμφάνιση πλήρους μηνύματος" : language === "ro" ? "Afișează mesajul complet" : "Show full message")
+                                ? language === "ru"
+                                  ? "Свернуть сообщение"
+                                  : language === "hu"
+                                    ? "Üzenet összecsukása"
+                                    : language === "bg"
+                                      ? "Свиване на съобщението"
+                                      : language === "el"
+                                        ? "Σύμπτυξη μηνύματος"
+                                        : language === "ro"
+                                          ? "Restrânge mesajul"
+                                          : "Collapse message"
+                                : language === "ru"
+                                  ? "Раскрыть полностью"
+                                  : language === "hu"
+                                    ? "Teljes üzenet megjelenítése"
+                                    : language === "bg"
+                                      ? "Показване на цялото съобщение"
+                                      : language === "el"
+                                        ? "Εμφάνιση πλήρους μηνύματος"
+                                        : language === "ro"
+                                          ? "Afișează mesajul complet"
+                                          : "Show full message"
                             }
                           >
                             <i
@@ -642,7 +684,9 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   }
                 />
                 <div className="warda-messenger-send-error-content">
-                  <span className="warda-messenger-send-error-text">{sendError}</span>
+                  <span className="warda-messenger-send-error-text">
+                    {sendError}
+                  </span>
                   {wardaRedirectQuery && (
                     <button
                       type="button"
@@ -651,15 +695,13 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                         window.dispatchEvent(
                           new CustomEvent("open-warda-assistant", {
                             detail: { query: wardaRedirectQuery },
-                          })
+                          }),
                         );
                         onClose?.();
                       }}
                     >
                       <i className="ri-chat-smile-3-line" />
-                      <span>
-                        {t("messenger.askWardaBtn")}
-                      </span>
+                      <span>{t("messenger.askWardaBtn")}</span>
                     </button>
                   )}
                 </div>
@@ -703,13 +745,53 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                     onClick={() => setIsInputExpanded((prev) => !prev)}
                     title={
                       isInputExpanded
-                        ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
-                        : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
+                        ? language === "ru"
+                          ? "Свернуть поле ввода"
+                          : language === "hu"
+                            ? "Beviteli mező összecsukása"
+                            : language === "bg"
+                              ? "Свиване на полето за въвеждане"
+                              : language === "el"
+                                ? "Σύμπτυξη πεδίου εισαγωγής"
+                                : language === "ro"
+                                  ? "Restrânge câmpul de introducere"
+                                  : "Collapse input"
+                        : language === "ru"
+                          ? "Расширить поле ввода"
+                          : language === "hu"
+                            ? "Beviteli mező kiterjesztése"
+                            : language === "bg"
+                              ? "Разширяване на полето за въвеждане"
+                              : language === "el"
+                                ? "Ανάπτυξη πεδίου εισαγωγής"
+                                : language === "ro"
+                                  ? "Extinde câmpul de introducere"
+                                  : "Expand input"
                     }
                     aria-label={
                       isInputExpanded
-                        ? (language === "ru" ? "Свернуть поле ввода" : language === "hu" ? "Beviteli mező összecsukása" : language === "bg" ? "Свиване на полето за въвеждане" : language === "el" ? "Σύμπτυξη πεδίου εισαγωγής" : language === "ro" ? "Restrânge câmpul de introducere" : "Collapse input")
-                        : (language === "ru" ? "Расширить поле ввода" : language === "hu" ? "Beviteli mező kiterjesztése" : language === "bg" ? "Разширяване на полето за въвеждане" : language === "el" ? "Ανάπτυξη πεδίου εισαγωγής" : language === "ro" ? "Extinde câmpul de introducere" : "Expand input")
+                        ? language === "ru"
+                          ? "Свернуть поле ввода"
+                          : language === "hu"
+                            ? "Beviteli mező összecsukása"
+                            : language === "bg"
+                              ? "Свиване на полето за въвеждане"
+                              : language === "el"
+                                ? "Σύμπτυξη πεδίου εισαγωγής"
+                                : language === "ro"
+                                  ? "Restrânge câmpul de introducere"
+                                  : "Collapse input"
+                        : language === "ru"
+                          ? "Расширить поле ввода"
+                          : language === "hu"
+                            ? "Beviteli mező kiterjesztése"
+                            : language === "bg"
+                              ? "Разширяване на полето за въвеждане"
+                              : language === "el"
+                                ? "Ανάπτυξη πεδίου εισαγωγής"
+                                : language === "ro"
+                                  ? "Extinde câmpul de introducere"
+                                  : "Expand input"
                     }
                   >
                     <i
@@ -754,12 +836,8 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                   <i className="ri-history-line" />
                 </div>
                 <div className="warda-messenger-transfer-title-group">
-                  <h4>
-                    {t("messenger.transferHistoryTitle")}
-                  </h4>
-                  <p>
-                    {t("messenger.dialogTitle")}
-                  </p>
+                  <h4>{t("messenger.transferHistoryTitle")}</h4>
+                  <p>{t("messenger.dialogTitle")}</p>
                 </div>
                 <button
                   type="button"
@@ -775,31 +853,45 @@ export default function MessengerModal({ isOpen, onClose, onUnreadChange }) {
                 {Array.isArray(inquiry.interlocutors_info?.transferHistory) &&
                 inquiry.interlocutors_info.transferHistory.length > 0 ? (
                   <div className="warda-messenger-transfer-timeline">
-                    {inquiry.interlocutors_info.transferHistory.map((tr, idx) => (
-                      <div key={tr.id || idx} className="warda-messenger-transfer-item">
-                        <div className="warda-messenger-transfer-marker">
-                          <span className="warda-messenger-transfer-num">{idx + 1}</span>
-                          {idx < inquiry.interlocutors_info.transferHistory.length - 1 && (
-                            <span className="warda-messenger-transfer-line" />
-                          )}
-                        </div>
-                        <div className="warda-messenger-transfer-info">
-                          <div className="warda-messenger-transfer-route">
-                            <span className="warda-messenger-transfer-admin-from">{tr.fromAdminName}</span>
-                            <i className="ri-arrow-right-line" />
-                            <span className="warda-messenger-transfer-admin-to">{tr.toAdminName}</span>
+                    {inquiry.interlocutors_info.transferHistory.map(
+                      (tr, idx) => (
+                        <div
+                          key={tr.id || idx}
+                          className="warda-messenger-transfer-item"
+                        >
+                          <div className="warda-messenger-transfer-marker">
+                            <span className="warda-messenger-transfer-num">
+                              {idx + 1}
+                            </span>
+                            {idx <
+                              inquiry.interlocutors_info.transferHistory
+                                .length -
+                                1 && (
+                              <span className="warda-messenger-transfer-line" />
+                            )}
                           </div>
-                          <time className="warda-messenger-transfer-time">
-                            {formatTransferTime(tr.timestamp, language)}
-                          </time>
-                          {tr.reason && (
-                            <div className="warda-messenger-transfer-reason">
-                              <span>«{tr.reason}»</span>
+                          <div className="warda-messenger-transfer-info">
+                            <div className="warda-messenger-transfer-route">
+                              <span className="warda-messenger-transfer-admin-from">
+                                {tr.fromAdminName}
+                              </span>
+                              <i className="ri-arrow-right-line" />
+                              <span className="warda-messenger-transfer-admin-to">
+                                {tr.toAdminName}
+                              </span>
                             </div>
-                          )}
+                            <time className="warda-messenger-transfer-time">
+                              {formatTransferTime(tr.timestamp, language)}
+                            </time>
+                            {tr.reason && (
+                              <div className="warda-messenger-transfer-reason">
+                                <span>«{tr.reason}»</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 ) : (
                   <p className="warda-messenger-transfer-empty">

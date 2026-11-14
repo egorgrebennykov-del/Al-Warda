@@ -56,6 +56,17 @@ function isPrivilegedDatabaseRow(user) {
   );
 }
 
+// Short-TTL cache of the privileged-user DB check. Polling endpoints and the
+// admin queues call requirePrivilegedUser() on every request, which would
+// otherwise hit the `user` table each time. Caching the verdict for a minute
+// removes most of those lookups.
+let privilegedUserCache = new Map();
+const PRIVILEGED_USER_CACHE_TTL_MS = 60_000;
+
+export function invalidatePrivilegedUserCache() {
+  privilegedUserCache = new Map();
+}
+
 export async function requirePrivilegedUser(request, env) {
   const cookieHeader =
     request.headers?.get?.("cookie") || request.headers?.cookie || "";
@@ -63,6 +74,14 @@ export async function requirePrivilegedUser(request, env) {
   if (!cookieUser) {
     return { response: json({ error: "Authentication required" }, 401) };
   }
+
+  const now = Date.now();
+  const cached = privilegedUserCache.get(cookieUser.id);
+  if (cached && cached.expiresAt > now) {
+    if (cached.privileged) return { user: cached.user };
+    return { response: json({ error: "Admin access required" }, 403) };
+  }
+
   const key = getServiceKey(env);
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/user`);
   url.searchParams.set("select", "id,status,role");
@@ -78,10 +97,17 @@ export async function requirePrivilegedUser(request, env) {
     throw new Error(`Could not verify admin access (${result.status})`);
   }
   const users = await result.json();
-  if (!isPrivilegedDatabaseRow(users[0])) {
+  const user = users[0];
+  const privileged = isPrivilegedDatabaseRow(user);
+  privilegedUserCache.set(cookieUser.id, {
+    user,
+    privileged,
+    expiresAt: now + PRIVILEGED_USER_CACHE_TTL_MS,
+  });
+  if (!privileged) {
     return { response: json({ error: "Admin access required" }, 403) };
   }
-  return { user: users[0] };
+  return { user };
 }
 
 function json(body, status = 200) {
@@ -96,10 +122,26 @@ let statusCacheTime = 0;
 let inFlightStatusPromise = null;
 const STATUS_CACHE_TTL_MS = 25_000;
 
+// Shared short-TTL cache for the expensive full `stocks` scan. Multiple admin
+// endpoints (products list, image queue, notes queue, description queue) all
+// need the full catalog, so serving them from one cached scan drastically
+// reduces the number of Supabase requests on the free plan.
+let allStocksCache = null;
+let allStocksCacheTime = 0;
+let allStocksCachePromise = null;
+const ALL_STOCKS_CACHE_TTL_MS = 20_000;
+
+export function invalidateAllStocksCache() {
+  allStocksCache = null;
+  allStocksCacheTime = 0;
+  allStocksCachePromise = null;
+}
+
 export function invalidateProductImageQueueCache() {
   statusCache = null;
   statusCacheTime = 0;
   inFlightStatusPromise = null;
+  invalidateAllStocksCache();
 }
 
 async function fetchStockPage(env, key, from, to) {
@@ -144,7 +186,9 @@ async function fetchStockPage(env, key, from, to) {
       } catch {
         if (errText) details = errText.slice(0, 150);
       }
-      throw new Error(`Could not load product image queue (${result.status})${details ? `: ${details}` : ""}`);
+      throw new Error(
+        `Could not load product image queue (${result.status})${details ? `: ${details}` : ""}`,
+      );
     } catch (err) {
       lastError = err;
       if (attempt < 2) {
@@ -156,14 +200,17 @@ async function fetchStockPage(env, key, from, to) {
   throw lastError || new Error("Could not load product image queue");
 }
 
-export async function fetchAllStocks(env, key) {
-  const pageSize = 500;
+async function fetchAllStocksUncached(env, key) {
+  const pageSize = 1000;
   const first = await fetchStockPage(env, key, 0, pageSize - 1);
   const rows = [...first.rows];
   const totalCount = first.totalCount;
 
   // Single page or unit test mock where total is within first page
-  if (first.rows.length < pageSize || (totalCount !== null && rows.length >= totalCount)) {
+  if (
+    first.rows.length < pageSize ||
+    (totalCount !== null && rows.length >= totalCount)
+  ) {
     return rows;
   }
 
@@ -171,7 +218,10 @@ export async function fetchAllStocks(env, key) {
   if (typeof totalCount === "number" && totalCount > rows.length) {
     const pageRanges = [];
     for (let from = pageSize; from < totalCount; from += pageSize) {
-      pageRanges.push({ from, to: Math.min(from + pageSize - 1, totalCount - 1) });
+      pageRanges.push({
+        from,
+        to: Math.min(from + pageSize - 1, totalCount - 1),
+      });
     }
 
     const concurrency = 4;
@@ -194,7 +244,9 @@ export async function fetchAllStocks(env, key) {
       }
     };
 
-    await Promise.all(Array.from({ length: Math.min(concurrency, pageRanges.length) }, worker));
+    await Promise.all(
+      Array.from({ length: Math.min(concurrency, pageRanges.length) }, worker),
+    );
     for (const chunk of pageResults) {
       if (chunk) rows.push(...chunk);
     }
@@ -209,14 +261,43 @@ export async function fetchAllStocks(env, key) {
   }
 }
 
+export async function fetchAllStocks(env, key) {
+  const cacheKey = getSupabaseUrl(env);
+  const now = Date.now();
+  if (
+    allStocksCache &&
+    allStocksCache.key === cacheKey &&
+    now - allStocksCacheTime < ALL_STOCKS_CACHE_TTL_MS
+  ) {
+    return allStocksCache.rows;
+  }
+  if (allStocksCachePromise && allStocksCachePromise.key === cacheKey) {
+    return allStocksCachePromise.promise;
+  }
+  const promise = fetchAllStocksUncached(env, key)
+    .then((rows) => {
+      allStocksCache = { key: cacheKey, rows };
+      allStocksCacheTime = Date.now();
+      return rows;
+    })
+    .finally(() => {
+      allStocksCachePromise = null;
+    });
+  allStocksCachePromise = { key: cacheKey, promise };
+  return promise;
+}
+
 function hasRawImage(info) {
   const source = info?.rawImage;
-  if (typeof source !== "string" || !/^https:\/\/.+/i.test(source)) return false;
+  if (typeof source !== "string" || !/^https:\/\/.+/i.test(source))
+    return false;
   try {
     const url = new URL(source);
     return (
       url.hostname.endsWith(".qogita.com") &&
-      !/no[-_]?image|not[_-]?found|missing|46e86f1d826c199f04588f35f1fd8afe|c1b79cffa1a5fa8aab226414b9e4a063/i.test(source)
+      !/no[-_]?image|not[_-]?found|missing|46e86f1d826c199f04588f35f1fd8afe|c1b79cffa1a5fa8aab226414b9e4a063/i.test(
+        source,
+      )
     );
   } catch {
     return false;
@@ -224,11 +305,36 @@ function hasRawImage(info) {
 }
 
 const ACCOUNT_DEFS = [
-  { id: "primary", index: 1, labelRu: "1. Основной (primary)", labelEn: "1. Primary (primary)" },
-  { id: "secondary", index: 2, labelRu: "2. Второй (secondary)", labelEn: "2. Secondary (secondary)" },
-  { id: "third", index: 3, labelRu: "3. Третий (third)", labelEn: "3. Third (third)" },
-  { id: "fourth", index: 4, labelRu: "4. Четвёртый (fourth)", labelEn: "4. Fourth (fourth)" },
-  { id: "fifth", index: 5, labelRu: "5. Пятый (fifth)", labelEn: "5. Fifth (fifth)" },
+  {
+    id: "primary",
+    index: 1,
+    labelRu: "1. Основной (primary)",
+    labelEn: "1. Primary (primary)",
+  },
+  {
+    id: "secondary",
+    index: 2,
+    labelRu: "2. Второй (secondary)",
+    labelEn: "2. Secondary (secondary)",
+  },
+  {
+    id: "third",
+    index: 3,
+    labelRu: "3. Третий (third)",
+    labelEn: "3. Third (third)",
+  },
+  {
+    id: "fourth",
+    index: 4,
+    labelRu: "4. Четвёртый (fourth)",
+    labelEn: "4. Fourth (fourth)",
+  },
+  {
+    id: "fifth",
+    index: 5,
+    labelRu: "5. Пятый (fifth)",
+    labelEn: "5. Fifth (fifth)",
+  },
 ];
 
 export const DEFAULT_ACCOUNT_QUOTAS = {
@@ -275,7 +381,11 @@ function quotaEntryRank(entry) {
   return -Infinity;
 }
 
-function buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs = Date.now()) {
+function buildAccountStatusAndSchedule(
+  mergedQuotas,
+  counts,
+  nowMs = Date.now(),
+) {
   const accounts = ACCOUNT_DEFS.map((def) => {
     const raw = mergedQuotas[def.id] || {};
     const limitedAt = validIsoTimestamp(raw.limitedAt);
@@ -291,9 +401,12 @@ function buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs = Date.now())
       labelRu: def.labelRu,
       labelEn: def.labelEn,
       limitedAt,
-      partialAvailableAt: !available && partialAvailableAt && Date.parse(partialAvailableAt) < availableAtMs
-        ? partialAvailableAt
-        : null,
+      partialAvailableAt:
+        !available &&
+        partialAvailableAt &&
+        Date.parse(partialAvailableAt) < availableAtMs
+          ? partialAvailableAt
+          : null,
       availableAt,
       lastUsedAt,
       available,
@@ -301,12 +414,15 @@ function buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs = Date.now())
     };
   });
 
-  const unavailable = accounts.filter((account) => !account.available && account.availableAt);
+  const unavailable = accounts.filter(
+    (account) => !account.available && account.availableAt,
+  );
   const sortedByAvailability = [...unavailable].sort(
     (a, b) => Date.parse(a.availableAt) - Date.parse(b.availableAt),
   );
   const nextAccountAvailableAt = sortedByAvailability[0]?.availableAt || null;
-  const allAccountsAvailableAt = sortedByAvailability.at(-1)?.availableAt || null;
+  const allAccountsAvailableAt =
+    sortedByAvailability.at(-1)?.availableAt || null;
   const allAccountsAvailable = unavailable.length === 0;
   const waitingImages = (counts.pending || 0) + (counts.failed || 0);
   const hasWaitingImages = waitingImages > 0;
@@ -316,7 +432,8 @@ function buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs = Date.now())
     schedule: {
       waitingImages,
       hasWaitingImages,
-      availableAccountsCount: accounts.filter((account) => account.available).length,
+      availableAccountsCount: accounts.filter((account) => account.available)
+        .length,
       totalAccountsCount: accounts.length,
       allAccountsAvailable,
       nextAccountAvailableAt,
@@ -340,14 +457,21 @@ export async function getProductImageQueueStatus(request, env) {
 
     const isTestEnv = Boolean(
       (typeof process !== "undefined" && process?.env?.NODE_TEST_CONTEXT) ||
-      env?.SUPABASE_URL?.includes("example")
+      env?.SUPABASE_URL?.includes("example"),
     );
 
     const url = new URL(request.url);
-    const force = url.searchParams.get("force") === "1" || url.searchParams.get("refresh") === "1";
+    const force =
+      url.searchParams.get("force") === "1" ||
+      url.searchParams.get("refresh") === "1";
     const now = Date.now();
 
-    if (!isTestEnv && !force && statusCache && now - statusCacheTime < STATUS_CACHE_TTL_MS) {
+    if (
+      !isTestEnv &&
+      !force &&
+      statusCache &&
+      now - statusCacheTime < STATUS_CACHE_TTL_MS
+    ) {
       return json(statusCache);
     }
 
@@ -367,12 +491,21 @@ export async function getProductImageQueueStatus(request, env) {
       let attemptedToday = 0;
       for (const row of rows) {
         const info = row.info && typeof row.info === "object" ? row.info : {};
-        if (info.imageGenerationAccountQuotas && typeof info.imageGenerationAccountQuotas === "object") {
+        if (
+          info.imageGenerationAccountQuotas &&
+          typeof info.imageGenerationAccountQuotas === "object"
+        ) {
           for (const def of ACCOUNT_DEFS) {
             const candidate = info.imageGenerationAccountQuotas[def.id];
             if (candidate && typeof candidate === "object") {
-              if (quotaEntryRank(candidate) >= quotaEntryRank(mergedQuotas[def.id])) {
-                mergedQuotas[def.id] = { ...mergedQuotas[def.id], ...candidate };
+              if (
+                quotaEntryRank(candidate) >=
+                quotaEntryRank(mergedQuotas[def.id])
+              ) {
+                mergedQuotas[def.id] = {
+                  ...mergedQuotas[def.id],
+                  ...candidate,
+                };
               }
             }
           }
@@ -380,28 +513,44 @@ export async function getProductImageQueueStatus(request, env) {
         const job = info.imageGeneration || {};
         const replacementJob = info.imageGenerationReplacement || {};
         const imageUrl = job.imageUrl || row.image;
-        if (job.status === "completed" && typeof imageUrl === "string" &&
-            (/^\/assets\/img\/generated-products\//.test(imageUrl) || /^https:\/\//i.test(imageUrl))) {
-          const completedAt = typeof job.completedAt === "string" && Number.isFinite(Date.parse(job.completedAt))
-            ? job.completedAt : null;
+        if (
+          job.status === "completed" &&
+          typeof imageUrl === "string" &&
+          (/^\/assets\/img\/generated-products\//.test(imageUrl) ||
+            /^https:\/\//i.test(imageUrl))
+        ) {
+          const completedAt =
+            typeof job.completedAt === "string" &&
+            Number.isFinite(Date.parse(job.completedAt))
+              ? job.completedAt
+              : null;
           images.push({
             id: row.id,
             name: row.name,
             brand: row.brand,
-            price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            price:
+              Number(row.price) || (info.price ? Number(info.price) : 29.99),
             currency: row.currency || info.currency || "EUR",
             image: row.image || null,
             imageUrl,
-            rawImage: typeof info.rawImage === "string" ? info.rawImage : (typeof row.image === "string" ? row.image : null),
+            rawImage:
+              typeof info.rawImage === "string"
+                ? info.rawImage
+                : typeof row.image === "string"
+                  ? row.image
+                  : null,
             info,
             completedAt,
           });
         }
         if (!hasRawImage(info)) continue;
         eligible++;
-        const status = job.status === "publishing"
-          ? "processing"
-          : counts[job.status] === undefined ? "pending" : job.status;
+        const status =
+          job.status === "publishing"
+            ? "processing"
+            : counts[job.status] === undefined
+              ? "pending"
+              : job.status;
         counts[status]++;
         if (job.attemptedOn === today) {
           attemptedToday++;
@@ -412,25 +561,42 @@ export async function getProductImageQueueStatus(request, env) {
             id: row.id,
             name: row.name || "",
             brand: row.brand || "",
-            price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            price:
+              Number(row.price) || (info.price ? Number(info.price) : 29.99),
             currency: row.currency || info.currency || "EUR",
             image: row.image || null,
             rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
             info,
-            error: typeof activeFail.error === "string" && activeFail.error.trim()
-              ? activeFail.error.trim()
-              : "Unknown generation error",
+            error:
+              typeof activeFail.error === "string" && activeFail.error.trim()
+                ? activeFail.error.trim()
+                : "Unknown generation error",
             failedAt: validIsoTimestamp(activeFail.failedAt),
-            attemptedOn: typeof activeFail.attemptedOn === "string" ? activeFail.attemptedOn : null,
+            attemptedOn:
+              typeof activeFail.attemptedOn === "string"
+                ? activeFail.attemptedOn
+                : null,
           });
         }
       }
 
-      images.sort((a, b) => (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
-        (a.completedAt ? Date.parse(a.completedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
-      failedItems.sort((a, b) => (b.failedAt ? Date.parse(b.failedAt) : -Infinity) -
-        (a.failedAt ? Date.parse(a.failedAt) : -Infinity) || String(a.id).localeCompare(String(b.id)));
-      const { accounts, schedule } = buildAccountStatusAndSchedule(mergedQuotas, counts, nowMs);
+      images.sort(
+        (a, b) =>
+          (b.completedAt ? Date.parse(b.completedAt) : -Infinity) -
+            (a.completedAt ? Date.parse(a.completedAt) : -Infinity) ||
+          String(a.id).localeCompare(String(b.id)),
+      );
+      failedItems.sort(
+        (a, b) =>
+          (b.failedAt ? Date.parse(b.failedAt) : -Infinity) -
+            (a.failedAt ? Date.parse(a.failedAt) : -Infinity) ||
+          String(a.id).localeCompare(String(b.id)),
+      );
+      const { accounts, schedule } = buildAccountStatusAndSchedule(
+        mergedQuotas,
+        counts,
+        nowMs,
+      );
       const payload = {
         total: eligible,
         ...counts,
@@ -463,7 +629,10 @@ export async function getProductImageQueueStatus(request, env) {
     }
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 500);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        500,
+      );
     }
     return json({ error: error.message || "Could not load queue status" }, 500);
   }
@@ -495,12 +664,17 @@ export async function requeueFailedProductItems(request, env) {
       return json({ error: "Invalid JSON request" }, 400);
     }
     const parsed = parseIds(body);
-    if (!parsed) return json({ error: "Select at least one failed product ID" }, 400);
+    if (!parsed)
+      return json({ error: "Select at least one failed product ID" }, 400);
     if (parsed.error) return json({ error: parsed.error }, 400);
 
     const key = getServiceKey(env);
     const baseUrl = getSupabaseUrl(env);
-    const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    };
     let requeued = 0;
     for (let i = 0; i < parsed.ids.length; i += 200) {
       const chunk = parsed.ids.slice(i, i + 200);
@@ -508,10 +682,12 @@ export async function requeueFailedProductItems(request, env) {
       url.searchParams.set("select", "id,info");
       url.searchParams.set("id", `in.(${chunk.join(",")})`);
       const result = await fetch(url, { headers });
-      if (!result.ok) throw new Error(`Could not load failed items (${result.status})`);
+      if (!result.ok)
+        throw new Error(`Could not load failed items (${result.status})`);
       const rows = await result.json();
       for (const row of rows) {
-        const info = row.info && typeof row.info === "object" ? { ...row.info } : {};
+        const info =
+          row.info && typeof row.info === "object" ? { ...row.info } : {};
         info.imageGeneration = { status: "pending" };
         delete info.imageGenerationReplacement;
         const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
@@ -523,7 +699,9 @@ export async function requeueFailedProductItems(request, env) {
         });
         if (!patch.ok) {
           const details = (await patch.text()).slice(0, 300);
-          throw new Error(`Could not requeue item ${row.id} (${patch.status}): ${details}`);
+          throw new Error(
+            `Could not requeue item ${row.id} (${patch.status}): ${details}`,
+          );
         }
         requeued++;
       }
@@ -532,9 +710,15 @@ export async function requeueFailedProductItems(request, env) {
     return json({ requeuedCount: requeued, ids: parsed.ids });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
-    return json({ error: error.message || "Could not requeue failed items" }, 500);
+    return json(
+      { error: error.message || "Could not requeue failed items" },
+      500,
+    );
   }
 }
 
@@ -545,7 +729,9 @@ async function loadSettingsRow(env, key) {
   url.searchParams.set("select", "id,info");
   url.searchParams.set("slug", `eq.${SETTINGS_SLUG}`);
   url.searchParams.set("limit", "1");
-  const result = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  const result = await fetch(url, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+  });
   if (!result.ok) throw new Error(`Could not load settings (${result.status})`);
   const rows = await result.json();
   return rows[0] || null;
@@ -556,10 +742,17 @@ export async function getSiteSettings(request, env) {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
     const row = await loadSettingsRow(env, getServiceKey(env));
-    return json({ minOrderFrom: Number(row?.info?.minOrderFrom) || 0, minOrderTo: Number(row?.info?.minOrderTo ?? row?.info?.maxAllowedMinOrder) || 0 });
+    return json({
+      minOrderFrom: Number(row?.info?.minOrderFrom) || 0,
+      minOrderTo:
+        Number(row?.info?.minOrderTo ?? row?.info?.maxAllowedMinOrder) || 0,
+    });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
     return json({ error: error.message || "Could not load settings" }, 500);
   }
@@ -577,15 +770,28 @@ export async function saveSiteSettings(request, env) {
     }
     const from = Number(body?.minOrderFrom ?? 0);
     const to = Number(body?.minOrderTo ?? 0);
-    if (![from, to].every((v) => Number.isInteger(v) && v >= 0 && v <= 100000)) {
-      return json({ error: "minOrderFrom and minOrderTo must be integers from 0 to 100000" }, 400);
+    if (
+      ![from, to].every((v) => Number.isInteger(v) && v >= 0 && v <= 100000)
+    ) {
+      return json(
+        {
+          error:
+            "minOrderFrom and minOrderTo must be integers from 0 to 100000",
+        },
+        400,
+      );
     }
     if (to > 0 && from > to) {
       return json({ error: "minOrderFrom must not exceed minOrderTo" }, 400);
     }
     const key = getServiceKey(env);
     const baseUrl = getSupabaseUrl(env);
-    const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=minimal" };
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    };
     const row = await loadSettingsRow(env, key);
     let response;
     if (row) {
@@ -594,7 +800,14 @@ export async function saveSiteSettings(request, env) {
       response = await fetch(url, {
         method: "PATCH",
         headers,
-        body: JSON.stringify({ info: { ...(row.info || {}), minOrderFrom: from, minOrderTo: to, maxAllowedMinOrder: to } }),
+        body: JSON.stringify({
+          info: {
+            ...(row.info || {}),
+            minOrderFrom: from,
+            minOrderTo: to,
+            maxAllowedMinOrder: to,
+          },
+        }),
       });
     } else {
       response = await fetch(`${baseUrl}/rest/v1/stocks`, {
@@ -613,12 +826,17 @@ export async function saveSiteSettings(request, env) {
     }
     if (!response.ok) {
       const details = (await response.text()).slice(0, 300);
-      throw new Error(`Could not save settings (${response.status}): ${details}`);
+      throw new Error(
+        `Could not save settings (${response.status}): ${details}`,
+      );
     }
     return json({ minOrderFrom: from, minOrderTo: to });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
     return json({ error: error.message || "Could not save settings" }, 500);
   }
@@ -636,7 +854,10 @@ export async function deleteFailedProductItems(request, env) {
       return json({ error: "Invalid JSON request" }, 400);
     }
     if (!body || !Array.isArray(body.ids) || body.ids.length === 0) {
-      return json({ error: "Select at least one failed product ID to delete" }, 400);
+      return json(
+        { error: "Select at least one failed product ID to delete" },
+        400,
+      );
     }
 
     const uniqueIds = [];
@@ -669,7 +890,9 @@ export async function deleteFailedProductItems(request, env) {
       });
       if (!response.ok) {
         const details = (await response.text()).slice(0, 300);
-        throw new Error(`Could not delete records from stocks (${response.status}): ${details}`);
+        throw new Error(
+          `Could not delete records from stocks (${response.status}): ${details}`,
+        );
       }
     }
 
@@ -680,9 +903,15 @@ export async function deleteFailedProductItems(request, env) {
     });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
-    return json({ error: error.message || "Could not delete failed items" }, 500);
+    return json(
+      { error: error.message || "Could not delete failed items" },
+      500,
+    );
   }
 }
 
@@ -694,28 +923,40 @@ export async function syncCommittedPublishedStocks(env) {
     const publishingRows = rows.filter((r) => {
       const job = r.info?.imageGeneration;
       const rep = r.info?.imageGenerationReplacement;
-      return (job?.status === "publishing" && job?.imageUrl) || (rep?.status === "publishing" && rep?.imageUrl);
+      return (
+        (job?.status === "publishing" && job?.imageUrl) ||
+        (rep?.status === "publishing" && rep?.imageUrl)
+      );
     });
     if (!publishingRows.length) return 0;
 
     let synced = 0;
     for (const row of publishingRows) {
       const info = row.info || {};
-      const jobKey = info.imageGeneration?.status === "publishing" ? "imageGeneration" : "imageGenerationReplacement";
+      const jobKey =
+        info.imageGeneration?.status === "publishing"
+          ? "imageGeneration"
+          : "imageGenerationReplacement";
       const job = info[jobKey] || {};
       const imageUrl = job.imageUrl;
       if (!imageUrl) continue;
 
       try {
-        const checkRes = await fetch(`https://al-warda.egor-grebennykov.workers.dev${imageUrl}`, {
-          method: "HEAD",
-        });
-        const isOk = checkRes.ok && (checkRes.headers.get("content-type") || "").includes("image");
+        const checkRes = await fetch(
+          `https://al-warda.egor-grebennykov.workers.dev${imageUrl}`,
+          {
+            method: "HEAD",
+          },
+        );
+        const isOk =
+          checkRes.ok &&
+          (checkRes.headers.get("content-type") || "").includes("image");
         if (isOk) {
           const updatedInfo = structuredClone(info);
           const updatedJob = structuredClone(job);
           updatedJob.status = "completed";
-          updatedJob.completedAt = updatedJob.completedAt || new Date().toISOString();
+          updatedJob.completedAt =
+            updatedJob.completedAt || new Date().toISOString();
           delete updatedJob.error;
           delete updatedJob.failedAt;
 
@@ -781,28 +1022,41 @@ export async function saveManualProductItem(request, env) {
       // 1. Fetch current row
       const fetchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
       fetchUrl.searchParams.set("id", `eq.${id}`);
-      fetchUrl.searchParams.set("select", "id,name,brand,price,currency,image,info");
+      fetchUrl.searchParams.set(
+        "select",
+        "id,name,brand,price,currency,image,info",
+      );
       const getRes = await fetch(fetchUrl, { headers });
       if (!getRes.ok) {
-        throw new Error(`Failed to load product ${id} from database (${getRes.status})`);
+        throw new Error(
+          `Failed to load product ${id} from database (${getRes.status})`,
+        );
       }
       const rows = await getRes.json();
       existingRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : {};
-      existingInfo = existingRow.info && typeof existingRow.info === "object" ? { ...existingRow.info } : {};
+      existingInfo =
+        existingRow.info && typeof existingRow.info === "object"
+          ? { ...existingRow.info }
+          : {};
     }
 
     // 2. Resolve image
     // Do not accept uploaded or newly supplied original photos on this endpoint.
     // Manual photo upload was removed from the UI; only the already stored
     // product image (rawImage or existingRow.image) may remain on the product.
-    const existingImage = (typeof existingInfo.rawImage === "string" ? existingInfo.rawImage : "") ||
+    const existingImage =
+      (typeof existingInfo.rawImage === "string"
+        ? existingInfo.rawImage
+        : "") ||
       (typeof existingRow.image === "string" ? existingRow.image : "");
 
     // If base64 imageData is sent, it may contain an original photo that must
     // not be stored or used as the product image. Ignore it deliberately.
-    const base64Data = (typeof body.imageData === "string" && body.imageData.startsWith("data:image/"))
-      ? body.imageData
-      : null;
+    const base64Data =
+      typeof body.imageData === "string" &&
+      body.imageData.startsWith("data:image/")
+        ? body.imageData
+        : null;
 
     let finalImageUrl = existingImage;
 
@@ -811,12 +1065,16 @@ export async function saveManualProductItem(request, env) {
     if (body.image && typeof body.image === "string") {
       const trimmedImage = body.image.trim();
       if (trimmedImage !== finalImageUrl) {
-        console.warn(`[productImageQueueAdmin] Ignoring client-supplied image for manual save: ${trimmedImage}`);
+        console.warn(
+          `[productImageQueueAdmin] Ignoring client-supplied image for manual save: ${trimmedImage}`,
+        );
       }
     }
 
     if (base64Data) {
-      console.warn("Ignoring base64 imageData in manual-save request; original photo upload is disabled");
+      console.warn(
+        "Ignoring base64 imageData in manual-save request; original photo upload is disabled",
+      );
     }
 
     if (!finalImageUrl) {
@@ -829,68 +1087,150 @@ export async function saveManualProductItem(request, env) {
       return json({ error: "Product name is required" }, 400);
     }
     const brand = (body.brand || existingRow.brand || "Al-Warda").trim();
-    const price = Number(body.price) > 0 ? Number(body.price) : (Number(existingRow.price) || 29.99);
+    const price =
+      Number(body.price) > 0
+        ? Number(body.price)
+        : Number(existingRow.price) || 29.99;
     const currency = body.currency || existingRow.currency || "EUR";
 
     const topNotesRu = Array.isArray(body.topNotes)
       ? body.topNotes
-      : String(body.topNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+      : String(body.topNotes || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
     const heartNotesRu = Array.isArray(body.heartNotes)
       ? body.heartNotes
-      : String(body.heartNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+      : String(body.heartNotes || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
     const baseNotesRu = Array.isArray(body.baseNotes)
       ? body.baseNotes
-      : String(body.baseNotes || "").split(",").map((s) => s.trim()).filter(Boolean);
+      : String(body.baseNotes || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
 
     const topNotesEn = Array.isArray(body.topNotesEn)
       ? body.topNotesEn
-      : (body.topNotesEn ? String(body.topNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : topNotesRu);
+      : body.topNotesEn
+        ? String(body.topNotesEn)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : topNotesRu;
     const heartNotesEn = Array.isArray(body.heartNotesEn)
       ? body.heartNotesEn
-      : (body.heartNotesEn ? String(body.heartNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : heartNotesRu);
+      : body.heartNotesEn
+        ? String(body.heartNotesEn)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : heartNotesRu;
     const baseNotesEn = Array.isArray(body.baseNotesEn)
       ? body.baseNotesEn
-      : (body.baseNotesEn ? String(body.baseNotesEn).split(",").map((s) => s.trim()).filter(Boolean) : baseNotesRu);
+      : body.baseNotesEn
+        ? String(body.baseNotesEn)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : baseNotesRu;
 
-    const hasNotes = [topNotesRu, heartNotesRu, baseNotesRu, topNotesEn, heartNotesEn, baseNotesEn]
-      .some((notes) => notes.length > 0);
+    const hasNotes = [
+      topNotesRu,
+      heartNotesRu,
+      baseNotesRu,
+      topNotesEn,
+      heartNotesEn,
+      baseNotesEn,
+    ].some((notes) => notes.length > 0);
     const notesSource = hasNotes
-      ? (body.notesSource === "deepseek" ? "deepseek" : "manual")
-      : (existingInfo.notesSource || "manual");
+      ? body.notesSource === "deepseek"
+        ? "deepseek"
+        : "manual"
+      : existingInfo.notesSource || "manual";
 
     const updatedInfo = {
       ...existingInfo,
-      category: body.categoryRu || body.category || existingInfo.category || "Восточные",
-      categorySlug: body.categorySlug || body.category || existingInfo.categorySlug || "oud",
+      category:
+        body.categoryRu ||
+        body.category ||
+        existingInfo.category ||
+        "Восточные",
+      categorySlug:
+        body.categorySlug ||
+        body.category ||
+        existingInfo.categorySlug ||
+        "oud",
       categoryEn: body.categoryEn || existingInfo.categoryEn || "Oriental",
       volume: body.volume || existingInfo.volume || "100 мл / 3.4 FL.OZ.",
-      concentration: body.concentration || existingInfo.concentration || "Eau De Parfum",
+      concentration:
+        body.concentration || existingInfo.concentration || "Eau De Parfum",
       gender: body.gender || body.genderRu || existingInfo.gender || "Унисекс",
-      genderEn: body.genderEn || (body.gender === "Женский" ? "Women" : (body.gender === "Мужской" ? "Men" : "Unisex")),
+      genderEn:
+        body.genderEn ||
+        (body.gender === "Женский"
+          ? "Women"
+          : body.gender === "Мужской"
+            ? "Men"
+            : "Unisex"),
       longevity: body.longevity || existingInfo.longevity || "8–12 часов",
       longevityEn: body.longevityEn || existingInfo.longevityEn || "8–12 hours",
-      sillage: body.sillage || existingInfo.sillage || "Выразительный, шлейфовый",
-      sillageEn: body.sillageEn || existingInfo.sillageEn || "Noticeable, alluring sillage",
-      notesSummary: body.notesSummary || body.notesSummaryRu || existingInfo.notesSummary || (topNotesRu.slice(0, 2).concat(heartNotesRu.slice(0, 1), baseNotesRu.slice(0, 2)).join(" · ")),
-      notesSummaryEn: body.notesSummaryEn || existingInfo.notesSummaryEn || body.notesSummary || (topNotesEn.slice(0, 2).concat(heartNotesEn.slice(0, 1), baseNotesEn.slice(0, 2)).join(" · ")),
+      sillage:
+        body.sillage || existingInfo.sillage || "Выразительный, шлейфовый",
+      sillageEn:
+        body.sillageEn ||
+        existingInfo.sillageEn ||
+        "Noticeable, alluring sillage",
+      notesSummary:
+        body.notesSummary ||
+        body.notesSummaryRu ||
+        existingInfo.notesSummary ||
+        topNotesRu
+          .slice(0, 2)
+          .concat(heartNotesRu.slice(0, 1), baseNotesRu.slice(0, 2))
+          .join(" · "),
+      notesSummaryEn:
+        body.notesSummaryEn ||
+        existingInfo.notesSummaryEn ||
+        body.notesSummary ||
+        topNotesEn
+          .slice(0, 2)
+          .concat(heartNotesEn.slice(0, 1), baseNotesEn.slice(0, 2))
+          .join(" · "),
       notes: hasNotes
         ? {
-          ru: { top: topNotesRu, heart: heartNotesRu, base: baseNotesRu },
-          en: { top: topNotesEn, heart: heartNotesEn, base: baseNotesEn },
-        }
+            ru: { top: topNotesRu, heart: heartNotesRu, base: baseNotesRu },
+            en: { top: topNotesEn, heart: heartNotesEn, base: baseNotesEn },
+          }
         : existingInfo.notes,
-      notesVerified: hasNotes ? true : Boolean(existingInfo.notesVerified && existingInfo.notesSource === "manual"),
+      notesVerified: hasNotes
+        ? true
+        : Boolean(
+            existingInfo.notesVerified && existingInfo.notesSource === "manual",
+          ),
       notesSource,
       notesLookup: hasNotes
         ? {
-          status: "found",
-          source: notesSource,
-          checkedAt: new Date().toISOString(),
-        }
-        : (existingInfo.notesLookup || null),
-      descriptionRu: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
+            status: "found",
+            source: notesSource,
+            checkedAt: new Date().toISOString(),
+          }
+        : existingInfo.notesLookup || null,
+      descriptionRu:
+        body.descriptionRu ||
+        body.description ||
+        existingInfo.descriptionRu ||
+        existingRow.description ||
+        "",
       descriptionEn: body.descriptionEn || existingInfo.descriptionEn || "",
-      description: body.descriptionRu || body.description || existingInfo.descriptionRu || existingRow.description || "",
+      description:
+        body.descriptionRu ||
+        body.description ||
+        existingInfo.descriptionRu ||
+        existingRow.description ||
+        "",
       minOrderQuantity: 1,
       inStock: body.inStock !== false,
       manual: true,
@@ -909,7 +1249,9 @@ export async function saveManualProductItem(request, env) {
     delete updatedInfo.imageGenerationReplacement;
 
     const keepsExistingManualNotes =
-      !hasNotes && existingInfo.notesVerified === true && existingInfo.notesSource === "manual";
+      !hasNotes &&
+      existingInfo.notesVerified === true &&
+      existingInfo.notesSource === "manual";
     if (!hasNotes && !keepsExistingManualNotes) {
       delete updatedInfo.notes;
       delete updatedInfo.notesSummary;
@@ -937,7 +1279,9 @@ export async function saveManualProductItem(request, env) {
 
       if (!insertRes.ok) {
         const errText = (await insertRes.text()).slice(0, 300);
-        throw new Error(`Failed to insert product into database (${insertRes.status}): ${errText}`);
+        throw new Error(
+          `Failed to insert product into database (${insertRes.status}): ${errText}`,
+        );
       }
 
       const insertedRows = await insertRes.json().catch(() => []);
@@ -960,7 +1304,9 @@ export async function saveManualProductItem(request, env) {
 
     if (!patchRes.ok) {
       const errText = (await patchRes.text()).slice(0, 300);
-      throw new Error(`Failed to update product in database (${patchRes.status}): ${errText}`);
+      throw new Error(
+        `Failed to update product in database (${patchRes.status}): ${errText}`,
+      );
     }
 
     const updatedRows = await patchRes.json().catch(() => []);
@@ -971,12 +1317,14 @@ export async function saveManualProductItem(request, env) {
     });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
     return json({ error: error.message || "Could not save product" }, 500);
   }
 }
-
 
 export async function getAllAdminProducts(request, env) {
   try {
@@ -986,7 +1334,10 @@ export async function getAllAdminProducts(request, env) {
     const key = getServiceKey(env);
     const rows = await fetchAllStocks(env, key);
     const products = rows
-      .filter((row) => row && row.id && !String(row.slug || "").includes("site-settings"))
+      .filter(
+        (row) =>
+          row && row.id && !String(row.slug || "").includes("site-settings"),
+      )
       .map((row) => {
         const info = row.info && typeof row.info === "object" ? row.info : {};
         const gen = info.imageGeneration || {};
@@ -1016,7 +1367,10 @@ export async function getAllAdminProducts(request, env) {
     return json({ count: products.length, products });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
     return json({ error: error.message || "Could not load products" }, 500);
   }
@@ -1036,7 +1390,9 @@ export async function deleteAdminProducts(request, env) {
 
     const ids = Array.isArray(body.ids)
       ? body.ids.map(String).filter(Boolean)
-      : (body.id !== undefined && body.id !== null ? [String(body.id)] : []);
+      : body.id !== undefined && body.id !== null
+        ? [String(body.id)]
+        : [];
 
     if (!ids.length) {
       return json({ error: "No product IDs specified to delete" }, 400);
@@ -1056,7 +1412,9 @@ export async function deleteAdminProducts(request, env) {
         headers,
       });
       if (!response.ok) {
-        throw new Error(`Failed to delete products from database (${response.status})`);
+        throw new Error(
+          `Failed to delete products from database (${response.status})`,
+        );
       }
       deletedCount += chunk.length;
     }
@@ -1065,7 +1423,10 @@ export async function deleteAdminProducts(request, env) {
     return json({ ok: true, deletedCount, ids });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
-      return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
     }
     return json({ error: error.message || "Could not delete products" }, 500);
   }

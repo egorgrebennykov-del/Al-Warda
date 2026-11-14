@@ -1,5 +1,12 @@
-import { PERFUMES, PERFUME_CATEGORIES, getPerfumeById as getLocalPerfumeById } from "../src/data/perfumesData.js";
-import { isGeneratedProductImage, hasCompletedGeneratedImage as hasCompletedGeneratedImageImpl } from "./generatedProductImage.js";
+import {
+  PERFUMES,
+  PERFUME_CATEGORIES,
+  getPerfumeById as getLocalPerfumeById,
+} from "../src/data/perfumesData.js";
+import {
+  isGeneratedProductImage,
+  hasCompletedGeneratedImage as hasCompletedGeneratedImageImpl,
+} from "./generatedProductImage.js";
 import QOGITA_MIN_ORDER_OVERRIDES from "../src/data/qogitaMinOrderOverrides.js";
 
 const SUPABASE_URL =
@@ -7,7 +14,8 @@ const SUPABASE_URL =
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 
 const SUPABASE_KEY =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
@@ -44,7 +52,6 @@ export function getPerfumeUrl(perfume) {
   const id = perfume.id || "1";
   return `/perfume/${slug}-${id}`;
 }
-
 
 const SPECIFIC_PERFUME_PROFILES = [
   {
@@ -101,7 +108,13 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Свежие и акватические",
     categoryEn: "Fresh & Aquatic",
     ru: {
-      top: ["Лимон", "Грейпфрут", "Свежая мята", "Розовый перец", "Черная смородина"],
+      top: [
+        "Лимон",
+        "Грейпфрут",
+        "Свежая мята",
+        "Розовый перец",
+        "Черная смородина",
+      ],
       heart: ["Зеленое яблоко", "Дымный ладан", "Кедр", "Морской бриз"],
       base: ["Пачули", "Имбирь", "Сандал", "Белый мускус"],
     },
@@ -135,7 +148,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Шафран", "Бергамот", "Персик", "Мандарин"],
       heart: ["Золотая амбра", "Карамель", "Груша", "Древесные ноты"],
-      base: ["Мадагаскарская ваниль", "Белый мускус", "Сандал", "Благородный уд"],
+      base: [
+        "Мадагаскарская ваниль",
+        "Белый мускус",
+        "Сандал",
+        "Благородный уд",
+      ],
     },
     en: {
       top: ["Saffron", "Bergamot", "Peach", "Mandarin"],
@@ -151,12 +169,22 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Фиалка", "Мускатный орех", "Персик", "Кумин"],
       heart: ["Ирис", "Пачули", "Дамасская роза"],
-      base: ["Мадагаскарская ваниль", "Золотая амбра", "Благородный уд", "Бобы тонка"],
+      base: [
+        "Мадагаскарская ваниль",
+        "Золотая амбра",
+        "Благородный уд",
+        "Бобы тонка",
+      ],
     },
     en: {
       top: ["Violet", "Nutmeg", "Peach", "Cumin"],
       heart: ["Iris", "Patchouli", "Damask Rose"],
-      base: ["Madagascar Vanilla", "Golden Amber", "Precious Oud", "Tonka Bean"],
+      base: [
+        "Madagascar Vanilla",
+        "Golden Amber",
+        "Precious Oud",
+        "Tonka Bean",
+      ],
     },
   },
   {
@@ -188,7 +216,13 @@ const SPECIFIC_PERFUME_PROFILES = [
     en: {
       top: ["Green Apple", "Cardamom", "Black Pepper", "Nutmeg"],
       heart: ["French Lavender", "Geranium", "Patchouli", "Clove"],
-      base: ["Cedarwood", "Leather Accord", "Sandalwood", "Golden Amber", "Vetiver"],
+      base: [
+        "Cedarwood",
+        "Leather Accord",
+        "Sandalwood",
+        "Golden Amber",
+        "Vetiver",
+      ],
     },
   },
   {
@@ -261,7 +295,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Цитрусовые и свежие",
     categoryEn: "Citrus & Fresh",
     ru: {
-      top: ["Сицилийский бергамот", "Грейпфрут", "Мандарин", "Черная смородина"],
+      top: [
+        "Сицилийский бергамот",
+        "Грейпфрут",
+        "Мандарин",
+        "Черная смородина",
+      ],
       heart: ["Французская лаванда", "Фиалка", "Флердоранж", "Сандал"],
       base: ["Белый мускус", "Дубовый мох", "Золотая амбра", "Ветивер"],
     },
@@ -332,7 +371,13 @@ const SPECIFIC_PERFUME_PROFILES = [
     en: {
       top: ["Smoky Frankincense", "Pink Pepper", "Cinnamon", "Bergamot"],
       heart: ["Patchouli", "Iris", "French Lavender"],
-      base: ["Patchouli", "Leather Accord", "Vetiver", "Sandalwood", "Golden Amber"],
+      base: [
+        "Patchouli",
+        "Leather Accord",
+        "Vetiver",
+        "Sandalwood",
+        "Golden Amber",
+      ],
     },
   },
   {
@@ -389,7 +434,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Цитрусовые и фужерные",
     categoryEn: "Citrus & Fougère",
     ru: {
-      top: ["Черная смородина", "Сицилийский бергамот", "Зеленое яблоко", "Грейпфрут"],
+      top: [
+        "Черная смородина",
+        "Сицилийский бергамот",
+        "Зеленое яблоко",
+        "Грейпфрут",
+      ],
       heart: ["Дубовый мох", "Пачули", "Французская лаванда", "Кардамон"],
       base: ["Серая амбра", "Шафран", "Белый мускус", "Ветивер"],
     },
@@ -405,7 +455,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Цитрусовые и свежие",
     categoryEn: "Citrus & Fresh",
     ru: {
-      top: ["Зеленое яблоко", "Сицилийский бергамот", "Черная смородина", "Грейпфрут"],
+      top: [
+        "Зеленое яблоко",
+        "Сицилийский бергамот",
+        "Черная смородина",
+        "Грейпфрут",
+      ],
       heart: ["Дамасская роза", "Береза", "Жасмин", "Пачули"],
       base: ["Дубовый мох", "Белый мускус", "Серая амбра", "Ваниль"],
     },
@@ -439,12 +494,24 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Груша", "Мандарин", "Черная смородина"],
       heart: ["Флердоранж", "Жасмин", "Карамель", "Персик"],
-      base: ["Мадагаскарская ваниль", "Миндаль", "Пачули", "Сандал", "Бобы тонка"],
+      base: [
+        "Мадагаскарская ваниль",
+        "Миндаль",
+        "Пачули",
+        "Сандал",
+        "Бобы тонка",
+      ],
     },
     en: {
       top: ["Pear", "Mandarin", "Blackcurrant"],
       heart: ["Orange Blossom", "Jasmine", "Caramel", "Peach"],
-      base: ["Madagascar Vanilla", "Almond", "Patchouli", "Sandalwood", "Tonka Bean"],
+      base: [
+        "Madagascar Vanilla",
+        "Almond",
+        "Patchouli",
+        "Sandalwood",
+        "Tonka Bean",
+      ],
     },
   },
   {
@@ -471,7 +538,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Шафран", "Персик", "Груша"],
       heart: ["Благородный уд", "Пачули", "Ирис", "Карамель"],
-      base: ["Мадагаскарская ваниль", "Золотая амбра", "Белый мускус", "Сандал"],
+      base: [
+        "Мадагаскарская ваниль",
+        "Золотая амбра",
+        "Белый мускус",
+        "Сандал",
+      ],
     },
     en: {
       top: ["Saffron", "Peach", "Pear"],
@@ -501,7 +573,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Фужерные и свежие",
     categoryEn: "Fougère & Fresh",
     ru: {
-      top: ["Розовый перец", "Французская лаванда", "Свежая мята", "Мускатный орех"],
+      top: [
+        "Розовый перец",
+        "Французская лаванда",
+        "Свежая мята",
+        "Мускатный орех",
+      ],
       heart: ["Сицилийский бергамот", "Грейпфрут", "Кедр"],
       base: ["Серая амбра", "Ветивер", "Белый мускус", "Пачули"],
     },
@@ -523,7 +600,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     },
     en: {
       top: ["Cypress", "Orange Blossom", "Cardamom", "Bergamot"],
-      heart: ["Precious Oud", "Smoky Frankincense", "Leather Accord", "Patchouli"],
+      heart: [
+        "Precious Oud",
+        "Smoky Frankincense",
+        "Leather Accord",
+        "Patchouli",
+      ],
       base: ["Tonka Bean", "Grey Amber", "Vetiver", "White Musk"],
     },
   },
@@ -565,7 +647,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     categoryRu: "Фужерные и свежие",
     categoryEn: "Fougère & Fresh",
     ru: {
-      top: ["Сицилийский бергамот", "Зеленое яблоко", "Имбирь", "Французская лаванда"],
+      top: [
+        "Сицилийский бергамот",
+        "Зеленое яблоко",
+        "Имбирь",
+        "Французская лаванда",
+      ],
       heart: ["Шалфей", "Свежая мята", "Герань", "Дубовый мох"],
       base: ["Ветивер", "Кедр", "Бобы тонка", "Золотая амбра"],
     },
@@ -599,7 +686,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Французская лаванда", "Сицилийский бергамот", "Мандарин"],
       heart: ["Флердоранж", "Жасмин", "Фиалка", "Ирис"],
-      base: ["Мадагаскарская ваниль", "Белый мускус", "Бобы тонка", "Серая амбра"],
+      base: [
+        "Мадагаскарская ваниль",
+        "Белый мускус",
+        "Бобы тонка",
+        "Серая амбра",
+      ],
     },
     en: {
       top: ["French Lavender", "Sicilian Bergamot", "Mandarin"],
@@ -679,7 +771,12 @@ const SPECIFIC_PERFUME_PROFILES = [
     ru: {
       top: ["Кардамон", "Бергамот", "Фиалка"],
       heart: ["Сандал", "Ирис", "Кедр", "Дамасская роза"],
-      base: ["Белый мускус", "Сандаловое дерево", "Золотая амбра", "Кожаный аккорд"],
+      base: [
+        "Белый мускус",
+        "Сандаловое дерево",
+        "Золотая амбра",
+        "Кожаный аккорд",
+      ],
     },
     en: {
       top: ["Cardamom", "Bergamot", "Violet"],
@@ -914,8 +1011,15 @@ const SPECIFIC_PERFUME_PROFILES = [
 ];
 
 export function inferPerfumeProfile(perfume) {
-  const name = ((perfume && (perfume.name || perfume.title)) || "").toLowerCase();
-  const cat = ((perfume && (perfume.category || perfume.categoryRu || perfume.info?.category)) || "").toLowerCase();
+  const name = (
+    (perfume && (perfume.name || perfume.title)) ||
+    ""
+  ).toLowerCase();
+  const cat = (
+    (perfume &&
+      (perfume.category || perfume.categoryRu || perfume.info?.category)) ||
+    ""
+  ).toLowerCase();
 
   for (const profile of SPECIFIC_PERFUME_PROFILES) {
     if (profile.match.some((kw) => name.includes(kw))) {
@@ -941,7 +1045,14 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("vanilla") || name.includes("khamrah") || name.includes("yara") || name.includes("caramel") || cat === "gourmand" || cat.includes("гурман")) {
+  if (
+    name.includes("vanilla") ||
+    name.includes("khamrah") ||
+    name.includes("yara") ||
+    name.includes("caramel") ||
+    cat === "gourmand" ||
+    cat.includes("гурман")
+  ) {
     return {
       category: "gourmand",
       categoryRu: "Гурманские",
@@ -959,7 +1070,15 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("oud") || name.includes("incense") || name.includes("wood") || name.includes("sandal") || name.includes("leather") || cat === "oud" || cat.includes("древес")) {
+  if (
+    name.includes("oud") ||
+    name.includes("incense") ||
+    name.includes("wood") ||
+    name.includes("sandal") ||
+    name.includes("leather") ||
+    cat === "oud" ||
+    cat.includes("древес")
+  ) {
     return {
       category: "oud",
       categoryRu: "Уд и дым",
@@ -977,7 +1096,15 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("rose") || name.includes("ward") || name.includes("floral") || name.includes("bloom") || name.includes("pink") || cat === "floral" || cat.includes("цвет")) {
+  if (
+    name.includes("rose") ||
+    name.includes("ward") ||
+    name.includes("floral") ||
+    name.includes("bloom") ||
+    name.includes("pink") ||
+    cat === "floral" ||
+    cat.includes("цвет")
+  ) {
     return {
       category: "floral",
       categoryRu: "Цветочные",
@@ -995,13 +1122,27 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("blue") || name.includes("aqua") || name.includes("dive") || name.includes("ocean") || cat === "fresh" || cat === "aquatic" || cat.includes("морск") || cat.includes("свеж")) {
+  if (
+    name.includes("blue") ||
+    name.includes("aqua") ||
+    name.includes("dive") ||
+    name.includes("ocean") ||
+    cat === "fresh" ||
+    cat === "aquatic" ||
+    cat.includes("морск") ||
+    cat.includes("свеж")
+  ) {
     return {
       category: "fresh",
       categoryRu: "Свежие",
       categoryEn: "Fresh",
       ru: {
-        top: ["Морской бриз", "Сицилийский бергамот", "Зеленое яблоко", "Грейпфрут"],
+        top: [
+          "Морской бриз",
+          "Сицилийский бергамот",
+          "Зеленое яблоко",
+          "Грейпфрут",
+        ],
         heart: ["Свежая мята", "Французская лаванда", "Шалфей"],
         base: ["Кедр", "Серая амбра", "Белый мускус", "Ветивер"],
       },
@@ -1013,7 +1154,14 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("green") || name.includes("khuzama") || name.includes("lavender") || name.includes("homme") || cat === "fougere" || cat.includes("фужер")) {
+  if (
+    name.includes("green") ||
+    name.includes("khuzama") ||
+    name.includes("lavender") ||
+    name.includes("homme") ||
+    cat === "fougere" ||
+    cat.includes("фужер")
+  ) {
     return {
       category: "fougere",
       categoryRu: "Фужерные",
@@ -1031,13 +1179,24 @@ export function inferPerfumeProfile(perfume) {
     };
   }
 
-  if (name.includes("citrus") || name.includes("silver") || name.includes("white") || cat === "citrus-fresh" || cat.includes("цитрус")) {
+  if (
+    name.includes("citrus") ||
+    name.includes("silver") ||
+    name.includes("white") ||
+    cat === "citrus-fresh" ||
+    cat.includes("цитрус")
+  ) {
     return {
       category: "citrus-fresh",
       categoryRu: "Цитрусовые",
       categoryEn: "Citrus",
       ru: {
-        top: ["Сицилийский бергамот", "Грейпфрут", "Мандарин", "Зеленое яблоко"],
+        top: [
+          "Сицилийский бергамот",
+          "Грейпфрут",
+          "Мандарин",
+          "Зеленое яблоко",
+        ],
         heart: ["Флердоранж", "Имбирь", "Кардамон"],
         base: ["Ветивер", "Кедр", "Белый мускус", "Серая амбра"],
       },
@@ -1196,21 +1355,25 @@ export function generateRichPerfumeDescriptions({
     genderRu === "Женский"
       ? "Идеально подчёркивает женственность, утончённость и притягательность как в дневном образе, так и для особого вечера."
       : genderRu === "Мужской"
-      ? "Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке."
-      : "Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.";
+        ? "Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке."
+        : "Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.";
 
   const audienceEn =
     genderEn === "Women"
       ? "Effortlessly highlights femininity, grace, and allure for both daytime elegance and special evening occasions."
       : genderEn === "Men"
-      ? "Impeccably complements a masculine presence, accentuating charisma, poise, and confidence in any setting."
-      : "Its versatile unisex character adapts beautifully to both men and women, evolving uniquely on the skin.";
+        ? "Impeccably complements a masculine presence, accentuating charisma, poise, and confidence in any setting."
+        : "Its versatile unisex character adapts beautifully to both men and women, evolving uniquely on the skin.";
 
-  const brandIntroRu = cleanName.toLowerCase().includes(cleanBrand.toLowerCase())
+  const brandIntroRu = cleanName
+    .toLowerCase()
+    .includes(cleanBrand.toLowerCase())
     ? `${cleanName} от парфюмерного дома ${cleanBrand}`
     : `${cleanBrand} ${cleanName}`;
 
-  const brandIntroEn = cleanName.toLowerCase().includes(cleanBrand.toLowerCase())
+  const brandIntroEn = cleanName
+    .toLowerCase()
+    .includes(cleanBrand.toLowerCase())
     ? `${cleanName} by the house of ${cleanBrand}`
     : `${cleanBrand} ${cleanName}`;
 
@@ -1218,30 +1381,46 @@ export function generateRichPerfumeDescriptions({
   // keep the text about the fragrance character only.
   const ruClauses = [];
   if (topStrRu) {
-    ruClauses.push(`С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются ${topStrRu}.`);
+    ruClauses.push(
+      `С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются ${topStrRu}.`,
+    );
   }
   if (heartStrRu) {
-    ruClauses.push(`Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ${heartStrRu}, придающих звучанию глубину и объём.`);
+    ruClauses.push(
+      `Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ${heartStrRu}, придающих звучанию глубину и объём.`,
+    );
   }
   if (baseStrRu) {
-    ruClauses.push(`В финале остаётся благородный, долгоиграющий шлейф (стойкость ${longevityRu}), сотканный из оттенков: ${baseStrRu}.`);
+    ruClauses.push(
+      `В финале остаётся благородный, долгоиграющий шлейф (стойкость ${longevityRu}), сотканный из оттенков: ${baseStrRu}.`,
+    );
   }
   if (!ruClauses.length) {
-    ruClauses.push(`Композиция раскрывается постепенно и оставляет благородный, долгоиграющий шлейф (стойкость ${longevityRu}).`);
+    ruClauses.push(
+      `Композиция раскрывается постепенно и оставляет благородный, долгоиграющий шлейф (стойкость ${longevityRu}).`,
+    );
   }
 
   const enClauses = [];
   if (topStrEn) {
-    enClauses.push(`From the very first spritz, the composition captivates with a vibrant opening of ${topStrEn}.`);
+    enClauses.push(
+      `From the very first spritz, the composition captivates with a vibrant opening of ${topStrEn}.`,
+    );
   }
   if (heartStrEn) {
-    enClauses.push(`As it warms on the skin, the fragrance reveals an alluring heart of ${heartStrEn}, lending remarkable depth and dimension.`);
+    enClauses.push(
+      `As it warms on the skin, the fragrance reveals an alluring heart of ${heartStrEn}, lending remarkable depth and dimension.`,
+    );
   }
   if (baseStrEn) {
-    enClauses.push(`It settles into a velvety, long-lasting sillage (longevity ${longevityEn}) crafted from ${baseStrEn}.`);
+    enClauses.push(
+      `It settles into a velvety, long-lasting sillage (longevity ${longevityEn}) crafted from ${baseStrEn}.`,
+    );
   }
   if (!enClauses.length) {
-    enClauses.push(`The composition unfolds gradually and leaves a noble, long-lasting sillage (longevity ${longevityEn}).`);
+    enClauses.push(
+      `The composition unfolds gradually and leaves a noble, long-lasting sillage (longevity ${longevityEn}).`,
+    );
   }
 
   const descriptionRu =
@@ -1278,37 +1457,142 @@ export function inferSetItems(perfumeName = "", brand = "") {
 
   if (text.includes("amber oud")) {
     return [
-      { name: "Amber Oud Gold Edition", volume: "10 мл", descRu: "Сладкий, искрящийся гурманско-фруктовый шедевр: бергамот, спелая дыня, ананас, золотая амбра и ваниль.", descEn: "Sweet, sparkling gourmand-fruity icon: bergamot, ripe melon, pineapple, golden amber, and vanilla." },
-      { name: "Amber Oud Rouge Edition", volume: "10 мл", descRu: "Благородный древесно-пряный шлейф: шафран, жасмин, виргинский кедр и серая амбра.", descEn: "Opulent woody-spicy trail: saffron, jasmine, cedarwood, and ambergris." },
-      { name: "Amber Oud Carbon Edition", volume: "10 мл", descRu: "Освежающий древесно-фужерный аромат: калабрийский бергамот, лаванда, герань, ветивер и пачули.", descEn: "Invigorating woody-fougere: bergamot, lavender, geranium, vetiver, and patchouli." },
-      { name: "Amber Oud White Edition", volume: "10 мл", descRu: "Изысканный белоцветочный шипр: бергамот, лепестки розы, жасмин и чистый белый мускус.", descEn: "Sophisticated white floral chypre: bergamot, rose petals, jasmine, and white musk." }
+      {
+        name: "Amber Oud Gold Edition",
+        volume: "10 мл",
+        descRu:
+          "Сладкий, искрящийся гурманско-фруктовый шедевр: бергамот, спелая дыня, ананас, золотая амбра и ваниль.",
+        descEn:
+          "Sweet, sparkling gourmand-fruity icon: bergamot, ripe melon, pineapple, golden amber, and vanilla.",
+      },
+      {
+        name: "Amber Oud Rouge Edition",
+        volume: "10 мл",
+        descRu:
+          "Благородный древесно-пряный шлейф: шафран, жасмин, виргинский кедр и серая амбра.",
+        descEn:
+          "Opulent woody-spicy trail: saffron, jasmine, cedarwood, and ambergris.",
+      },
+      {
+        name: "Amber Oud Carbon Edition",
+        volume: "10 мл",
+        descRu:
+          "Освежающий древесно-фужерный аромат: калабрийский бергамот, лаванда, герань, ветивер и пачули.",
+        descEn:
+          "Invigorating woody-fougere: bergamot, lavender, geranium, vetiver, and patchouli.",
+      },
+      {
+        name: "Amber Oud White Edition",
+        volume: "10 мл",
+        descRu:
+          "Изысканный белоцветочный шипр: бергамот, лепестки розы, жасмин и чистый белый мускус.",
+        descEn:
+          "Sophisticated white floral chypre: bergamot, rose petals, jasmine, and white musk.",
+      },
     ];
   }
 
   if (text.includes("yara")) {
     const is25 = text.includes("25ml") || text.includes("25 ml");
     return [
-      { name: "Yara Eau de Parfum (Pink)", volume: is25 ? "25 мл" : "5 мл", descRu: "Знаменитый пудрово-гурманский хит: гелиотроп, орхидея, маршмеллоу, тропические фрукты и ваниль.", descEn: "Iconic powdery-gourmand: heliotrope, orchid, tropical fruits, marshmallow, and vanilla." },
-      { name: "Yara Tous (Orange)", volume: is25 ? "25 мл" : "5 мл", descRu: "Солнечный тропический коктейль: сочное спелое манго, маракуйя, кокос и жасмин.", descEn: "Sunny tropical blend: ripe mango, passionfruit, coconut, and jasmine." },
-      { name: "Yara Moi (White)", volume: is25 ? "25 мл" : "5 мл", descRu: "Элегантный сливочно-карамельный аромат: жасмин, персик, золотая карамель и сандал.", descEn: "Elegant creamy-caramel scent: jasmine, peach, golden caramel, and sandalwood." },
-      { name: "Yara Candy", volume: is25 ? "25 мл" : "5 мл", descRu: "Игривая ягодно-леденцовая новинка: засахаренная черная смородина, малина, гардения и ваниль.", descEn: "Playful berry-candy novelty: candied blackcurrant, raspberry, gardenia, and vanilla." }
+      {
+        name: "Yara Eau de Parfum (Pink)",
+        volume: is25 ? "25 мл" : "5 мл",
+        descRu:
+          "Знаменитый пудрово-гурманский хит: гелиотроп, орхидея, маршмеллоу, тропические фрукты и ваниль.",
+        descEn:
+          "Iconic powdery-gourmand: heliotrope, orchid, tropical fruits, marshmallow, and vanilla.",
+      },
+      {
+        name: "Yara Tous (Orange)",
+        volume: is25 ? "25 мл" : "5 мл",
+        descRu:
+          "Солнечный тропический коктейль: сочное спелое манго, маракуйя, кокос и жасмин.",
+        descEn:
+          "Sunny tropical blend: ripe mango, passionfruit, coconut, and jasmine.",
+      },
+      {
+        name: "Yara Moi (White)",
+        volume: is25 ? "25 мл" : "5 мл",
+        descRu:
+          "Элегантный сливочно-карамельный аромат: жасмин, персик, золотая карамель и сандал.",
+        descEn:
+          "Elegant creamy-caramel scent: jasmine, peach, golden caramel, and sandalwood.",
+      },
+      {
+        name: "Yara Candy",
+        volume: is25 ? "25 мл" : "5 мл",
+        descRu:
+          "Игривая ягодно-леденцовая новинка: засахаренная черная смородина, малина, гардения и ваниль.",
+        descEn:
+          "Playful berry-candy novelty: candied blackcurrant, raspberry, gardenia, and vanilla.",
+      },
     ];
   }
 
   if (text.includes("asad")) {
     return [
-      { name: "Asad Eau de Parfum (Black)", volume: "25 мл", descRu: "Пряный мужественный бестселлер: черный перец, ананас, табак, кофе, пачули и сухая амбра.", descEn: "Spicy masculine bestseller: black pepper, pineapple, tobacco, coffee, and dry amber." },
-      { name: "Asad Zanzibar", volume: "25 мл", descRu: "Экзотический морской аромат: черный перец, кокосовая вода, ирис, морская соль и ваниль.", descEn: "Exotic marine scent: black pepper, coconut water, iris, sea salt, and vanilla." }
+      {
+        name: "Asad Eau de Parfum (Black)",
+        volume: "25 мл",
+        descRu:
+          "Пряный мужественный бестселлер: черный перец, ананас, табак, кофе, пачули и сухая амбра.",
+        descEn:
+          "Spicy masculine bestseller: black pepper, pineapple, tobacco, coffee, and dry amber.",
+      },
+      {
+        name: "Asad Zanzibar",
+        volume: "25 мл",
+        descRu:
+          "Экзотический морской аромат: черный перец, кокосовая вода, ирис, морская соль и ваниль.",
+        descEn:
+          "Exotic marine scent: black pepper, coconut water, iris, sea salt, and vanilla.",
+      },
     ];
   }
 
   if (text.includes("supremacy")) {
     return [
-      { name: "Supremacy Silver", volume: "2 мл", descRu: "Свежий цитрусово-древесный аромат в стиле Aventus: ананас, черная смородина, береза и дубовый мох.", descEn: "Fresh citrus-woody legend: pineapple, blackcurrant, birch, and oakmoss." },
-      { name: "Supremacy Not Only Intense", volume: "2 мл", descRu: "Глубокий фруктово-кожаный экстракт: бергамот, яблоко, лаванда, дубовый мох и амбра.", descEn: "Deep fruity-leather extrait: bergamot, apple, lavender, oakmoss, and amber." },
-      { name: "Supremacy in Oud", volume: "2 мл", descRu: "Благородный пряный уд: шафран, мускатный орех, лаванда, благородный уд и пачули.", descEn: "Noble spicy oud: saffron, nutmeg, lavender, precious oud, and patchouli." },
-      { name: "Supremacy Incense", volume: "2 мл", descRu: "Мистический дымный ладан: бергамот, орегано, лабданум, амбра и кожа.", descEn: "Mystic smoky incense: bergamot, oregano, labdanum, amber, and leather." },
-      { name: "Supremacy Noir", volume: "2 мл", descRu: "Загадочный вечерний аромат: бергамот, фиалка, еловая хвоя, кожа и пачули.", descEn: "Mysterious nocturnal scent: bergamot, violet, spruce, leather, and patchouli." }
+      {
+        name: "Supremacy Silver",
+        volume: "2 мл",
+        descRu:
+          "Свежий цитрусово-древесный аромат в стиле Aventus: ананас, черная смородина, береза и дубовый мох.",
+        descEn:
+          "Fresh citrus-woody legend: pineapple, blackcurrant, birch, and oakmoss.",
+      },
+      {
+        name: "Supremacy Not Only Intense",
+        volume: "2 мл",
+        descRu:
+          "Глубокий фруктово-кожаный экстракт: бергамот, яблоко, лаванда, дубовый мох и амбра.",
+        descEn:
+          "Deep fruity-leather extrait: bergamot, apple, lavender, oakmoss, and amber.",
+      },
+      {
+        name: "Supremacy in Oud",
+        volume: "2 мл",
+        descRu:
+          "Благородный пряный уд: шафран, мускатный орех, лаванда, благородный уд и пачули.",
+        descEn:
+          "Noble spicy oud: saffron, nutmeg, lavender, precious oud, and patchouli.",
+      },
+      {
+        name: "Supremacy Incense",
+        volume: "2 мл",
+        descRu:
+          "Мистический дымный ладан: бергамот, орегано, лабданум, амбра и кожа.",
+        descEn:
+          "Mystic smoky incense: bergamot, oregano, labdanum, amber, and leather.",
+      },
+      {
+        name: "Supremacy Noir",
+        volume: "2 мл",
+        descRu:
+          "Загадочный вечерний аромат: бергамот, фиалка, еловая хвоя, кожа и пачули.",
+        descEn:
+          "Mysterious nocturnal scent: bergamot, violet, spruce, leather, and patchouli.",
+      },
     ];
   }
 
@@ -1324,7 +1608,9 @@ const STANDARD_ML_SIZES = [
 // They must never be shown as a real bottle size.
 export function isPlaceholderVolume(volume) {
   if (!volume) return true;
-  return /^\s*100\s*(?:ml|мл)\s*(?:EDP|\/\s*3[.,]4\s*FL\.?\s*OZ\.?)\s*$/i.test(String(volume));
+  return /^\s*100\s*(?:ml|мл)\s*(?:EDP|\/\s*3[.,]4\s*FL\.?\s*OZ\.?)\s*$/i.test(
+    String(volume),
+  );
 }
 
 function normalizeOunces(rawValue) {
@@ -1359,7 +1645,10 @@ function formatVolumeNumber(num) {
 // Fixes the awkward legacy phrase stored in older descriptions.
 export function fixDescriptionWording(text) {
   if (!text || typeof text !== "string") return text;
-  return text.replace(/аромат\s+с\s+Ближнего\s+Востока/gi, "аромат Ближнего Востока");
+  return text.replace(
+    /аромат\s+с\s+Ближнего\s+Востока/gi,
+    "аромат Ближнего Востока",
+  );
 }
 
 /**
@@ -1370,24 +1659,33 @@ export function fixDescriptionWording(text) {
 export function parseVolumeFromText(text) {
   if (!text || typeof text !== "string") return null;
 
-  const multMatch = text.match(/(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)(?![a-zа-я])/i);
+  const multMatch = text.match(
+    /(\d+)\s*[xX×*]\s*(\d+(?:[.,]\d+)?)\s*(?:ml|мл)(?![a-zа-я])/i,
+  );
   if (multMatch) {
     return `${multMatch[1]} × ${multMatch[2].replace(",", ".")} мл`;
   }
 
-  const mlMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:ml|мл|milliliters?|millilitres?)(?![a-zа-я])/i);
+  const mlMatch = text.match(
+    /(\d+(?:[.,]\d+)?)\s*(?:ml|мл|milliliters?|millilitres?)(?![a-zа-я])/i,
+  );
   if (mlMatch) {
     const num = parseFloat(mlMatch[1].replace(",", "."));
-    if (num > 0) return `${formatVolumeNumber(num)} мл / ${(num * 0.033814).toFixed(1)} FL.OZ.`;
+    if (num > 0)
+      return `${formatVolumeNumber(num)} мл / ${(num * 0.033814).toFixed(1)} FL.OZ.`;
   }
 
-  const ozMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)(?![a-zа-я])/i);
+  const ozMatch = text.match(
+    /(\d+(?:[.,]\d+)?)\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)(?![a-zа-я])/i,
+  );
   if (ozMatch) {
     const oz = normalizeOunces(ozMatch[1]);
     if (oz) return `${ouncesToMl(oz)} мл / ${formatVolumeNumber(oz)} FL.OZ.`;
   }
 
-  const gramMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:g|gr|gm|grams?|г)(?![a-zа-я])/i);
+  const gramMatch = text.match(
+    /(\d+(?:[.,]\d+)?)\s*(?:g|gr|gm|grams?|г)(?![a-zа-я])/i,
+  );
   if (gramMatch) {
     const num = parseFloat(gramMatch[1].replace(",", "."));
     if (num > 0 && num <= 500) return `${formatVolumeNumber(num)} г`;
@@ -1447,7 +1745,10 @@ export function stripVolumeFromName(name, preserveSetMultiplier = false) {
   let s = name;
 
   // 1. Remove composite/dual volume mentions like "100ml / 3.4 FL.OZ." or "(100 ml / 3.4 fl oz)"
-  s = s.replace(/\(?\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\s*\/\s*\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|oz\.?)\)?/gi, " ");
+  s = s.replace(
+    /\(?\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\s*\/\s*\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|oz\.?)\)?/gi,
+    " ",
+  );
 
   // 2. Remove multi-piece set volume like "4x10ml", "4 x 10 ml", "5x2ml", "4x25ml", "3*25ml" (unless preserving set multiplier)
   if (!preserveSetMultiplier) {
@@ -1455,13 +1756,22 @@ export function stripVolumeFromName(name, preserveSetMultiplier = false) {
   }
 
   // 3. Remove "size 100 ml" or "size: 100ml"
-  s = s.replace(/\bsize[:\s]+\d+(?:[.,]\d+)?\s*(?:ml|мл|oz|fl\.?\s*oz\.?|ounce)\b/gi, " ");
+  s = s.replace(
+    /\bsize[:\s]+\d+(?:[.,]\d+)?\s*(?:ml|мл|oz|fl\.?\s*oz\.?|ounce)\b/gi,
+    " ",
+  );
 
   // 4. Remove standard ml: 100ml, 100 ml, 100мл, 100 мл, 1.5ml, 150ml
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:ml|мл|milliliters?|millilitres?|миллилитр(?:ов|а)?)\b/gi, " ");
+  s = s.replace(
+    /\b\d+(?:[.,]\d+)?\s*(?:ml|мл|milliliters?|millilitres?|миллилитр(?:ов|а)?)\b/gi,
+    " ",
+  );
 
   // 5. Remove ounce/fl oz: 3.4 oz, 3.4 fl oz, 3.4 fl. oz., 34 oz, 3.4 ounce, 3.4 ounces, 0.67 fl oz, 2.5 oz, 25oz
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)\b/gi, " ");
+  s = s.replace(
+    /\b\d+(?:[.,]\d+)?\s*(?:fl\.?\s*oz\.?|fluid\s*ounces?|oz\.?|ounces?)\b/gi,
+    " ",
+  );
 
   // 6. Clean dangling parentheses like "()" or "( )" or "[]"
   s = s.replace(/\(\s*\)/g, " ").replace(/\[\s*\]/g, " ");
@@ -1474,7 +1784,10 @@ export function stripVolumeFromName(name, preserveSetMultiplier = false) {
   s = s.replace(/\s+/g, " ").trim();
 
   // 9. Remove trailing or leading punctuation leftovers e.g. "Perfume -", "- Perfume", "Perfume,"
-  s = s.replace(/^[-–—,/:;|]+\s*/, "").replace(/\s*[-–—,/:;|]+$/, "").trim();
+  s = s
+    .replace(/^[-–—,/:;|]+\s*/, "")
+    .replace(/\s*[-–—,/:;|]+$/, "")
+    .trim();
 
   return s;
 }
@@ -1490,7 +1803,9 @@ export function ensurePerfumeEnrichment(p) {
   const profile = inferPerfumeProfile(p);
   const info = p.info && typeof p.info === "object" ? p.info : {};
   const verifiedNotes =
-    info.notesVerified === true && info.notes && typeof info.notes === "object" ? info.notes : null;
+    info.notesVerified === true && info.notes && typeof info.notes === "object"
+      ? info.notes
+      : null;
 
   const pickNotes = (...values) => {
     for (const value of values) {
@@ -1522,41 +1837,85 @@ export function ensurePerfumeEnrichment(p) {
     notesTrusted ? p.baseNotesRu : null,
     notesTrusted ? p.baseNotes : null,
   );
-  const topEn = pickNotes(verifiedNotes?.en?.top, notesTrusted ? p.topNotesEn : null, topRu);
-  const heartEn = pickNotes(verifiedNotes?.en?.heart, notesTrusted ? p.heartNotesEn : null, heartRu);
-  const baseEn = pickNotes(verifiedNotes?.en?.base, notesTrusted ? p.baseNotesEn : null, baseRu);
+  const topEn = pickNotes(
+    verifiedNotes?.en?.top,
+    notesTrusted ? p.topNotesEn : null,
+    topRu,
+  );
+  const heartEn = pickNotes(
+    verifiedNotes?.en?.heart,
+    notesTrusted ? p.heartNotesEn : null,
+    heartRu,
+  );
+  const baseEn = pickNotes(
+    verifiedNotes?.en?.base,
+    notesTrusted ? p.baseNotesEn : null,
+    baseRu,
+  );
 
-  const category = isSet ? "sets" : ((!p.category || p.category === "spicy") ? profile.category : p.category);
-  const categoryRu = isSet ? "Подарочные наборы и сеты" : ((!p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные")
-    ? profile.categoryRu
-    : p.categoryRu);
-  const categoryEn = isSet ? "Discovery & Gift Sets" : ((!p.categoryEn || p.categoryEn === "Oriental")
-    ? profile.categoryEn
-    : p.categoryEn);
+  const category = isSet
+    ? "sets"
+    : !p.category || p.category === "spicy"
+      ? profile.category
+      : p.category;
+  const categoryRu = isSet
+    ? "Подарочные наборы и сеты"
+    : !p.categoryRu || p.categoryRu === "Восточные" || p.categoryRu === "Пряные"
+      ? profile.categoryRu
+      : p.categoryRu;
+  const categoryEn = isSet
+    ? "Discovery & Gift Sets"
+    : !p.categoryEn || p.categoryEn === "Oriental"
+      ? profile.categoryEn
+      : p.categoryEn;
 
-  const derivedSummaryRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 2)]
+  const derivedSummaryRu = [
+    ...topRu.slice(0, 2),
+    ...heartRu.slice(0, 1),
+    ...baseRu.slice(0, 2),
+  ]
     .filter(Boolean)
     .join(" · ");
-  const derivedSummaryEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 2)]
+  const derivedSummaryEn = [
+    ...topEn.slice(0, 2),
+    ...heartEn.slice(0, 1),
+    ...baseEn.slice(0, 2),
+  ]
     .filter(Boolean)
     .join(" · ");
 
   let notesSummaryRu = p.notesSummaryRu || p.notesSummary || "";
-  if (!notesSummaryRu || notesSummaryRu.includes("Премиальный арабский парфюм") || notesSummaryRu.includes("Элитный восточный парфюм") || notesSummaryRu === brand) {
+  if (
+    !notesSummaryRu ||
+    notesSummaryRu.includes("Премиальный арабский парфюм") ||
+    notesSummaryRu.includes("Элитный восточный парфюм") ||
+    notesSummaryRu === brand
+  ) {
     notesSummaryRu = isSet
       ? "Коллекция оригинальных тревел-миниатюр"
       : derivedSummaryRu;
   }
 
   let notesSummaryEn = p.notesSummaryEn || "";
-  if (!notesSummaryEn || notesSummaryEn.includes("Премиальный арабский парфюм") || notesSummaryEn.includes("Элитный восточный парфюм") || notesSummaryEn === brand) {
+  if (
+    !notesSummaryEn ||
+    notesSummaryEn.includes("Премиальный арабский парфюм") ||
+    notesSummaryEn.includes("Элитный восточный парфюм") ||
+    notesSummaryEn === brand
+  ) {
     notesSummaryEn = isSet
       ? "Curated collection of travel miniatures"
       : derivedSummaryEn;
   }
 
   const genderRu = p.genderRu || p.gender || "Унисекс";
-  const genderEn = p.genderEn || (genderRu === "Женский" ? "Women" : genderRu === "Мужской" ? "Men" : "Unisex");
+  const genderEn =
+    p.genderEn ||
+    (genderRu === "Женский"
+      ? "Women"
+      : genderRu === "Мужской"
+        ? "Men"
+        : "Unisex");
   const longevityRu = p.longevityRu || p.longevity || "8–12 часов";
   const longevityEn = p.longevityEn || "8–12 hours";
 
@@ -1582,7 +1941,11 @@ export function ensurePerfumeEnrichment(p) {
   let descEn = p.descriptionEn;
 
   if (isSet) {
-    if (!descRu || isGenericOrShortDescription(descRu) || descRu.includes("С первых мгновений композиция завораживает")) {
+    if (
+      !descRu ||
+      isGenericOrShortDescription(descRu) ||
+      descRu.includes("С первых мгновений композиция завораживает")
+    ) {
       descRu = `Эксклюзивный подарочный набор ${name} от парфюмерного дома ${brand}. Включает коллекцию оригинальных селективных композиций в фирменном футляре. Прекрасная возможность познакомиться с культовыми ароматами бренда и найти своего персонального фаворита.`;
       descEn = `Exclusive fragrance discovery gift set ${name} by ${brand}. Features a curated collection of authentic niche miniatures in a presentation coffret.`;
     }
@@ -1607,10 +1970,16 @@ export function ensurePerfumeEnrichment(p) {
   // Real size only: parsed from the original Qogita title/description, never a 100 ml placeholder.
   const resolvedVolume = resolvePerfumeVolume({ ...p, name });
 
-  const setItems = p.setItems || p.info?.setItems || (isSet ? inferSetItems(name, brand) : null);
+  const setItems =
+    p.setItems ||
+    p.info?.setItems ||
+    (isSet ? inferSetItems(name, brand) : null);
   const concentration = isSet
-    ? (p.concentration && (p.concentration.includes("Набор") || p.concentration.includes("Set")) ? p.concentration : "Набор миниатюр (Set)")
-    : (p.concentration || "Eau De Parfum");
+    ? p.concentration &&
+      (p.concentration.includes("Набор") || p.concentration.includes("Set"))
+      ? p.concentration
+      : "Набор миниатюр (Set)"
+    : p.concentration || "Eau De Parfum";
 
   const cleanName = isSet ? name : stripVolumeFromName(name);
 
@@ -1659,23 +2028,29 @@ export async function fetchPerfumesFromSupabase() {
 
     while (hasMore) {
       const from = page * pageSize;
-      const to = from + pageSize - 1;
-      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null;
-      const res = await fetch(`${TABLE_PERFUMES}?select=*&order=id.asc&info->imageGeneration->>status=eq.completed`, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          Range: `${from}-${to}`,
+      const controller =
+        typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller
+        ? setTimeout(() => controller.abort(), 15000)
+        : null;
+      const res = await fetch(
+        `${TABLE_PERFUMES}?select=id,name,brand,image,info&order=id.asc&info->imageGeneration->>status=eq.completed&limit=${pageSize}&offset=${from}`,
+        {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          },
+          signal: controller?.signal,
         },
-        signal: controller?.signal,
-      }).finally(() => {
+      ).finally(() => {
         if (timeoutId) clearTimeout(timeoutId);
       });
 
-      if (!res.ok) throw new Error(`Could not load catalog (HTTP ${res.status})`);
+      if (!res.ok)
+        throw new Error(`Could not load catalog (HTTP ${res.status})`);
       const rows = await res.json();
-      if (!Array.isArray(rows)) throw new Error("Catalog response is not a list");
+      if (!Array.isArray(rows))
+        throw new Error("Catalog response is not a list");
       if (rows.length === 0) break;
       allRows.push(...rows);
       if (rows.length < pageSize) {
@@ -1688,7 +2063,11 @@ export async function fetchPerfumesFromSupabase() {
     if (allRows.length > 0) {
       // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders)
       const validRows = allRows.filter((r) => {
-        const img = ((r.image || "") + (r.raw_image || "") + (r.info?.rawImage || "")).toLowerCase();
+        const img = (
+          (r.image || "") +
+          (r.raw_image || "") +
+          (r.info?.rawImage || "")
+        ).toLowerCase();
         if (
           img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
           img.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
@@ -1702,107 +2081,165 @@ export async function fetchPerfumesFromSupabase() {
 
       // Map database fields to standard schema
       const mapped = validRows.map((r) => {
-          const info = r.info || {};
-          let catSlug = info.categorySlug || "spicy";
-          const catLower = (info.category || "").toLowerCase();
-          if (catLower.includes("гурманские")) catSlug = "gourmand";
-          else if (catLower.includes("акватические") || catLower.includes("морск") || catLower.includes("свеж") || catLower.includes("fresh")) catSlug = "fresh";
-          else if (catLower.includes("фужерные") || catLower.includes("fougere") || catLower.includes("fougère")) catSlug = "fougere";
-          else if (catLower.includes("древесные") || catLower.includes("уд") || catLower.includes("благородные")) catSlug = "oud";
-          else if (catLower.includes("цветочные")) catSlug = "floral";
-          else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
-          else if (catLower.includes("пряные") || catLower.includes("специи")) catSlug = "spicy";
+        const info = r.info || {};
+        let catSlug = info.categorySlug || "spicy";
+        const catLower = (info.category || "").toLowerCase();
+        if (catLower.includes("гурманские")) catSlug = "gourmand";
+        else if (
+          catLower.includes("акватические") ||
+          catLower.includes("морск") ||
+          catLower.includes("свеж") ||
+          catLower.includes("fresh")
+        )
+          catSlug = "fresh";
+        else if (
+          catLower.includes("фужерные") ||
+          catLower.includes("fougere") ||
+          catLower.includes("fougère")
+        )
+          catSlug = "fougere";
+        else if (
+          catLower.includes("древесные") ||
+          catLower.includes("уд") ||
+          catLower.includes("благородные")
+        )
+          catSlug = "oud";
+        else if (catLower.includes("цветочные")) catSlug = "floral";
+        else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
+        else if (catLower.includes("пряные") || catLower.includes("специи"))
+          catSlug = "spicy";
 
-          // Notes are shown only when they were generated by DeepSeek (or entered
-          // manually). Never expose heuristic / invented pyramids.
-          const notesVerified = info.notesVerified === true;
-          const notesObj = notesVerified && info.notes && typeof info.notes === "object" ? info.notes : {};
-          const asNotes = (value) => {
-            if (Array.isArray(value)) return value;
-            if (typeof value === "string" && value.trim()) return value.split(",").map((s) => s.trim()).filter(Boolean);
-            return [];
-          };
-          const topNotesRu = notesVerified ? (notesObj.ru?.top || notesObj.top || asNotes(r.top_notes)) : [];
-          const heartNotesRu = notesVerified ? (notesObj.ru?.heart || notesObj.heart || asNotes(r.heart_notes)) : [];
-          const baseNotesRu = notesVerified ? (notesObj.ru?.base || notesObj.base || asNotes(r.base_notes)) : [];
+        // Notes are shown only when they were generated by DeepSeek (or entered
+        // manually). Never expose heuristic / invented pyramids.
+        const notesVerified = info.notesVerified === true;
+        const notesObj =
+          notesVerified && info.notes && typeof info.notes === "object"
+            ? info.notes
+            : {};
+        const asNotes = (value) => {
+          if (Array.isArray(value)) return value;
+          if (typeof value === "string" && value.trim())
+            return value
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+          return [];
+        };
+        const topNotesRu = notesVerified
+          ? notesObj.ru?.top || notesObj.top || asNotes(r.top_notes)
+          : [];
+        const heartNotesRu = notesVerified
+          ? notesObj.ru?.heart || notesObj.heart || asNotes(r.heart_notes)
+          : [];
+        const baseNotesRu = notesVerified
+          ? notesObj.ru?.base || notesObj.base || asNotes(r.base_notes)
+          : [];
 
-          const topNotesEn = notesVerified ? (notesObj.en?.top || topNotesRu) : [];
-          const heartNotesEn = notesVerified ? (notesObj.en?.heart || heartNotesRu) : [];
-          const baseNotesEn = notesVerified ? (notesObj.en?.base || baseNotesRu) : [];
+        const topNotesEn = notesVerified ? notesObj.en?.top || topNotesRu : [];
+        const heartNotesEn = notesVerified
+          ? notesObj.en?.heart || heartNotesRu
+          : [];
+        const baseNotesEn = notesVerified
+          ? notesObj.en?.base || baseNotesRu
+          : [];
 
-          const descRu = info.descriptionRu || r.description || "Роскошный восточный аромат Al-Warda.";
-          const descEn = info.descriptionEn || "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
-          const generatedImage = info.imageGeneration.imageUrl || r.image;
+        const descRu =
+          info.descriptionRu ||
+          r.description ||
+          "Роскошный восточный аромат Al-Warda.";
+        const descEn =
+          info.descriptionEn ||
+          "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
+        const generatedImage = info.imageGeneration.imageUrl || r.image;
 
-          const rawPerfumeName = r.name || r.title;
-          const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
+        const rawPerfumeName = r.name || r.title;
+        const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
 
-          const perfumeObj = {
-            id: String(r.id),
-            slug: `stock-${r.id}`,
-            name: cleanPerfumeName,
-            title: cleanPerfumeName,
-            brand: r.brand || "Al-Warda",
-            category: catSlug,
-            categoryRu: info.category || "Восточные",
-            categoryEn: info.categoryEn || "Oriental",
-            categoryName: info.category || "Восточные",
-            notesSummary: notesVerified ? (info.notesSummary || r.notes_summary || "") : "",
-            notesSummaryRu: notesVerified ? (info.notesSummary || r.notes_summary || "") : "",
-            notesSummaryEn: notesVerified ? (info.notesSummaryEn || info.notesSummary || "") : "",
-            notesVerified,
-            notesSource: info.notesSource || null,
-            notesLookup: info.notesLookup || null,
-            price: Number(r.price) || 29.99,
-            currency: r.currency || "EUR",
-            priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+        const perfumeObj = {
+          id: String(r.id),
+          slug: `stock-${r.id}`,
+          name: cleanPerfumeName,
+          title: cleanPerfumeName,
+          brand: r.brand || "Al-Warda",
+          category: catSlug,
+          categoryRu: info.category || "Восточные",
+          categoryEn: info.categoryEn || "Oriental",
+          categoryName: info.category || "Восточные",
+          notesSummary: notesVerified
+            ? info.notesSummary || r.notes_summary || ""
+            : "",
+          notesSummaryRu: notesVerified
+            ? info.notesSummary || r.notes_summary || ""
+            : "",
+          notesSummaryEn: notesVerified
+            ? info.notesSummaryEn || info.notesSummary || ""
+            : "",
+          notesVerified,
+          notesSource: info.notesSource || null,
+          notesLookup: info.notesLookup || null,
+          price: Number(r.price) || 29.99,
+          currency: r.currency || "EUR",
+          priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+          rawName: rawPerfumeName,
+          rawDescription: r.description || "",
+          volume: resolvePerfumeVolume({
             rawName: rawPerfumeName,
-            rawDescription: r.description || "",
-            volume: resolvePerfumeVolume({ rawName: rawPerfumeName, rawDescription: r.description, volume: r.volume, info }),
-            concentration: info.concentration || r.concentration || "Eau De Parfum",
-            gender: info.gender || r.gender || "Унисекс",
-            genderRu: info.gender || r.gender || "Унисекс",
-            genderEn: info.genderEn || (info.gender === "Женский" ? "Women" : (info.gender === "Мужской" ? "Men" : "Unisex")),
-            longevity: info.longevity || "8–12 часов",
-            longevityRu: info.longevity || "8–12 часов",
-            longevityEn: info.longevityEn || "8–12 hours",
-            sillage: info.sillage || "Выразительный, шлейфовый",
-            sillageRu: info.sillage || "Выразительный, шлейфовый",
-            sillageEn: info.sillageEn || "Noticeable, alluring sillage",
-            rating: 4.9,
-            reviewsCount: 35 + ((r.id * 7) % 50),
-            isBestSeller: (r.id % 7 === 0),
-            isFeatured: (r.id % 5 === 0),
-            inStock: info.inStock !== false,
-            deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
-            deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-            image: generatedImage,
-            fullCardImage: generatedImage,
-            rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
-            topNotes: topNotesRu,
-            heartNotes: heartNotesRu,
-            baseNotes: baseNotesRu,
-            topNotesRu,
-            heartNotesRu,
-            baseNotesRu,
-            topNotesEn,
-            heartNotesEn,
-            baseNotesEn,
-            description: fixDescriptionWording(descRu),
-            descriptionRu: fixDescriptionWording(descRu),
-            descriptionEn: descEn,
+            rawDescription: r.description,
+            volume: r.volume,
             info,
-            minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
-            unit: Number(info.minOrderQuantity || info.unit || 1) || 1,
-            gtin: info.gtin || r.gtin,
-            dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
-          };
-          perfumeObj.url = getPerfumeUrl(perfumeObj);
-          return ensurePerfumeEnrichment(perfumeObj);
-        });
-        memoryPerfumesCache = mapped;
-        return mapped;
-      }
+          }),
+          concentration:
+            info.concentration || r.concentration || "Eau De Parfum",
+          gender: info.gender || r.gender || "Унисекс",
+          genderRu: info.gender || r.gender || "Унисекс",
+          genderEn:
+            info.genderEn ||
+            (info.gender === "Женский"
+              ? "Women"
+              : info.gender === "Мужской"
+                ? "Men"
+                : "Unisex"),
+          longevity: info.longevity || "8–12 часов",
+          longevityRu: info.longevity || "8–12 часов",
+          longevityEn: info.longevityEn || "8–12 hours",
+          sillage: info.sillage || "Выразительный, шлейфовый",
+          sillageRu: info.sillage || "Выразительный, шлейфовый",
+          sillageEn: info.sillageEn || "Noticeable, alluring sillage",
+          rating: 4.9,
+          reviewsCount: 35 + ((r.id * 7) % 50),
+          isBestSeller: r.id % 7 === 0,
+          isFeatured: r.id % 5 === 0,
+          inStock: info.inStock !== false,
+          deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
+          deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
+          image: generatedImage,
+          fullCardImage: generatedImage,
+          rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
+          topNotes: topNotesRu,
+          heartNotes: heartNotesRu,
+          baseNotes: baseNotesRu,
+          topNotesRu,
+          heartNotesRu,
+          baseNotesRu,
+          topNotesEn,
+          heartNotesEn,
+          baseNotesEn,
+          description: fixDescriptionWording(descRu),
+          descriptionRu: fixDescriptionWording(descRu),
+          descriptionEn: descEn,
+          info,
+          minOrderQuantity:
+            Number(info.minOrderQuantity || info.unit || 1) || 1,
+          unit: Number(info.minOrderQuantity || info.unit || 1) || 1,
+          gtin: info.gtin || r.gtin,
+          dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
+        };
+        perfumeObj.url = getPerfumeUrl(perfumeObj);
+        return ensurePerfumeEnrichment(perfumeObj);
+      });
+      memoryPerfumesCache = mapped;
+      return mapped;
+    }
   } catch (err) {
     console.warn("fetchPerfumesFromSupabase error:", err);
     throw err;
@@ -1815,10 +2252,12 @@ let memoryDropshipCache = null;
 
 export async function fetchDropshipArabianPerfumes(query = "") {
   try {
-    const res = await fetch(`/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    const res = await fetch(
+      `/api/qogita/arabian-perfumes${query ? `?q=${encodeURIComponent(query)}` : ""}`,
+    );
     if (res.ok) {
       const data = await res.json();
-      const rawList = Array.isArray(data) ? data : (data.results || []);
+      const rawList = Array.isArray(data) ? data : data.results || [];
       const items = rawList
         .filter(
           (p) =>
@@ -1826,10 +2265,18 @@ export async function fetchDropshipArabianPerfumes(query = "") {
             !isWholesaleBundle(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
-            (!p.rawImage || !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063"))
+            (!p.rawImage ||
+              !p.rawImage.includes("c1b79cffa1a5fa8aab226414b9e4a063")),
         )
         .map((p) => {
-          const resolvedMoq = Number(p.minOrderQuantity || p.info?.minOrderQuantity || p.unit || p.info?.unit || 1) || 1;
+          const resolvedMoq =
+            Number(
+              p.minOrderQuantity ||
+                p.info?.minOrderQuantity ||
+                p.unit ||
+                p.info?.unit ||
+                1,
+            ) || 1;
           p.minOrderQuantity = resolvedMoq;
           p.unit = resolvedMoq;
           if (p.info) {
@@ -1860,7 +2307,9 @@ async function getPerfumesUnfiltered(options = {}) {
       catalogRefresh = Promise.allSettled([
         fetchPerfumesFromSupabase(),
         includeDropship ? fetchDropshipArabianPerfumes() : Promise.resolve([]),
-      ]).finally(() => { catalogRefresh = null; });
+      ]).finally(() => {
+        catalogRefresh = null;
+      });
     }
     const results = await catalogRefresh;
     for (const result of results) {
@@ -1869,22 +2318,38 @@ async function getPerfumesUnfiltered(options = {}) {
         console.warn("Could not refresh perfume catalog:", result.reason);
       }
     }
-    base = results[0].status === "fulfilled" ? results[0].value : (memoryPerfumesCache || []);
-    dropship = results[1].status === "fulfilled" ? results[1].value : (memoryDropshipCache || []);
+    base =
+      results[0].status === "fulfilled"
+        ? results[0].value
+        : memoryPerfumesCache || [];
+    dropship =
+      results[1].status === "fulfilled"
+        ? results[1].value
+        : memoryDropshipCache || [];
   }
 
   if (base.length > 0) {
-    const existingGtins = new Set(base.map((b) => b.gtin || b.info?.gtin).filter(Boolean));
-    const existingNames = new Set(base.map((b) => (b.name || "").toLowerCase().trim()).filter(Boolean));
+    const existingGtins = new Set(
+      base.map((b) => b.gtin || b.info?.gtin).filter(Boolean),
+    );
+    const existingNames = new Set(
+      base.map((b) => (b.name || "").toLowerCase().trim()).filter(Boolean),
+    );
     const uniqueDropship = dropship.filter(
-      (d) => !(d.gtin && existingGtins.has(d.gtin)) && !existingNames.has((d.name || "").toLowerCase().trim())
+      (d) =>
+        !(d.gtin && existingGtins.has(d.gtin)) &&
+        !existingNames.has((d.name || "").toLowerCase().trim()),
     );
     const combined = includeDropship ? [...base, ...uniqueDropship] : base;
-    return combined.filter((p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p));
+    return combined.filter(
+      (p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p),
+    );
   }
 
   const combined = includeDropship ? [...base, ...dropship] : base;
-  return combined.filter((p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p));
+  return combined.filter(
+    (p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p),
+  );
 }
 
 let memoryMinOrderSettings = { minOrderFrom: 0, minOrderTo: 0 };
@@ -1893,23 +2358,38 @@ let minOrderSettingsPromise = null;
 
 export function isWholesaleBundle(p) {
   const name = (p?.name || p?.title || "").toLowerCase();
-  return /\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b/i.test(name);
+  return /\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b/i.test(
+    name,
+  );
 }
 
 export function getPerfumeMinOrder(p) {
-  const value = Number(p?.minOrderQuantity ?? p?.info?.minOrderQuantity ?? p?.info?.unit ?? p?.unit ?? 1);
+  const value = Number(
+    p?.minOrderQuantity ??
+      p?.info?.minOrderQuantity ??
+      p?.info?.unit ??
+      p?.unit ??
+      1,
+  );
   return Number.isFinite(value) && value > 0 ? value : 1;
 }
 
 export async function fetchMinOrderSettings(force = false) {
-  if (!force && Date.now() - minOrderSettingsLoadedAt < 60000) return memoryMinOrderSettings;
+  if (!force && Date.now() - minOrderSettingsLoadedAt < 60000)
+    return memoryMinOrderSettings;
   if (minOrderSettingsPromise) return minOrderSettingsPromise;
 
   minOrderSettingsPromise = (async () => {
     try {
-      const res = await fetch(`${TABLE_PERFUMES}?select=info&slug=eq.site-settings&limit=1`, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-      });
+      const res = await fetch(
+        `${TABLE_PERFUMES}?select=info&slug=eq.site-settings&limit=1`,
+        {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          },
+        },
+      );
       if (res.ok) {
         const rows = await res.json();
         const info = rows?.[0]?.info || {};
@@ -1949,7 +2429,10 @@ export async function getPerfumes(options = {}) {
 }
 
 export function getCachedPerfumes() {
-  return applyMinOrderFilter([...(memoryPerfumesCache || []), ...(memoryDropshipCache || [])]);
+  return applyMinOrderFilter([
+    ...(memoryPerfumesCache || []),
+    ...(memoryDropshipCache || []),
+  ]);
 }
 
 export async function getPerfumeById(id, options = {}) {
@@ -1972,7 +2455,7 @@ export async function getPerfumeById(id, options = {}) {
       p.slug?.toLowerCase() === clean ||
       p.dropshipId?.toLowerCase() === clean ||
       (p.gtin && `dropship-${p.gtin}`.toLowerCase() === clean) ||
-      (p.gtin && String(p.gtin).toLowerCase() === clean)
+      (p.gtin && String(p.gtin).toLowerCase() === clean),
   );
   if (found) return ensurePerfumeEnrichment(found);
 
@@ -1984,7 +2467,7 @@ export async function getPerfumeById(id, options = {}) {
         p.id?.toLowerCase() === `dropship-${trailingDropship[1]}` ||
         p.dropshipId?.toLowerCase() === `dropship-${trailingDropship[1]}` ||
         String(p.gtin) === trailingDropship[1] ||
-        String(p.id) === trailingDropship[1]
+        String(p.id) === trailingDropship[1],
     );
     if (found) return ensurePerfumeEnrichment(found);
   }
@@ -1997,7 +2480,7 @@ export async function getPerfumeById(id, options = {}) {
         String(p.id).toLowerCase() === trailingStock[1] ||
         String(p.id).toLowerCase() === `stock-${trailingStock[1]}` ||
         String(p.slug).toLowerCase() === `stock-${trailingStock[1]}` ||
-        String(p.gtin) === trailingStock[1]
+        String(p.gtin) === trailingStock[1],
     );
     if (found) return ensurePerfumeEnrichment(found);
   }
@@ -2010,7 +2493,7 @@ export async function getPerfumeById(id, options = {}) {
         String(p.id).toLowerCase() === `stock-${trailingNum[1]}` ||
         String(p.slug).toLowerCase() === `stock-${trailingNum[1]}` ||
         String(p.gtin) === trailingNum[1] ||
-        p.dropshipId?.toLowerCase() === `dropship-${trailingNum[1]}`
+        p.dropshipId?.toLowerCase() === `dropship-${trailingNum[1]}`,
     );
     if (found) return ensurePerfumeEnrichment(found);
   }
@@ -2019,9 +2502,15 @@ export async function getPerfumeById(id, options = {}) {
   const cleanLetters = clean.replace(/[^a-z0-9]/g, "");
   found = all.find((p) => {
     const pSlug = slugifyPerfumeName(p.name || p.title);
-    if (clean === pSlug || clean.startsWith(pSlug) || pSlug.startsWith(clean)) return true;
+    if (clean === pSlug || clean.startsWith(pSlug) || pSlug.startsWith(clean))
+      return true;
     const pLetters = (p.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    return pLetters && (cleanLetters === pLetters || cleanLetters.includes(pLetters) || pLetters.includes(cleanLetters));
+    return (
+      pLetters &&
+      (cleanLetters === pLetters ||
+        cleanLetters.includes(pLetters) ||
+        pLetters.includes(cleanLetters))
+    );
   });
   if (found) return ensurePerfumeEnrichment(found);
 
@@ -2033,7 +2522,7 @@ export async function getPerfumeById(id, options = {}) {
         p.id?.toLowerCase() === clean ||
         p.slug?.toLowerCase() === clean ||
         (p.gtin && `dropship-${p.gtin}`.toLowerCase() === clean) ||
-        (p.gtin && clean.includes(String(p.gtin)))
+        (p.gtin && clean.includes(String(p.gtin))),
     );
     if (found) return ensurePerfumeEnrichment(found);
   }
@@ -2043,13 +2532,19 @@ export async function getPerfumeById(id, options = {}) {
 
 export function isPerfumeSet(p) {
   if (!p) return false;
-  if (p.isSet || p.category === "sets" || p.categorySlug === "sets") return true;
-  const text = `${p.name || ""} ${p.title || ""} ${p.volume || ""}`.toLowerCase();
+  if (p.isSet || p.category === "sets" || p.categorySlug === "sets")
+    return true;
+  const text =
+    `${p.name || ""} ${p.title || ""} ${p.volume || ""}`.toLowerCase();
   return (
-    /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i.test(text) ||
+    /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i.test(
+      text,
+    ) ||
     /\+\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
     /\b\d+\s*[x×]\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
-    /\b\d+\s*ml\s+(shower\s*gel|body\s*lotion|body\s*milk|after\s*shave|deo|deodorant)\b/i.test(text)
+    /\b\d+\s*ml\s+(shower\s*gel|body\s*lotion|body\s*milk|after\s*shave|deo|deodorant)\b/i.test(
+      text,
+    )
   );
 }
 
@@ -2064,10 +2559,12 @@ export const INITIAL_BEST_SELLERS = [
     slug: "stock-4991",
     name: "Afnan Mirsaal Of Trust Eau De Parfum 90ml",
     brand: "Afnan",
-    price: 34.50,
+    price: 34.5,
     volume: "90 мл / 3.0 FL.OZ.",
-    image: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
-    fullCardImage: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
+    image:
+      "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
+    fullCardImage:
+      "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
     rating: 4.9,
     reviewsCount: 38,
     isBestSeller: true,
@@ -2075,7 +2572,8 @@ export const INITIAL_BEST_SELLERS = [
     info: {
       imageGeneration: {
         status: "completed",
-        imageUrl: "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
+        imageUrl:
+          "/assets/img/generated-products/fe9c83a22cea23855fda914b174b89ef616d2403dc69304a09532bbaa9613ded.png",
       },
     },
   },
@@ -2084,10 +2582,12 @@ export const INITIAL_BEST_SELLERS = [
     slug: "stock-4998",
     name: "Afnan Rare Tiffany Eau De Parfum 100ml Spray",
     brand: "Afnan",
-    price: 32.00,
+    price: 32.0,
     volume: "100 мл / 3.4 FL.OZ.",
-    image: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
-    fullCardImage: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
+    image:
+      "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
+    fullCardImage:
+      "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
     rating: 4.9,
     reviewsCount: 42,
     isBestSeller: true,
@@ -2095,7 +2595,8 @@ export const INITIAL_BEST_SELLERS = [
     info: {
       imageGeneration: {
         status: "completed",
-        imageUrl: "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
+        imageUrl:
+          "/assets/img/generated-products/0bdee47030766f0cf79ea8daf46ee8db0c8651168e61b8a62703a2dbbab56324.png",
       },
     },
   },
@@ -2104,10 +2605,12 @@ export const INITIAL_BEST_SELLERS = [
     slug: "stock-5005",
     name: "Afnan Supremacy Not Only Intense Eau De Parfum 100ml For Men",
     brand: "Afnan",
-    price: 36.90,
+    price: 36.9,
     volume: "100 мл / 3.4 FL.OZ.",
-    image: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
-    fullCardImage: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
+    image:
+      "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
+    fullCardImage:
+      "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
     rating: 4.9,
     reviewsCount: 36,
     isBestSeller: true,
@@ -2115,7 +2618,8 @@ export const INITIAL_BEST_SELLERS = [
     info: {
       imageGeneration: {
         status: "completed",
-        imageUrl: "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
+        imageUrl:
+          "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
       },
     },
   },
@@ -2136,10 +2640,50 @@ export async function getBestSellerPerfumes(options = {}) {
 }
 
 export const SAMPLE_VOLUMES = [
-  { key: "1ml", ml: 1, labelRu: "1 мл", labelEn: "1 ml", descRu: "Фирменный микро-пробник", descEn: "Micro-sample vial", factor: 0.05, baseFee: 2.50, minPrice: 3.90 },
-  { key: "2ml", ml: 2, labelRu: "2 мл", labelEn: "2 ml", descRu: "Спрей-виалка", descEn: "Spray vial", factor: 0.09, baseFee: 3.20, minPrice: 5.90 },
-  { key: "5ml", ml: 5, labelRu: "5 мл", labelEn: "5 ml", descRu: "Тревел-атомайзер", descEn: "Travel atomizer", factor: 0.18, baseFee: 4.90, minPrice: 10.90 },
-  { key: "10ml", ml: 10, labelRu: "10 мл", labelEn: "10 ml", descRu: "Люкс-миниатюра", descEn: "Deluxe decant", factor: 0.32, baseFee: 6.90, minPrice: 18.90 },
+  {
+    key: "1ml",
+    ml: 1,
+    labelRu: "1 мл",
+    labelEn: "1 ml",
+    descRu: "Фирменный микро-пробник",
+    descEn: "Micro-sample vial",
+    factor: 0.05,
+    baseFee: 2.5,
+    minPrice: 3.9,
+  },
+  {
+    key: "2ml",
+    ml: 2,
+    labelRu: "2 мл",
+    labelEn: "2 ml",
+    descRu: "Спрей-виалка",
+    descEn: "Spray vial",
+    factor: 0.09,
+    baseFee: 3.2,
+    minPrice: 5.9,
+  },
+  {
+    key: "5ml",
+    ml: 5,
+    labelRu: "5 мл",
+    labelEn: "5 ml",
+    descRu: "Тревел-атомайзер",
+    descEn: "Travel atomizer",
+    factor: 0.18,
+    baseFee: 4.9,
+    minPrice: 10.9,
+  },
+  {
+    key: "10ml",
+    ml: 10,
+    labelRu: "10 мл",
+    labelEn: "10 ml",
+    descRu: "Люкс-миниатюра",
+    descEn: "Deluxe decant",
+    factor: 0.32,
+    baseFee: 6.9,
+    minPrice: 18.9,
+  },
 ];
 
 export function isDecantablePerfume(_p) {
@@ -2152,10 +2696,16 @@ export function getSamplePrice(perfumePrice, _volumeKey = "1ml") {
   return Number(perfumePrice) || 0;
 }
 
-export function createSampleCartItem(perfume, volumeKey = "1ml", language = "ru") {
-  const cfg = SAMPLE_VOLUMES.find((v) => v.key === volumeKey) || SAMPLE_VOLUMES[0];
+export function createSampleCartItem(
+  perfume,
+  volumeKey = "1ml",
+  language = "ru",
+) {
+  const cfg =
+    SAMPLE_VOLUMES.find((v) => v.key === volumeKey) || SAMPLE_VOLUMES[0];
   const samplePrice = getSamplePrice(perfume?.price, cfg.key);
-  const sampleLabel = language === "ru" ? `Пробник ${cfg.labelRu}` : `Sample ${cfg.labelEn}`;
+  const sampleLabel =
+    language === "ru" ? `Пробник ${cfg.labelRu}` : `Sample ${cfg.labelEn}`;
   const baseTitle = perfume?.name || perfume?.title || "Al-Warda Fragrance";
   const uniqueId = `sample-${perfume?.id || "item"}-${cfg.key}`;
   const baseUrl = getPerfumeUrl(perfume);
@@ -2167,7 +2717,10 @@ export function createSampleCartItem(perfume, volumeKey = "1ml", language = "ru"
     name: `${baseTitle} (${sampleLabel})`,
     brand: perfume?.brand || "Al-Warda",
     price: samplePrice,
-    image: perfume?.image || perfume?.fullCardImage || "/assets/img/perfumes/hero-perfume.png",
+    image:
+      perfume?.image ||
+      perfume?.fullCardImage ||
+      "/assets/img/perfumes/hero-perfume.png",
     link: `${baseUrl}?sample=${cfg.key}`,
     url: `${baseUrl}?sample=${cfg.key}`,
     volume: cfg.labelRu,
@@ -2215,9 +2768,17 @@ export function getPerfumeVolumeOptions(perfume) {
 
   if (Array.isArray(perfume.availableSizes)) {
     for (const size of perfume.availableSizes) {
-      const ml = typeof size === "number" ? size : parseVolumeMl(size?.volume || size?.ml || size?.label || size);
+      const ml =
+        typeof size === "number"
+          ? size
+          : parseVolumeMl(size?.volume || size?.ml || size?.label || size);
       if (ml) {
-        const key = typeof size === "object" && size.key ? size.key : (ml < 30 ? `${ml}ml` : "full");
+        const key =
+          typeof size === "object" && size.key
+            ? size.key
+            : ml < 30
+              ? `${ml}ml`
+              : "full";
         const price = Number(size?.price ?? perfume.price);
         optionsMap.set(ml, {
           ml,
@@ -2231,12 +2792,15 @@ export function getPerfumeVolumeOptions(perfume) {
     }
   }
 
-  const knownBottleMl = parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
+  const knownBottleMl =
+    parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
   const bottleMl = knownBottleMl || 100;
   if (!optionsMap.has(bottleMl)) {
     const rawBottleLabel = perfume.volume
       ? perfume.volume.split("/")[0].trim()
-      : (knownBottleMl ? `${bottleMl} мл` : "");
+      : knownBottleMl
+        ? `${bottleMl} мл`
+        : "";
     optionsMap.set(bottleMl, {
       ml: bottleMl,
       key: "full",
@@ -2264,12 +2828,16 @@ export function getDefaultPerfumeVolumeOption(perfume) {
     };
   }
 
-  const knownBottleMl = parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
+  const knownBottleMl =
+    parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
   const bottleMl = knownBottleMl || 100;
   const rawBottleLabel = perfume.volume
     ? perfume.volume.split("/")[0].trim()
-    : (knownBottleMl ? `${bottleMl} мл` : "");
-  const hasMultipleSizes = Array.isArray(perfume.availableSizes) && perfume.availableSizes.length > 1;
+    : knownBottleMl
+      ? `${bottleMl} мл`
+      : "";
+  const hasMultipleSizes =
+    Array.isArray(perfume.availableSizes) && perfume.availableSizes.length > 1;
 
   return {
     price: Number(perfume.price || 0),
@@ -2313,4 +2881,3 @@ export function getPerfumeGtin(perfume) {
 
   return "";
 }
-

@@ -38,20 +38,28 @@ export default function ProductManualConfigModal({
   const [initialData] = useState(() => {
     const rawName = item?.name || item?.title || "";
     const cleanName = stripVolumeFromName(rawName);
-    const enriched = isNew ? {} : ensurePerfumeEnrichment({
-      id: item?.id,
-      name: cleanName,
-      title: cleanName,
-      brand: item?.brand || "Al-Warda",
-      price: item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
-      image: item?.image || item?.rawImage || "",
-      rawImage: item?.rawImage || item?.info?.rawImage || null,
-      info: item?.info || {},
-      ...item?.info,
-    });
+    const enriched = isNew
+      ? {}
+      : ensurePerfumeEnrichment({
+          id: item?.id,
+          name: cleanName,
+          title: cleanName,
+          brand: item?.brand || "Al-Warda",
+          price:
+            item?.price ||
+            (item?.info?.price ? Number(item?.info?.price) : 29.99),
+          image: item?.image || item?.rawImage || "",
+          rawImage: item?.rawImage || item?.info?.rawImage || null,
+          info: item?.info || {},
+          ...item?.info,
+        });
 
     const explicitVol = extractVolumeFromName(rawName);
-    const volume = explicitVol || enriched.volume || item?.info?.volume || "100 мл / 3.4 FL.OZ.";
+    const volume =
+      explicitVol ||
+      enriched.volume ||
+      item?.info?.volume ||
+      "100 мл / 3.4 FL.OZ.";
 
     return {
       name: cleanName,
@@ -60,10 +68,18 @@ export default function ProductManualConfigModal({
       categoryRu: enriched.categoryRu || "Восточные",
       categoryEn: enriched.categoryEn || "Oriental",
       volume,
-      concentration: enriched.concentration || item?.info?.concentration || "Eau De Parfum",
+      concentration:
+        enriched.concentration || item?.info?.concentration || "Eau De Parfum",
       gender: enriched.gender || item?.info?.gender || "Унисекс",
-      genderEn: enriched.genderEn || (enriched.gender === "Женский" ? "Women" : (enriched.gender === "Мужской" ? "Men" : "Unisex")),
-      price: item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
+      genderEn:
+        enriched.genderEn ||
+        (enriched.gender === "Женский"
+          ? "Women"
+          : enriched.gender === "Мужской"
+            ? "Men"
+            : "Unisex"),
+      price:
+        item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
       longevity: enriched.longevity || "8–12 часов",
       sillage: enriched.sillage || "Выразительный, шлейфовый",
       notesSummaryRu: enriched.notesSummaryRu || enriched.notesSummary || "",
@@ -90,8 +106,12 @@ export default function ProductManualConfigModal({
   const [longevity, setLongevity] = useState(initialData.longevity);
   const [sillage, setSillage] = useState(initialData.sillage);
 
-  const [notesSummaryRu, setNotesSummaryRu] = useState(initialData.notesSummaryRu);
-  const [notesSummaryEn, setNotesSummaryEn] = useState(initialData.notesSummaryEn);
+  const [notesSummaryRu, setNotesSummaryRu] = useState(
+    initialData.notesSummaryRu,
+  );
+  const [notesSummaryEn, setNotesSummaryEn] = useState(
+    initialData.notesSummaryEn,
+  );
   const [topNotesRu, setTopNotesRu] = useState(initialData.topNotesRu);
   const [heartNotesRu, setHeartNotesRu] = useState(initialData.heartNotesRu);
   const [baseNotesRu, setBaseNotesRu] = useState(initialData.baseNotesRu);
@@ -136,34 +156,51 @@ export default function ProductManualConfigModal({
     setter(event.target.value);
   };
 
-  // Pre-fill initial state using existing product info and enrichment
+  // Fetch notes/description from the pipeline (DeepSeek + Gemini) for the
+  // current name/brand and pre-fill the form with the generated data.
+  const handleFetchNotes = async () => {
     if (!name.trim()) {
-      setError(isRussian ? "Сначала укажите название парфюма" : "Enter the perfume name first");
+      setError(
+        isRussian
+          ? "Сначала укажите название парфюма"
+          : "Enter the perfume name first",
+      );
       return;
     }
     setError("");
     setNotesFetchState("loading");
     setNotesFetchMessage("");
     try {
-      const params = new URLSearchParams({ name: name.trim(), brand: brand.trim() });
+      const params = new URLSearchParams({
+        name: name.trim(),
+        brand: brand.trim(),
+      });
       if (!isNew && item?.id && /^\d+$/.test(String(item.id))) {
         params.set("id", String(item.id));
       }
-      const response = await fetch(`/api/fragrance-notes?${params.toString()}`, {
-        credentials: "same-origin",
-      });
+      const response = await fetch(
+        `/api/fragrance-notes?${params.toString()}`,
+        {
+          credentials: "same-origin",
+        },
+      );
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload) {
         throw new Error(payload?.error || `HTTP ${response.status}`);
       }
       if (payload.status !== "found" || !payload.notes) {
-        setNotesFetchState(payload.status === "not_found" ? "not_found" : "error");
+        setNotesFetchState(
+          payload.status === "not_found" ? "not_found" : "error",
+        );
         setNotesFetchMessage(
           payload.status === "not_found"
-            ? (isRussian
+            ? isRussian
               ? "DeepSeek не смог определить ноты. Заполните их вручную."
-              : "DeepSeek could not determine the notes. Enter them manually.")
-            : (payload.error || (isRussian ? "Не удалось сгенерировать ноты" : "Could not generate notes")),
+              : "DeepSeek could not determine the notes. Enter them manually."
+            : payload.error ||
+                (isRussian
+                  ? "Не удалось сгенерировать ноты"
+                  : "Could not generate notes"),
         );
         return;
       }
@@ -174,8 +211,10 @@ export default function ProductManualConfigModal({
       const heartEn = Array.isArray(en.heart) ? en.heart : [];
       const baseEn = Array.isArray(en.base) ? en.base : [];
       const topRu = Array.isArray(ru.top) && ru.top.length ? ru.top : topEn;
-      const heartRu = Array.isArray(ru.heart) && ru.heart.length ? ru.heart : heartEn;
-      const baseRu = Array.isArray(ru.base) && ru.base.length ? ru.base : baseEn;
+      const heartRu =
+        Array.isArray(ru.heart) && ru.heart.length ? ru.heart : heartEn;
+      const baseRu =
+        Array.isArray(ru.base) && ru.base.length ? ru.base : baseEn;
 
       setTopNotesRu(topRu.join(", "));
       setHeartNotesRu(heartRu.join(", "));
@@ -184,8 +223,16 @@ export default function ProductManualConfigModal({
       setHeartNotesEn(heartEn.join(", "));
       setBaseNotesEn(baseEn.join(", "));
 
-      const sumRu = [...topRu.slice(0, 2), ...heartRu.slice(0, 1), ...baseRu.slice(0, 1)].join(" · ");
-      const sumEn = [...topEn.slice(0, 2), ...heartEn.slice(0, 1), ...baseEn.slice(0, 1)].join(" · ");
+      const sumRu = [
+        ...topRu.slice(0, 2),
+        ...heartRu.slice(0, 1),
+        ...baseRu.slice(0, 1),
+      ].join(" · ");
+      const sumEn = [
+        ...topEn.slice(0, 2),
+        ...heartEn.slice(0, 1),
+        ...baseEn.slice(0, 1),
+      ].join(" · ");
       setNotesSummaryRu(sumRu);
       setNotesSummaryEn(sumEn);
       setNotesOrigin("deepseek");
@@ -195,7 +242,10 @@ export default function ProductManualConfigModal({
       // Pipeline step 4 — the description is written from the aroma palette.
       // Gemini descriptions come from the server; otherwise fall back to the template.
       const serverDescriptions = payload.descriptions;
-      if (serverDescriptions && (serverDescriptions.ru || serverDescriptions.en)) {
+      if (
+        serverDescriptions &&
+        (serverDescriptions.ru || serverDescriptions.en)
+      ) {
         setDescriptionRu(serverDescriptions.ru || serverDescriptions.en);
         setDescriptionEn(serverDescriptions.en || serverDescriptions.ru);
         setNotesFetchMessage(
@@ -208,10 +258,21 @@ export default function ProductManualConfigModal({
           name,
           brand,
           category: categorySlug,
-          categoryRu: (CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0]).ru,
-          categoryEn: (CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0]).en,
+          categoryRu: (
+            CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) ||
+            CATEGORY_OPTIONS[0]
+          ).ru,
+          categoryEn: (
+            CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) ||
+            CATEGORY_OPTIONS[0]
+          ).en,
           genderRu: gender,
-          genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
+          genderEn:
+            gender === "Женский"
+              ? "Women"
+              : gender === "Мужской"
+                ? "Men"
+                : "Unisex",
           longevityRu: longevity,
           longevityEn: "8–12 hours",
           topRu,
@@ -231,14 +292,21 @@ export default function ProductManualConfigModal({
       }
     } catch (err) {
       setNotesFetchState("error");
-      setNotesFetchMessage(err.message || (isRussian ? "Не удалось сгенерировать ноты" : "Could not generate notes"));
+      setNotesFetchMessage(
+        err.message ||
+          (isRussian
+            ? "Не удалось сгенерировать ноты"
+            : "Could not generate notes"),
+      );
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError(isRussian ? "Укажите название парфюма" : "Perfume name is required");
+      setError(
+        isRussian ? "Укажите название парфюма" : "Perfume name is required",
+      );
       return;
     }
 
@@ -246,7 +314,9 @@ export default function ProductManualConfigModal({
     setError("");
 
     try {
-      const currentCategory = CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) || CATEGORY_OPTIONS[0];
+      const currentCategory =
+        CATEGORY_OPTIONS.find((c) => c.slug === categorySlug) ||
+        CATEGORY_OPTIONS[0];
       const payload = {
         id: isNew ? "new" : item.id,
         name: name.trim(),
@@ -257,7 +327,12 @@ export default function ProductManualConfigModal({
         volume: volume.trim(),
         concentration: concentration.trim(),
         gender,
-        genderEn: gender === "Женский" ? "Women" : (gender === "Мужской" ? "Men" : "Unisex"),
+        genderEn:
+          gender === "Женский"
+            ? "Women"
+            : gender === "Мужской"
+              ? "Men"
+              : "Unisex",
         price: Number(price) || 29.99,
         currency: "EUR",
         longevity: longevity.trim(),
@@ -271,8 +346,14 @@ export default function ProductManualConfigModal({
         heartNotesEn: heartNotesEn,
         baseNotesEn: baseNotesEn,
         notesSource: notesOrigin,
-        notesVerified: [topNotesRu, heartNotesRu, baseNotesRu, topNotesEn, heartNotesEn, baseNotesEn]
-          .some((value) => String(value || "").trim().length > 0),
+        notesVerified: [
+          topNotesRu,
+          heartNotesRu,
+          baseNotesRu,
+          topNotesEn,
+          heartNotesEn,
+          baseNotesEn,
+        ].some((value) => String(value || "").trim().length > 0),
         descriptionRu: descriptionRu.trim(),
         descriptionEn: descriptionEn.trim(),
         inStock: true,
@@ -295,7 +376,12 @@ export default function ProductManualConfigModal({
         onSaved(result);
       }
     } catch (err) {
-      setError(err.message || (isRussian ? "Не удалось сохранить товар в базу данных" : "Failed to save product"));
+      setError(
+        err.message ||
+          (isRussian
+            ? "Не удалось сохранить товар в базу данных"
+            : "Failed to save product"),
+      );
     } finally {
       setSaving(false);
     }
@@ -312,22 +398,32 @@ export default function ProductManualConfigModal({
         <header className="product-manual-modal__header">
           <div className="product-manual-modal__title-wrap">
             <h2 className="product-manual-modal__title">
-              <i className={isNew ? "ri-add-circle-line" : "ri-settings-3-line"} />
+              <i
+                className={isNew ? "ri-add-circle-line" : "ri-settings-3-line"}
+              />
               {isNew
-                ? (isRussian ? "Создание нового товара" : "Create New Product")
-                : (isRussian ? "Панель настройки товара" : "Manual Product Setup")}
+                ? isRussian
+                  ? "Создание нового товара"
+                  : "Create New Product"
+                : isRussian
+                  ? "Панель настройки товара"
+                  : "Manual Product Setup"}
               <span className="product-manual-modal__badge">
-                {isNew ? (isRussian ? "Новый товар" : "New Item") : `ID #${item?.id}`}
+                {isNew
+                  ? isRussian
+                    ? "Новый товар"
+                    : "New Item"
+                  : `ID #${item?.id}`}
               </span>
             </h2>
             <p className="product-manual-modal__subtitle">
               {isNew
-                ? (isRussian
+                ? isRussian
                   ? "Заполните название, бренд и характеристики аромата, добавьте фото флакона и сохраните товар в базу данных магазина."
-                  : "Fill in perfume title, brand and properties, add flacon photo and save the product directly to store database.")
-                : (isRussian
+                  : "Fill in perfume title, brand and properties, add flacon photo and save the product directly to store database."
+                : isRussian
                   ? "Все поля уже заполнены на основе характеристик аромата. Вы можете отредактировать ноты, описание, цену и загрузить фото флакона."
-                  : "All fields are pre-filled based on fragrance notes. Edit properties, descriptions, price, and upload a flacon photo.")}
+                  : "All fields are pre-filled based on fragrance notes. Edit properties, descriptions, price, and upload a flacon photo."}
             </p>
           </div>
           <button
@@ -353,13 +449,17 @@ export default function ProductManualConfigModal({
 
             <div className="product-manual-modal__image-layout">
               <div className="product-manual-modal__image-preview-wrap">
-                <div className={`product-manual-modal__image-preview ${image ? "product-manual-modal__image-preview--has-image" : ""}`}>
+                <div
+                  className={`product-manual-modal__image-preview ${image ? "product-manual-modal__image-preview--has-image" : ""}`}
+                >
                   {image ? (
                     <img src={image} alt={name || "Превью фото флакона"} />
                   ) : (
                     <div className="product-manual-modal__image-placeholder">
                       <i className="ri-image-add-line" />
-                      <span>{isRussian ? "Нет изображения" : "No image selected"}</span>
+                      <span>
+                        {isRussian ? "Нет изображения" : "No image selected"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -371,18 +471,26 @@ export default function ProductManualConfigModal({
           <div className="product-manual-modal__section">
             <h3 className="product-manual-modal__section-title">
               <i className="ri-information-line" />
-              {isRussian ? "2. Основная информация о товаре" : "2. Core Information"}
+              {isRussian
+                ? "2. Основная информация о товаре"
+                : "2. Core Information"}
             </h3>
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Название парфюма *" : "Perfume Name *"}</label>
+                <label>
+                  {isRussian ? "Название парфюма *" : "Perfume Name *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={isRussian ? "Например: Khamrah Lattafa" : "e.g. Khamrah Lattafa"}
+                  placeholder={
+                    isRussian
+                      ? "Например: Khamrah Lattafa"
+                      : "e.g. Khamrah Lattafa"
+                  }
                 />
               </div>
 
@@ -450,7 +558,9 @@ export default function ProductManualConfigModal({
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Цена в каталоге (€) *" : "Price in EUR *"}</label>
+                <label>
+                  {isRussian ? "Цена в каталоге (€) *" : "Price in EUR *"}
+                </label>
                 <input
                   type="number"
                   step="0.01"
@@ -462,12 +572,18 @@ export default function ProductManualConfigModal({
               </div>
 
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Минимальный заказ (шт)" : "Minimum Order (MOQ)"}</label>
+                <label>
+                  {isRussian ? "Минимальный заказ (шт)" : "Minimum Order (MOQ)"}
+                </label>
                 <input
                   type="number"
                   disabled
                   value="1"
-                  title={isRussian ? "Минимальное количество заказа всегда 1 штука" : "Minimum order is 1 piece"}
+                  title={
+                    isRussian
+                      ? "Минимальное количество заказа всегда 1 штука"
+                      : "Minimum order is 1 piece"
+                  }
                 />
               </div>
             </div>
@@ -478,37 +594,63 @@ export default function ProductManualConfigModal({
             <div className="product-manual-modal__section-header">
               <h3 className="product-manual-modal__section-title">
                 <i className="ri-sparkling-2-line" />
-                {isRussian ? "3. Пирамида аромата и ноты" : "3. Fragrance Notes Pyramid"}
+                {isRussian
+                  ? "3. Пирамида аромата и ноты"
+                  : "3. Fragrance Notes Pyramid"}
               </h3>
               <button
                 type="button"
                 className="product-manual-modal__magic-btn"
                 onClick={handleGenerateNotes}
                 disabled={notesFetchState === "loading"}
-                title={isRussian ? "Сгенерировать ноты через DeepSeek" : "Generate notes with DeepSeek"}
+                title={
+                  isRussian
+                    ? "Сгенерировать ноты через DeepSeek"
+                    : "Generate notes with DeepSeek"
+                }
               >
-                <i className={notesFetchState === "loading" ? "ri-loader-4-line ri-spin" : "ri-sparkling-2-line"} />
+                <i
+                  className={
+                    notesFetchState === "loading"
+                      ? "ri-loader-4-line ri-spin"
+                      : "ri-sparkling-2-line"
+                  }
+                />
                 {notesFetchState === "loading"
-                  ? (isRussian ? "DeepSeek генерирует ноты…" : "DeepSeek is generating notes…")
-                  : (isRussian ? "Сгенерировать ноты (DeepSeek)" : "Generate notes (DeepSeek)")}
+                  ? isRussian
+                    ? "DeepSeek генерирует ноты…"
+                    : "DeepSeek is generating notes…"
+                  : isRussian
+                    ? "Сгенерировать ноты (DeepSeek)"
+                    : "Generate notes (DeepSeek)"}
               </button>
             </div>
 
             {notesFetchMessage && (
               <p
                 className={`product-manual-modal__notes-status ${
-                  notesFetchState === "found" ? "product-manual-modal__notes-status--ok" : "product-manual-modal__notes-status--warn"
+                  notesFetchState === "found"
+                    ? "product-manual-modal__notes-status--ok"
+                    : "product-manual-modal__notes-status--warn"
                 }`}
                 role="status"
               >
-                <i className={notesFetchState === "found" ? "ri-checkbox-circle-line" : "ri-information-line"} />
+                <i
+                  className={
+                    notesFetchState === "found"
+                      ? "ri-checkbox-circle-line"
+                      : "ri-information-line"
+                  }
+                />
                 <span>{notesFetchMessage}</span>
               </p>
             )}
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Краткий аккорд нот (RU)" : "Notes Summary (RU)"}</label>
+                <label>
+                  {isRussian ? "Краткий аккорд нот (RU)" : "Notes Summary (RU)"}
+                </label>
                 <input
                   type="text"
                   value={notesSummaryRu}
@@ -517,7 +659,9 @@ export default function ProductManualConfigModal({
                 />
               </div>
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Краткий аккорд нот (EN)" : "Notes Summary (EN)"}</label>
+                <label>
+                  {isRussian ? "Краткий аккорд нот (EN)" : "Notes Summary (EN)"}
+                </label>
                 <input
                   type="text"
                   value={notesSummaryEn}
@@ -529,7 +673,11 @@ export default function ProductManualConfigModal({
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Верхние ноты (RU, через запятую)" : "Top Notes (RU, comma-separated)"}</label>
+                <label>
+                  {isRussian
+                    ? "Верхние ноты (RU, через запятую)"
+                    : "Top Notes (RU, comma-separated)"}
+                </label>
                 <input
                   type="text"
                   value={topNotesRu}
@@ -538,7 +686,9 @@ export default function ProductManualConfigModal({
                 />
               </div>
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Верхние ноты (EN)" : "Top Notes (EN)"}</label>
+                <label>
+                  {isRussian ? "Верхние ноты (EN)" : "Top Notes (EN)"}
+                </label>
                 <input
                   type="text"
                   value={topNotesEn}
@@ -550,7 +700,9 @@ export default function ProductManualConfigModal({
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Ноты сердца (RU)" : "Heart Notes (RU)"}</label>
+                <label>
+                  {isRussian ? "Ноты сердца (RU)" : "Heart Notes (RU)"}
+                </label>
                 <input
                   type="text"
                   value={heartNotesRu}
@@ -559,7 +711,9 @@ export default function ProductManualConfigModal({
                 />
               </div>
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Ноты сердца (EN)" : "Heart Notes (EN)"}</label>
+                <label>
+                  {isRussian ? "Ноты сердца (EN)" : "Heart Notes (EN)"}
+                </label>
                 <input
                   type="text"
                   value={heartNotesEn}
@@ -571,7 +725,9 @@ export default function ProductManualConfigModal({
 
             <div className="product-manual-modal__grid-2">
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Базовые ноты (RU)" : "Base Notes (RU)"}</label>
+                <label>
+                  {isRussian ? "Базовые ноты (RU)" : "Base Notes (RU)"}
+                </label>
                 <input
                   type="text"
                   value={baseNotesRu}
@@ -580,7 +736,9 @@ export default function ProductManualConfigModal({
                 />
               </div>
               <div className="product-manual-modal__field">
-                <label>{isRussian ? "Базовые ноты (EN)" : "Base Notes (EN)"}</label>
+                <label>
+                  {isRussian ? "Базовые ноты (EN)" : "Base Notes (EN)"}
+                </label>
                 <input
                   type="text"
                   value={baseNotesEn}
@@ -620,17 +778,29 @@ export default function ProductManualConfigModal({
             </h3>
 
             <div className="product-manual-modal__field">
-              <label>{isRussian ? "Описание на русском (RU)" : "Description in Russian (RU)"}</label>
+              <label>
+                {isRussian
+                  ? "Описание на русском (RU)"
+                  : "Description in Russian (RU)"}
+              </label>
               <textarea
                 rows={4}
                 value={descriptionRu}
                 onChange={(e) => setDescriptionRu(e.target.value)}
-                placeholder={isRussian ? "Подробное роскошное описание аромата Al-Warda..." : "Detailed luxury Russian description..."}
+                placeholder={
+                  isRussian
+                    ? "Подробное роскошное описание аромата Al-Warda..."
+                    : "Detailed luxury Russian description..."
+                }
               />
             </div>
 
             <div className="product-manual-modal__field">
-              <label>{isRussian ? "Описание на английском (EN)" : "Description in English (EN)"}</label>
+              <label>
+                {isRussian
+                  ? "Описание на английском (EN)"
+                  : "Description in English (EN)"}
+              </label>
               <textarea
                 rows={4}
                 value={descriptionEn}
