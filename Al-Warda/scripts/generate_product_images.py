@@ -624,7 +624,11 @@ def generate_ai_perfume_description(
 
 def generate_product_edit(session, account_id, api_token, source_bytes):
     source = decode_source(source_bytes)
-    source.thumbnail((511, 511), Image.Resampling.LANCZOS)
+    # Keep the full-resolution photo as the Flux reference. Only downscale when
+    # larger than 1024 (the model's practical input); never shrink a small or
+    # medium photo to 511px, which destroyed label detail on the redraw.
+    if source.width > 1024 or source.height > 1024:
+        source.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
     reference = io.BytesIO()
     source.save(reference, format="PNG")
 
@@ -858,7 +862,109 @@ def generated_image_matches_source(source_bytes, generated_png_bytes):
     return distance <= MAX_PRODUCT_COLOR_DISTANCE
 
 
-def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024)):
+# Sharpness threshold for the product region (Laplacian variance). This is a
+# starting value to be tuned on real photographs, not a final constant.
+SHARPNESS_THRESHOLD = 40.0
+
+
+def product_sharpness(image):
+    """Laplacian variance over the product region, ignoring the flat background.
+
+    Returns None when the metric cannot be computed (e.g. OpenCV not installed),
+    so callers treat it as "unknown" rather than "blurry".
+    """
+    try:
+        import cv2
+        import numpy as np
+    except ImportError:
+        return None
+    try:
+        gray = np.asarray(image.convert("L"), dtype=np.float32)
+        lap = cv2.Laplacian(gray, cv2.CV_32F)
+        mask = ((gray > 20) & (gray < 235)).astype(np.float32)
+        if float(mask.sum()) < 100:
+            return None
+        return float((lap * lap * mask).sum() / mask.sum())
+    except Exception:
+        return None
+
+
+def measure_source_quality(source_bytes):
+    """Diagnostics for the original photo: resolution, bytes, sharpness, status.
+
+    Never treats a small or soft original as high quality — a tiny source is
+    reported as `low_source_quality` instead of being silently upscaled.
+    """
+    file_size = len(source_bytes)
+    try:
+        source = decode_source(source_bytes)
+    except Exception as exc:
+        return {
+            "originalFileSize": file_size,
+            "qualityStatus": "invalid",
+            "error": str(exc)[:200],
+        }
+
+    width, height = source.size
+    sharpness = product_sharpness(source)
+    status = "ok"
+    if width < 400 or height < 400:
+        status = "low_source_quality"
+    elif sharpness is not None and sharpness < SHARPNESS_THRESHOLD:
+        status = "low_sharpness"
+
+    return {
+        "originalWidth": width,
+        "originalHeight": height,
+        "originalFileSize": file_size,
+        "sharpness": None if sharpness is None else round(sharpness, 2),
+        "qualityStatus": status,
+    }
+
+
+def segment_source(source, segmentation_session):
+    """Run background removal on a source image and return an RGBA cutout at the
+    same dimensions."""
+    cutout_result = remove(
+        source,
+        session=segmentation_session,
+        only_mask=False,
+        alpha_matting=False,
+    )
+    if isinstance(cutout_result, Image.Image):
+        cutout = ImageOps.exif_transpose(cutout_result).convert("RGBA")
+    else:
+        with Image.open(io.BytesIO(cutout_result)) as cutout_image:
+            cutout = ImageOps.exif_transpose(cutout_image).convert("RGBA")
+    if cutout.size != source.size:
+        raise ValueError(
+            f"Segmentation changed the source dimensions: {source.size} -> {cutout.size}"
+        )
+    return cutout
+
+
+def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024)):
+    """Segment the ORIGINAL photo and place it on a transparent canvas WITHOUT
+    redrawing or upscaling the bottle. This keeps the real label pixels.
+
+    Returns (png_bytes, processed_size, original_size).
+    """
+    source = decode_source(source_bytes)
+    original_size = source.size
+    cutout = segment_source(source, segmentation_session)
+    cutout = normalize_flacon_cutout(
+        cutout,
+        target_max_h=canvas_size[1],
+        target_max_w=canvas_size[0],
+        canvas_size=canvas_size,
+        allow_upscale=False,
+    )
+    output = io.BytesIO()
+    cutout.save(output, format="PNG", optimize=True)
+    return output.getvalue(), canvas_size, original_size
+
+
+def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024), allow_upscale=True):
     if "A" not in cutout.getbands():
         return cutout
     import numpy as np
@@ -940,6 +1046,11 @@ def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_s
         return cutout
 
     scale = min(target_max_w / float(cw), target_max_h / float(ch))
+    if not allow_upscale:
+        # Never enlarge the product beyond its original pixel resolution; a
+        # small original stays small and is flagged as low quality instead of
+        # being upscaled and presented as an improvement.
+        scale = min(scale, 1.0)
     new_w = max(1, int(round(cw * scale)))
     new_h = max(1, int(round(ch * scale)))
 
@@ -1114,16 +1225,42 @@ def process_product(
             if source_buffer.tell() > MAX_SOURCE_BYTES:
                 raise ValueError("Original product photo exceeds the 20 MB processing limit")
         source_bytes = source_buffer.getvalue()
-        edited_bytes = (
-            account_pool.generate(requests, source_bytes) if account_pool
-            else generate_product_edit(requests, account_id, api_token, source_bytes)
-        )
-        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
-        if not generated_image_matches_source(source_bytes, output):
-            raise ValueError(
-                "Сгенерированное изображение не похоже на исходный товар "
-                "(доминирующий цвет продукта изменился); требуется повторная генерация"
+        source_quality = measure_source_quality(source_bytes)
+
+        output = None
+        original_size = None
+        processing_method = None
+        whether_upscaled = None
+
+        # Preferred path: preserve the original bottle pixels. Segment the real
+        # photo and place it on a clean transparent canvas WITHOUT letting the
+        # AI redraw the flacon. Fall back to the Flux edit only if segmentation
+        # fails on this photo.
+        try:
+            output, original_size, _source_size = preserve_original_product(
+                source_bytes, segmentation_session
             )
+            processing_method = "preserve_original"
+            whether_upscaled = False
+        except Exception as seg_error:
+            print(
+                f"Preserve-original path failed for {row['id']}: {seg_error}; "
+                f"falling back to Flux studio edit",
+                flush=True,
+            )
+            edited_bytes = (
+                account_pool.generate(requests, source_bytes) if account_pool
+                else generate_product_edit(requests, account_id, api_token, source_bytes)
+            )
+            output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+            processing_method = "flux_redraw"
+            whether_upscaled = True
+            if not generated_image_matches_source(source_bytes, output):
+                raise ValueError(
+                    "Сгенерированное изображение не похоже на исходный товар "
+                    "(доминирующий цвет продукта изменился); требуется повторная генерация"
+                )
+
         image_url = save_generated_image(output)
 
         # Fragrance notes: generated by DeepSeek from the name and brand (cleared when generation fails)
@@ -1168,6 +1305,14 @@ def process_product(
             "imageUrl": image_url,
             "width": original_size[0],
             "height": original_size[1],
+            "processedWidth": original_size[0],
+            "processedHeight": original_size[1],
+            "processingMethod": processing_method,
+            "whetherUpscaled": whether_upscaled,
+            "sourceImageId": hashlib.sha256(
+                (product_source(row) or "").encode("utf-8")
+            ).hexdigest()[:16],
+            **source_quality,
         })
         info[job_key] = job
         if account_pool and getattr(account_pool, "persist_quotas", False):

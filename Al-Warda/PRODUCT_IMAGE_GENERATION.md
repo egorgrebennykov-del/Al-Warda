@@ -1,18 +1,42 @@
 # Product image generation
 
-The Qogita image queue is driven by GitHub Actions. Flux 2 Klein edits the
-original Qogita photo into a three-dimensional studio product image, using the
-original as a reference. U2Net removes the background from the edited image;
-the final PNG retains transparency so the product sits on the site's background.
-Generative editing and segmentation can change labels, details or edges; review
-the output against the original before relying on it. Final PNG files are committed to the repository
-under `public/assets/img/generated-products` and deployed as Cloudflare static
-assets; no Supabase Storage bucket is used for new images. Queue state is stored
-in the existing `stocks.info` JSON.
+The Qogita image queue is driven by GitHub Actions. The preferred path now
+**preserves the original bottle pixels**: U2Net segments the original Qogita
+photo and the cutout is placed on a clean transparent canvas **without
+redrawing or upscaling** the flacon, so labels stay sharp. Flux 2 Klein studio
+edit is used only as a fallback when segmentation fails on a photo. The final
+PNG retains transparency so the product sits on the site's background.
+Generative editing (fallback) can change labels, details or edges; review the
+output against the original before relying on it. Final PNG files are committed
+to the repository under `public/assets/img/generated-products` and deployed as
+Cloudflare static assets; no Supabase Storage bucket is used for new images.
+Queue state is stored in the existing `stocks.info` JSON.
 Public catalog products require a completed generated product image, regardless
 of the text generation provider. Images are marked `completed` only after their
 deployed bytes match the locally generated file. Existing completed images in
 Supabase Storage remain supported.
+
+## Image quality diagnostics
+
+Every generation records these fields in `stocks.info.imageGeneration`
+(`imageGenerationReplacement` for regenerations):
+
+- `processingMethod` — `preserve_original` (segmentation only) or
+  `flux_redraw` (AI re-photograph fallback);
+- `whetherUpscaled` — whether the product was enlarged beyond its original
+  resolution;
+- `originalWidth` / `originalHeight` / `originalFileSize` — the real source
+  photo dimensions and byte size;
+- `processedWidth` / `processedHeight` — the final canvas size;
+- `sharpness` — Laplacian variance of the product region (null if unavailable);
+- `qualityStatus` — `ok`, `low_source_quality` (small original) or
+  `low_sharpness`;
+- `sourceImageId` — a short SHA-256 identifier of the source URL.
+
+Small originals are kept at their native size and flagged
+`low_source_quality` instead of being upscaled and presented as an improvement.
+`SHARPNESS_THRESHOLD` (in `scripts/generate_product_images.py`) is a starting
+value to be tuned on real photos.
 
 ## One-time setup
 
@@ -49,6 +73,7 @@ Supabase Storage remain supported.
    otherwise the server uses the Supabase secret to protect the session.
    Restart the server after changing these values and sign in to Qogita again
    in the connection settings. Do not commit the local secrets file.
+
 4. Deploy the Worker and open **Admin → Product images** to view progress or
    open GitHub Actions to manually dispatch the queue. The scheduled job runs
    daily at 00:20 UTC. The manual dispatch accepts the maximum number of

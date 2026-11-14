@@ -231,8 +231,9 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertIn("product reference", session.kwargs["data"]["prompt"])
         reference = session.kwargs["files"]["input_image_0"]
         with Image.open(io.BytesIO(reference[1])) as image:
-            self.assertLess(image.width, 512)
-            self.assertLess(image.height, 512)
+            # The reference keeps the original 800x600 resolution — it is no
+            # longer downscaled to 511px before being sent to Flux.
+            self.assertEqual((image.width, image.height), (800, 600))
 
     def test_cloudflare_daily_quota_stops_generation(self):
         class FakeResponse:
@@ -293,6 +294,7 @@ class ProductImageGenerationTests(unittest.TestCase):
         def capture_update(_session, _url, _row, info, **_kwargs):
             states.append(info["imageGeneration"]["status"])
         with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
              patch.object(queue, "generate_product_edit", side_effect=[queue.WorkersDailyQuotaExceeded("limit"), b"edited"]) as edit, \
              patch.object(queue, "transparent_product_image", return_value=(b"png", (1024, 1024))), \
              patch.object(queue, "save_generated_image", return_value="/image.png"), \
@@ -307,6 +309,7 @@ class ProductImageGenerationTests(unittest.TestCase):
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
              patch.object(queue, "generate_product_edit", return_value=source), \
              patch.object(queue, "patch_stock") as update, \
              patch.object(queue, "save_generated_image") as save:
@@ -385,6 +388,7 @@ class ProductImageGenerationTests(unittest.TestCase):
         candidates, _ = queue.select_candidates([row], now, regenerate_completed=True)
         self.assertEqual(candidates, [row])
         with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
              patch.object(queue, "generate_product_edit", side_effect=RuntimeError("provider failed")), \
              patch.object(queue, "patch_stock") as update:
             with self.assertRaisesRegex(RuntimeError, "provider failed"):
@@ -634,12 +638,11 @@ class ProductImageGenerationTests(unittest.TestCase):
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 999, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
              patch.object(queue, "generate_product_edit", side_effect=RuntimeError("Workers AI request failed (400): Image flagged by moderation (3030)")), \
-             patch.object(queue, "remove") as remove_mock, \
              patch.object(queue, "patch_stock") as update:
             with self.assertRaisesRegex(RuntimeError, "Image flagged"):
                 queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
-        remove_mock.assert_not_called()
         self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
         self.assertIn("flagged", update.call_args.args[3]["imageGeneration"]["error"].lower())
 
@@ -711,6 +714,58 @@ class ProductImageGenerationTests(unittest.TestCase):
         ys, xs = np.where(arr[:, :, 3] > 25)
         center_x = (xs.min() + xs.max()) / 2.0
         self.assertAlmostEqual(center_x, 512.0, delta=1.5)
+
+    def test_normalize_flacon_cutout_does_not_upscale_when_disabled(self):
+        im = Image.new('RGBA', (300, 900), (0, 0, 0, 0))
+        bottle = Image.new('RGBA', (100, 300), (180, 140, 60, 255))
+        im.paste(bottle, (100, 300))
+        normalized = queue.normalize_flacon_cutout(
+            im, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024), allow_upscale=False
+        )
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        self.assertTrue(len(xs) > 0)
+        # The product is not enlarged beyond its original ~100px width.
+        self.assertLessEqual(int(xs.max()) - int(xs.min()) + 1, 120)
+
+    def test_measure_source_quality_flags_low_resolution(self):
+        small = image_bytes(Image.new("RGB", (120, 120), "red"))
+        quality = queue.measure_source_quality(small)
+        self.assertEqual(quality["qualityStatus"], "low_source_quality")
+        self.assertEqual(quality["originalWidth"], 120)
+        self.assertEqual(quality["originalHeight"], 120)
+        self.assertEqual(quality["originalFileSize"], len(small))
+
+    def test_measure_source_quality_reports_dimensions_for_valid_source(self):
+        source = image_bytes(Image.new("RGB", (800, 600), "red"))
+        quality = queue.measure_source_quality(source)
+        self.assertEqual(quality["originalWidth"], 800)
+        self.assertEqual(quality["originalHeight"], 600)
+        self.assertIn("qualityStatus", quality)
+        self.assertIn("originalFileSize", quality)
+
+    def test_process_product_uses_preserve_original_path(self):
+        source = image_bytes(Image.new("RGB", (60, 60), (200, 30, 30)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        captured = {}
+        def capture_update(_session, _url, _row, info, **_kwargs):
+            captured.update(info)
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit") as edit, \
+             patch.object(queue, "fetch_verified_notes", return_value=None), \
+             patch.object(queue, "generate_ai_perfume_description", return_value=None), \
+             patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/x.png"), \
+             patch.object(queue, "patch_stock", side_effect=capture_update):
+            queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
+        edit.assert_not_called()
+        job = captured["imageGeneration"]
+        self.assertEqual(job["status"], "publishing")
+        self.assertEqual(job["processingMethod"], "preserve_original")
+        self.assertEqual(job["whetherUpscaled"], False)
+        self.assertEqual(job["originalWidth"], 60)
+        self.assertEqual(job["originalHeight"], 60)
+        self.assertEqual(job["qualityStatus"], "low_source_quality")
 
 if __name__ == "__main__":
     unittest.main()
