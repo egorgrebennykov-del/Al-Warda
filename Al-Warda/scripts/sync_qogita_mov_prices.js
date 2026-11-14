@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Al-Warda - Qogita MOV <= 500 Price Synchronization Script
- * 
+ *
  * Fetches real supplier offers from Qogita (/buyers/variants/{fid}/offers/)
  * for each perfume and ensures the catalog price is set to the lowest available
  * price for accessible purchase orders (Minimum Order Value MOV <= 500 EUR),
@@ -45,12 +45,23 @@ function loadEnv() {
 }
 loadEnv();
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const ENRICHED_STOCKS_PATH = path.resolve(rootDir, "server", "data", "enrichedStocks.json");
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co";
+const SUPABASE_KEY =
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  "";
+const ENRICHED_STOCKS_PATH = path.resolve(
+  rootDir,
+  "server",
+  "data",
+  "enrichedStocks.json",
+);
 
 if (!process.env.NHOST_ADMIN_SECRET) {
-  console.error("❌ NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret).");
+  console.error(
+    "❌ NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret).",
+  );
   process.exit(1);
 }
 
@@ -67,7 +78,11 @@ function extractVariantFid(product) {
   if (product.info?.qogitaFid) return product.info.qogitaFid;
 
   // 2. Check productUrl in product or product.info
-  const url = product.info?.productUrl || product.productUrl || product.info?.qogitaUrl || product.qogitaUrl;
+  const url =
+    product.info?.productUrl ||
+    product.productUrl ||
+    product.info?.qogitaUrl ||
+    product.qogitaUrl;
   if (typeof url === "string") {
     const match = url.match(/\/products\/([a-zA-Z0-9_-]+)\//);
     if (match) return match[1];
@@ -84,15 +99,21 @@ function extractVariantFid(product) {
 }
 
 export function extractBestPriceForMov(offersData, targetMov = 500.0) {
-  const offers = Array.isArray(offersData) ? offersData : (offersData?.offers || []);
+  const offers = Array.isArray(offersData)
+    ? offersData
+    : offersData?.offers || [];
   const eligible = [];
   let lowestOverall = null;
 
   for (const off of offers) {
     const tiers = off.tieredPrices || off.tiered_prices || [];
     for (const t of tiers) {
-      const mov = parseFloat(t.tierMov?.amount ?? t.mov ?? t.tier_mov?.amount ?? 0);
-      const price = parseFloat(t.tierPrice?.amount ?? t.price ?? t.amount ?? t.tier_price?.amount ?? 0);
+      const mov = parseFloat(
+        t.tierMov?.amount ?? t.mov ?? t.tier_mov?.amount ?? 0,
+      );
+      const price = parseFloat(
+        t.tierPrice?.amount ?? t.price ?? t.amount ?? t.tier_price?.amount ?? 0,
+      );
       const currency = t.tierPrice?.currency || t.currency || "EUR";
 
       if (price > 0) {
@@ -189,7 +210,9 @@ async function main() {
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to load stocks (${res.status}): ${await res.text()}`);
+      throw new Error(
+        `Failed to load stocks (${res.status}): ${await res.text()}`,
+      );
     }
 
     const rows = await res.json();
@@ -205,7 +228,9 @@ async function main() {
   let enrichedStocks = {};
   if (fs.existsSync(ENRICHED_STOCKS_PATH)) {
     try {
-      enrichedStocks = JSON.parse(fs.readFileSync(ENRICHED_STOCKS_PATH, "utf8"));
+      enrichedStocks = JSON.parse(
+        fs.readFileSync(ENRICHED_STOCKS_PATH, "utf8"),
+      );
     } catch (e) {
       console.warn("Could not read enrichedStocks.json:", e.message);
     }
@@ -239,7 +264,7 @@ async function main() {
           if (priceChanged || needsFidSave) {
             if (priceChanged) {
               console.log(
-                `[UPDATE] #${perfume.id} "${perfume.name}": €${currentPrice} -> €${newPrice} (MOV ${result.mov} by ${result.seller})`
+                `[UPDATE] #${perfume.id} "${perfume.name}": €${currentPrice} -> €${newPrice} (MOV ${result.mov} by ${result.seller})`,
               );
             }
 
@@ -249,22 +274,27 @@ async function main() {
             };
 
             // 1. Update Supabase
-            const patchRes = await restFetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${perfume.id}`, {
-              method: "PATCH",
-              headers: {
-                apikey: SUPABASE_KEY,
-                Authorization: `Bearer ${SUPABASE_KEY}`,
-                "Content-Type": "application/json",
-                Prefer: "return=minimal",
+            const patchRes = await restFetch(
+              `${SUPABASE_URL}/rest/v1/stocks?id=eq.${perfume.id}`,
+              {
+                method: "PATCH",
+                headers: {
+                  apikey: SUPABASE_KEY,
+                  Authorization: `Bearer ${SUPABASE_KEY}`,
+                  "Content-Type": "application/json",
+                  Prefer: "return=minimal",
+                },
+                body: JSON.stringify({
+                  price: newPrice,
+                  info: updatedInfo,
+                }),
               },
-              body: JSON.stringify({
-                price: newPrice,
-                info: updatedInfo,
-              }),
-            });
+            );
 
             if (!patchRes.ok) {
-              console.warn(`Failed to patch #${perfume.id}: ${patchRes.status}`);
+              console.warn(
+                `Failed to patch #${perfume.id}: ${patchRes.status}`,
+              );
             } else if (priceChanged) {
               updatedCount++;
             }
@@ -282,7 +312,7 @@ async function main() {
         } catch (err) {
           console.warn(`Error on perfume #${perfume.id}:`, err.message);
         }
-      })
+      }),
     );
 
     // Polite delay to protect Qogita API rate limit
@@ -292,8 +322,14 @@ async function main() {
   // Save updated enrichedStocks.json
   if (updatedCount > 0) {
     try {
-      fs.writeFileSync(ENRICHED_STOCKS_PATH, JSON.stringify(enrichedStocks, null, 2), "utf8");
-      console.log(`✓ Saved ${updatedCount} price updates to enrichedStocks.json.`);
+      fs.writeFileSync(
+        ENRICHED_STOCKS_PATH,
+        JSON.stringify(enrichedStocks, null, 2),
+        "utf8",
+      );
+      console.log(
+        `✓ Saved ${updatedCount} price updates to enrichedStocks.json.`,
+      );
     } catch (e) {
       console.warn("Failed to save enrichedStocks.json:", e.message);
     }
@@ -301,7 +337,9 @@ async function main() {
   }
 
   console.log("=================================================");
-  console.log(`✓ Done! Verified: ${verifiedCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`);
+  console.log(
+    `✓ Done! Verified: ${verifiedCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`,
+  );
   console.log("=================================================");
 }
 

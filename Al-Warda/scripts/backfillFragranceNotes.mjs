@@ -35,7 +35,10 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { buildNotesInfo, generateFragranceNotes } from "../server/deepseekNotesService.js";
+import {
+  buildNotesInfo,
+  generateFragranceNotes,
+} from "../server/deepseekNotesService.js";
 import { withGeminiDescriptions } from "../server/geminiDescriptionService.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
 import { restFetch } from "./nhost-rest.mjs";
@@ -45,11 +48,15 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
 function loadEnv() {
-  for (const envPath of [path.resolve(rootDir, ".env"), path.resolve(rootDir, "..", ".env")]) {
+  for (const envPath of [
+    path.resolve(rootDir, ".env"),
+    path.resolve(rootDir, "..", ".env"),
+  ]) {
     if (!fs.existsSync(envPath)) continue;
     for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+      if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("="))
+        continue;
       const idx = trimmed.indexOf("=");
       const key = trimmed.slice(0, idx).trim();
       const value = trimmed.slice(idx + 1).trim();
@@ -59,8 +66,13 @@ function loadEnv() {
 }
 loadEnv();
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co").replace(/\/+$/, "");
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
+const SUPABASE_URL = (
+  process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co"
+).replace(/\/+$/, "");
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY ||
+  "";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -81,18 +93,28 @@ const NOISE_PATTERNS = [
 ];
 
 function canonicalQuery(name, brand) {
-  let text = `${brand || ""} ${name || ""}`.toLowerCase().replace(/&/g, " and ");
+  let text = `${brand || ""} ${name || ""}`
+    .toLowerCase()
+    .replace(/&/g, " and ");
   for (const pattern of NOISE_PATTERNS) text = text.replace(pattern, " ");
   text = text.replace(/[()[\]{}.,;:!?/\\\-–—]+/g, " ");
   return text.replace(/\s+/g, " ").trim();
 }
 
 function hasVerifiedNotes(info) {
-  if (!info || info.notesVerified !== true || !info.notes || typeof info.notes !== "object") return false;
+  if (
+    !info ||
+    info.notesVerified !== true ||
+    !info.notes ||
+    typeof info.notes !== "object"
+  )
+    return false;
   return [info.notes.ru, info.notes.en].some(
     (bucket) =>
       bucket &&
-      ["top", "heart", "base"].some((layer) => Array.isArray(bucket[layer]) && bucket[layer].length > 0),
+      ["top", "heart", "base"].some(
+        (layer) => Array.isArray(bucket[layer]) && bucket[layer].length > 0,
+      ),
   );
 }
 
@@ -102,11 +124,14 @@ function isPhotoReady(row) {
 
 // Sets have multiple fragrances and no single aroma palette, so they are
 // configured manually in the privileged panel instead of being generated.
-const SET_PATTERN = /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i;
+const SET_PATTERN =
+  /\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b/i;
 function isSetRow(row) {
   const info = row.info && typeof row.info === "object" ? row.info : {};
-  if (info.isSet || info.category === "sets" || info.categorySlug === "sets") return true;
-  const text = `${row.name || ""} ${row.brand || ""} ${info.volume || ""}`.toLowerCase();
+  if (info.isSet || info.category === "sets" || info.categorySlug === "sets")
+    return true;
+  const text =
+    `${row.name || ""} ${row.brand || ""} ${info.volume || ""}`.toLowerCase();
   return (
     SET_PATTERN.test(text) ||
     /\+\s*\d+(\.\d+)?\s*ml\b/i.test(text) ||
@@ -118,7 +143,9 @@ function isSetRow(row) {
 function clearDeepseekNotes(info) {
   const next = { ...(info && typeof info === "object" ? info : {}) };
   const manualVerified =
-    next.notesVerified === true && next.notesSource === "manual" && hasVerifiedNotes(next);
+    next.notesVerified === true &&
+    next.notesSource === "manual" &&
+    hasVerifiedNotes(next);
   delete next.notesLookup;
   if (manualVerified) return next;
   delete next.notes;
@@ -156,7 +183,9 @@ async function fetchAllStocks() {
     const url = `${SUPABASE_URL}/rest/v1/stocks?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${PAGE_SIZE}`;
     const response = await restFetch(url, { headers: authHeaders() });
     if (!response.ok) {
-      throw new Error(`Could not read stocks (${response.status}): ${(await response.text()).slice(0, 300)}`);
+      throw new Error(
+        `Could not read stocks (${response.status}): ${(await response.text()).slice(0, 300)}`,
+      );
     }
     const page = await response.json();
     if (!Array.isArray(page) || page.length === 0) break;
@@ -168,13 +197,18 @@ async function fetchAllStocks() {
 }
 
 async function patchStock(rowId, info) {
-  const response = await restFetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`, {
-    method: "PATCH",
-    headers: { ...authHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({ info }),
-  });
+  const response = await restFetch(
+    `${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`,
+    {
+      method: "PATCH",
+      headers: { ...authHeaders(), Prefer: "return=minimal" },
+      body: JSON.stringify({ info }),
+    },
+  );
   if (!response.ok) {
-    throw new Error(`Could not save notes for ${rowId} (${response.status}): ${(await response.text()).slice(0, 300)}`);
+    throw new Error(
+      `Could not save notes for ${rowId} (${response.status}): ${(await response.text()).slice(0, 300)}`,
+    );
   }
 }
 
@@ -203,11 +237,21 @@ async function generateWithRetries(name, brand, attempts = 4) {
 }
 
 function parseArgs() {
-  const args = { limit: 0, concurrency: 8, force: false, brand: "", dryRun: false, pruneMissingPhoto: false, includeSets: false, descriptionsOnly: false };
+  const args = {
+    limit: 0,
+    concurrency: 8,
+    force: false,
+    brand: "",
+    dryRun: false,
+    pruneMissingPhoto: false,
+    includeSets: false,
+    descriptionsOnly: false,
+  };
   for (let i = 2; i < process.argv.length; i += 1) {
     const arg = process.argv[i];
     if (arg === "--limit") args.limit = Number(process.argv[++i]) || 0;
-    else if (arg === "--concurrency") args.concurrency = Math.max(1, Number(process.argv[++i]) || 8);
+    else if (arg === "--concurrency")
+      args.concurrency = Math.max(1, Number(process.argv[++i]) || 8);
     else if (arg === "--force") args.force = true;
     else if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--prune-missing-photo") args.pruneMissingPhoto = true;
@@ -220,8 +264,12 @@ function parseArgs() {
 
 async function main() {
   const args = parseArgs();
-  if (!process.env.NHOST_ADMIN_SECRET) throw new Error("NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)");
-  if (!DEEPSEEK_API_KEY && !args.pruneMissingPhoto) throw new Error("DEEPSEEK_API_KEY is required");
+  if (!process.env.NHOST_ADMIN_SECRET)
+    throw new Error(
+      "NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)",
+    );
+  if (!DEEPSEEK_API_KEY && !args.pruneMissingPhoto)
+    throw new Error("DEEPSEEK_API_KEY is required");
 
   log("=".repeat(60));
   log("DeepSeek fragrance notes backfill started");
@@ -232,9 +280,14 @@ async function main() {
     const pruneTargets = rows.filter((row) => {
       if (isPhotoReady(row)) return false;
       const info = row.info && typeof row.info === "object" ? row.info : {};
-      return info.notesSource === "deepseek" || info.notesLookup?.source === "deepseek";
+      return (
+        info.notesSource === "deepseek" ||
+        info.notesLookup?.source === "deepseek"
+      );
     });
-    log(`Pruning DeepSeek notes from ${pruneTargets.length} rows without a completed photo`);
+    log(
+      `Pruning DeepSeek notes from ${pruneTargets.length} rows without a completed photo`,
+    );
 
     if (args.dryRun) {
       for (const row of pruneTargets.slice(0, 20)) {
@@ -264,22 +317,32 @@ async function main() {
   // from the already-confirmed aroma palette. Boilerplate/template descriptions
   // are replaced; rows already described by Gemini are left untouched.
   if (args.descriptionsOnly) {
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required for --descriptions-only");
+    if (!GEMINI_API_KEY)
+      throw new Error("GEMINI_API_KEY is required for --descriptions-only");
 
     const descRows = photoReadyRows.filter((row) => {
       if (isSetRow(row)) return false;
       const info = row.info && typeof row.info === "object" ? row.info : {};
       if (!hasVerifiedNotes(info)) return false;
       if (info.descriptionSource === "gemini" && !args.force) return false;
-      if (args.brand && !String(row.brand || "").toLowerCase().includes(args.brand.toLowerCase())) return false;
+      if (
+        args.brand &&
+        !String(row.brand || "")
+          .toLowerCase()
+          .includes(args.brand.toLowerCase())
+      )
+        return false;
       return true;
     });
 
-    log(`Descriptions-only: ${descRows.length} photo-ready rows with a palette need a Gemini description`);
+    log(
+      `Descriptions-only: ${descRows.length} photo-ready rows with a palette need a Gemini description`,
+    );
     if (args.limit > 0) descRows.length = Math.min(descRows.length, args.limit);
 
     if (args.dryRun) {
-      for (const row of descRows.slice(0, 20)) log(`  would describe: [${row.id}] ${row.brand} — ${row.name}`);
+      for (const row of descRows.slice(0, 20))
+        log(`  would describe: [${row.id}] ${row.brand} — ${row.name}`);
       log(`Dry run finished. ${descRows.length} rows would be described.`);
       return;
     }
@@ -310,13 +373,17 @@ async function main() {
           }
         } catch (error) {
           descCounters.failed += 1;
-          log(`  ✗ [${row?.id}] ${row?.name}: ${String(error?.message || error).slice(0, 160)}`);
+          log(
+            `  ✗ [${row?.id}] ${row?.name}: ${String(error?.message || error).slice(0, 160)}`,
+          );
         }
         descDone += 1;
         if (descDone % 25 === 0 || descDone === descRows.length) {
           const elapsed = Math.max(1, (Date.now() - descStartedAt) / 1000);
           const rate = descDone / elapsed;
-          const eta = Math.round((descRows.length - descDone) / Math.max(rate, 0.001));
+          const eta = Math.round(
+            (descRows.length - descDone) / Math.max(rate, 0.001),
+          );
           log(
             `Progress: ${descDone}/${descRows.length} (ok=${descCounters.ok} failed=${descCounters.failed}) ` +
               `| ${rate.toFixed(2)} rows/s | ETA ~${Math.floor(eta / 60)}m ${eta % 60}s`,
@@ -325,7 +392,12 @@ async function main() {
       }
     }
 
-    await Promise.all(Array.from({ length: Math.min(args.concurrency, Math.max(1, descRows.length)) }, descWorker));
+    await Promise.all(
+      Array.from(
+        { length: Math.min(args.concurrency, Math.max(1, descRows.length)) },
+        descWorker,
+      ),
+    );
     const descSeconds = Math.round((Date.now() - descStartedAt) / 1000);
     log(
       `Finished descriptions: ok=${descCounters.ok} failed=${descCounters.failed} total=${descRows.length} ` +
@@ -338,16 +410,28 @@ async function main() {
     if (!args.includeSets && isSetRow(row)) return false;
     const info = row.info && typeof row.info === "object" ? row.info : {};
     if (!args.force && hasVerifiedNotes(info)) return false;
-    if (args.brand && !String(row.brand || "").toLowerCase().includes(args.brand.toLowerCase())) return false;
+    if (
+      args.brand &&
+      !String(row.brand || "")
+        .toLowerCase()
+        .includes(args.brand.toLowerCase())
+    )
+      return false;
     return true;
   });
 
-  const uniqueFragrances = new Set(targets.map((row) => canonicalQuery(row.name, row.brand))).size;
+  const uniqueFragrances = new Set(
+    targets.map((row) => canonicalQuery(row.name, row.brand)),
+  ).size;
   log(
     `Photo-ready rows: ${photoReadyRows.length} (sets excluded: ${args.includeSets ? 0 : setRows.length}); ` +
       `rows still missing verified DeepSeek notes: ${targets.length} (${uniqueFragrances} unique fragrances)`,
   );
-  log(GEMINI_API_KEY ? "Gemini descriptions: enabled (pipeline step 4)" : "Gemini descriptions: disabled (GEMINI_API_KEY missing)");
+  log(
+    GEMINI_API_KEY
+      ? "Gemini descriptions: enabled (pipeline step 4)"
+      : "Gemini descriptions: disabled (GEMINI_API_KEY missing)",
+  );
 
   if (args.limit > 0) {
     targets.length = Math.min(targets.length, args.limit);
@@ -391,7 +475,9 @@ async function main() {
 
         if (!lookup || lookup.status !== "found") {
           counters.failed += 1;
-          log(`  ✗ [${row.id}] ${name}: ${String(lookup?.error || lookup?.reason || "not found").slice(0, 160)}`);
+          log(
+            `  ✗ [${row.id}] ${name}: ${String(lookup?.error || lookup?.reason || "not found").slice(0, 160)}`,
+          );
         } else {
           const info = row.info && typeof row.info === "object" ? row.info : {};
           let updatedInfo = buildNotesInfo(info, lookup);
@@ -411,7 +497,9 @@ async function main() {
         if (done % 25 === 0 || done === targets.length) {
           const elapsed = Math.max(1, (Date.now() - startedAt) / 1000);
           const rate = done / elapsed;
-          const eta = Math.round((targets.length - done) / Math.max(rate, 0.001));
+          const eta = Math.round(
+            (targets.length - done) / Math.max(rate, 0.001),
+          );
           log(
             `Progress: ${done}/${targets.length} (ok=${counters.ok} failed=${counters.failed} skipped=${counters.skipped}) ` +
               `| ${rate.toFixed(2)} rows/s | ETA ~${Math.floor(eta / 60)}m ${eta % 60}s`,
@@ -420,12 +508,19 @@ async function main() {
       } catch (error) {
         counters.failed += 1;
         done += 1;
-        log(`  ✗ [${row?.id}] ${row?.name}: ${String(error?.message || error).slice(0, 160)}`);
+        log(
+          `  ✗ [${row?.id}] ${row?.name}: ${String(error?.message || error).slice(0, 160)}`,
+        );
       }
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(args.concurrency, Math.max(1, targets.length)) }, worker));
+  await Promise.all(
+    Array.from(
+      { length: Math.min(args.concurrency, Math.max(1, targets.length)) },
+      worker,
+    ),
+  );
 
   const totalSeconds = Math.round((Date.now() - startedAt) / 1000);
   log(

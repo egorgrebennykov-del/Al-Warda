@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Al-Warda Parfumes - Automatic Stocks & Supabase Bilingual AI Sync Script
- * 
+ *
  * Synchronizes Arabian perfume catalog into Supabase 'stocks' table:
  * - Generates bilingual metadata (Russian & English):
  *   description, gender, category, longevity, sillage, olfactory notes.
@@ -44,22 +44,59 @@ function loadEnv() {
 }
 loadEnv();
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.supabase.co";
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY ||
+  "";
 
 const STOCKS_API_URL = `${SUPABASE_URL}/rest/v1/stocks`;
-const CATALOG_PATH = path.resolve(rootDir, "server", "data", "cachedArabianPerfumes.json");
-const ENRICHED_CACHE_PATH = path.resolve(rootDir, "server", "data", "enrichedStocks.json");
+const CATALOG_PATH = path.resolve(
+  rootDir,
+  "server",
+  "data",
+  "cachedArabianPerfumes.json",
+);
+const ENRICHED_CACHE_PATH = path.resolve(
+  rootDir,
+  "server",
+  "data",
+  "enrichedStocks.json",
+);
 
 const DEFAULT_ORIGIN = { ru: "Ближний Восток", en: "Middle East" };
-const BRAND_ORIGINS = new Proxy({}, {
-  get: () => DEFAULT_ORIGIN,
-});
+const BRAND_ORIGINS = new Proxy(
+  {},
+  {
+    get: () => DEFAULT_ORIGIN,
+  },
+);
 
 const FEMININE_KEYWORDS = [
-  "femme", "woman", "women", "pour femme", "mademoiselle", "girl", "queen",
-  "rose", "pink", "blush", "princess", "yara", "fakhar femme", "haya", "angham",
-  "flora", "floral", "bella", "lady", "she", "sublime", "candy", "sweet"
+  "femme",
+  "woman",
+  "women",
+  "pour femme",
+  "mademoiselle",
+  "girl",
+  "queen",
+  "rose",
+  "pink",
+  "blush",
+  "princess",
+  "yara",
+  "fakhar femme",
+  "haya",
+  "angham",
+  "flora",
+  "floral",
+  "bella",
+  "lady",
+  "she",
+  "sublime",
+  "candy",
+  "sweet",
 ];
 
 function detectGender(name, brand) {
@@ -70,10 +107,15 @@ function detectGender(name, brand) {
     }
   }
 
-  const isMaleOnly = (lower.includes("homme") && !lower.includes("femme")) ||
+  const isMaleOnly =
+    (lower.includes("homme") && !lower.includes("femme")) ||
     lower.includes("pour homme") ||
-    (lower.includes("men") && !lower.includes("women") && !lower.includes("woman")) ||
-    lower.includes("asad") || lower.includes("fakhar black") || lower.includes("hunter");
+    (lower.includes("men") &&
+      !lower.includes("women") &&
+      !lower.includes("woman")) ||
+    lower.includes("asad") ||
+    lower.includes("fakhar black") ||
+    lower.includes("hunter");
 
   if (isMaleOnly) {
     return { ru: "Мужской", en: "Men" };
@@ -84,18 +126,34 @@ function detectGender(name, brand) {
 
 function detectCategoryAndNotes(name, brand, gender) {
   const lower = `${name} ${brand}`.toLowerCase();
-  const isMaleOnly = (gender.ru === "Мужской");
+  const isMaleOnly = gender.ru === "Мужской";
 
   // 1. Fresh / Aquatic
   if (
-    lower.includes("aqua") || lower.includes("marine") || lower.includes("ocean") ||
-    lower.includes("sea") || lower.includes("cool") || lower.includes("ice") ||
-    lower.includes("water") || lower.includes("megamare") || lower.includes("sedley") ||
-    lower.includes("legacy") || lower.includes("fresh") || lower.includes("blue") ||
-    lower.includes("bleu") || lower.includes("glacier") || lower.includes("breeze") ||
-    lower.includes("rain") || lower.includes("river") || lower.includes("hawas") ||
-    lower.includes("sailor") || lower.includes("voyage") || lower.includes("sky") ||
-    lower.includes("crystal") || lower.includes("pure white") || lower.includes("silver")
+    lower.includes("aqua") ||
+    lower.includes("marine") ||
+    lower.includes("ocean") ||
+    lower.includes("sea") ||
+    lower.includes("cool") ||
+    lower.includes("ice") ||
+    lower.includes("water") ||
+    lower.includes("megamare") ||
+    lower.includes("sedley") ||
+    lower.includes("legacy") ||
+    lower.includes("fresh") ||
+    lower.includes("blue") ||
+    lower.includes("bleu") ||
+    lower.includes("glacier") ||
+    lower.includes("breeze") ||
+    lower.includes("rain") ||
+    lower.includes("river") ||
+    lower.includes("hawas") ||
+    lower.includes("sailor") ||
+    lower.includes("voyage") ||
+    lower.includes("sky") ||
+    lower.includes("crystal") ||
+    lower.includes("pure white") ||
+    lower.includes("silver")
   ) {
     return {
       categoryRu: "Свежие акватические",
@@ -109,31 +167,52 @@ function detectCategoryAndNotes(name, brand, gender) {
         ru: {
           top: ["Морской бриз", "Калабрийский бергамот", "Кубики льда"],
           heart: ["Мята", "Лаванда", "Морская соль"],
-          base: ["Амброксан", "Минеральный кедр", "Белый мускус"]
+          base: ["Амброксан", "Минеральный кедр", "Белый мускус"],
         },
         en: {
           top: ["Sea Breeze", "Calabrian Bergamot", "Ice Cubes"],
           heart: ["Peppermint", "Lavender", "Sea Salt"],
-          base: ["Ambroxan", "Mineral Cedar", "White Musk"]
-        }
+          base: ["Ambroxan", "Mineral Cedar", "White Musk"],
+        },
       },
       notesSummaryRu: "Морской бриз · Бергамот · Мята · Амброксан",
-      notesSummaryEn: "Sea Breeze · Bergamot · Mint · Ambroxan"
+      notesSummaryEn: "Sea Breeze · Bergamot · Mint · Ambroxan",
     };
   }
 
   // 2. Fougère / Aromatic
   if (
-    lower.includes("fougere") || lower.includes("fougère") || lower.includes("lavender") ||
-    lower.includes("sage") || lower.includes("geranium") || lower.includes("moss") ||
-    lower.includes("oakmoss") || lower.includes("sauvage") || lower.includes("salvo") ||
-    lower.includes("yeah") || lower.includes("fakhar black") || lower.includes("tres nuit") ||
-    lower.includes("green irish") || lower.includes("aventus") || lower.includes("club de nuit") ||
-    lower.includes("sillage") || lower.includes("milestone") || lower.includes("hunter") ||
-    lower.includes("hayaati") || lower.includes("sheikh al shuyukh") || lower.includes("l'aventure") ||
-    lower.includes("vert") || lower.includes("vetiver") || lower.includes("herb") ||
-    lower.includes("cypress") || lower.includes("rosemary") || lower.includes("sport") ||
-    (isMaleOnly && (lower.includes("elixir") || lower.includes("classic") || lower.includes("barber")))
+    lower.includes("fougere") ||
+    lower.includes("fougère") ||
+    lower.includes("lavender") ||
+    lower.includes("sage") ||
+    lower.includes("geranium") ||
+    lower.includes("moss") ||
+    lower.includes("oakmoss") ||
+    lower.includes("sauvage") ||
+    lower.includes("salvo") ||
+    lower.includes("yeah") ||
+    lower.includes("fakhar black") ||
+    lower.includes("tres nuit") ||
+    lower.includes("green irish") ||
+    lower.includes("aventus") ||
+    lower.includes("club de nuit") ||
+    lower.includes("sillage") ||
+    lower.includes("milestone") ||
+    lower.includes("hunter") ||
+    lower.includes("hayaati") ||
+    lower.includes("sheikh al shuyukh") ||
+    lower.includes("l'aventure") ||
+    lower.includes("vert") ||
+    lower.includes("vetiver") ||
+    lower.includes("herb") ||
+    lower.includes("cypress") ||
+    lower.includes("rosemary") ||
+    lower.includes("sport") ||
+    (isMaleOnly &&
+      (lower.includes("elixir") ||
+        lower.includes("classic") ||
+        lower.includes("barber")))
   ) {
     return {
       categoryRu: "Фужерные ароматические",
@@ -146,22 +225,41 @@ function detectCategoryAndNotes(name, brand, gender) {
       notes: {
         ru: {
           top: ["Зеленое яблоко", "Французская лаванда", "Имбирь"],
-          heart: ["Мускатный шалфей", "Бурбонская герань", "Ягоды можжевельника"],
-          base: ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"]
+          heart: [
+            "Мускатный шалфей",
+            "Бурбонская герань",
+            "Ягоды можжевельника",
+          ],
+          base: ["Дубовый мох", "Гаитянский ветивер", "Бобы тонка"],
         },
         en: {
           top: ["Green Apple", "French Lavender", "Fresh Ginger"],
           heart: ["Clary Sage", "Bourbon Geranium", "Juniper Berries"],
-          base: ["Oakmoss", "Haitian Vetiver", "Tonka Bean"]
-        }
+          base: ["Oakmoss", "Haitian Vetiver", "Tonka Bean"],
+        },
       },
       notesSummaryRu: "Лаванда · Мускатный шалфей · Ветивер · Дубовый мох",
-      notesSummaryEn: "Lavender · Clary Sage · Vetiver · Oakmoss"
+      notesSummaryEn: "Lavender · Clary Sage · Vetiver · Oakmoss",
     };
   }
 
   // 3. Gourmand
-  if (lower.includes("yara") || lower.includes("marshmallow") || lower.includes("vanilla") || lower.includes("caramel") || lower.includes("choco") || lower.includes("nebras") || lower.includes("khamrah") || lower.includes("eclaire") || lower.includes("tonka") || lower.includes("praline") || lower.includes("honey") || lower.includes("sugar") || lower.includes("sweet") || lower.includes("candy")) {
+  if (
+    lower.includes("yara") ||
+    lower.includes("marshmallow") ||
+    lower.includes("vanilla") ||
+    lower.includes("caramel") ||
+    lower.includes("choco") ||
+    lower.includes("nebras") ||
+    lower.includes("khamrah") ||
+    lower.includes("eclaire") ||
+    lower.includes("tonka") ||
+    lower.includes("praline") ||
+    lower.includes("honey") ||
+    lower.includes("sugar") ||
+    lower.includes("sweet") ||
+    lower.includes("candy")
+  ) {
     return {
       categoryRu: "Восточные гурманские",
       categoryEn: "Oriental Gourmand",
@@ -174,21 +272,34 @@ function detectCategoryAndNotes(name, brand, gender) {
         ru: {
           top: ["Тропические фрукты", "Гелиотроп", "Орхидея"],
           heart: ["Взбитые сливки", "Гурманский аккорд", "Карамель"],
-          base: ["Бурбонская ваниль", "Сандал", "Белый мускус"]
+          base: ["Бурбонская ваниль", "Сандал", "Белый мускус"],
         },
         en: {
           top: ["Tropical Fruits", "Heliotrope", "Orchid"],
           heart: ["Whipped Cream", "Gourmand Praline", "Caramel"],
-          base: ["Bourbon Vanilla", "Sandalwood", "White Musk"]
-        }
+          base: ["Bourbon Vanilla", "Sandalwood", "White Musk"],
+        },
       },
       notesSummaryRu: "Ваниль · Карамель · Взбитые сливки · Сандал",
-      notesSummaryEn: "Vanilla · Caramel · Whipped Cream · Sandalwood"
+      notesSummaryEn: "Vanilla · Caramel · Whipped Cream · Sandalwood",
     };
   }
 
   // 4. Oud & Wood
-  if (lower.includes("oud") || lower.includes("wood") || lower.includes("agar") || lower.includes("bade'e") || lower.includes("ameer") || lower.includes("interlude") || lower.includes("leather") || lower.includes("cuir") || lower.includes("cedar") || lower.includes("sandalwood") || lower.includes("smoke") || lower.includes("incense")) {
+  if (
+    lower.includes("oud") ||
+    lower.includes("wood") ||
+    lower.includes("agar") ||
+    lower.includes("bade'e") ||
+    lower.includes("ameer") ||
+    lower.includes("interlude") ||
+    lower.includes("leather") ||
+    lower.includes("cuir") ||
+    lower.includes("cedar") ||
+    lower.includes("sandalwood") ||
+    lower.includes("smoke") ||
+    lower.includes("incense")
+  ) {
     return {
       categoryRu: "Восточные древесные",
       categoryEn: "Oriental Woody",
@@ -201,21 +312,33 @@ function detectCategoryAndNotes(name, brand, gender) {
         ru: {
           top: ["Камбоджийский уд", "Шафран", "Мускатный орех"],
           heart: ["Королевская роза", "Пачули", "Дымная смола"],
-          base: ["Агаровое дерево", "Амбра", "Атласский кедр"]
+          base: ["Агаровое дерево", "Амбра", "Атласский кедр"],
         },
         en: {
           top: ["Cambodian Oud", "Royal Saffron", "Nutmeg"],
           heart: ["Royal Taif Rose", "Patchouli", "Smoky Resins"],
-          base: ["Agarwood", "Amber Crystals", "Atlas Cedar"]
-        }
+          base: ["Agarwood", "Amber Crystals", "Atlas Cedar"],
+        },
       },
       notesSummaryRu: "Уд · Шафран · Пачули · Смолистая амбра",
-      notesSummaryEn: "Oud · Saffron · Patchouli · Resinous Amber"
+      notesSummaryEn: "Oud · Saffron · Patchouli · Resinous Amber",
     };
   }
 
   // 5. Citrus
-  if (lower.includes("citrus") || lower.includes("bergamot") || lower.includes("lemon") || lower.includes("orange") || lower.includes("mandarin") || lower.includes("grapefruit") || lower.includes("lime") || lower.includes("neroli") || lower.includes("limoni") || lower.includes("soleil") || lower.includes("cologne")) {
+  if (
+    lower.includes("citrus") ||
+    lower.includes("bergamot") ||
+    lower.includes("lemon") ||
+    lower.includes("orange") ||
+    lower.includes("mandarin") ||
+    lower.includes("grapefruit") ||
+    lower.includes("lime") ||
+    lower.includes("neroli") ||
+    lower.includes("limoni") ||
+    lower.includes("soleil") ||
+    lower.includes("cologne")
+  ) {
     return {
       categoryRu: "Цитрусовые искрящиеся",
       categoryEn: "Sparkling Citrus",
@@ -228,21 +351,38 @@ function detectCategoryAndNotes(name, brand, gender) {
         ru: {
           top: ["Сицилийский лимон", "Красный апельсин", "Бергамот"],
           heart: ["Нероли", "Цветок апельсина", "Розовый перец"],
-          base: ["Белый кедр", "Амброксан", "Шелковистый мускус"]
+          base: ["Белый кедр", "Амброксан", "Шелковистый мускус"],
         },
         en: {
           top: ["Sicilian Lemon", "Blood Orange", "Bergamot"],
           heart: ["Neroli", "Orange Blossom", "Pink Pepper"],
-          base: ["White Cedar", "Ambroxan", "Silky Musk"]
-        }
+          base: ["White Cedar", "Ambroxan", "Silky Musk"],
+        },
       },
       notesSummaryRu: "Красный апельсин · Сицилийский лимон · Нероли · Мускус",
-      notesSummaryEn: "Blood Orange · Sicilian Lemon · Neroli · Musk"
+      notesSummaryEn: "Blood Orange · Sicilian Lemon · Neroli · Musk",
     };
   }
 
   // 6. Floral
-  if (lower.includes("rose") || lower.includes("jasmine") || lower.includes("flower") || lower.includes("blossom") || lower.includes("taif") || lower.includes("femme") || lower.includes("flora") || lower.includes("tuberose") || lower.includes("peony") || lower.includes("orchid") || lower.includes("pink") || lower.includes("woman") || lower.includes("women") || lower.includes("pour femme") || lower.includes("lady") || gender.ru === "Женский") {
+  if (
+    lower.includes("rose") ||
+    lower.includes("jasmine") ||
+    lower.includes("flower") ||
+    lower.includes("blossom") ||
+    lower.includes("taif") ||
+    lower.includes("femme") ||
+    lower.includes("flora") ||
+    lower.includes("tuberose") ||
+    lower.includes("peony") ||
+    lower.includes("orchid") ||
+    lower.includes("pink") ||
+    lower.includes("woman") ||
+    lower.includes("women") ||
+    lower.includes("pour femme") ||
+    lower.includes("lady") ||
+    gender.ru === "Женский"
+  ) {
     return {
       categoryRu: "Цветочные восточные",
       categoryEn: "Oriental Floral",
@@ -255,16 +395,16 @@ function detectCategoryAndNotes(name, brand, gender) {
         ru: {
           top: ["Дамасская роза", "Красные ягоды", "Бергамот"],
           heart: ["Таифская роза", "Жасмин самбак", "Пион"],
-          base: ["Кашемировое дерево", "Серая амбра", "Шелковистый мускус"]
+          base: ["Кашемировое дерево", "Серая амбра", "Шелковистый мускус"],
         },
         en: {
           top: ["Damask Rose", "Red Berries", "Bergamot"],
           heart: ["Taif Rose", "Jasmine Sambac", "Peony"],
-          base: ["Cashmere Wood", "Ambergris", "Silk Musk"]
-        }
+          base: ["Cashmere Wood", "Ambergris", "Silk Musk"],
+        },
       },
       notesSummaryRu: "Таифская роза · Жасмин · Кашемир · Мускус",
-      notesSummaryEn: "Taif Rose · Jasmine · Cashmere · Musk"
+      notesSummaryEn: "Taif Rose · Jasmine · Cashmere · Musk",
     };
   }
 
@@ -281,16 +421,16 @@ function detectCategoryAndNotes(name, brand, gender) {
       ru: {
         top: ["Королевский шафран", "Черный перец", "Кардамон"],
         heart: ["Корица", "Кофейное зерно", "Табак"],
-        base: ["Золотая амбра", "Бобы тонка", "Сандал"]
+        base: ["Золотая амбра", "Бобы тонка", "Сандал"],
       },
       en: {
         top: ["Royal Saffron", "Black Pepper", "Cardamom"],
         heart: ["Cinnamon Bark", "Roasted Coffee Bean", "Tobacco"],
-        base: ["Golden Amber", "Tonka Bean", "Sandalwood"]
-      }
+        base: ["Golden Amber", "Tonka Bean", "Sandalwood"],
+      },
     },
     notesSummaryRu: "Шафран · Черный перец · Кофе · Золотая амбра",
-    notesSummaryEn: "Saffron · Black Pepper · Coffee · Golden Amber"
+    notesSummaryEn: "Saffron · Black Pepper · Coffee · Golden Amber",
   };
 }
 
@@ -301,35 +441,73 @@ function extractVolume(name) {
 
 function extractConcentration(name) {
   const lower = name.toLowerCase();
-  if (lower.includes("extrait") || lower.includes("extract")) return "Extrait de Parfum";
-  if (lower.includes("edp") || lower.includes("eau de parfum") || lower.includes("parfum")) return "Eau de Parfum";
-  if (lower.includes("edt") || lower.includes("eau de toilette")) return "Eau de Toilette";
-  if (lower.includes("attar") || lower.includes("oil")) return "Концентрированное парфюмерное масло (CPO)";
+  if (lower.includes("extrait") || lower.includes("extract"))
+    return "Extrait de Parfum";
+  if (
+    lower.includes("edp") ||
+    lower.includes("eau de parfum") ||
+    lower.includes("parfum")
+  )
+    return "Eau de Parfum";
+  if (lower.includes("edt") || lower.includes("eau de toilette"))
+    return "Eau de Toilette";
+  if (lower.includes("attar") || lower.includes("oil"))
+    return "Концентрированное парфюмерное масло (CPO)";
   return "Eau de Parfum";
 }
 
-function generateRussianDescription(name, brand, category, gender, notesSummary, longevity, notes) {
+function generateRussianDescription(
+  name,
+  brand,
+  category,
+  gender,
+  notesSummary,
+  longevity,
+  notes,
+) {
   const topStr = (notes?.ru?.top || []).join(", ") || notesSummary;
   const heartStr = (notes?.ru?.heart || []).join(", ") || notesSummary;
   const baseStr = (notes?.ru?.base || []).join(", ") || notesSummary;
-  const audience = gender === "Унисекс" ? "для мужчин и женщин, ценящих селективную нишевую парфюмерию" : (gender === "Женский" ? "для утонченных женщин, предпочитающих комплиментарные и пленительные композиции" : "для уверенных в себе мужчин, выбирающих харизматичные и статусные ароматы");
-  return `${brand} ${name} — роскошный селективный аромат Ближнего Востока (${category.toLowerCase()}), созданный в лучших традициях восточного парфюмерного искусства. ` +
+  const audience =
+    gender === "Унисекс"
+      ? "для мужчин и женщин, ценящих селективную нишевую парфюмерию"
+      : gender === "Женский"
+        ? "для утонченных женщин, предпочитающих комплиментарные и пленительные композиции"
+        : "для уверенных в себе мужчин, выбирающих харизматичные и статусные ароматы";
+  return (
+    `${brand} ${name} — роскошный селективный аромат Ближнего Востока (${category.toLowerCase()}), созданный в лучших традициях восточного парфюмерного искусства. ` +
     `С первых мгновений композиция завораживает ярким вступлением верхних нот (${topStr}), плавно раскрываясь глубоким и многогранным сердцем из акцентов: ${heartStr}. ` +
     `В финале аромат окутывает благородной, бархатистой базой (${baseStr}), формируя дорогой и узнаваемый шлейф. ` +
     `Высокая концентрация натуральных эфирных масел обеспечивает исключительную стойкость (${longevity}). Идеально подходит ${audience}. ` +
-    `Оригинальная продукция от сертифицированных парфюмерных домов Ближнего Востока.`;
+    `Оригинальная продукция от сертифицированных парфюмерных домов Ближнего Востока.`
+  );
 }
 
-function generateEnglishDescription(name, brand, categoryEn, genderEn, notesSummaryEn, longevityEn, notes) {
+function generateEnglishDescription(
+  name,
+  brand,
+  categoryEn,
+  genderEn,
+  notesSummaryEn,
+  longevityEn,
+  notes,
+) {
   const topStr = (notes?.en?.top || []).join(", ") || notesSummaryEn;
   const heartStr = (notes?.en?.heart || []).join(", ") || notesSummaryEn;
   const baseStr = (notes?.en?.base || []).join(", ") || notesSummaryEn;
-  const audience = genderEn === "Unisex" ? "both men and women who appreciate niche luxury perfumery" : (genderEn === "Women" ? "sophisticated women seeking a captivating, compliment-worthy signature scent" : "discerning men who value charismatic and distinguished fragrances");
-  return `${brand} ${name} is an opulent niche fragrance from the Middle East (${categoryEn.toLowerCase()}), crafted in the finest traditions of oriental perfumery. ` +
+  const audience =
+    genderEn === "Unisex"
+      ? "both men and women who appreciate niche luxury perfumery"
+      : genderEn === "Women"
+        ? "sophisticated women seeking a captivating, compliment-worthy signature scent"
+        : "discerning men who value charismatic and distinguished fragrances";
+  return (
+    `${brand} ${name} is an opulent niche fragrance from the Middle East (${categoryEn.toLowerCase()}), crafted in the finest traditions of oriental perfumery. ` +
     `From the very first spritz, the composition captivates with luminous top notes of ${topStr}, seamlessly unfolding into a rich, multifaceted heart of ${heartStr}. ` +
     `As it settles on the skin, a velvety, resonant base of ${baseStr} emerges, leaving an unforgettable and sophisticated trail. ` +
     `Formulated with a high concentration of precious aromatic oils, it delivers remarkable longevity (${longevityEn}). Perfectly suited for ${audience}. ` +
-    `100% authentic creation sourced directly from certified perfume houses in the Middle East.`;
+    `100% authentic creation sourced directly from certified perfume houses in the Middle East.`
+  );
 }
 
 async function fetchAllExistingStocks() {
@@ -338,14 +516,19 @@ async function fetchAllExistingStocks() {
   const limit = 1000;
   while (true) {
     try {
-      const res = await restFetch(`${STOCKS_API_URL}?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${limit}`, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
+      const res = await restFetch(
+        `${STOCKS_API_URL}?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${limit}`,
+        {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          },
         },
-      });
+      );
       if (!res.ok) {
-        throw new Error(`Supabase stocks lookup failed (${res.status}): ${(await res.text()).slice(0, 400)}`);
+        throw new Error(
+          `Supabase stocks lookup failed (${res.status}): ${(await res.text()).slice(0, 400)}`,
+        );
       }
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) break;
@@ -368,7 +551,9 @@ async function fetchAllExistingStocks() {
 
 async function main() {
   if (!process.env.NHOST_ADMIN_SECRET) {
-    throw new Error("NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)");
+    throw new Error(
+      "NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)",
+    );
   }
   console.log("=================================================");
   console.log("🌸 Al-Warda Parfumes - Supabase Bilingual Stocks Sync");
@@ -382,13 +567,17 @@ async function main() {
   }
 
   const rawCatalog = JSON.parse(fs.readFileSync(CATALOG_PATH, "utf8"));
-  console.log(`📦 Loaded ${rawCatalog.length} perfumes from local dropship catalog.`);
+  console.log(
+    `📦 Loaded ${rawCatalog.length} perfumes from local dropship catalog.`,
+  );
 
   let enrichedCache = {};
   if (fs.existsSync(ENRICHED_CACHE_PATH)) {
     try {
       enrichedCache = JSON.parse(fs.readFileSync(ENRICHED_CACHE_PATH, "utf8"));
-      console.log(`💾 Loaded existing enrichment cache (${Object.keys(enrichedCache).length} items).`);
+      console.log(
+        `💾 Loaded existing enrichment cache (${Object.keys(enrichedCache).length} items).`,
+      );
     } catch {}
   }
 
@@ -404,12 +593,18 @@ async function main() {
       const catNotes = detectCategoryAndNotes(item.name, item.brand, gender);
       const volume = extractVolume(item.name);
       const concentration = extractConcentration(item.name);
-      const origin = BRAND_ORIGINS[item.brand] || { ru: "Ближний Восток", en: "Middle East" };
-      const season = catNotes.categorySlug === "fresh" || catNotes.categorySlug === "citrus-fresh"
-        ? { ru: "Весна / Лето", en: "Spring / Summer" }
-        : (catNotes.categorySlug === "gourmand" || catNotes.categorySlug === "oud"
+      const origin = BRAND_ORIGINS[item.brand] || {
+        ru: "Ближний Восток",
+        en: "Middle East",
+      };
+      const season =
+        catNotes.categorySlug === "fresh" ||
+        catNotes.categorySlug === "citrus-fresh"
+          ? { ru: "Весна / Лето", en: "Spring / Summer" }
+          : catNotes.categorySlug === "gourmand" ||
+              catNotes.categorySlug === "oud"
             ? { ru: "Осень / Зима / Вечер", en: "Autumn / Winter / Evening" }
-            : { ru: "Всесезонный", en: "All Seasons" });
+            : { ru: "Всесезонный", en: "All Seasons" };
 
       const descriptionRu = generateRussianDescription(
         item.name,
@@ -418,7 +613,7 @@ async function main() {
         gender.ru,
         catNotes.notesSummaryRu,
         catNotes.longevityRu,
-        catNotes.notes
+        catNotes.notes,
       );
 
       const descriptionEn = generateEnglishDescription(
@@ -428,7 +623,7 @@ async function main() {
         gender.en,
         catNotes.notesSummaryEn,
         catNotes.longevityEn,
-        catNotes.notes
+        catNotes.notes,
       );
 
       enriched = {
@@ -462,7 +657,8 @@ async function main() {
           rawImage: item.rawImage || "",
           inStock: true,
           deliveryTime: "4–7 дней (прямая поставка с Ближнего Востока / ЕС)",
-          deliveryTimeEn: "4–7 days (direct dispatch from the Middle East / EU)",
+          deliveryTimeEn:
+            "4–7 days (direct dispatch from the Middle East / EU)",
           updatedAt: new Date().toISOString(),
         },
       };
@@ -482,9 +678,15 @@ async function main() {
   }
 
   // Also include any new brands/items present in enrichedCache
-  const processedNames = new Set(enrichedList.map((e) => (e.name || "").toLowerCase()));
+  const processedNames = new Set(
+    enrichedList.map((e) => (e.name || "").toLowerCase()),
+  );
   for (const [k, enriched] of Object.entries(enrichedCache)) {
-    if (enriched && enriched.name && !processedNames.has(enriched.name.toLowerCase())) {
+    if (
+      enriched &&
+      enriched.name &&
+      !processedNames.has(enriched.name.toLowerCase())
+    ) {
       enrichedList.push({
         name: enriched.name,
         brand: enriched.brand || "Al-Warda",
@@ -514,7 +716,8 @@ async function main() {
     const source = info.rawImage;
     if (typeof source !== "string" || !/^https:\/\//i.test(source)) continue;
     const existing = existingMap.get((item.name || "").trim().toLowerCase());
-    const existingInfo = existing?.info && typeof existing.info === "object" ? existing.info : {};
+    const existingInfo =
+      existing?.info && typeof existing.info === "object" ? existing.info : {};
     const sameSource = existingInfo.rawImage === source;
     const existingGeneration = existingInfo.imageGeneration;
     if (sameSource && existingGeneration?.status) {
@@ -541,8 +744,14 @@ async function main() {
     }
   }
 
-  fs.writeFileSync(ENRICHED_CACHE_PATH, JSON.stringify(enrichedCache, null, 2), "utf8");
-  console.log(`✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`);
+  fs.writeFileSync(
+    ENRICHED_CACHE_PATH,
+    JSON.stringify(enrichedCache, null, 2),
+    "utf8",
+  );
+  console.log(
+    `✨ Enriched ${enrichedList.length} perfume items (${enrichedCount} newly profiled with bilingual data).`,
+  );
 
   if (isRefresh || existingMap.size === 0) {
     if (existingMap.size > 0) {
@@ -573,7 +782,9 @@ async function main() {
       });
       if (res.ok || res.status === 201) {
         inserted += batch.length;
-        process.stdout.write(`\r✅ Uploaded: ${inserted} / ${enrichedList.length}`);
+        process.stdout.write(
+          `\r✅ Uploaded: ${inserted} / ${enrichedList.length}`,
+        );
       } else {
         const err = await res.text();
         console.error(`\n❌ Upload error: ${err}`);
@@ -605,7 +816,9 @@ async function main() {
         });
         if (res.ok || res.status === 201) {
           inserted += batch.length;
-          process.stdout.write(`\r✅ Inserted: ${inserted} / ${toInsert.length}`);
+          process.stdout.write(
+            `\r✅ Inserted: ${inserted} / ${toInsert.length}`,
+          );
         }
       }
       console.log("");
