@@ -25,10 +25,8 @@ export function useCartState() {
       refreshCart();
     };
     window.addEventListener("alwarda-cart-updated", handleUpdate);
-    window.addEventListener("cart-updated", handleUpdate);
     return () => {
       window.removeEventListener("alwarda-cart-updated", handleUpdate);
-      window.removeEventListener("cart-updated", handleUpdate);
     };
   }, [refreshCart]);
 
