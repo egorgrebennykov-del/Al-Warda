@@ -7,9 +7,11 @@ class MissingServiceKeyError extends Error {
 }
 
 export function getServiceKey(env) {
-  const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY;
-  if (!key) throw new MissingServiceKeyError();
-  return key;
+  // The data layer now goes through Nhost (NHOST_ADMIN_SECRET) via the proxy,
+  // so the old Supabase service key is no longer required for DB access. It is
+  // still returned when present (some non-DB paths use it as a fallback), but
+  // its absence must not block admin endpoints anymore.
+  return env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY || "";
 }
 
 export function getSupabaseUrl(env) {
