@@ -1209,7 +1209,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
 
     Returns:
       {"image": png_bytes, "textRestored": bool, "matchedPoints": int,
-       "requiresManualReview": bool}
+       "requiresManualReview": bool, "reason": str}
     On any failure the generated image is returned unchanged and manual review
     is requested — text is never invented.
     """
@@ -1221,6 +1221,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         "textRestored": False,
         "matchedPoints": 0,
         "requiresManualReview": False,
+        "reason": None,
     }
     try:
         source = decode_source(source_bytes)
@@ -1237,12 +1238,14 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         kp2, des2 = orb.detectAndCompute(np.asarray(generated_rgb), None)
         if des1 is None or des2 is None or len(kp1) < 8 or len(kp2) < 8:
             result["requiresManualReview"] = True
+            result["reason"] = "insufficient_orb_features"
             return result
 
         matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         good = sorted(matcher.match(des1, des2), key=lambda m: m.distance)[:200]
         if len(good) < 8:
             result["requiresManualReview"] = True
+            result["reason"] = "insufficient_matches"
             return result
 
         src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
@@ -1250,15 +1253,25 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         homography, inlier_mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
         if homography is None:
             result["requiresManualReview"] = True
+            result["reason"] = "homography_failed"
             return result
         inliers = int(inlier_mask.sum()) if inlier_mask is not None else 0
         result["matchedPoints"] = inliers
         if inliers < 8:
             result["requiresManualReview"] = True
+            result["reason"] = "insufficient_inliers"
             return result
 
         text_mask = _text_region_mask(np.asarray(source.convert("L")))
         warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_LINEAR)
+        if int(np.count_nonzero(warped_mask)) == 0:
+            # Homography succeeded but the source has no detectable text-like
+            # detail, so there is nothing to restore. Keep the generated image
+            # unchanged and flag it for manual review instead of reporting a
+            # restoration that never actually happened.
+            result["requiresManualReview"] = True
+            result["reason"] = "empty_text_mask"
+            return result
         warped_src = cv2.warpPerspective(
             np.asarray(source_rgb), homography, (gw, gh), flags=cv2.INTER_LINEAR
         )
@@ -1267,6 +1280,12 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         # generated cutout is opaque (inside the product).
         alpha = np.asarray(generated.getchannel("A")).astype(np.float32) / 255.0
         keep = (warped_mask > 0).astype(np.float32) * alpha
+        if float(keep.sum()) <= 0.0:
+            # The projected text mask lands entirely outside the opaque product
+            # area, so compositing would be a no-op.
+            result["requiresManualReview"] = True
+            result["reason"] = "empty_text_mask"
+            return result
         blended = np.asarray(generated_rgb).astype(np.float32)
         blended = warped_src * keep[..., None] + blended * (1.0 - keep[..., None])
         blended = np.clip(blended, 0, 255).astype(np.uint8)
@@ -1277,9 +1296,10 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         restored.save(buffer, format="PNG", optimize=True)
         result["image"] = buffer.getvalue()
         result["textRestored"] = True
-    except Exception:
+    except Exception as error:
         result["textRestored"] = False
         result["requiresManualReview"] = True
+        result["reason"] = "error: {}".format(str(error)[:200])
     return result
 
 
@@ -1354,6 +1374,7 @@ def process_product(
         text_restored = text_result["textRestored"]
         text_match_points = text_result["matchedPoints"]
         requires_manual_review = text_result["requiresManualReview"]
+        text_restore_reason = text_result.get("reason")
 
         if not generated_image_matches_source(source_bytes, output):
             raise ValueError(
@@ -1412,6 +1433,7 @@ def process_product(
             "textRestored": text_restored,
             "textMatchPoints": text_match_points,
             "requiresManualReview": requires_manual_review,
+            "textRestoreReason": text_restore_reason,
             "sourceImageId": hashlib.sha256(
                 (product_source(row) or "").encode("utf-8")
             ).hexdigest()[:16],

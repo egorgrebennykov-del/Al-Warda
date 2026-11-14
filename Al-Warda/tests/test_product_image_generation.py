@@ -9,10 +9,11 @@ import types
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from PIL import Image
 import numpy as np
+import cv2
 
 
 rembg_stub = types.ModuleType("rembg")
@@ -773,6 +774,96 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertEqual(result["image"], image_bytes(generated))
         self.assertFalse(result["textRestored"])
         self.assertTrue(result["requiresManualReview"])
+
+    def _restore_text_pipeline(self, kp_count=12, detect_side_effect=None):
+        """Deterministic ORB/matcher mocks; warpPerspective stays real."""
+        kps = [types.SimpleNamespace(pt=(float(i % 20), float(i // 20))) for i in range(kp_count)]
+        des = np.ones((kp_count, 32), dtype=np.uint8)
+        matches = [types.SimpleNamespace(queryIdx=i, trainIdx=i, distance=10.0) for i in range(kp_count)]
+        orb = MagicMock()
+        orb.detectAndCompute.side_effect = detect_side_effect or [(kps, des), (kps, des)]
+        matcher = MagicMock()
+        matcher.match.return_value = matches
+        return orb, matcher
+
+    def _opaque_corner_generated(self):
+        generated = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+        generated.paste((255, 255, 255, 255), (0, 0, 40, 40))
+        return generated
+
+    def test_restore_text_success_with_nonempty_mask(self):
+        source = image_bytes(Image.new("RGB", (40, 40), (200, 30, 30)))
+        generated_bytes = image_bytes(self._opaque_corner_generated())
+        orb, matcher = self._restore_text_pipeline()
+        inlier_mask = np.array([1] * 12)
+        with patch.object(cv2, "ORB_create", return_value=orb), \
+             patch.object(cv2, "BFMatcher", return_value=matcher), \
+             patch.object(cv2, "findHomography", return_value=(np.eye(3), inlier_mask)), \
+             patch.object(queue, "_text_region_mask", return_value=np.full((40, 40), 255, dtype=np.uint8)):
+            result = queue.restore_source_text_regions(source, generated_bytes)
+        self.assertTrue(result["textRestored"])
+        self.assertFalse(result["requiresManualReview"])
+        self.assertIsNone(result["reason"])
+        self.assertEqual(result["matchedPoints"], 12)
+        self.assertNotEqual(result["image"], generated_bytes)
+
+    def test_restore_text_empty_mask_sets_review_and_keeps_image(self):
+        source = image_bytes(Image.new("RGB", (40, 40), (200, 30, 30)))
+        generated_bytes = image_bytes(self._opaque_corner_generated())
+        orb, matcher = self._restore_text_pipeline()
+        inlier_mask = np.array([1] * 12)
+        with patch.object(cv2, "ORB_create", return_value=orb), \
+             patch.object(cv2, "BFMatcher", return_value=matcher), \
+             patch.object(cv2, "findHomography", return_value=(np.eye(3), inlier_mask)), \
+             patch.object(queue, "_text_region_mask", return_value=np.zeros((40, 40), dtype=np.uint8)):
+            result = queue.restore_source_text_regions(source, generated_bytes)
+        self.assertFalse(result["textRestored"])
+        self.assertTrue(result["requiresManualReview"])
+        self.assertEqual(result["reason"], "empty_text_mask")
+        self.assertEqual(result["image"], generated_bytes)
+
+    def test_restore_text_failed_homography_keeps_image(self):
+        source = image_bytes(Image.new("RGB", (40, 40), (200, 30, 30)))
+        generated_bytes = image_bytes(self._opaque_corner_generated())
+        orb, matcher = self._restore_text_pipeline()
+        with patch.object(cv2, "ORB_create", return_value=orb), \
+             patch.object(cv2, "BFMatcher", return_value=matcher), \
+             patch.object(cv2, "findHomography", return_value=(None, None)):
+            result = queue.restore_source_text_regions(source, generated_bytes)
+        self.assertFalse(result["textRestored"])
+        self.assertTrue(result["requiresManualReview"])
+        self.assertEqual(result["reason"], "homography_failed")
+        self.assertEqual(result["image"], generated_bytes)
+
+    def test_restore_text_insufficient_orb_keeps_image(self):
+        source = image_bytes(Image.new("RGB", (40, 40), (200, 30, 30)))
+        generated_bytes = image_bytes(self._opaque_corner_generated())
+        few_kps = [types.SimpleNamespace(pt=(1.0, 1.0)) for _ in range(4)]
+        few_des = np.ones((4, 32), dtype=np.uint8)
+        orb, matcher = self._restore_text_pipeline(
+            detect_side_effect=[(few_kps, few_des), (few_kps, few_des)])
+        with patch.object(cv2, "ORB_create", return_value=orb), \
+             patch.object(cv2, "BFMatcher", return_value=matcher):
+            result = queue.restore_source_text_regions(source, generated_bytes)
+        self.assertFalse(result["textRestored"])
+        self.assertTrue(result["requiresManualReview"])
+        self.assertEqual(result["reason"], "insufficient_orb_features")
+        self.assertEqual(result["image"], generated_bytes)
+
+    def test_restore_text_error_keeps_image_unchanged(self):
+        source = image_bytes(Image.new("RGB", (40, 40), (200, 30, 30)))
+        generated_bytes = image_bytes(self._opaque_corner_generated())
+        orb, matcher = self._restore_text_pipeline()
+        inlier_mask = np.array([1] * 12)
+        with patch.object(cv2, "ORB_create", return_value=orb), \
+             patch.object(cv2, "BFMatcher", return_value=matcher), \
+             patch.object(cv2, "findHomography", return_value=(np.eye(3), inlier_mask)), \
+             patch.object(queue, "_text_region_mask", side_effect=RuntimeError("boom")):
+            result = queue.restore_source_text_regions(source, generated_bytes)
+        self.assertFalse(result["textRestored"])
+        self.assertTrue(result["requiresManualReview"])
+        self.assertTrue(result["reason"].startswith("error:"))
+        self.assertEqual(result["image"], generated_bytes)
 
 if __name__ == "__main__":
     unittest.main()

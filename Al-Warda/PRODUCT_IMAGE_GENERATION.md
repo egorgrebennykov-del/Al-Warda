@@ -25,8 +25,13 @@ Every generation records these fields in `stocks.info.imageGeneration`
 - `processingMethod` — `flux_redraw`;
 - `whetherUpscaled` — whether the product was enlarged beyond its original
   resolution;
-- `textRestored` — whether the original label/text was overlaid onto the result;
+- `textRestored` — whether the original label/text was overlaid onto the result
+  (only true when a non-empty projected text mask actually landed inside the
+  opaque product area);
 - `textMatchPoints` — number of ORB homography inliers used for text alignment;
+- `textRestoreReason` — why restoration was skipped/failed (`empty_text_mask`,
+  `homography_failed`, `insufficient_inliers`, `insufficient_matches`,
+  `insufficient_orb_features`, or an `error:` prefix), null on success;
 - `requiresManualReview` — set when text could not be restored confidently;
 - `originalWidth` / `originalHeight` / `originalFileSize` — the real source
   photo dimensions and byte size;
