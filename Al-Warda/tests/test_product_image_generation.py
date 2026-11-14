@@ -258,65 +258,51 @@ class ProductImageGenerationTests(unittest.TestCase):
                 session, "account-123", "test-token", image_bytes(Image.new("RGB", (20, 20)))
             )
 
-    def test_product_edit_is_saved_as_1024_png_and_awaits_publication(self):
-        source = image_bytes(Image.new("RGB", (100, 100), "red"))
-        result = image_bytes(Image.new("RGB", (1024, 1024), "blue"), "JPEG")
-        cutout = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
-        cutout.paste((20, 40, 200, 255), (300, 200, 724, 850))
+    def test_preserve_path_publishes_transparent_png_and_awaits_publication(self):
+        source = image_bytes(Image.new("RGB", (100, 100), (180, 40, 40)))
+        cutout = Image.new("RGBA", (100, 100), (180, 40, 40, 255))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         now = datetime(2026, 1, 2, tzinfo=timezone.utc)
         with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "generate_product_edit", return_value=result) as edit, \
              patch.object(queue, "remove", return_value=cutout) as remove_background, \
+             patch.object(queue, "fetch_verified_notes", return_value=None), \
+             patch.object(queue, "generate_ai_perfume_description", return_value=None), \
              patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/result.png") as save, \
              patch.object(queue, "patch_stock") as update:
             queue.process_product(object(), row, "https://db.example", "account", "token", "session", now)
-        self.assertEqual(edit.call_args.args[-1], source)
         self.assertEqual(remove_background.call_args.kwargs["session"], "session")
         with Image.open(io.BytesIO(save.call_args.args[0])) as saved:
             self.assertEqual(saved.format, "PNG")
             self.assertEqual(saved.size, (1024, 1024))
             self.assertEqual(saved.mode, "RGBA")
             self.assertEqual(saved.getpixel((0, 0))[3], 0)
-            self.assertEqual(saved.getpixel((512, 512)), (20, 40, 200, 255))
         job = update.call_args.args[3]["imageGeneration"]
         self.assertEqual(job["status"], "publishing")
         self.assertEqual(job["model"], queue.MODEL_ID)
         self.assertEqual(job["steps"], 4)
+        self.assertEqual(job["processingMethod"], "preserve_original")
+        self.assertEqual(job["whetherUpscaled"], False)
 
-    def test_limit_switch_keeps_product_processing_until_success(self):
-        source = image_bytes(Image.new("RGB", (20, 20)))
-        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
-        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
-        pool = queue.ImageAccountPool([("primary", "id-1", "token-1"), ("secondary", "id-2", "token-2")])
-        states = []
-        def capture_update(_session, _url, _row, info, **_kwargs):
-            states.append(info["imageGeneration"]["status"])
-        with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
-             patch.object(queue, "generate_product_edit", side_effect=[queue.WorkersDailyQuotaExceeded("limit"), b"edited"]) as edit, \
-             patch.object(queue, "transparent_product_image", return_value=(b"png", (1024, 1024))), \
-             patch.object(queue, "save_generated_image", return_value="/image.png"), \
-             patch.object(queue, "patch_stock", side_effect=capture_update):
-            queue.process_product(object(), row, "https://db.example", "", "", None,
-                                  datetime.now(timezone.utc), account_pool=pool)
-        self.assertEqual(states, ["processing", "publishing"])
-        self.assertEqual([call.args[1] for call in edit.call_args_list], ["id-1", "id-2"])
-
-    def test_rejects_unexpected_edit_dimensions(self):
+    def test_segmentation_failure_marks_job_and_skips_flux(self):
         source = image_bytes(Image.new("RGB", (20, 20)))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         with patch.object(queue.requests, "get", return_value=response), \
              patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
-             patch.object(queue, "generate_product_edit", return_value=source), \
-             patch.object(queue, "patch_stock") as update, \
-             patch.object(queue, "save_generated_image") as save:
-            with self.assertRaisesRegex(ValueError, "Unexpected generated image dimensions"):
+             patch.object(queue, "generate_product_edit") as edit, \
+             patch.object(queue, "save_generated_image") as save, \
+             patch.object(queue, "patch_stock") as update:
+            with self.assertRaises(queue.SegmentationFailedError):
                 queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
+        edit.assert_not_called()
         save.assert_not_called()
-        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
+        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "segmentation_failed")
+
+    def test_transparent_product_image_rejects_unexpected_dimensions(self):
+        edited = image_bytes(Image.new("RGB", (20, 20)))
+        with self.assertRaisesRegex(ValueError, "Unexpected generated image dimensions"):
+            queue.transparent_product_image(edited, object())
 
     def test_only_selected_unpublished_images_are_marked_failed(self):
         digest = "a" * 64
@@ -389,13 +375,12 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertEqual(candidates, [row])
         with patch.object(queue.requests, "get", return_value=response), \
              patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
-             patch.object(queue, "generate_product_edit", side_effect=RuntimeError("provider failed")), \
              patch.object(queue, "patch_stock") as update:
-            with self.assertRaisesRegex(RuntimeError, "provider failed"):
+            with self.assertRaises(queue.SegmentationFailedError):
                 queue.process_product(object(), row, "https://db.example", "account", "token", None, now, True)
         updated = update.call_args.args[3]
         self.assertEqual(updated["imageGeneration"], old_job)
-        self.assertEqual(updated["imageGenerationReplacement"]["status"], "failed")
+        self.assertEqual(updated["imageGenerationReplacement"]["status"], "segmentation_failed")
         self.assertNotIn("image", update.call_args.kwargs)
 
     def test_replacement_is_swapped_only_after_verified_deployment(self):
@@ -633,18 +618,19 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertNotIn("topNotes", info)
         self.assertNotIn("notesSummary", info)
 
-    def test_cloudflare_flagged_rejection_marks_product_failed_without_u2net_cutout(self):
-        source = image_bytes(Image.new("RGB", (20, 20)))
-        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
-        row = {"id": 999, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
-        with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
-             patch.object(queue, "generate_product_edit", side_effect=RuntimeError("Workers AI request failed (400): Image flagged by moderation (3030)")), \
-             patch.object(queue, "patch_stock") as update:
-            with self.assertRaisesRegex(RuntimeError, "Image flagged"):
-                queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
-        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "failed")
-        self.assertIn("flagged", update.call_args.args[3]["imageGeneration"]["error"].lower())
+    def test_cloudflare_flagged_rejection_raises_runtime_error(self):
+        class FakeSession:
+            def __init__(self):
+                self.calls = 0
+            def post(self, *_args, **_kwargs):
+                self.calls += 1
+                return types.SimpleNamespace(status_code=400, ok=False, text="Image flagged by moderation (3030)")
+        session = FakeSession()
+        with self.assertRaisesRegex(RuntimeError, "Workers AI request failed"):
+            queue.generate_product_edit(
+                session, "account-123", "token", image_bytes(Image.new("RGB", (20, 20)))
+            )
+        self.assertEqual(session.calls, 2)
 
     def test_complete_committed_images_publishes_matching_local_files(self):
         image = b"local-committed-png-data"

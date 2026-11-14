@@ -72,6 +72,11 @@ class WorkersDailyQuotaExceeded(RuntimeError):
     pass
 
 
+class SegmentationFailedError(RuntimeError):
+    """Background removal failed; the original photo is kept and the job is
+    marked segmentation_failed instead of being published or redrawn."""
+
+
 class WorkersConfigurationError(RuntimeError):
     pass
 
@@ -1232,34 +1237,22 @@ def process_product(
         processing_method = None
         whether_upscaled = None
 
-        # Preferred path: preserve the original bottle pixels. Segment the real
-        # photo and place it on a clean transparent canvas WITHOUT letting the
-        # AI redraw the flacon. Fall back to the Flux edit only if segmentation
-        # fails on this photo.
+        # Segmentation of the ORIGINAL photo is the only automatic production
+        # path. On failure we keep the original image untouched and mark the job
+        # segmentation_failed for reprocessing. Flux is never used to redraw the
+        # bottle, label, box or logo automatically.
         try:
             output, original_size, _source_size = preserve_original_product(
                 source_bytes, segmentation_session
             )
             processing_method = "preserve_original"
             whether_upscaled = False
+        except SegmentationFailedError:
+            raise
         except Exception as seg_error:
-            print(
-                f"Preserve-original path failed for {row['id']}: {seg_error}; "
-                f"falling back to Flux studio edit",
-                flush=True,
-            )
-            edited_bytes = (
-                account_pool.generate(requests, source_bytes) if account_pool
-                else generate_product_edit(requests, account_id, api_token, source_bytes)
-            )
-            output, original_size = transparent_product_image(edited_bytes, segmentation_session)
-            processing_method = "flux_redraw"
-            whether_upscaled = True
-            if not generated_image_matches_source(source_bytes, output):
-                raise ValueError(
-                    "Сгенерированное изображение не похоже на исходный товар "
-                    "(доминирующий цвет продукта изменился); требуется повторная генерация"
-                )
+            raise SegmentationFailedError(
+                f"Segmentation failed for product {row['id']}: {seg_error}"
+            ) from seg_error
 
         image_url = save_generated_image(output)
 
@@ -1329,6 +1322,19 @@ def process_product(
         info[job_key] = job
         if account_pool and getattr(account_pool, "persist_quotas", False):
             info["imageGenerationAccountQuotas"] = account_pool.export_quotas()
+        patch_stock(session, supabase_url, row, info)
+        raise
+    except SegmentationFailedError as error:
+        # Background removal failed. Keep the original photo untouched, do not
+        # publish a broken cutout, and mark the job for reprocessing.
+        job.update({
+            "status": "segmentation_failed",
+            "error": str(error)[:500],
+            "failedAt": utc_now().isoformat(),
+            "processingMethod": "segmentation_failed",
+            "whetherUpscaled": False,
+        })
+        info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         raise
     except Exception as error:

@@ -1,16 +1,17 @@
 # Product image generation
 
-The Qogita image queue is driven by GitHub Actions. The preferred path now
-**preserves the original bottle pixels**: U2Net segments the original Qogita
-photo and the cutout is placed on a clean transparent canvas **without
+The Qogita image queue is driven by GitHub Actions. The only automatic path
+now **preserves the original bottle pixels**: U2Net segments the original
+Qogita photo and the cutout is placed on a clean transparent canvas **without
 redrawing or upscaling** the flacon, so labels stay sharp. Flux 2 Klein studio
-edit is used only as a fallback when segmentation fails on a photo. The final
-PNG retains transparency so the product sits on the site's background.
-Generative editing (fallback) can change labels, details or edges; review the
-output against the original before relying on it. Final PNG files are committed
-to the repository under `public/assets/img/generated-products` and deployed as
-Cloudflare static assets; no Supabase Storage bucket is used for new images.
-Queue state is stored in the existing `stocks.info` JSON.
+edit is **disabled** in the automatic pipeline and is never used to redraw the
+bottle, label, box or logo. If segmentation fails, the original photo is kept
+unchanged and the job is marked `segmentation_failed` for reprocessing. The
+final PNG retains transparency so the product sits on the site's background.
+Final PNG files are committed to the repository under
+`public/assets/img/generated-products` and deployed as Cloudflare static
+assets; no Supabase Storage bucket is used for new images. Queue state is
+stored in the existing `stocks.info` JSON.
 Public catalog products require a completed generated product image, regardless
 of the text generation provider. Images are marked `completed` only after their
 deployed bytes match the locally generated file. Existing completed images in
@@ -22,15 +23,15 @@ Every generation records these fields in `stocks.info.imageGeneration`
 (`imageGenerationReplacement` for regenerations):
 
 - `processingMethod` — `preserve_original` (segmentation only) or
-  `flux_redraw` (AI re-photograph fallback);
+  `segmentation_failed` (background removal failed, original kept);
 - `whetherUpscaled` — whether the product was enlarged beyond its original
   resolution;
 - `originalWidth` / `originalHeight` / `originalFileSize` — the real source
   photo dimensions and byte size;
 - `processedWidth` / `processedHeight` — the final canvas size;
 - `sharpness` — Laplacian variance of the product region (null if unavailable);
-- `qualityStatus` — `ok`, `low_source_quality` (small original) or
-  `low_sharpness`;
+- `qualityStatus` — `ok`, `low_source_quality` (small original),
+  `low_sharpness` or `segmentation_failed`;
 - `sourceImageId` — a short SHA-256 identifier of the source URL.
 
 Small originals are kept at their native size and flagged

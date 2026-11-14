@@ -36,9 +36,11 @@ never stretches them.
    redrawing and without upscaling**.
 3. `normalize_flacon_cutout(..., allow_upscale=False)` — added a no-upscale mode
    (scale capped at 1.0) so a small original is not artificially enlarged.
-4. `process_product` now uses **preserve-original first** and falls back to the
-   Flux studio edit only when segmentation fails. The colour guard still runs on
-   the fallback path.
+4. `process_product` now uses **preserve-original only**. The automatic Flux
+   fallback is **removed**: if segmentation fails, the original photo is kept
+   unchanged and the job is marked `segmentation_failed` (new
+   `SegmentationFailedError`) for reprocessing — the flacon is never redrawn by
+   the AI.
 5. Added diagnostics recorded into `info.imageGeneration`:
    `processingMethod`, `whetherUpscaled`, `originalWidth`, `originalHeight`,
    `originalFileSize`, `processedWidth`, `processedHeight`, `sharpness`,
@@ -46,6 +48,10 @@ never stretches them.
 6. `measure_source_quality()` / `product_sharpness()` flag small originals as
    `low_source_quality` and soft originals as `low_sharpness`
    (`SHARPNESS_THRESHOLD` is a starting value to be tuned on real photos).
+
+`generate_product_edit` / `transparent_product_image` / `ImageAccountPool`
+remain in the module for experiments and tests but are no longer called by the
+automatic production pipeline.
 
 ## Display path (verified, unchanged)
 
@@ -58,11 +64,12 @@ never stretches them.
 
 - `py -m py_compile` passes for `scripts/generate_product_images.py` and
   `tests/test_product_image_generation.py`.
-- Updated existing Python tests for the new flow (reference no longer
-  downscaled; preserve-original is primary; fallback forced via mocked
-  segmentation failure where the test exercises the Flux path).
+- Updated Python tests for the segmentation-only flow: the Flux fallback is
+  gone; segmentation failure now raises `SegmentationFailedError` and records
+  `segmentation_failed` without saving or redrawing.
 - Added Python tests: no-upscale normalization, low-resolution detection,
-  quality diagnostics, and the preserve-original end-to-end path.
+  quality diagnostics, preserve-original end-to-end, and segmentation-failure
+  safety.
 
 **Important:** `python -m unittest` could **not be executed** in this
 environment — `PIL`/`numpy`/`cv2`/`rembg` are not installed in the local Python
