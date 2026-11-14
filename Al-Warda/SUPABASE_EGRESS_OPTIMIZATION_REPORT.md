@@ -1,6 +1,7 @@
 # Supabase Egress Optimization Report — Catalog / Details Split
 
 ## Goal
+
 Reduce the **bytes** transferred from Supabase (egress), not just the number of
 HTTP requests. The previous catalog query fetched the whole `info` JSONB for
 every row. This change stops loading `info` for the catalog and loads it on
@@ -140,3 +141,86 @@ rendering.
    before/after byte measurements could be taken from the dashboard. The egress
    reduction here is architectural (dropping a large JSONB from the catalog
    payload), not a measured percentage.
+
+---
+
+## Stage 2 — hardening, cache consistency, tests
+
+### Fixes applied
+
+1. **Safe `info.imageGeneration` access** (`utils/perfumes.js`,
+   `mapStockRowRich`): `info.imageGeneration.imageUrl` is now
+   `(info.imageGeneration && info.imageGeneration.imageUrl) || r.image`, so a
+   row with `info = {}` or `info.imageGeneration = null` no longer throws.
+
+2. **Catalog/details cache consistency**: a fresh catalog load now invalidates
+   the per-product details cache (`invalidatePerfumeDetailsCache()` is called
+   after `memoryPerfumesCache` is replaced), so a new price/image is never
+   shadowed by a stale rich object.
+
+3. **Merge guard**: `getPerfumeDetailsById` only replaces a catalog entry that
+   is still `isLight`; it never overwrites a newer rich object with an older
+   in-flight details result.
+
+4. **New export** `invalidateCatalogCache()` — resets the light catalog,
+   dropship cache, catalog TTL timer and details cache. Used by tests and
+   available for admin-triggered full refreshes.
+
+### New tests (`tests/perfumeDetailsCache.test.js`)
+
+8 new tests covering:
+
+- catalog `select` does not contain `info`;
+- catalog still filters `info->imageGeneration->>status=eq.completed`
+  server-side;
+- details request filters `id=eq.<id>` and `limit=1`;
+- two parallel `getPerfumeDetailsById` calls for one id → one HTTP request;
+- repeat call within TTL → no refetch;
+- after TTL expiry (mocked Date) → refetch;
+- failed details request is not cached and can be retried;
+- missing `info.imageGeneration` does not throw;
+- catalog refresh invalidates stale per-product details.
+
+`tests/perfumeReadiness.test.js` was updated to the light-catalog contract.
+
+### Test/build results
+
+- `npm run build` — passes.
+- `node --check` on `utils/perfumes.js`, `tests/perfumeDetailsCache.test.js` —
+  passes.
+- `node --test` — **93 pass, 1 fail**. The only failure is
+  `pushMainWithRetry.test.js` (pre-existing git/bash environment test,
+  unrelated to DB access).
+
+### Schema proposal (NOT executed)
+
+File: `scripts/sql/proposal_catalog_columns.sql`
+
+To fully restore note search and min-order/GTIN on the light catalog without
+reloading `info`, the following top-level columns are proposed (with batched
+backfill from `info`):
+
+- `min_order_quantity integer not null default 1`
+- `gtin text`
+- `notes_summary_ru text`
+- `notes_summary_en text`
+
+This file is a proposal only. It was **not run** and does not modify the schema,
+per the constraints. The existing sync/notes/description pipelines would need to
+keep these columns in sync going forward.
+
+### Audit answers (min-order / GTIN / note search)
+
+- `getPerfumeMinOrder` + `applyMinOrderFilter`: used by `getPerfumes` and the
+  admin "other" section. Light products report `minOrderQuantity: 1`. Default
+  min-order settings are `0/0`, so the customer-facing filter is inert today.
+  A real top-level `min_order_quantity` column (see proposal) removes the risk
+  if the admin enables ranges.
+- `getPerfumeGtin`: used only by BookDetails for the admin Qogita link. The
+  product page loads full details first, so GTIN is present there. Catalog GTIN
+  matching is unaffected because stock URLs are name+id based.
+- `dropshipId`: null on light stock objects; not used for stock URLs.
+- **Note search**: currently name/brand/category/description search works;
+  note-based search is the documented limitation. The cheapest fix is the
+  `notes_summary_ru/en` top-level columns (proposal above), not a per-product
+  details fetch.

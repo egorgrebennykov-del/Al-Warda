@@ -86,28 +86,40 @@ describe("perfume image readiness", () => {
       }),
       true,
     );
-    assert.equal(isReadyProduct({
-      info: {
-        contentGeneration: { provider: "claude" },
-        imageGeneration: {
-          status: "completed",
-          imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+    assert.equal(
+      isReadyProduct({
+        info: {
+          contentGeneration: { provider: "claude" },
+          imageGeneration: {
+            status: "completed",
+            imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+          },
         },
-      },
-    }), true);
-    assert.equal(isReadyProduct({
-      info: {
-        contentGeneration: { provider: "claude" },
-        imageGeneration: {
-          status: "publishing",
-          imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+      }),
+      true,
+    );
+    assert.equal(
+      isReadyProduct({
+        info: {
+          contentGeneration: { provider: "claude" },
+          imageGeneration: {
+            status: "publishing",
+            imageUrl: `/assets/img/generated-products/${"a".repeat(64)}.png`,
+          },
         },
-      },
-    }), false);
-    assert.equal(isReadyProduct({
-      info: {
-        imageGeneration: { status: "completed", imageUrl: "/assets/img/products/12345678.jpg" },
-      },
-    }), false);
+      }),
+      false,
+    );
+    assert.equal(
+      isReadyProduct({
+        info: {
+          imageGeneration: {
+            status: "completed",
+            imageUrl: "/assets/img/products/12345678.jpg",
+          },
+        },
+      }),
+      false,
+    );
   });
 });

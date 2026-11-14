@@ -2198,7 +2198,8 @@ function mapStockRowRich(r) {
   const descEn =
     info.descriptionEn ||
     "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
-  const generatedImage = info.imageGeneration.imageUrl || r.image;
+  const generatedImage =
+    (info.imageGeneration && info.imageGeneration.imageUrl) || r.image;
 
   const rawPerfumeName = r.name || r.title;
   const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
@@ -2297,6 +2298,17 @@ export function invalidatePerfumeDetailsCache(id = null) {
   detailsCache = new Map();
 }
 
+// Resets all catalog-related in-memory state (light catalog, dropship cache,
+// catalog TTL timer and per-product details cache). Used by tests and by any
+// admin action that needs to force a fresh catalog on the next read.
+export function invalidateCatalogCache() {
+  memoryPerfumesCache = null;
+  catalogCacheTime = 0;
+  catalogRefresh = null;
+  memoryDropshipCache = null;
+  invalidatePerfumeDetailsCache();
+}
+
 async function fetchPerfumeDetailsById(id) {
   const res = await fetch(
     `${TABLE_PERFUMES}?select=id,name,brand,image,info&id=eq.${encodeURIComponent(id)}&limit=1`,
@@ -2337,7 +2349,11 @@ export async function getPerfumeDetailsById(id) {
           const idx = memoryPerfumesCache.findIndex(
             (p) => String(p.id) === key,
           );
-          if (idx > -1) memoryPerfumesCache[idx] = obj;
+          // Only replace a still-light entry; never overwrite a newer rich
+          // object with an older details fetch result.
+          if (idx > -1 && memoryPerfumesCache[idx]?.isLight) {
+            memoryPerfumesCache[idx] = obj;
+          }
         }
       }
       return obj;
@@ -2410,6 +2426,9 @@ export async function fetchPerfumesFromSupabase() {
       const mapped = validRows.map(mapStockRowLight);
       memoryPerfumesCache = mapped;
       catalogCacheTime = Date.now();
+      // A fresh catalog invalidates any previously cached per-product details
+      // so a newer price/image is never shadowed by a stale rich object.
+      invalidatePerfumeDetailsCache();
       return mapped;
     }
   } catch (err) {
