@@ -27,11 +27,11 @@
       "nameHu": "Román lej",
       "rate": 5.343,
       "lastSyncRate": 5.343,
-      "lastChecked": "2026-11-13T03:15:22.935Z",
+      "lastChecked": "2026-11-14T03:14:54.816Z",
       "decimals": 2,
       "symbolPosition": "after",
-      "latestObservedRate": 5.3473,
-      "observationDate": "2026-11-12"
+      "latestObservedRate": 5.3494,
+      "observationDate": "2026-11-13"
     },
     "HUF": {
       "code": "HUF",
@@ -42,11 +42,11 @@
       "nameHu": "Magyar forint",
       "rate": 362.99,
       "lastSyncRate": 362.99,
-      "lastChecked": "2026-11-12T03:04:38.884Z",
+      "lastChecked": "2026-11-14T03:04:55.243Z",
       "decimals": 0,
       "symbolPosition": "after",
-      "latestObservedRate": 365.08,
-      "observationDate": "2026-11-11",
+      "latestObservedRate": 365.6,
+      "observationDate": "2026-11-13",
       "lastSyncDate": "2026-11-10T14:43:40.380Z"
     }
   }
