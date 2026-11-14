@@ -1,6 +1,11 @@
 import { PERFUMES, PERFUME_CATEGORIES } from "../src/data/perfumesData.js";
 import qogitaClient from "./qogitaClient.js";
 import { mapQogitaProductToPerfume } from "./qogitaService.js";
+import { supabaseFetch } from "./hasuraProxy.js";
+
+function serverEnv() {
+  return globalThis.process?.env || {};
+}
 
 const DEFAULT_SUPABASE_URL = "https://mfvenfrmlkxqgvdtedet.supabase.co";
 
@@ -33,7 +38,7 @@ export async function syncPerfumeCatalog() {
   // Attempt to sync categories
   try {
     for (const cat of PERFUME_CATEGORIES) {
-      await fetch(`${supabaseUrl}/rest/v1/categories`, {
+      await supabaseFetch(serverEnv(), `${supabaseUrl}/rest/v1/categories`, {
         method: "POST",
         headers: { ...headers, Prefer: "resolution=merge-duplicates" },
         body: JSON.stringify({
@@ -54,34 +59,38 @@ export async function syncPerfumeCatalog() {
   let synced = 0;
   for (const p of PERFUMES) {
     try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/perfumes`, {
-        method: "POST",
-        headers: { ...headers, Prefer: "resolution=merge-duplicates" },
-        body: JSON.stringify({
-          slug: p.id,
-          name: p.name,
-          brand: p.brand,
-          category: p.category,
-          notes_summary: p.notesSummary,
-          price: p.price,
-          currency: p.currency,
-          price_mdl: p.priceMdl,
-          volume: p.volume,
-          concentration: p.concentration,
-          gender: p.gender,
-          rating: p.rating,
-          reviews_count: p.reviewsCount,
-          is_best_seller: p.isBestSeller,
-          is_featured: p.isFeatured,
-          in_stock: p.inStock,
-          image: p.image,
-          full_card_image: p.fullCardImage,
-          top_notes: p.topNotes,
-          heart_notes: p.heartNotes,
-          base_notes: p.baseNotes,
-          description: p.description,
-        }),
-      });
+      const res = await supabaseFetch(
+        serverEnv(),
+        `${supabaseUrl}/rest/v1/perfumes`,
+        {
+          method: "POST",
+          headers: { ...headers, Prefer: "resolution=merge-duplicates" },
+          body: JSON.stringify({
+            slug: p.id,
+            name: p.name,
+            brand: p.brand,
+            category: p.category,
+            notes_summary: p.notesSummary,
+            price: p.price,
+            currency: p.currency,
+            price_mdl: p.priceMdl,
+            volume: p.volume,
+            concentration: p.concentration,
+            gender: p.gender,
+            rating: p.rating,
+            reviews_count: p.reviewsCount,
+            is_best_seller: p.isBestSeller,
+            is_featured: p.isFeatured,
+            in_stock: p.inStock,
+            image: p.image,
+            full_card_image: p.fullCardImage,
+            top_notes: p.topNotes,
+            heart_notes: p.heartNotes,
+            base_notes: p.baseNotes,
+            description: p.description,
+          }),
+        },
+      );
       if (res.ok) synced++;
     } catch {
       // ignore
@@ -115,29 +124,33 @@ export async function syncQogitaCatalog(searchParams = {}) {
     for (const item of items) {
       const p = mapQogitaProductToPerfume(item);
       try {
-        const insertRes = await fetch(`${supabaseUrl}/rest/v1/perfumes`, {
-          method: "POST",
-          headers: { ...headers, Prefer: "resolution=merge-duplicates" },
-          body: JSON.stringify({
-            slug: p.id,
-            name: p.name,
-            brand: p.brand,
-            category: p.category,
-            notes_summary: p.notesSummary,
-            price: p.price,
-            currency: p.currency,
-            price_mdl: p.priceMdl,
-            volume: p.volume,
-            concentration: p.concentration,
-            gender: p.gender,
-            rating: p.rating,
-            reviews_count: p.reviewsCount,
-            is_best_seller: p.isBestSeller,
-            is_featured: p.isFeatured,
-            in_stock: p.inStock,
-            description: p.description,
-          }),
-        });
+        const insertRes = await supabaseFetch(
+          serverEnv(),
+          `${supabaseUrl}/rest/v1/perfumes`,
+          {
+            method: "POST",
+            headers: { ...headers, Prefer: "resolution=merge-duplicates" },
+            body: JSON.stringify({
+              slug: p.id,
+              name: p.name,
+              brand: p.brand,
+              category: p.category,
+              notes_summary: p.notesSummary,
+              price: p.price,
+              currency: p.currency,
+              price_mdl: p.priceMdl,
+              volume: p.volume,
+              concentration: p.concentration,
+              gender: p.gender,
+              rating: p.rating,
+              reviews_count: p.reviewsCount,
+              is_best_seller: p.isBestSeller,
+              is_featured: p.isFeatured,
+              in_stock: p.inStock,
+              description: p.description,
+            }),
+          },
+        );
         if (insertRes.ok) synced++;
       } catch (err) {
         console.warn("Failed to insert Qogita perfume:", err.message);
@@ -178,7 +191,9 @@ function runPythonProcess(args, timeoutMs = 180000) {
       try {
         py.kill();
       } catch {}
-      reject(new Error(output + "\n[Время ожидания превышено, процесс завершён]"));
+      reject(
+        new Error(output + "\n[Время ожидания превышено, процесс завершён]"),
+      );
     }, timeoutMs);
 
     py.on("close", (code) => {
@@ -198,14 +213,29 @@ function runPythonProcess(args, timeoutMs = 180000) {
 }
 
 export async function executeCatalogActionById(actionId, params = {}) {
-  const pythonScript = path.resolve(projectRoot, "scripts", "qogita_weekly_sync_upscayl.py");
+  const pythonScript = path.resolve(
+    projectRoot,
+    "scripts",
+    "qogita_weekly_sync_upscayl.py",
+  );
 
   if (actionId === "qogita-smart-sync") {
-    return await runPythonProcess([pythonScript, "--incremental", "--all", "--force"]);
+    return await runPythonProcess([
+      pythonScript,
+      "--incremental",
+      "--all",
+      "--force",
+    ]);
   }
   if (actionId === "brand-sync") {
     const brands = params.brands || "Lattafa,Armaf,Afnan";
-    return await runPythonProcess([pythonScript, "--brands", brands, "--all", "--force"]);
+    return await runPythonProcess([
+      pythonScript,
+      "--brands",
+      brands,
+      "--all",
+      "--force",
+    ]);
   }
   if (actionId === "full-database-refresh") {
     return await runPythonProcess([pythonScript, "--all", "--force"]);

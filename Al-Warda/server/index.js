@@ -67,6 +67,7 @@ import {
 } from "./qogitaWorker.js";
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
+import { handleRestProxy } from "./hasuraProxy.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -222,6 +223,18 @@ const server = createServer(async (req, res) => {
 
   if (req.method === "GET" && pathname === "/health") {
     respond(res, 200, { ok: true, store: "Al-Warda Parfumes" });
+    return;
+  }
+
+  // PostgREST-style data layer (Supabase /rest/v1/*) translated to Nhost Hasura.
+  if (pathname.startsWith("/rest/v1/")) {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await handleRestProxy(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
     return;
   }
 

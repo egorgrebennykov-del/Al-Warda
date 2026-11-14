@@ -1,3 +1,5 @@
+import { supabaseFetch } from "./hasuraProxy.js";
+
 class MissingServiceKeyError extends Error {
   constructor() {
     super("SUPABASE_SERVICE_ROLE_KEY is not configured on the server");
@@ -87,7 +89,7 @@ export async function requirePrivilegedUser(request, env) {
   url.searchParams.set("select", "id,status,role");
   url.searchParams.set("id", `eq.${cookieUser.id}`);
   url.searchParams.set("limit", "1");
-  const result = await fetch(url, {
+  const result = await supabaseFetch(env, url, {
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
@@ -152,7 +154,7 @@ async function fetchStockPage(env, key, from, to) {
   let lastError = null;
   for (let attempt = 0; attempt <= 2; attempt++) {
     try {
-      const result = await fetch(url, {
+      const result = await supabaseFetch(env, url, {
         headers: {
           apikey: key,
           Authorization: `Bearer ${key}`,
@@ -681,7 +683,7 @@ export async function requeueFailedProductItems(request, env) {
       const url = new URL(`${baseUrl}/rest/v1/stocks`);
       url.searchParams.set("select", "id,info");
       url.searchParams.set("id", `in.(${chunk.join(",")})`);
-      const result = await fetch(url, { headers });
+      const result = await supabaseFetch(env, url, { headers });
       if (!result.ok)
         throw new Error(`Could not load failed items (${result.status})`);
       const rows = await result.json();
@@ -692,7 +694,7 @@ export async function requeueFailedProductItems(request, env) {
         delete info.imageGenerationReplacement;
         const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
         patchUrl.searchParams.set("id", `eq.${row.id}`);
-        const patch = await fetch(patchUrl, {
+        const patch = await supabaseFetch(env, patchUrl, {
           method: "PATCH",
           headers: { ...headers, Prefer: "return=minimal" },
           body: JSON.stringify({ info }),
@@ -729,7 +731,7 @@ async function loadSettingsRow(env, key) {
   url.searchParams.set("select", "id,info");
   url.searchParams.set("slug", `eq.${SETTINGS_SLUG}`);
   url.searchParams.set("limit", "1");
-  const result = await fetch(url, {
+  const result = await supabaseFetch(env, url, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   if (!result.ok) throw new Error(`Could not load settings (${result.status})`);
@@ -797,7 +799,7 @@ export async function saveSiteSettings(request, env) {
     if (row) {
       const url = new URL(`${baseUrl}/rest/v1/stocks`);
       url.searchParams.set("id", `eq.${row.id}`);
-      response = await fetch(url, {
+      response = await supabaseFetch(env, url, {
         method: "PATCH",
         headers,
         body: JSON.stringify({
@@ -810,7 +812,7 @@ export async function saveSiteSettings(request, env) {
         }),
       });
     } else {
-      response = await fetch(`${baseUrl}/rest/v1/stocks`, {
+      response = await supabaseFetch(env, `${baseUrl}/rest/v1/stocks`, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -880,7 +882,7 @@ export async function deleteFailedProductItems(request, env) {
       const chunk = uniqueIds.slice(i, i + chunkSize);
       const url = new URL(`${baseUrl}/rest/v1/stocks`);
       url.searchParams.set("id", `in.(${chunk.join(",")})`);
-      const response = await fetch(url, {
+      const response = await supabaseFetch(env, url, {
         method: "DELETE",
         headers: {
           apikey: key,
@@ -967,7 +969,7 @@ export async function syncCommittedPublishedStocks(env) {
 
           const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
           patchUrl.searchParams.set("id", `eq.${row.id}`);
-          const patchRes = await fetch(patchUrl, {
+          const patchRes = await supabaseFetch(env, patchUrl, {
             method: "PATCH",
             headers: {
               apikey: key,
@@ -1026,7 +1028,7 @@ export async function saveManualProductItem(request, env) {
         "select",
         "id,name,brand,price,currency,image,info",
       );
-      const getRes = await fetch(fetchUrl, { headers });
+      const getRes = await supabaseFetch(env, fetchUrl, { headers });
       if (!getRes.ok) {
         throw new Error(
           `Failed to load product ${id} from database (${getRes.status})`,
@@ -1271,7 +1273,7 @@ export async function saveManualProductItem(request, env) {
 
     if (isNew) {
       const insertUrl = new URL(`${baseUrl}/rest/v1/stocks`);
-      const insertRes = await fetch(insertUrl, {
+      const insertRes = await supabaseFetch(env, insertUrl, {
         method: "POST",
         headers: { ...headers, Prefer: "return=representation" },
         body: JSON.stringify(patchPayload),
@@ -1296,7 +1298,7 @@ export async function saveManualProductItem(request, env) {
 
     const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
     patchUrl.searchParams.set("id", `eq.${id}`);
-    const patchRes = await fetch(patchUrl, {
+    const patchRes = await supabaseFetch(env, patchUrl, {
       method: "PATCH",
       headers: { ...headers, Prefer: "return=representation" },
       body: JSON.stringify(patchPayload),
@@ -1407,7 +1409,7 @@ export async function deleteAdminProducts(request, env) {
       const chunk = ids.slice(i, i + 200);
       const url = new URL(`${baseUrl}/rest/v1/stocks`);
       url.searchParams.set("id", `in.(${chunk.join(",")})`);
-      const response = await fetch(url, {
+      const response = await supabaseFetch(env, url, {
         method: "DELETE",
         headers,
       });

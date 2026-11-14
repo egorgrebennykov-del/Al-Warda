@@ -3,7 +3,10 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
 const targetFile = path.resolve(rootDir, "server", "workerEnv.js");
 
 const KEYS = [
@@ -23,6 +26,8 @@ const KEYS = [
   "EMAILJS_PRIVATE_KEY",
   "GITHUB_TOKEN",
   "GH_TOKEN",
+  "NHOST_GRAPHQL_URL",
+  "NHOST_ADMIN_SECRET",
 ];
 
 const hasBuildEnv = KEYS.some((k) => Boolean(process.env[k]));
@@ -39,5 +44,7 @@ if (hasBuildEnv) {
   }
   const content = `// Auto-generated during CI build\nexport default ${JSON.stringify(envObj, null, 2)};\n`;
   writeFileSync(targetFile, content, "utf8");
-  console.log("[generate-worker-env] Injected build environment variables for Worker bundle.");
+  console.log(
+    "[generate-worker-env] Injected build environment variables for Worker bundle.",
+  );
 }

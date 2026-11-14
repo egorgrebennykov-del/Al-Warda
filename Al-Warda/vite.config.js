@@ -10,12 +10,17 @@ export function generatedImageFallback() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const path = new URL(req.url, "http://localhost").pathname;
-        if (!["GET", "HEAD"].includes(req.method) ||
-            !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(path)) {
+        if (
+          !["GET", "HEAD"].includes(req.method) ||
+          !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(path)
+        ) {
           return next();
         }
         try {
-          if ((await stat(join(server.config.publicDir, path.slice(1)))).isFile()) return next();
+          if (
+            (await stat(join(server.config.publicDir, path.slice(1)))).isFile()
+          )
+            return next();
           return next(new Error("Generated image path is not a file"));
         } catch (error) {
           if (error.code !== "ENOENT") return next(error);
@@ -37,10 +42,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/")
+          ) {
             return "vendor-react";
           }
-          if (id.includes("node_modules/react-router") || id.includes("node_modules/@remix-run/router")) {
+          if (
+            id.includes("node_modules/react-router") ||
+            id.includes("node_modules/@remix-run/router")
+          ) {
             return "vendor-router";
           }
         },
@@ -48,6 +59,9 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: { "/api": { target: "http://localhost:3001", changeOrigin: false } },
+    proxy: {
+      "/api": { target: "http://localhost:3001", changeOrigin: false },
+      "/rest/v1": { target: "http://localhost:3001", changeOrigin: false },
+    },
   },
 });

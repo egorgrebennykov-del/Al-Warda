@@ -1,9 +1,10 @@
 import { getCookieUser } from "./auth.js";
+import { restUrl } from "./restBase.js";
 
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/orders_in_progress`;
+const TABLE_URL = restUrl("orders_in_progress");
 const KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
@@ -77,7 +78,9 @@ export async function getUserOrders(userId) {
 
 export async function getCurrentOrders(userId) {
   const all = await getUserOrders(userId);
-  return all.filter((o) => (o.status || "in_progress").toLowerCase() !== "completed");
+  return all.filter(
+    (o) => (o.status || "in_progress").toLowerCase() !== "completed",
+  );
 }
 
 export async function getCompletedOrders(userId) {

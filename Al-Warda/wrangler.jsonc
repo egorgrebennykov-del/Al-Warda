@@ -5,20 +5,21 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "build": {
-    "command": "npm install && npm run build"
+    "command": "npm install && npm run build",
   },
   "vars": {
     "SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
     "VITE_SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB"
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB",
+    "NHOST_GRAPHQL_URL": "https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1",
   },
   "triggers": {
-    "crons": ["0 3 * * *"]
+    "crons": ["0 3 * * *"],
   },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/health"]
-  }
+    "run_worker_first": ["/api/*", "/health", "/rest/v1/*"],
+  },
 }

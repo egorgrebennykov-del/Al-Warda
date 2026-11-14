@@ -1,4 +1,5 @@
 import { getAllUsers, resolveUserRoles, isPrivileged } from "./auth.js";
+import { restUrl } from "./restBase.js";
 
 async function getEmailJs() {
   const mod = await import("@emailjs/browser");
@@ -128,7 +129,7 @@ async function dispatchGuestEmailViaEmailJs({
   };
 }
 
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/inquiries`;
+const TABLE_URL = restUrl("inquiries");
 const headers = {
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -297,7 +298,7 @@ export async function getOrCreateInquiry({
   if (userId && (!userEmail || !userName || userName === "Пользователь")) {
     try {
       const uRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/user?id=eq.${encodeURIComponent(userId)}&limit=1`,
+        `${restUrl("user")}?id=eq.${encodeURIComponent(userId)}&limit=1`,
         { headers },
       );
       if (uRes.ok) {

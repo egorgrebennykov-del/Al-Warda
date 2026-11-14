@@ -14,6 +14,7 @@
     "@emailjs/browser": "^5.0.3",
     "@google/genai": "^2.31.0",
     "@huggingface/transformers": "^4.3.1",
+    "@nhost/nhost-js": "^4.9.0",
     "@supabase/supabase-js": "^2.118.0",
     "axios": "^1.20.0",
     "bcrypt": "^6.0.0",

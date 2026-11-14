@@ -21,6 +21,7 @@ import {
   invalidateAllStocksCache,
   requirePrivilegedUser,
 } from "./productImageQueueAdmin.js";
+import { supabaseFetch } from "./hasuraProxy.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
 import { isPerfumeSet } from "../utils/perfumes.js";
 import { withGeminiDescriptions } from "./geminiDescriptionService.js";
@@ -154,7 +155,7 @@ async function patchStockInfo(env, id, info) {
   const key = getServiceKey(env);
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
   url.searchParams.set("id", `eq.${id}`);
-  const response = await fetch(url, {
+  const response = await supabaseFetch(env, url, {
     method: "PATCH",
     headers: {
       apikey: key,
@@ -305,7 +306,7 @@ async function readStockRow(env, id) {
   url.searchParams.set("id", `eq.${id}`);
   url.searchParams.set("select", "id,name,brand,image,info");
   url.searchParams.set("limit", "1");
-  const response = await fetch(url, {
+  const response = await supabaseFetch(env, url, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   if (!response.ok) return null;

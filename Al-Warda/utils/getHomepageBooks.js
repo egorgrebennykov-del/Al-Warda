@@ -1,10 +1,12 @@
+import { restUrl } from "./restBase.js";
+
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/books_on_home_page`;
+const TABLE_URL = restUrl("books_on_home_page");
 
 const STORAGE_KEY = "kazbook_homepage_books_v1";
 const CACHE_TTL_MS = 5 * 60 * 1000;

@@ -1,3 +1,5 @@
+import { restUrl } from "./restBase.js";
+
 async function getBcrypt() {
   const mod = await import("bcryptjs");
   return mod.default || mod;
@@ -11,7 +13,7 @@ async function getEmailJs() {
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/user`;
+const TABLE_URL = restUrl("user");
 const KEY =
   (typeof import.meta !== "undefined" &&
     import.meta.env?.VITE_SUPABASE_ANON_KEY) ||

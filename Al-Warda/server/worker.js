@@ -31,6 +31,7 @@ import {
   refreshDescriptions,
   clearDescriptions,
 } from "./descriptionQueue.js";
+import { handleRestProxy } from "./hasuraProxy.js";
 
 const actionStatuses = {
   "qogita-smart-sync": {
@@ -151,6 +152,12 @@ export default {
       const urlObj = new URL(request.url);
       const { pathname } = urlObj;
       const method = request.method.toUpperCase();
+
+      // PostgREST-style data layer (Supabase /rest/v1/*) translated to Nhost
+      // Hasura GraphQL. Admin secret stays server-side; never sent to browser.
+      if (pathname.startsWith("/rest/v1/")) {
+        return handleRestProxy(request, env);
+      }
 
       if (method === "GET" && pathname === "/health") {
         return jsonResponse({ ok: true, store: "Al-Warda Parfumes" });

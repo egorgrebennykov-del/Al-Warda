@@ -1,10 +1,12 @@
+import { restUrl } from "./restBase.js";
+
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/discounts`;
+const TABLE_URL = restUrl("discounts");
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 let cachedSnapshot = null;

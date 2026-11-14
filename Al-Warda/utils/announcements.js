@@ -1,3 +1,5 @@
+import { restUrl } from "./restBase.js";
+
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
@@ -6,7 +8,7 @@ const SUPABASE_KEY =
     import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/announcements`;
+const TABLE_URL = restUrl("announcements");
 const headers = {
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,

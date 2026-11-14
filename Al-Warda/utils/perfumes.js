@@ -8,6 +8,7 @@ import {
   hasCompletedGeneratedImage as hasCompletedGeneratedImageImpl,
 } from "./generatedProductImage.js";
 import QOGITA_MIN_ORDER_OVERRIDES from "../src/data/qogitaMinOrderOverrides.js";
+import { restUrl } from "./restBase.js";
 
 const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
@@ -18,7 +19,7 @@ const SUPABASE_KEY =
     import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
-const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
+const TABLE_PERFUMES = restUrl("stocks");
 let memoryPerfumesCache = null;
 let catalogRefresh = null;
 // Catalog TTL: after this many ms a normal getPerfumes() call refreshes the

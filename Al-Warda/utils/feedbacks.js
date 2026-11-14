@@ -1,10 +1,11 @@
 import { getCookieUser } from "./auth";
 import { moderateReview } from "./geminiModeration";
+import { restUrl } from "./restBase.js";
 
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/feedbacks`;
+const TABLE_URL = restUrl("feedbacks");
 const KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";

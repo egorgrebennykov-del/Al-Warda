@@ -1,7 +1,9 @@
+import { restUrl } from "./restBase.js";
+
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
-const TABLE_URL = `${SUPABASE_URL}/rest/v1/coupons`;
+const TABLE_URL = restUrl("coupons");
 const KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
@@ -13,9 +15,12 @@ const headers = {
 
 export async function getAllCoupons() {
   try {
-    const response = await fetch(`${TABLE_URL}?select=*&order=created_at.desc`, {
-      headers,
-    });
+    const response = await fetch(
+      `${TABLE_URL}?select=*&order=created_at.desc`,
+      {
+        headers,
+      },
+    );
     if (!response.ok) return [];
     const data = await response.json();
     return Array.isArray(data) ? data : [];
@@ -62,10 +67,13 @@ export async function createCoupon({ code, name, starts_at, ends_at, action }) {
 }
 
 export async function deleteCoupon(couponId) {
-  const response = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(couponId)}`, {
-    method: "DELETE",
-    headers,
-  });
+  const response = await fetch(
+    `${TABLE_URL}?id=eq.${encodeURIComponent(couponId)}`,
+    {
+      method: "DELETE",
+      headers,
+    },
+  );
   if (!response.ok) {
     throw new Error("Failed to delete coupon");
   }
@@ -107,9 +115,7 @@ export function validateCouponForCart({
     return {
       valid: false,
       error:
-        language === "ru"
-          ? "Срок действия купона истек"
-          : "Coupon has expired",
+        language === "ru" ? "Срок действия купона истек" : "Coupon has expired",
       deduction: 0,
     };
   }
@@ -250,9 +256,12 @@ export function validateCouponForCart({
 export async function redeemCoupon(couponId, userId = null) {
   if (!couponId) return null;
   try {
-    const res = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(couponId)}`, {
-      headers,
-    });
+    const res = await fetch(
+      `${TABLE_URL}?id=eq.${encodeURIComponent(couponId)}`,
+      {
+        headers,
+      },
+    );
     if (!res.ok) return null;
     const list = await res.json();
     const coupon = list?.[0];
@@ -290,4 +299,3 @@ export async function redeemCoupon(couponId, userId = null) {
     return null;
   }
 }
-
