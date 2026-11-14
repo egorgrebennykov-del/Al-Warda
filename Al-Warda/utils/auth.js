@@ -13,7 +13,8 @@ const SUPABASE_URL =
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const TABLE_URL = `${SUPABASE_URL}/rest/v1/user`;
 const KEY =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 const headers = {
   apikey: KEY,
@@ -22,11 +23,17 @@ const headers = {
 };
 
 const EMAILJS_SERVICE_ID =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_SERVICE_ID) || "default_service";
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_EMAILJS_SERVICE_ID) ||
+  "default_service";
 const EMAILJS_TEMPLATE_ID =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_TEMPLATE_ID) || "template_tco32u6";
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_EMAILJS_TEMPLATE_ID) ||
+  "template_tco32u6";
 const EMAILJS_PUBLIC_KEY =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_EMAILJS_PUBLIC_KEY) || "mq7sRq7QGzp9XQUTh";
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_EMAILJS_PUBLIC_KEY) ||
+  "mq7sRq7QGzp9XQUTh";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -349,9 +356,7 @@ export function parseUserPhones(rawPhone) {
   if (Array.isArray(rawPhone)) {
     return rawPhone
       .map((p) =>
-        typeof p === "string"
-          ? p.trim()
-          : (p?.phone || p?.number || "").trim(),
+        typeof p === "string" ? p.trim() : (p?.phone || p?.number || "").trim(),
       )
       .filter(Boolean);
   }
@@ -382,7 +387,13 @@ export function parseUserPhones(rawPhone) {
   return [];
 }
 
-export async function register({ firstName, lastName, email, password, phone }) {
+export async function register({
+  firstName,
+  lastName,
+  email,
+  password,
+  phone,
+}) {
   const normalized = checkEmail(email);
   if (await findByEmail(normalized)) {
     throw new Error("This email is already registered");
@@ -432,7 +443,10 @@ export async function login(email, password) {
   if (!identifier) {
     throw new Error("Enter an email or login");
   }
-  const [user, bcrypt] = await Promise.all([findByEmail(identifier), getBcrypt()]);
+  const [user, bcrypt] = await Promise.all([
+    findByEmail(identifier),
+    getBcrypt(),
+  ]);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     throw new Error("Invalid email or password");
   }
@@ -454,9 +468,25 @@ export function logout() {
   if (typeof document !== "undefined") {
     document.cookie = "user=; max-age=0; path=/; SameSite=Lax";
   }
+  invalidateProfileCache();
 }
 
-export async function getProfile() {
+// Short-TTL profile cache: getProfile() is called independently by several
+// components on mount (Checkout, MessengerModal, Testimonial, Privileged,
+// AuthContext). Cache the normalized profile for a minute and dedupe
+// concurrent calls so a cluster of mounts triggers one DB read, not many.
+let profileCache = null;
+let profileCacheExpiry = 0;
+let profileInflight = null;
+const PROFILE_CACHE_TTL_MS = 60_000;
+
+export function invalidateProfileCache() {
+  profileCache = null;
+  profileCacheExpiry = 0;
+  profileInflight = null;
+}
+
+async function fetchProfile() {
   const cookieUser = getCookieUser();
   if (!cookieUser) return null;
 
@@ -477,8 +507,10 @@ export async function getProfile() {
     row?.status || (row?.role === "privileged" ? "privileged" : "user");
   const userRoles = resolveUserRoles({ status: userStatus, role: row?.role });
   const primaryRole = userRoles[0] || "user";
-  const userFirstName = row?.firstname ?? row?.firstName ?? cookieUser.firstName ?? "";
-  const userLastName = row?.lastname ?? row?.lastName ?? cookieUser.lastName ?? "";
+  const userFirstName =
+    row?.firstname ?? row?.firstName ?? cookieUser.firstName ?? "";
+  const userLastName =
+    row?.lastname ?? row?.lastName ?? cookieUser.lastName ?? "";
 
   setUserCookie({
     id: cookieUser.id,
@@ -507,6 +539,33 @@ export async function getProfile() {
   };
 }
 
+export async function getProfile() {
+  const cookieUser = getCookieUser();
+  if (!cookieUser) return null;
+  const now = Date.now();
+  if (
+    profileCache &&
+    profileCache.id === cookieUser.id &&
+    now < profileCacheExpiry
+  ) {
+    return profileCache.profile;
+  }
+  if (profileInflight) return profileInflight;
+
+  profileInflight = fetchProfile()
+    .then((profile) => {
+      if (profile) {
+        profileCache = { id: cookieUser.id, profile };
+        profileCacheExpiry = now + PROFILE_CACHE_TTL_MS;
+      }
+      return profile;
+    })
+    .finally(() => {
+      profileInflight = null;
+    });
+  return profileInflight;
+}
+
 export function isPrivileged(user) {
   const u = user ?? getCookieUser();
   if (!u) return false;
@@ -519,10 +578,7 @@ export function isPrivileged(user) {
   const roles = resolveUserRoles(u);
   return roles.some(
     (r) =>
-      r === "admin" ||
-      r === "developer" ||
-      r === "vip" ||
-      r === "privileged",
+      r === "admin" || r === "developer" || r === "vip" || r === "privileged",
   );
 }
 
@@ -638,12 +694,11 @@ export async function createUserByAdmin({
     throw new Error("User with this email/login already exists");
   }
 
-  const phoneArray =
-    Array.isArray(phone)
-      ? phone
-      : typeof phone === "string" && phone.trim()
-        ? [phone.trim()]
-        : [];
+  const phoneArray = Array.isArray(phone)
+    ? phone
+    : typeof phone === "string" && phone.trim()
+      ? [phone.trim()]
+      : [];
 
   // Hash the password with bcrypt (10 salt rounds)
   const bcrypt = await getBcrypt();
@@ -697,7 +752,10 @@ export async function createUserByAdmin({
 
   const userStatus =
     created.status || (created.role === "privileged" ? "privileged" : "user");
-  const userRoles = resolveUserRoles({ status: userStatus, role: created.role });
+  const userRoles = resolveUserRoles({
+    status: userStatus,
+    role: created.role,
+  });
 
   return {
     ...created,
@@ -733,14 +791,11 @@ export async function saveUserPhone(userId, newPhone) {
     return current;
   }
   const updated = [...current, cleanPhone];
-  const response = await fetch(
-    `${TABLE_URL}?id=eq.${encodeURIComponent(id)}`,
-    {
-      method: "PATCH",
-      headers: { ...headers, Prefer: "return=representation" },
-      body: JSON.stringify({ phone: updated }),
-    },
-  );
+  const response = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ phone: updated }),
+  });
   if (!response.ok) {
     throw new Error("Could not save phone to profile");
   }
@@ -755,14 +810,11 @@ export async function deleteUserPhone(userId, phoneToDelete) {
   const updated = current.filter(
     (p) => p.replace(/[^\d+]/g, "") !== normDelete,
   );
-  const response = await fetch(
-    `${TABLE_URL}?id=eq.${encodeURIComponent(id)}`,
-    {
-      method: "PATCH",
-      headers: { ...headers, Prefer: "return=representation" },
-      body: JSON.stringify({ phone: updated }),
-    },
-  );
+  const response = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ phone: updated }),
+  });
   if (!response.ok) {
     throw new Error("Could not delete phone");
   }
@@ -800,14 +852,11 @@ export async function saveUserAddress(userId, newAddress) {
     savedAt: new Date().toISOString(),
   };
   const updated = [...current, addressToSave];
-  const response = await fetch(
-    `${TABLE_URL}?id=eq.${encodeURIComponent(id)}`,
-    {
-      method: "PATCH",
-      headers: { ...headers, Prefer: "return=representation" },
-      body: JSON.stringify({ adresses: updated }),
-    },
-  );
+  const response = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ adresses: updated }),
+  });
   if (!response.ok) {
     throw new Error("Could not save address to profile");
   }
@@ -819,14 +868,11 @@ export async function deleteUserAddress(userId, addressId) {
   if (!id) throw new Error("User ID is required");
   const current = await getUserAddresses(id);
   const updated = current.filter((addr) => addr.id !== addressId);
-  const response = await fetch(
-    `${TABLE_URL}?id=eq.${encodeURIComponent(id)}`,
-    {
-      method: "PATCH",
-      headers: { ...headers, Prefer: "return=representation" },
-      body: JSON.stringify({ adresses: updated }),
-    },
-  );
+  const response = await fetch(`${TABLE_URL}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ adresses: updated }),
+  });
   if (!response.ok) {
     throw new Error("Could not delete address");
   }

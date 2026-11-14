@@ -26,7 +26,9 @@ function buildEmailJsParams({
   subject = "Ответ от службы поддержки Al-Warda",
   text = "",
 }) {
-  const cleanTo = String(to || "").trim().toLowerCase();
+  const cleanTo = String(to || "")
+    .trim()
+    .toLowerCase();
   const cleanUser = String(userName || "Читатель").trim();
   const cleanAdmin = String(adminName || "Администратор Al-Warda").trim();
   const cleanSubject = String(
@@ -181,7 +183,9 @@ export async function assignAdminForNewInquiry() {
     }
 
     // Query all inquiries to count distribution
-    const res = await fetch(`${TABLE_URL}?select=interlocutors_info`, { headers });
+    const res = await fetch(`${TABLE_URL}?select=interlocutors_info`, {
+      headers,
+    });
     if (res.ok) {
       const list = await res.json();
       const counts = {};
@@ -231,7 +235,7 @@ export async function fetchInquiryById(inquiryId) {
   if (!inquiryId) return null;
   const res = await fetch(
     `${TABLE_URL}?id=eq.${encodeURIComponent(inquiryId)}&limit=1`,
-    { headers }
+    { headers },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -244,7 +248,7 @@ export async function fetchInquiryById(inquiryId) {
 export async function fetchUserInquiry({ userId = null, userEmail = null }) {
   try {
     if (userId) {
-      const url = `${TABLE_URL}?select=*&interlocutors_info->>userId=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=1`;
+      const url = `${TABLE_URL}?select=id,notifications_user&interlocutors_info->>userId=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=1`;
       const res = await fetch(url, { headers });
       if (res.ok) {
         const list = await res.json();
@@ -256,7 +260,7 @@ export async function fetchUserInquiry({ userId = null, userEmail = null }) {
 
     if (userEmail) {
       const cleanEmail = userEmail.trim().toLowerCase();
-      const url = `${TABLE_URL}?select=*&interlocutors_info->>userEmail=eq.${encodeURIComponent(cleanEmail)}&order=created_at.desc&limit=1`;
+      const url = `${TABLE_URL}?select=id,notifications_user&interlocutors_info->>userEmail=eq.${encodeURIComponent(cleanEmail)}&order=created_at.desc&limit=1`;
       const res = await fetch(url, { headers });
       if (res.ok) {
         const list = await res.json();
@@ -276,11 +280,17 @@ export async function fetchUserInquiry({ userId = null, userEmail = null }) {
 /**
  * Get or create an inquiry for the user / guest.
  */
-export async function getOrCreateInquiry({ user = null, guestEmail = null, guestName = "Гость" }) {
+export async function getOrCreateInquiry({
+  user = null,
+  guestEmail = null,
+  guestName = "Гость",
+}) {
   const userId = user?.id || null;
   let userEmail = (user?.email || guestEmail || "").trim().toLowerCase();
   let userName = user
-    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email || "Пользователь"
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+      user.email ||
+      "Пользователь"
     : guestName;
 
   // If user is registered but email was not provided in cookie, look up in database
@@ -288,7 +298,7 @@ export async function getOrCreateInquiry({ user = null, guestEmail = null, guest
     try {
       const uRes = await fetch(
         `${SUPABASE_URL}/rest/v1/user?id=eq.${encodeURIComponent(userId)}&limit=1`,
-        { headers }
+        { headers },
       );
       if (uRes.ok) {
         const uList = await uRes.json();
@@ -300,7 +310,8 @@ export async function getOrCreateInquiry({ user = null, guestEmail = null, guest
           if (!userName || userName === "Пользователь") {
             const fName = found.firstName ?? found.firstname ?? "";
             const lName = found.lastName ?? found.lastname ?? "";
-            userName = `${fName} ${lName}`.trim() || found.email || "Пользователь";
+            userName =
+              `${fName} ${lName}`.trim() || found.email || "Пользователь";
           }
         }
       }
@@ -317,7 +328,9 @@ export async function getOrCreateInquiry({ user = null, guestEmail = null, guest
   const isGuest = !userId;
 
   if (isGuest && !userEmail) {
-    throw new Error("Пожалуйста, укажите ваш email для связи с администратором");
+    throw new Error(
+      "Пожалуйста, укажите ваш email для связи с администратором",
+    );
   }
 
   // Check if inquiry already exists
@@ -416,7 +429,7 @@ export async function sendInquiryMessage({
     if (!check.allowed) {
       throw new Error(
         check.reason ||
-          "Сообщение отклонено: администратор принимает сообщения только по вопросам книг, работы магазина или сотрудничества."
+          "Сообщение отклонено: администратор принимает сообщения только по вопросам книг, работы магазина или сотрудничества.",
       );
     }
   }
@@ -449,10 +462,12 @@ export async function sendInquiryMessage({
   const senderName =
     sender === "admin"
       ? senderUser
-        ? `${senderUser.firstName || ""} ${senderUser.lastName || ""}`.trim() || senderUser.email
+        ? `${senderUser.firstName || ""} ${senderUser.lastName || ""}`.trim() ||
+          senderUser.email
         : info.adminName || "Администратор"
       : senderUser
-        ? `${senderUser.firstName || ""} ${senderUser.lastName || ""}`.trim() || senderUser.email
+        ? `${senderUser.firstName || ""} ${senderUser.lastName || ""}`.trim() ||
+          senderUser.email
         : info.userName || "Пользователь";
 
   const newMsg = {
@@ -482,12 +497,14 @@ export async function sendInquiryMessage({
       method: "PATCH",
       headers: { ...headers, Prefer: "return=representation" },
       body: JSON.stringify(updatePayload),
-    }
+    },
   );
 
   if (!patchRes.ok) {
     const errData = await patchRes.json().catch(() => null);
-    throw new Error(errData?.message || "Не удалось отправить сообщение на сервер");
+    throw new Error(
+      errData?.message || "Не удалось отправить сообщение на сервер",
+    );
   }
 
   // If sender is admin and user is guest, automatically send an email via EmailJS
@@ -544,7 +561,8 @@ export async function transferInquiryAdmin({
   const fromAdminId = fromAdminUser?.id || info.adminId || "admin";
   const fromAdminName =
     (fromAdminUser
-      ? `${fromAdminUser.firstName || ""} ${fromAdminUser.lastName || ""}`.trim() || fromAdminUser.email
+      ? `${fromAdminUser.firstName || ""} ${fromAdminUser.lastName || ""}`.trim() ||
+        fromAdminUser.email
       : null) ||
     info.adminName ||
     "Администратор";
@@ -600,7 +618,7 @@ export async function transferInquiryAdmin({
         notifications_admin: (inquiry.notifications_admin || 0) + 1,
         notifications_user: (inquiry.notifications_user || 0) + 1,
       }),
-    }
+    },
   );
 
   if (!patchRes.ok) {

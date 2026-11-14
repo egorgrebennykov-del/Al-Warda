@@ -21,6 +21,10 @@ const SUPABASE_KEY =
 const TABLE_PERFUMES = `${SUPABASE_URL}/rest/v1/stocks`;
 let memoryPerfumesCache = null;
 let catalogRefresh = null;
+// Catalog TTL: after this many ms a normal getPerfumes() call refreshes the
+// catalog once; explicit refresh:true bypasses the TTL. Configurable here.
+let catalogCacheTime = 0;
+const CATALOG_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v4";
 
 function resolveCardImage(img, gtin, rawImage) {
@@ -2238,6 +2242,7 @@ export async function fetchPerfumesFromSupabase() {
         return ensurePerfumeEnrichment(perfumeObj);
       });
       memoryPerfumesCache = mapped;
+      catalogCacheTime = Date.now();
       return mapped;
     }
   } catch (err) {
@@ -2302,7 +2307,15 @@ async function getPerfumesUnfiltered(options = {}) {
   let base = memoryPerfumesCache || [];
   let dropship = memoryDropshipCache || [];
 
-  if (refresh || !memoryPerfumesCache) {
+  const isStale =
+    memoryPerfumesCache && Date.now() - catalogCacheTime >= CATALOG_TTL_MS;
+  const tabHidden =
+    typeof document !== "undefined" && document.visibilityState === "hidden";
+
+  // Refetch only on: explicit refresh, no cache yet, or an expired TTL while
+  // the tab is actually visible. A hidden tab keeps serving the stale cache
+  // and refreshes on the next visible call.
+  if (refresh || !memoryPerfumesCache || (isStale && !tabHidden)) {
     if (!catalogRefresh) {
       catalogRefresh = Promise.allSettled([
         fetchPerfumesFromSupabase(),

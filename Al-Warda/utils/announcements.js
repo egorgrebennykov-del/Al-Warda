@@ -2,7 +2,8 @@ const SUPABASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const SUPABASE_KEY =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const TABLE_URL = `${SUPABASE_URL}/rest/v1/announcements`;
@@ -53,8 +54,14 @@ export function normalizeAnnouncement(row) {
       : "small";
 
   const order = Number(
-    parsed.ru.order ?? parsed.en.order ?? parsed.hu.order ?? parsed.bg.order ??
-    parsed.el.order ?? parsed.ro.order ?? legacy.order ?? 0,
+    parsed.ru.order ??
+      parsed.en.order ??
+      parsed.hu.order ??
+      parsed.bg.order ??
+      parsed.el.order ??
+      parsed.ro.order ??
+      legacy.order ??
+      0,
   );
   const active =
     parsed.ru.active !== false &&
@@ -119,7 +126,10 @@ export function normalizeAnnouncement(row) {
  */
 export async function fetchAllAnnouncementsAdmin() {
   try {
-    const res = await fetch(`${TABLE_URL}?select=*&order=created_at.desc`, { headers });
+    const res = await fetch(
+      `${TABLE_URL}?select=id,created_at,starts_at,until,user_id,content,content_ru,content_en,content_hu,content_bg,content_el,content_ro&order=created_at.desc`,
+      { headers },
+    );
     if (!res.ok) return [];
     const list = await res.json();
     if (!Array.isArray(list)) return [];
@@ -243,38 +253,40 @@ export async function fetchActiveAnnouncements() {
 
   activeInflight = (async () => {
     try {
-      const res = await fetch(`${TABLE_URL}?select=*&order=created_at.desc`, { headers });
+      const res = await fetch(
+        `${TABLE_URL}?select=id,created_at,starts_at,until,user_id,content,content_ru,content_en,content_hu,content_bg,content_el,content_ro&order=created_at.desc`,
+        { headers },
+      );
       if (!res.ok) return cachedActiveAnnouncements || [];
       const list = await res.json();
       if (!Array.isArray(list)) return cachedActiveAnnouncements || [];
 
       const now = new Date();
 
-      const normalized = list
-        .map(normalizeAnnouncement)
-        .filter((item) => {
-          if (!item || !item.active) return false;
-          // From date check
-          if (item.from) {
-            const fromDate = new Date(item.from);
-            if (fromDate > now) return false;
-          }
-          // Until date check (strictly required by requirements)
-          if (item.until) {
-            const untilDate = new Date(item.until);
-            if (untilDate < now) return false;
-          } else {
-            return false; // Until is mandatory
-          }
-          return true;
-        });
+      const normalized = list.map(normalizeAnnouncement).filter((item) => {
+        if (!item || !item.active) return false;
+        // From date check
+        if (item.from) {
+          const fromDate = new Date(item.from);
+          if (fromDate > now) return false;
+        }
+        // Until date check (strictly required by requirements)
+        if (item.until) {
+          const untilDate = new Date(item.until);
+          if (untilDate < now) return false;
+        } else {
+          return false; // Until is mandatory
+        }
+        return true;
+      });
 
       // Sort by order ascending
       const sorted = normalized.sort((a, b) => {
         if (a.order !== b.order) return a.order - b.order;
         return new Date(b.created_at) - new Date(a.created_at);
       });
-      const finalResult = sorted.length > 0 ? sorted : DEFAULT_ACTIVE_ANNOUNCEMENTS;
+      const finalResult =
+        sorted.length > 0 ? sorted : DEFAULT_ACTIVE_ANNOUNCEMENTS;
       cachedActiveAnnouncements = finalResult;
       activeCacheExpiry = Date.now() + ACTIVE_CACHE_TTL_MS;
       if (typeof window !== "undefined") {
@@ -333,7 +345,9 @@ export async function translateAnnouncementWithAI(rawText) {
     typeof import.meta !== "undefined" && import.meta.env?.VITE_GEMINI_API_KEY;
   if (geminiKey) {
     try {
-      const langsList = ANNOUNCEMENT_LANGS.map((l) => `"${l}": "..."`).join(", ");
+      const langsList = ANNOUNCEMENT_LANGS.map((l) => `"${l}": "..."`).join(
+        ", ",
+      );
       const prompt = `Translate the following store announcement (which may be written in Ukrainian, Russian, English, or any other language) into ALL of the following languages for the luxury Arabian perfume boutique "Al-Warda": Russian (ru), English (en), Hungarian (hu), Bulgarian (bg), Greek (el), Romanian (ro). Keep all promo codes, numbers, percentages, dates, and emojis intact. Return ONLY valid JSON: {${langsList}}\n\nInput announcement:\n${clean}`;
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`,
@@ -347,14 +361,14 @@ export async function translateAnnouncementWithAI(rawText) {
               temperature: 0.2,
             },
           }),
-        }
+        },
       );
       if (res.ok) {
         const data = await res.json();
         const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (rawJson) {
           const parsed = JSON.parse(
-            rawJson.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}")
+            rawJson.replace(/^[\s\S]*?\{/, "{").replace(/\}[^\}]*?$/, "}"),
           );
           const langs = {};
           let ok = true;
@@ -378,7 +392,10 @@ export async function translateAnnouncementWithAI(rawText) {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
     if (Array.isArray(d?.[0])) {
-      return d[0].map((segment) => segment?.[0] || "").join("").trim();
+      return d[0]
+        .map((segment) => segment?.[0] || "")
+        .join("")
+        .trim();
     }
     return clean;
   };
@@ -388,7 +405,7 @@ export async function translateAnnouncementWithAI(rawText) {
     await Promise.all(
       ANNOUNCEMENT_LANGS.map(async (lang) => {
         langs[lang] = (await translateSingle(lang)) || clean;
-      })
+      }),
     );
     return langs;
   } catch {
@@ -432,7 +449,9 @@ export async function createAnnouncement({
   linkUrl_ro = "",
 }) {
   if (!until) {
-    throw new Error("Срок окончания показа объявления обязателен для заполнения");
+    throw new Error(
+      "Срок окончания показа объявления обязателен для заполнения",
+    );
   }
 
   const explicitLangs = {
@@ -445,7 +464,11 @@ export async function createAnnouncement({
   };
   const sourceText = (text || Object.values(explicitLangs).join(" ")).trim();
 
-  if (type === "small" && sourceText && (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))) {
+  if (
+    type === "small" &&
+    sourceText &&
+    (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))
+  ) {
     const translated = await translateAnnouncementWithAI(sourceText);
     for (const lang of ANNOUNCEMENT_LANGS) {
       if (!explicitLangs[lang]) {
@@ -494,7 +517,9 @@ export async function createAnnouncement({
     }
   }
 
-  const fromDate = from ? new Date(from).toISOString() : new Date().toISOString();
+  const fromDate = from
+    ? new Date(from).toISOString()
+    : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
   const payload = {
@@ -533,39 +558,44 @@ export async function createAnnouncement({
  * Update an existing announcement. Automatically translates any single-input text into
  * every site language (ru, en, hu, bg, el, ro).
  */
-export async function updateAnnouncement(id, {
-  type = "small",
-  text = "",
-  order = 0,
-  from,
-  until,
-  active = true,
-  imageUrl = "",
-  linkUrl = "",
-  autoTranslate = true,
-  // Per-language overrides (optional)
-  text_ru = "",
-  text_en = "",
-  text_hu = "",
-  text_bg = "",
-  text_el = "",
-  text_ro = "",
-  imageUrl_ru = "",
-  imageUrl_en = "",
-  imageUrl_hu = "",
-  imageUrl_bg = "",
-  imageUrl_el = "",
-  imageUrl_ro = "",
-  linkUrl_ru = "",
-  linkUrl_en = "",
-  linkUrl_hu = "",
-  linkUrl_bg = "",
-  linkUrl_el = "",
-  linkUrl_ro = "",
-}) {
+export async function updateAnnouncement(
+  id,
+  {
+    type = "small",
+    text = "",
+    order = 0,
+    from,
+    until,
+    active = true,
+    imageUrl = "",
+    linkUrl = "",
+    autoTranslate = true,
+    // Per-language overrides (optional)
+    text_ru = "",
+    text_en = "",
+    text_hu = "",
+    text_bg = "",
+    text_el = "",
+    text_ro = "",
+    imageUrl_ru = "",
+    imageUrl_en = "",
+    imageUrl_hu = "",
+    imageUrl_bg = "",
+    imageUrl_el = "",
+    imageUrl_ro = "",
+    linkUrl_ru = "",
+    linkUrl_en = "",
+    linkUrl_hu = "",
+    linkUrl_bg = "",
+    linkUrl_el = "",
+    linkUrl_ro = "",
+  },
+) {
   if (!id) throw new Error("ID объявления обязателен");
   if (!until) {
-    throw new Error("Срок окончания показа объявления обязателен для заполнения");
+    throw new Error(
+      "Срок окончания показа объявления обязателен для заполнения",
+    );
   }
 
   const explicitLangs = {
@@ -578,7 +608,11 @@ export async function updateAnnouncement(id, {
   };
   const sourceText = (text || Object.values(explicitLangs).join(" ")).trim();
 
-  if (type === "small" && sourceText && (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))) {
+  if (
+    type === "small" &&
+    sourceText &&
+    (autoTranslate || ANNOUNCEMENT_LANGS.some((l) => !explicitLangs[l]))
+  ) {
     const translated = await translateAnnouncementWithAI(sourceText);
     for (const lang of ANNOUNCEMENT_LANGS) {
       if (!explicitLangs[lang]) {
@@ -627,7 +661,9 @@ export async function updateAnnouncement(id, {
     }
   }
 
-  const fromDate = from ? new Date(from).toISOString() : new Date().toISOString();
+  const fromDate = from
+    ? new Date(from).toISOString()
+    : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
   const payload = {
@@ -691,8 +727,13 @@ export async function reorderAnnouncements(orderedList) {
       payload[`content_${lang}`] = {
         type: item.type,
         text: item[`text_${lang}`] || item[lang]?.text || item.text || "",
-        imageUrl: item[`imageUrl_${lang}`] || item[lang]?.imageUrl || item.imageUrl || "",
-        linkUrl: item[`linkUrl_${lang}`] || item[lang]?.linkUrl || item.linkUrl || "",
+        imageUrl:
+          item[`imageUrl_${lang}`] ||
+          item[lang]?.imageUrl ||
+          item.imageUrl ||
+          "",
+        linkUrl:
+          item[`linkUrl_${lang}`] || item[lang]?.linkUrl || item.linkUrl || "",
         order: newOrder,
         active: item.active !== false,
       };
