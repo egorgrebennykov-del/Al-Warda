@@ -95,8 +95,13 @@ let statusCache = null;
 let statusCacheTime = 0;
 let inFlightStatusPromise = null;
 const STATUS_CACHE_TTL_MS = 25_000;
+let adminProductsCache = null;
+let adminProductsCacheTime = 0;
+const ADMIN_PRODUCTS_CACHE_TTL_MS = 15_000;
 
 export function invalidateProductImageQueueCache() {
+  adminProductsCache = null;
+  adminProductsCacheTime = 0;
   statusCache = null;
   statusCacheTime = 0;
   inFlightStatusPromise = null;
@@ -956,6 +961,7 @@ export async function saveManualProductItem(request, env) {
       }
 
       const insertedRows = await insertRes.json().catch(() => []);
+      invalidateProductImageQueueCache();
       const created = insertedRows[0] || patchPayload;
       return json({
         ok: true,
@@ -979,6 +985,7 @@ export async function saveManualProductItem(request, env) {
     }
 
     const updatedRows = await patchRes.json().catch(() => []);
+    invalidateProductImageQueueCache();
     return json({
       ok: true,
       id,
@@ -998,9 +1005,14 @@ export async function getAllAdminProducts(request, env) {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
 
+    const now = Date.now();
+    if (adminProductsCache && now - adminProductsCacheTime < ADMIN_PRODUCTS_CACHE_TTL_MS) {
+      return json(adminProductsCache);
+    }
+
     const key = getServiceKey(env);
     const rows = await fetchAllStocks(env, key);
-    const products = rows
+    const products
       .filter((row) => row && row.id && !String(row.slug || "").includes("site-settings"))
       .map((row) => {
         const info = row.info && typeof row.info === "object" ? row.info : {};
@@ -1028,7 +1040,10 @@ export async function getAllAdminProducts(request, env) {
         };
       });
 
-    return json({ count: products.length, products });
+    const payload = { count: products.length, products };
+    adminProductsCache = payload;
+    adminProductsCacheTime = Date.now();
+    return json(payload);
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
       return json({ error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" }, 503);
