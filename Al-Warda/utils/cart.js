@@ -108,7 +108,7 @@ export async function getCart(userIdInput) {
       const items = Array.isArray(rows)
         ? rows.map((row) => ({
             ...row,
-            perfume_id: row.link ? String(row.link).replace(/^\\/book\\//, "") : (row.title || row.id),
+            perfume_id: row.link ? String(row.link).replace(/^\/book\//, "") : (row.title || row.id),
           }))
         : [];
       cartCache.set(userId, { items, timestamp: Date.now() });
