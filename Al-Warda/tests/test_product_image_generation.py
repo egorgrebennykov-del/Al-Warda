@@ -258,46 +258,58 @@ class ProductImageGenerationTests(unittest.TestCase):
                 session, "account-123", "test-token", image_bytes(Image.new("RGB", (20, 20)))
             )
 
-    def test_preserve_path_publishes_transparent_png_and_awaits_publication(self):
-        source = image_bytes(Image.new("RGB", (100, 100), (180, 40, 40)))
-        cutout = Image.new("RGBA", (100, 100), (180, 40, 40, 255))
+    def test_flux_path_publishes_transparent_png_and_awaits_publication(self):
+        source = image_bytes(Image.new("RGB", (100, 100), (20, 40, 200)))
+        result = image_bytes(Image.new("RGB", (1024, 1024), "blue"), "JPEG")
+        cutout = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+        cutout.paste((20, 40, 200, 255), (300, 200, 724, 850))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
         now = datetime(2026, 1, 2, tzinfo=timezone.utc)
         with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", return_value=result) as edit, \
              patch.object(queue, "remove", return_value=cutout) as remove_background, \
+             patch.object(queue, "restore_source_text_regions", side_effect=lambda _s, out: {"image": out, "textRestored": True, "matchedPoints": 10, "requiresManualReview": False}) as restore_text, \
              patch.object(queue, "fetch_verified_notes", return_value=None), \
              patch.object(queue, "generate_ai_perfume_description", return_value=None), \
              patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/result.png") as save, \
              patch.object(queue, "patch_stock") as update:
             queue.process_product(object(), row, "https://db.example", "account", "token", "session", now)
+        self.assertEqual(edit.call_args.args[-1], source)
         self.assertEqual(remove_background.call_args.kwargs["session"], "session")
+        restore_text.assert_called_once()
         with Image.open(io.BytesIO(save.call_args.args[0])) as saved:
             self.assertEqual(saved.format, "PNG")
             self.assertEqual(saved.size, (1024, 1024))
             self.assertEqual(saved.mode, "RGBA")
             self.assertEqual(saved.getpixel((0, 0))[3], 0)
+            self.assertEqual(saved.getpixel((512, 512)), (20, 40, 200, 255))
         job = update.call_args.args[3]["imageGeneration"]
         self.assertEqual(job["status"], "publishing")
         self.assertEqual(job["model"], queue.MODEL_ID)
         self.assertEqual(job["steps"], 4)
-        self.assertEqual(job["processingMethod"], "preserve_original")
-        self.assertEqual(job["whetherUpscaled"], False)
+        self.assertEqual(job["processingMethod"], "flux_redraw")
+        self.assertEqual(job["textRestored"], True)
+        self.assertEqual(job["textMatchPoints"], 10)
 
-    def test_segmentation_failure_marks_job_and_skips_flux(self):
+    def test_limit_switch_keeps_product_processing_until_success(self):
         source = image_bytes(Image.new("RGB", (20, 20)))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        pool = queue.ImageAccountPool([("primary", "id-1", "token-1"), ("secondary", "id-2", "token-2")])
+        states = []
+        def capture_update(_session, _url, _row, info, **_kwargs):
+            states.append(info["imageGeneration"]["status"])
         with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
-             patch.object(queue, "generate_product_edit") as edit, \
-             patch.object(queue, "save_generated_image") as save, \
-             patch.object(queue, "patch_stock") as update:
-            with self.assertRaises(queue.SegmentationFailedError):
-                queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
-        edit.assert_not_called()
-        save.assert_not_called()
-        self.assertEqual(update.call_args.args[3]["imageGeneration"]["status"], "segmentation_failed")
+             patch.object(queue, "generate_product_edit", side_effect=[queue.WorkersDailyQuotaExceeded("limit"), b"edited"]) as edit, \
+             patch.object(queue, "transparent_product_image", return_value=(b"png", (1024, 1024))), \
+             patch.object(queue, "restore_source_text_regions", return_value={"image": b"png", "textRestored": False, "matchedPoints": 0, "requiresManualReview": False}), \
+             patch.object(queue, "save_generated_image", return_value="/image.png"), \
+             patch.object(queue, "patch_stock", side_effect=capture_update):
+            queue.process_product(object(), row, "https://db.example", "", "", None,
+                                  datetime.now(timezone.utc), account_pool=pool)
+        self.assertEqual(states, ["processing", "publishing"])
+        self.assertEqual([call.args[1] for call in edit.call_args_list], ["id-1", "id-2"])
 
     def test_transparent_product_image_rejects_unexpected_dimensions(self):
         edited = image_bytes(Image.new("RGB", (20, 20)))
@@ -374,13 +386,13 @@ class ProductImageGenerationTests(unittest.TestCase):
         candidates, _ = queue.select_candidates([row], now, regenerate_completed=True)
         self.assertEqual(candidates, [row])
         with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "remove", side_effect=ValueError("segmentation unavailable")), \
+             patch.object(queue, "generate_product_edit", side_effect=RuntimeError("provider failed")), \
              patch.object(queue, "patch_stock") as update:
-            with self.assertRaises(queue.SegmentationFailedError):
+            with self.assertRaisesRegex(RuntimeError, "provider failed"):
                 queue.process_product(object(), row, "https://db.example", "account", "token", None, now, True)
         updated = update.call_args.args[3]
         self.assertEqual(updated["imageGeneration"], old_job)
-        self.assertEqual(updated["imageGenerationReplacement"]["status"], "segmentation_failed")
+        self.assertEqual(updated["imageGenerationReplacement"]["status"], "failed")
         self.assertNotIn("image", update.call_args.kwargs)
 
     def test_replacement_is_swapped_only_after_verified_deployment(self):
@@ -730,7 +742,7 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertIn("qualityStatus", quality)
         self.assertIn("originalFileSize", quality)
 
-    def test_process_product_uses_preserve_original_path(self):
+    def test_process_product_restores_source_text(self):
         source = image_bytes(Image.new("RGB", (60, 60), (200, 30, 30)))
         response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
         row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
@@ -738,20 +750,29 @@ class ProductImageGenerationTests(unittest.TestCase):
         def capture_update(_session, _url, _row, info, **_kwargs):
             captured.update(info)
         with patch.object(queue.requests, "get", return_value=response), \
-             patch.object(queue, "generate_product_edit") as edit, \
+             patch.object(queue, "generate_product_edit", return_value=image_bytes(Image.new("RGB", (1024, 1024), "blue"), "JPEG")), \
+             patch.object(queue, "transparent_product_image", return_value=(image_bytes(Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))), (1024, 1024))), \
+             patch.object(queue, "restore_source_text_regions", return_value={"image": b"restored", "textRestored": True, "matchedPoints": 15, "requiresManualReview": False}), \
              patch.object(queue, "fetch_verified_notes", return_value=None), \
              patch.object(queue, "generate_ai_perfume_description", return_value=None), \
              patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/x.png"), \
              patch.object(queue, "patch_stock", side_effect=capture_update):
             queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
-        edit.assert_not_called()
         job = captured["imageGeneration"]
         self.assertEqual(job["status"], "publishing")
-        self.assertEqual(job["processingMethod"], "preserve_original")
-        self.assertEqual(job["whetherUpscaled"], False)
-        self.assertEqual(job["originalWidth"], 60)
-        self.assertEqual(job["originalHeight"], 60)
-        self.assertEqual(job["qualityStatus"], "low_source_quality")
+        self.assertEqual(job["processingMethod"], "flux_redraw")
+        self.assertEqual(job["textRestored"], True)
+        self.assertEqual(job["textMatchPoints"], 15)
+        self.assertEqual(job["requiresManualReview"], False)
+
+    def test_restore_source_text_regions_returns_unchanged_when_no_features(self):
+        source = image_bytes(Image.new("RGB", (80, 80), (128, 128, 128)))
+        generated = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+        generated.paste((200, 200, 200, 255), (400, 300, 624, 724))
+        result = queue.restore_source_text_regions(source, image_bytes(generated))
+        self.assertEqual(result["image"], image_bytes(generated))
+        self.assertFalse(result["textRestored"])
+        self.assertTrue(result["requiresManualReview"])
 
 if __name__ == "__main__":
     unittest.main()

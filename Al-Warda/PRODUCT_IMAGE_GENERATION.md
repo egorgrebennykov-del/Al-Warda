@@ -1,17 +1,17 @@
 # Product image generation
 
-The Qogita image queue is driven by GitHub Actions. The only automatic path
-now **preserves the original bottle pixels**: U2Net segments the original
-Qogita photo and the cutout is placed on a clean transparent canvas **without
-redrawing or upscaling** the flacon, so labels stay sharp. Flux 2 Klein studio
-edit is **disabled** in the automatic pipeline and is never used to redraw the
-bottle, label, box or logo. If segmentation fails, the original photo is kept
-unchanged and the job is marked `segmentation_failed` for reprocessing. The
-final PNG retains transparency so the product sits on the site's background.
-Final PNG files are committed to the repository under
-`public/assets/img/generated-products` and deployed as Cloudflare static
-assets; no Supabase Storage bucket is used for new images. Queue state is
-stored in the existing `stocks.info` JSON.
+The Qogita image queue is driven by GitHub Actions. The pipeline uses the
+previous Flux workflow: Flux 2 Klein re-photographs the original Qogita photo
+into a studio product image, U2Net removes the background, the cutout is
+centred on a transparent canvas, and the result is saved as PNG. The one
+addition is **text preservation**: `restore_source_text_regions()` warps the
+ORIGINAL label/logo/text pixels back onto the generated cutout via ORB +
+homography, so Flux cannot invent or blur brand/name text. If the text cannot
+be confidently restored, the job records `requiresManualReview` instead of
+silently publishing invented text. Final PNG files are committed to the
+repository under `public/assets/img/generated-products` and deployed as
+Cloudflare static assets; no Supabase Storage bucket is used for new images.
+Queue state is stored in the existing `stocks.info` JSON.
 Public catalog products require a completed generated product image, regardless
 of the text generation provider. Images are marked `completed` only after their
 deployed bytes match the locally generated file. Existing completed images in
@@ -22,16 +22,18 @@ Supabase Storage remain supported.
 Every generation records these fields in `stocks.info.imageGeneration`
 (`imageGenerationReplacement` for regenerations):
 
-- `processingMethod` — `preserve_original` (segmentation only) or
-  `segmentation_failed` (background removal failed, original kept);
+- `processingMethod` — `flux_redraw`;
 - `whetherUpscaled` — whether the product was enlarged beyond its original
   resolution;
+- `textRestored` — whether the original label/text was overlaid onto the result;
+- `textMatchPoints` — number of ORB homography inliers used for text alignment;
+- `requiresManualReview` — set when text could not be restored confidently;
 - `originalWidth` / `originalHeight` / `originalFileSize` — the real source
   photo dimensions and byte size;
 - `processedWidth` / `processedHeight` — the final canvas size;
 - `sharpness` — Laplacian variance of the product region (null if unavailable);
-- `qualityStatus` — `ok`, `low_source_quality` (small original),
-  `low_sharpness` or `segmentation_failed`;
+- `qualityStatus` — `ok`, `low_source_quality` (small original) or
+  `low_sharpness`;
 - `sourceImageId` — a short SHA-256 identifier of the source URL.
 
 Small originals are kept at their native size and flagged

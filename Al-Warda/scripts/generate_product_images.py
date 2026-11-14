@@ -1184,6 +1184,105 @@ def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECO
     }
 
 
+def _text_region_mask(gray):
+    """Edge-density mask of likely label/logo/text pixels (high-frequency)."""
+    import cv2
+    import numpy as np
+
+    lap = cv2.Laplacian(gray, cv2.CV_32F)
+    mag = np.abs(lap)
+    mag = cv2.GaussianBlur(mag, (3, 3), 0)
+    threshold = max(30.0, float(np.percentile(mag, 85)))
+    mask = (mag > threshold).astype(np.uint8) * 255
+    kernel = np.ones((3, 3), np.uint8)
+    return cv2.dilate(mask, kernel, iterations=1)
+
+
+def restore_source_text_regions(source_bytes, generated_png_bytes):
+    """Overlay the ORIGINAL label/logo/text pixels onto a Flux-generated cutout.
+
+    Flux tends to invent or blur brand/name text. This helper estimates a
+    homography between the original source photo and the generated product
+    (ORB + RANSAC), warps the original's high-frequency text regions into the
+    generated image, and composites them only inside the opaque product area so
+    the real text is preserved without a flat "sticker" look.
+
+    Returns:
+      {"image": png_bytes, "textRestored": bool, "matchedPoints": int,
+       "requiresManualReview": bool}
+    On any failure the generated image is returned unchanged and manual review
+    is requested — text is never invented.
+    """
+    import cv2
+    import numpy as np
+
+    result = {
+        "image": generated_png_bytes,
+        "textRestored": False,
+        "matchedPoints": 0,
+        "requiresManualReview": False,
+    }
+    try:
+        source = decode_source(source_bytes)
+        with Image.open(io.BytesIO(generated_png_bytes)) as gen_image:
+            gen_image.load()
+            generated = gen_image.convert("RGBA")
+        gw, gh = generated.size
+
+        source_rgb = source if source.mode == "RGB" else source.convert("RGB")
+        generated_rgb = generated.convert("RGB")
+
+        orb = cv2.ORB_create(nfeatures=2000)
+        kp1, des1 = orb.detectAndCompute(np.asarray(source_rgb), None)
+        kp2, des2 = orb.detectAndCompute(np.asarray(generated_rgb), None)
+        if des1 is None or des2 is None or len(kp1) < 8 or len(kp2) < 8:
+            result["requiresManualReview"] = True
+            return result
+
+        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        good = sorted(matcher.match(des1, des2), key=lambda m: m.distance)[:200]
+        if len(good) < 8:
+            result["requiresManualReview"] = True
+            return result
+
+        src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+        homography, inlier_mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+        if homography is None:
+            result["requiresManualReview"] = True
+            return result
+        inliers = int(inlier_mask.sum()) if inlier_mask is not None else 0
+        result["matchedPoints"] = inliers
+        if inliers < 8:
+            result["requiresManualReview"] = True
+            return result
+
+        text_mask = _text_region_mask(np.asarray(source.convert("L")))
+        warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_LINEAR)
+        warped_src = cv2.warpPerspective(
+            np.asarray(source_rgb), homography, (gw, gh), flags=cv2.INTER_LINEAR
+        )
+
+        # Composite only where the source has real text-like detail AND the
+        # generated cutout is opaque (inside the product).
+        alpha = np.asarray(generated.getchannel("A")).astype(np.float32) / 255.0
+        keep = (warped_mask > 0).astype(np.float32) * alpha
+        blended = np.asarray(generated_rgb).astype(np.float32)
+        blended = warped_src * keep[..., None] + blended * (1.0 - keep[..., None])
+        blended = np.clip(blended, 0, 255).astype(np.uint8)
+
+        restored = Image.fromarray(blended, "RGB").convert("RGBA")
+        restored.putalpha(generated.getchannel("A"))
+        buffer = io.BytesIO()
+        restored.save(buffer, format="PNG", optimize=True)
+        result["image"] = buffer.getvalue()
+        result["textRestored"] = True
+    except Exception:
+        result["textRestored"] = False
+        result["requiresManualReview"] = True
+    return result
+
+
 def process_product(
     session,
     row,
@@ -1234,25 +1333,33 @@ def process_product(
 
         output = None
         original_size = None
-        processing_method = None
-        whether_upscaled = None
+        processing_method = "flux_redraw"
+        whether_upscaled = True
+        text_restored = False
+        text_match_points = 0
+        requires_manual_review = False
 
-        # Segmentation of the ORIGINAL photo is the only automatic production
-        # path. On failure we keep the original image untouched and mark the job
-        # segmentation_failed for reprocessing. Flux is never used to redraw the
-        # bottle, label, box or logo automatically.
-        try:
-            output, original_size, _source_size = preserve_original_product(
-                source_bytes, segmentation_session
+        # Previous Flux pipeline (restored): Flux re-photographs the product,
+        # U2Net removes the background, normalize_flacon_cutout centers it.
+        edited_bytes = (
+            account_pool.generate(requests, source_bytes) if account_pool
+            else generate_product_edit(requests, account_id, api_token, source_bytes)
+        )
+        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+
+        # The only addition: restore the ORIGINAL label/logo/text regions onto
+        # the generated cutout, so Flux never invents brand or product text.
+        text_result = restore_source_text_regions(source_bytes, output)
+        output = text_result["image"]
+        text_restored = text_result["textRestored"]
+        text_match_points = text_result["matchedPoints"]
+        requires_manual_review = text_result["requiresManualReview"]
+
+        if not generated_image_matches_source(source_bytes, output):
+            raise ValueError(
+                "Сгенерированное изображение не похоже на исходный товар "
+                "(доминирующий цвет продукта изменился); требуется повторная генерация"
             )
-            processing_method = "preserve_original"
-            whether_upscaled = False
-        except SegmentationFailedError:
-            raise
-        except Exception as seg_error:
-            raise SegmentationFailedError(
-                f"Segmentation failed for product {row['id']}: {seg_error}"
-            ) from seg_error
 
         image_url = save_generated_image(output)
 
@@ -1302,6 +1409,9 @@ def process_product(
             "processedHeight": original_size[1],
             "processingMethod": processing_method,
             "whetherUpscaled": whether_upscaled,
+            "textRestored": text_restored,
+            "textMatchPoints": text_match_points,
+            "requiresManualReview": requires_manual_review,
             "sourceImageId": hashlib.sha256(
                 (product_source(row) or "").encode("utf-8")
             ).hexdigest()[:16],
