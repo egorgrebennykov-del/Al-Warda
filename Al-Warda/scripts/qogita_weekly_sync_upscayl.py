@@ -67,7 +67,12 @@ load_env()
 QOGITA_API_URL = os.environ.get("QOGITA_API_URL", "https://api.qogita.com").rstrip("/")
 QOGITA_EMAIL = os.environ.get("QOGITA_EMAIL", "")
 QOGITA_PASSWORD = os.environ.get("QOGITA_PASSWORD", "")
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://mfvenfrmlkxqgvdtedet.supabase.co").rstrip("/")
+# Nhost migration: route PostgREST calls through the Cloudflare Worker proxy,
+# which translates them to Hasura GraphQL. Override with SUPABASE_URL env if
+# needed (e.g. to temporarily point back at Supabase).
+SUPABASE_URL = os.environ.get(
+    "SUPABASE_URL", "https://al-warda.egor-grebennykov.workers.dev"
+).rstrip("/")
 SUPABASE_KEY = (
     os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     or os.environ.get("SUPABASE_SECRET_KEY")
