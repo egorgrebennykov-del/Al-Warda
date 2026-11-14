@@ -43,7 +43,7 @@ jobs:
         env:
           QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
           QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
+          SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,8 +60,9 @@ jobs:
         run: |
           node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mfvenfrmlkxqgvdtedet.supabase.co' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
 
       - name: Rebuild Web Application
         run: |

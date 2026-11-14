@@ -369,9 +369,12 @@ export function translatePostgrest({
   }
 
   if (methodUpper === "POST") {
-    const object = body && typeof body === "object" ? body : {};
+    // PostgREST accepts a single object or an array of objects (bulk insert).
+    const objects = Array.isArray(body)
+      ? body
+      : [body && typeof body === "object" ? body : {}];
     const root = rootField(table, "insert");
-    const gql = `mutation { ${root}(objects: ${gqlLiteral([object])}) { returning { ${allCols.join(" ")} } } }`;
+    const gql = `mutation { ${root}(objects: ${gqlLiteral(objects)}) { returning { ${allCols.join(" ")} } } }`;
     return { gql, kind: "insert", root, table, where, aggregateRoot };
   }
 

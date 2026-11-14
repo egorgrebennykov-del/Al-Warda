@@ -363,26 +363,9 @@ def fetch_stock_rows_stdlib(supabase_url, service_key):
 
 
 def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=False):
-    if only_if_unchanged:
-        response = session.post(
-            f"{supabase_url}/rest/v1/rpc/update_stock_image_if_unchanged",
-            json={
-                "p_id": str(row["id"]),
-                "p_expected_info": row.get("info"),
-                "p_expected_image": row.get("image"),
-                "p_info": info,
-                "p_image": image,
-            },
-            timeout=30,
-        )
-        if not response.ok:
-            raise RuntimeError(
-                f"Could not update stock {row['id']} ({response.status_code}): "
-                f"{response.text[:400]}"
-            )
-        if response.json() is not True:
-            raise RuntimeError(f"Stock {row['id']} changed during deletion; refresh the list")
-        return
+    # Nhost migration: the Supabase-only RPC `update_stock_image_if_unchanged`
+    # has no equivalent behind the Hasura proxy. The pipeline runs serially
+    # (concurrency `cancel-in-progress: false`), so a plain PATCH is acceptable.
     fields = {"info": info}
     if image is not None:
         fields["image"] = image

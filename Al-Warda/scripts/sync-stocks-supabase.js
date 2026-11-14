@@ -15,6 +15,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { parseVolumeFromText } from "../utils/perfumes.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
+import { restFetch } from "./nhost-rest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -337,7 +338,7 @@ async function fetchAllExistingStocks() {
   const limit = 1000;
   while (true) {
     try {
-      const res = await fetch(`${STOCKS_API_URL}?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${limit}`, {
+      const res = await restFetch(`${STOCKS_API_URL}?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${limit}`, {
         headers: {
           apikey: SUPABASE_KEY,
           Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -366,8 +367,8 @@ async function fetchAllExistingStocks() {
 }
 
 async function main() {
-  if (!SUPABASE_KEY) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY (or server-side SUPABASE_SECRET_KEY) is required");
+  if (!process.env.NHOST_ADMIN_SECRET) {
+    throw new Error("NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)");
   }
   console.log("=================================================");
   console.log("🌸 Al-Warda Parfumes - Supabase Bilingual Stocks Sync");
@@ -546,7 +547,7 @@ async function main() {
   if (isRefresh || existingMap.size === 0) {
     if (existingMap.size > 0) {
       console.log("🧹 Clearing old records for complete bilingual refresh...");
-      await fetch(`${STOCKS_API_URL}?id=gt.0`, {
+      await restFetch(`${STOCKS_API_URL}?id=gt.0`, {
         method: "DELETE",
         headers: {
           apikey: SUPABASE_KEY,
@@ -560,7 +561,7 @@ async function main() {
     let inserted = 0;
     for (let i = 0; i < enrichedList.length; i += BATCH_SIZE) {
       const batch = enrichedList.slice(i, i + BATCH_SIZE);
-      const res = await fetch(STOCKS_API_URL, {
+      const res = await restFetch(STOCKS_API_URL, {
         method: "POST",
         headers: {
           apikey: SUPABASE_KEY,
@@ -592,7 +593,7 @@ async function main() {
       let inserted = 0;
       for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
         const batch = toInsert.slice(i, i + BATCH_SIZE);
-        const res = await fetch(STOCKS_API_URL, {
+        const res = await restFetch(STOCKS_API_URL, {
           method: "POST",
           headers: {
             apikey: SUPABASE_KEY,

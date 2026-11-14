@@ -16,6 +16,7 @@ import { QogitaClient } from "../server/qogitaClient.js";
 import qogitaMap from "../src/data/qogitaProductsMap.js";
 import { slugifyPerfumeName } from "../utils/perfumes.js";
 import { invalidateProductImageQueueCache } from "../server/productImageQueueAdmin.js";
+import { restFetch } from "./nhost-rest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,8 +49,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://mfvenfrmlkxqgvdtedet.s
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const ENRICHED_STOCKS_PATH = path.resolve(rootDir, "server", "data", "enrichedStocks.json");
 
-if (!SUPABASE_KEY) {
-  console.error("❌ SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY is required.");
+if (!process.env.NHOST_ADMIN_SECRET) {
+  console.error("❌ NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret).");
   process.exit(1);
 }
 
@@ -179,7 +180,7 @@ async function main() {
 
   while (true) {
     const url = `${SUPABASE_URL}/rest/v1/stocks?select=id,name,brand,price,info&info->imageGeneration->>status=eq.completed&order=id.asc`;
-    const res = await fetch(url, {
+    const res = await restFetch(url, {
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -248,7 +249,7 @@ async function main() {
             };
 
             // 1. Update Supabase
-            const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${perfume.id}`, {
+            const patchRes = await restFetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${perfume.id}`, {
               method: "PATCH",
               headers: {
                 apikey: SUPABASE_KEY,

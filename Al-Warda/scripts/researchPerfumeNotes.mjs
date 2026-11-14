@@ -37,6 +37,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
+import { restFetch } from "./nhost-rest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const rootDir = path.resolve(path.dirname(__filename), "..");
@@ -1199,7 +1200,7 @@ async function fetchAllStocks() {
   let offset = 0;
   while (true) {
     const url = `${SUPABASE_URL}/rest/v1/stocks?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${PAGE_SIZE}`;
-    const response = await fetch(url, { headers: authHeaders() });
+    const response = await restFetch(url, { headers: authHeaders() });
     if (!response.ok) throw new Error(`Could not read stocks (${response.status}): ${(await response.text()).slice(0, 300)}`);
     const page = await response.json();
     if (!Array.isArray(page) || page.length === 0) break;
@@ -1211,7 +1212,7 @@ async function fetchAllStocks() {
 }
 
 async function patchStockResearch(rowId, info, research) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`, {
+  const response = await restFetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`, {
     method: "PATCH",
     headers: { ...authHeaders(), Prefer: "return=minimal" },
     body: JSON.stringify({ info: { ...info, fragranceResearch: research } }),
@@ -1491,7 +1492,7 @@ function validateReport(results) {
 
 async function main() {
   const args = parseArgs();
-  if (!SUPABASE_KEY) throw new Error("SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) is required");
+  if (!process.env.NHOST_ADMIN_SECRET) throw new Error("NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)");
   if (!DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY is required");
 
   args.urlsByProduct =

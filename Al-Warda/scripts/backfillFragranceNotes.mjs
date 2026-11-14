@@ -38,6 +38,7 @@ import { fileURLToPath } from "node:url";
 import { buildNotesInfo, generateFragranceNotes } from "../server/deepseekNotesService.js";
 import { withGeminiDescriptions } from "../server/geminiDescriptionService.js";
 import { hasCompletedGeneratedImage } from "../utils/generatedProductImage.js";
+import { restFetch } from "./nhost-rest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -153,7 +154,7 @@ async function fetchAllStocks() {
   let offset = 0;
   while (true) {
     const url = `${SUPABASE_URL}/rest/v1/stocks?select=id,name,brand,image,info&order=id.asc&offset=${offset}&limit=${PAGE_SIZE}`;
-    const response = await fetch(url, { headers: authHeaders() });
+    const response = await restFetch(url, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error(`Could not read stocks (${response.status}): ${(await response.text()).slice(0, 300)}`);
     }
@@ -167,7 +168,7 @@ async function fetchAllStocks() {
 }
 
 async function patchStock(rowId, info) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`, {
+  const response = await restFetch(`${SUPABASE_URL}/rest/v1/stocks?id=eq.${rowId}`, {
     method: "PATCH",
     headers: { ...authHeaders(), Prefer: "return=minimal" },
     body: JSON.stringify({ info }),
@@ -219,7 +220,7 @@ function parseArgs() {
 
 async function main() {
   const args = parseArgs();
-  if (!SUPABASE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY) is required");
+  if (!process.env.NHOST_ADMIN_SECRET) throw new Error("NHOST_ADMIN_SECRET is required (Nhost Hasura admin secret)");
   if (!DEEPSEEK_API_KEY && !args.pruneMissingPhoto) throw new Error("DEEPSEEK_API_KEY is required");
 
   log("=".repeat(60));
