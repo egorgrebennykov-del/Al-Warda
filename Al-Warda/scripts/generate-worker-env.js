@@ -36,21 +36,22 @@ const KEYS = [
   "NHOST_ADMIN_SECRET",
 ];
 
-const hasBuildEnv = KEYS.some((k) => Boolean(process.env[k]));
-
-if (hasBuildEnv) {
-  const envObj = {};
-  for (const key of KEYS) {
-    if (process.env[key]) {
-      envObj[key] = process.env[key];
-    }
+// Always write workerEnv.js — even with an empty object — so the static
+// `import workerEnv from "./workerEnv.js"` in server/worker.js always resolves
+// during the Worker bundle step (including Cloudflare Git-integration builds
+// where `.env` is absent). Secrets are only present when they exist in the
+// build environment.
+const envObj = {};
+for (const key of KEYS) {
+  if (process.env[key]) {
+    envObj[key] = process.env[key];
   }
-  if (!envObj.GEMINI_API_KEY && envObj.VITE_GEMINI_API_KEY) {
-    envObj.GEMINI_API_KEY = envObj.VITE_GEMINI_API_KEY;
-  }
-  const content = `// Auto-generated during CI build\nexport default ${JSON.stringify(envObj, null, 2)};\n`;
-  writeFileSync(targetFile, content, "utf8");
-  console.log(
-    "[generate-worker-env] Injected build environment variables for Worker bundle.",
-  );
 }
+if (!envObj.GEMINI_API_KEY && envObj.VITE_GEMINI_API_KEY) {
+  envObj.GEMINI_API_KEY = envObj.VITE_GEMINI_API_KEY;
+}
+const content = `// Auto-generated during build\nexport default ${JSON.stringify(envObj, null, 2)};\n`;
+writeFileSync(targetFile, content, "utf8");
+console.log(
+  `[generate-worker-env] Wrote workerEnv.js with ${Object.keys(envObj).length} env key(s).`,
+);
