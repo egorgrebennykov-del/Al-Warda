@@ -17,6 +17,13 @@ const headers = {
 
 const GUEST_CART_KEY = "alwarda_guest_cart";
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CART_CACHE_TTL_MS = 3_000;
+const cartCache = new Map();
+const cartInflight = new Map();
+
+function invalidateCartCache(userId = null) {
+  cartCache.delete(userId || "guest");
+}
 
 export function isValidUuid(id) {
   return typeof id === "string" && UUID_REGEX.test(id.trim());
@@ -33,6 +40,7 @@ function getGuestCart() {
 }
 
 function saveGuestCart(items) {
+  invalidateCartCache("guest");
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
@@ -43,7 +51,8 @@ function saveGuestCart(items) {
   }
 }
 
-function notifyCartUpdate() {
+function notifyCartUpdate(userId = null) {
+  invalidateCartCache(userId);
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("alwarda-cart-updated"));
     window.dispatchEvent(new Event("cart-updated"));
@@ -74,35 +83,49 @@ export async function getCart(userIdInput) {
   const candidateId = userIdInput !== undefined ? userIdInput : cookieUserId;
   const userId = isValidUuid(candidateId) ? candidateId : null;
 
-  if (!userId) {
-    return getGuestCart();
-  }
+  if (!userId) return getGuestCart();
 
-  // Attempt to sync any guest cart items if user is logged in
+  // Merge guest items once before reading the remote cart.
   await syncGuestCartToRemote(userId);
 
-  try {
-    const params = new URLSearchParams({
-      select: "id,link,price,user_id,image,title,quantity,shop,created_at",
-      user_id: `eq.${userId}`,
-      order: "id.desc",
-    });
-    const res = await fetch(`${TABLE_URL}?${params}`, { headers });
-    if (res.ok) {
-      const rows = await res.json();
-      if (Array.isArray(rows)) {
-        return rows.map((row) => ({
-          ...row,
-          perfume_id: row.link ? String(row.link).replace(/^\/book\//, "") : (row.title || row.id),
-        }));
-      }
-    }
-  } catch (e) {
-    console.warn("Could not fetch remote cart, falling back to local:", e);
+  const cached = cartCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < CART_CACHE_TTL_MS) {
+    return cached.items;
   }
-  return getGuestCart();
-}
+  const pending = cartInflight.get(userId);
+  if (pending) return pending;
 
+  const request = (async () => {
+    try {
+      const params = new URLSearchParams({
+        select: "id,link,price,user_id,image,title,quantity,shop,created_at",
+        user_id: `eq.${userId}`,
+        order: "id.desc",
+      });
+      const res = await fetch(`${TABLE_URL}?${params}`, { headers });
+      if (!res.ok) throw new Error(`Cart fetch failed: ${res.status}`);
+      const rows = await res.json();
+      const items = Array.isArray(rows)
+        ? rows.map((row) => ({
+            ...row,
+            perfume_id: row.link ? String(row.link).replace(/^\\/book\\//, "") : (row.title || row.id),
+          }))
+        : [];
+      cartCache.set(userId, { items, timestamp: Date.now() });
+      return items;
+    } catch (e) {
+      console.warn("Could not fetch remote cart, falling back to local:", e);
+      return getGuestCart();
+    }
+  })();
+
+  cartInflight.set(userId, request);
+  try {
+    return await request;
+  } finally {
+    cartInflight.delete(userId);
+  }
+}
 export async function getCartItemCount(userIdInput) {
   const items = await getCart(userIdInput);
   return items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
@@ -237,7 +260,7 @@ export async function addToCart(perfume, arg2, arg3) {
     }
 
     targetItem.perfume_id = perfumeId;
-    notifyCartUpdate();
+    notifyCartUpdate(userId);
     return targetItem;
   } catch (err) {
     console.warn("Could not write to remote cart, saving to local guest cart fallback:", err);
@@ -292,7 +315,7 @@ export async function updateQuantity(itemId, quantity, userIdInput) {
       body: JSON.stringify({ quantity: newQty }),
     });
     if (!res.ok) throw new Error(`Update failed: ${res.status}`);
-    notifyCartUpdate();
+    notifyCartUpdate(userId);
   } catch (e) {
     console.warn("Failed to update cart quantity on server, updating local fallback:", e);
     const items = getGuestCart();
@@ -341,7 +364,7 @@ export async function clearCart(userIdInput) {
         method: "DELETE",
         headers,
       });
-      notifyCartUpdate();
+      notifyCartUpdate(userId);
     } catch {
       // ignore
     }
