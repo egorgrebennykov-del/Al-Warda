@@ -344,7 +344,7 @@ export async function removeFromCart(itemId, userIdInput) {
       headers,
     });
     if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-    notifyCartUpdate();
+    notifyCartUpdate(userId);
   } catch (e) {
     console.warn("Failed to remove item from server, filtering local fallback:", e);
     const items = getGuestCart().filter((i) => String(i.id) !== String(itemId));
