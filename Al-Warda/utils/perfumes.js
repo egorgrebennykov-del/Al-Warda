@@ -2023,6 +2023,332 @@ export function ensurePerfumeEnrichment(p) {
   };
 }
 
+function categorySlugFor(categoryName) {
+  const catLower = String(categoryName || "").toLowerCase();
+  if (catLower.includes("гурманские")) return "gourmand";
+  if (
+    catLower.includes("акватические") ||
+    catLower.includes("морск") ||
+    catLower.includes("свеж") ||
+    catLower.includes("fresh")
+  )
+    return "fresh";
+  if (
+    catLower.includes("фужерные") ||
+    catLower.includes("fougere") ||
+    catLower.includes("fougère")
+  )
+    return "fougere";
+  if (
+    catLower.includes("древесные") ||
+    catLower.includes("уд") ||
+    catLower.includes("благородные")
+  )
+    return "oud";
+  if (catLower.includes("цветочные")) return "floral";
+  if (catLower.includes("цитрусовые")) return "citrus-fresh";
+  if (catLower.includes("пряные") || catLower.includes("специи"))
+    return "spicy";
+  return "spicy";
+}
+
+// Light catalog row mapping: uses only top-level columns (no `info` JSONB) to
+// keep the catalog payload small. The full `info` is loaded on demand via
+// getPerfumeDetailsById(id).
+function mapStockRowLight(r) {
+  const info = {
+    // Minimal stub so hasCompletedGeneratedImage() keeps passing — the catalog
+    // query already filtered info->imageGeneration->>status = completed.
+    imageGeneration: { status: "completed", imageUrl: r.image || "" },
+  };
+  const rawPerfumeName = r.name || r.title;
+  const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
+
+  const perfumeObj = {
+    id: String(r.id),
+    slug: `stock-${r.id}`,
+    name: cleanPerfumeName,
+    title: cleanPerfumeName,
+    brand: r.brand || "Al-Warda",
+    category: categorySlugFor(r.category),
+    categoryRu: r.category || "Восточные",
+    categoryEn: "Oriental",
+    categoryName: r.category || "Восточные",
+    notesSummary: "",
+    notesSummaryRu: "",
+    notesSummaryEn: "",
+    notesVerified: false,
+    notesSource: null,
+    notesLookup: null,
+    price: Number(r.price) || 29.99,
+    currency: r.currency || "EUR",
+    priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+    rawName: rawPerfumeName,
+    rawDescription: r.description || "",
+    volume: resolvePerfumeVolume({
+      rawName: rawPerfumeName,
+      rawDescription: r.description || "",
+      info,
+    }),
+    concentration: "Eau De Parfum",
+    gender: "Унисекс",
+    genderRu: "Унисекс",
+    genderEn: "Unisex",
+    longevity: "8–12 часов",
+    longevityRu: "8–12 часов",
+    longevityEn: "8–12 hours",
+    sillage: "Выразительный, шлейфовый",
+    sillageRu: "Выразительный, шлейфовый",
+    sillageEn: "Noticeable, alluring sillage",
+    rating: 4.9,
+    reviewsCount: 35 + ((r.id * 7) % 50),
+    isBestSeller: r.id % 7 === 0,
+    isFeatured: r.id % 5 === 0,
+    inStock: r.in_stock !== false,
+    deliveryTime: "4–7 дней (прямая поставка)",
+    deliveryTimeEn: "4–7 days (direct dispatch)",
+    image: r.image || "",
+    fullCardImage: r.image || "",
+    rawImage: null,
+    topNotes: [],
+    heartNotes: [],
+    baseNotes: [],
+    topNotesRu: [],
+    heartNotesRu: [],
+    baseNotesRu: [],
+    topNotesEn: [],
+    heartNotesEn: [],
+    baseNotesEn: [],
+    description: fixDescriptionWording(r.description || ""),
+    descriptionRu: fixDescriptionWording(r.description || ""),
+    descriptionEn: "",
+    info,
+    minOrderQuantity: 1,
+    unit: 1,
+    gtin: null,
+    dropshipId: null,
+    isLight: true,
+  };
+  perfumeObj.url = getPerfumeUrl(perfumeObj);
+  return ensurePerfumeEnrichment(perfumeObj);
+}
+
+// Full mapping for a single row with the complete `info` JSONB (product page).
+function mapStockRowRich(r) {
+  const info = r.info || {};
+  let catSlug = info.categorySlug || "spicy";
+  const catLower = (info.category || "").toLowerCase();
+  if (catLower.includes("гурманские")) catSlug = "gourmand";
+  else if (
+    catLower.includes("акватические") ||
+    catLower.includes("морск") ||
+    catLower.includes("свеж") ||
+    catLower.includes("fresh")
+  )
+    catSlug = "fresh";
+  else if (
+    catLower.includes("фужерные") ||
+    catLower.includes("fougere") ||
+    catLower.includes("fougère")
+  )
+    catSlug = "fougere";
+  else if (
+    catLower.includes("древесные") ||
+    catLower.includes("уд") ||
+    catLower.includes("благородные")
+  )
+    catSlug = "oud";
+  else if (catLower.includes("цветочные")) catSlug = "floral";
+  else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
+  else if (catLower.includes("пряные") || catLower.includes("специи"))
+    catSlug = "spicy";
+
+  const notesVerified = info.notesVerified === true;
+  const notesObj =
+    notesVerified && info.notes && typeof info.notes === "object"
+      ? info.notes
+      : {};
+  const asNotes = (value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string" && value.trim())
+      return value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    return [];
+  };
+  const topNotesRu = notesVerified
+    ? notesObj.ru?.top || notesObj.top || asNotes(r.top_notes)
+    : [];
+  const heartNotesRu = notesVerified
+    ? notesObj.ru?.heart || notesObj.heart || asNotes(r.heart_notes)
+    : [];
+  const baseNotesRu = notesVerified
+    ? notesObj.ru?.base || notesObj.base || asNotes(r.base_notes)
+    : [];
+
+  const topNotesEn = notesVerified ? notesObj.en?.top || topNotesRu : [];
+  const heartNotesEn = notesVerified ? notesObj.en?.heart || heartNotesRu : [];
+  const baseNotesEn = notesVerified ? notesObj.en?.base || baseNotesRu : [];
+
+  const descRu =
+    info.descriptionRu ||
+    r.description ||
+    "Роскошный восточный аромат Al-Warda.";
+  const descEn =
+    info.descriptionEn ||
+    "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
+  const generatedImage = info.imageGeneration.imageUrl || r.image;
+
+  const rawPerfumeName = r.name || r.title;
+  const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
+
+  const perfumeObj = {
+    id: String(r.id),
+    slug: `stock-${r.id}`,
+    name: cleanPerfumeName,
+    title: cleanPerfumeName,
+    brand: r.brand || "Al-Warda",
+    category: catSlug,
+    categoryRu: info.category || "Восточные",
+    categoryEn: info.categoryEn || "Oriental",
+    categoryName: info.category || "Восточные",
+    notesSummary: notesVerified
+      ? info.notesSummary || r.notes_summary || ""
+      : "",
+    notesSummaryRu: notesVerified
+      ? info.notesSummary || r.notes_summary || ""
+      : "",
+    notesSummaryEn: notesVerified
+      ? info.notesSummaryEn || info.notesSummary || ""
+      : "",
+    notesVerified,
+    notesSource: info.notesSource || null,
+    notesLookup: info.notesLookup || null,
+    price: Number(r.price) || 29.99,
+    currency: r.currency || "EUR",
+    priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+    rawName: rawPerfumeName,
+    rawDescription: r.description || "",
+    volume: resolvePerfumeVolume({
+      rawName: rawPerfumeName,
+      rawDescription: r.description,
+      volume: r.volume,
+      info,
+    }),
+    concentration: info.concentration || r.concentration || "Eau De Parfum",
+    gender: info.gender || r.gender || "Унисекс",
+    genderRu: info.gender || r.gender || "Унисекс",
+    genderEn:
+      info.genderEn ||
+      (info.gender === "Женский"
+        ? "Women"
+        : info.gender === "Мужской"
+          ? "Men"
+          : "Unisex"),
+    longevity: info.longevity || "8–12 часов",
+    longevityRu: info.longevity || "8–12 часов",
+    longevityEn: info.longevityEn || "8–12 hours",
+    sillage: info.sillage || "Выразительный, шлейфовый",
+    sillageRu: info.sillage || "Выразительный, шлейфовый",
+    sillageEn: info.sillageEn || "Noticeable, alluring sillage",
+    rating: 4.9,
+    reviewsCount: 35 + ((r.id * 7) % 50),
+    isBestSeller: r.id % 7 === 0,
+    isFeatured: r.id % 5 === 0,
+    inStock: info.inStock !== false,
+    deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
+    deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
+    image: generatedImage,
+    fullCardImage: generatedImage,
+    rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
+    topNotes: topNotesRu,
+    heartNotes: heartNotesRu,
+    baseNotes: baseNotesRu,
+    topNotesRu,
+    heartNotesRu,
+    baseNotesRu,
+    topNotesEn,
+    heartNotesEn,
+    baseNotesEn,
+    description: fixDescriptionWording(descRu),
+    descriptionRu: fixDescriptionWording(descRu),
+    descriptionEn: descEn,
+    info,
+    minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
+    unit: Number(info.minOrderQuantity || info.unit || 1) || 1,
+    gtin: info.gtin || r.gtin,
+    dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
+  };
+  perfumeObj.url = getPerfumeUrl(perfumeObj);
+  return ensurePerfumeEnrichment(perfumeObj);
+}
+
+// Per-product details cache: keyed by id, short TTL, in-flight dedup.
+let detailsCache = new Map();
+let detailsInflight = new Map();
+const DETAILS_TTL_MS = 15 * 60 * 1000;
+
+export function invalidatePerfumeDetailsCache(id = null) {
+  if (id) {
+    detailsCache.delete(String(id));
+    return;
+  }
+  detailsCache = new Map();
+}
+
+async function fetchPerfumeDetailsById(id) {
+  const res = await fetch(
+    `${TABLE_PERFUMES}?select=id,name,brand,image,info&id=eq.${encodeURIComponent(id)}&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    },
+  );
+  if (!res.ok)
+    throw new Error(`Could not load product details (HTTP ${res.status})`);
+  const rows = await res.json();
+  const r = Array.isArray(rows) ? rows[0] : null;
+  if (!r) return null;
+  return mapStockRowRich(r);
+}
+
+/**
+ * Loads the full `info` JSONB for ONE product on demand (product page).
+ * Cached per id for DETAILS_TTL_MS and deduplicated for concurrent calls.
+ * On success the rich object also replaces the light entry in the catalog
+ * cache so later reads reuse the full data.
+ */
+export async function getPerfumeDetailsById(id) {
+  if (id === undefined || id === null || id === "") return null;
+  const key = String(id);
+  const now = Date.now();
+  const cached = detailsCache.get(key);
+  if (cached && cached.expiresAt > now) return cached.obj;
+  if (detailsInflight.has(key)) return detailsInflight.get(key);
+
+  const promise = fetchPerfumeDetailsById(key)
+    .then((obj) => {
+      if (obj) {
+        detailsCache.set(key, { obj, expiresAt: Date.now() + DETAILS_TTL_MS });
+        if (memoryPerfumesCache) {
+          const idx = memoryPerfumesCache.findIndex(
+            (p) => String(p.id) === key,
+          );
+          if (idx > -1) memoryPerfumesCache[idx] = obj;
+        }
+      }
+      return obj;
+    })
+    .finally(() => {
+      detailsInflight.delete(key);
+    });
+  detailsInflight.set(key, promise);
+  return promise;
+}
+
 export async function fetchPerfumesFromSupabase() {
   try {
     let allRows = [];
@@ -2038,7 +2364,7 @@ export async function fetchPerfumesFromSupabase() {
         ? setTimeout(() => controller.abort(), 15000)
         : null;
       const res = await fetch(
-        `${TABLE_PERFUMES}?select=id,name,brand,image,info&order=id.asc&info->imageGeneration->>status=eq.completed&limit=${pageSize}&offset=${from}`,
+        `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description&order=id.asc&info->imageGeneration->>status=eq.completed&limit=${pageSize}&offset=${from}`,
         {
           headers: {
             apikey: SUPABASE_KEY,
@@ -2065,13 +2391,10 @@ export async function fetchPerfumesFromSupabase() {
     }
 
     if (allRows.length > 0) {
-      // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders)
+      // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders).
+      // The server query already restricted rows to completed generated images.
       const validRows = allRows.filter((r) => {
-        const img = (
-          (r.image || "") +
-          (r.raw_image || "") +
-          (r.info?.rawImage || "")
-        ).toLowerCase();
+        const img = String(r.image || "").toLowerCase();
         if (
           img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
           img.includes("c1b79cffa1a5fa8aab226414b9e4a063") ||
@@ -2080,167 +2403,11 @@ export async function fetchPerfumesFromSupabase() {
         ) {
           return false;
         }
-        return hasCompletedGeneratedImage(r);
+        return Boolean(r.image);
       });
 
-      // Map database fields to standard schema
-      const mapped = validRows.map((r) => {
-        const info = r.info || {};
-        let catSlug = info.categorySlug || "spicy";
-        const catLower = (info.category || "").toLowerCase();
-        if (catLower.includes("гурманские")) catSlug = "gourmand";
-        else if (
-          catLower.includes("акватические") ||
-          catLower.includes("морск") ||
-          catLower.includes("свеж") ||
-          catLower.includes("fresh")
-        )
-          catSlug = "fresh";
-        else if (
-          catLower.includes("фужерные") ||
-          catLower.includes("fougere") ||
-          catLower.includes("fougère")
-        )
-          catSlug = "fougere";
-        else if (
-          catLower.includes("древесные") ||
-          catLower.includes("уд") ||
-          catLower.includes("благородные")
-        )
-          catSlug = "oud";
-        else if (catLower.includes("цветочные")) catSlug = "floral";
-        else if (catLower.includes("цитрусовые")) catSlug = "citrus-fresh";
-        else if (catLower.includes("пряные") || catLower.includes("специи"))
-          catSlug = "spicy";
-
-        // Notes are shown only when they were generated by DeepSeek (or entered
-        // manually). Never expose heuristic / invented pyramids.
-        const notesVerified = info.notesVerified === true;
-        const notesObj =
-          notesVerified && info.notes && typeof info.notes === "object"
-            ? info.notes
-            : {};
-        const asNotes = (value) => {
-          if (Array.isArray(value)) return value;
-          if (typeof value === "string" && value.trim())
-            return value
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean);
-          return [];
-        };
-        const topNotesRu = notesVerified
-          ? notesObj.ru?.top || notesObj.top || asNotes(r.top_notes)
-          : [];
-        const heartNotesRu = notesVerified
-          ? notesObj.ru?.heart || notesObj.heart || asNotes(r.heart_notes)
-          : [];
-        const baseNotesRu = notesVerified
-          ? notesObj.ru?.base || notesObj.base || asNotes(r.base_notes)
-          : [];
-
-        const topNotesEn = notesVerified ? notesObj.en?.top || topNotesRu : [];
-        const heartNotesEn = notesVerified
-          ? notesObj.en?.heart || heartNotesRu
-          : [];
-        const baseNotesEn = notesVerified
-          ? notesObj.en?.base || baseNotesRu
-          : [];
-
-        const descRu =
-          info.descriptionRu ||
-          r.description ||
-          "Роскошный восточный аромат Al-Warda.";
-        const descEn =
-          info.descriptionEn ||
-          "An exquisite authentic luxury Arabian fragrance by Al-Warda.";
-        const generatedImage = info.imageGeneration.imageUrl || r.image;
-
-        const rawPerfumeName = r.name || r.title;
-        const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
-
-        const perfumeObj = {
-          id: String(r.id),
-          slug: `stock-${r.id}`,
-          name: cleanPerfumeName,
-          title: cleanPerfumeName,
-          brand: r.brand || "Al-Warda",
-          category: catSlug,
-          categoryRu: info.category || "Восточные",
-          categoryEn: info.categoryEn || "Oriental",
-          categoryName: info.category || "Восточные",
-          notesSummary: notesVerified
-            ? info.notesSummary || r.notes_summary || ""
-            : "",
-          notesSummaryRu: notesVerified
-            ? info.notesSummary || r.notes_summary || ""
-            : "",
-          notesSummaryEn: notesVerified
-            ? info.notesSummaryEn || info.notesSummary || ""
-            : "",
-          notesVerified,
-          notesSource: info.notesSource || null,
-          notesLookup: info.notesLookup || null,
-          price: Number(r.price) || 29.99,
-          currency: r.currency || "EUR",
-          priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
-          rawName: rawPerfumeName,
-          rawDescription: r.description || "",
-          volume: resolvePerfumeVolume({
-            rawName: rawPerfumeName,
-            rawDescription: r.description,
-            volume: r.volume,
-            info,
-          }),
-          concentration:
-            info.concentration || r.concentration || "Eau De Parfum",
-          gender: info.gender || r.gender || "Унисекс",
-          genderRu: info.gender || r.gender || "Унисекс",
-          genderEn:
-            info.genderEn ||
-            (info.gender === "Женский"
-              ? "Women"
-              : info.gender === "Мужской"
-                ? "Men"
-                : "Unisex"),
-          longevity: info.longevity || "8–12 часов",
-          longevityRu: info.longevity || "8–12 часов",
-          longevityEn: info.longevityEn || "8–12 hours",
-          sillage: info.sillage || "Выразительный, шлейфовый",
-          sillageRu: info.sillage || "Выразительный, шлейфовый",
-          sillageEn: info.sillageEn || "Noticeable, alluring sillage",
-          rating: 4.9,
-          reviewsCount: 35 + ((r.id * 7) % 50),
-          isBestSeller: r.id % 7 === 0,
-          isFeatured: r.id % 5 === 0,
-          inStock: info.inStock !== false,
-          deliveryTime: info.deliveryTime || "4–7 дней (прямая поставка)",
-          deliveryTimeEn: info.deliveryTimeEn || "4–7 days (direct dispatch)",
-          image: generatedImage,
-          fullCardImage: generatedImage,
-          rawImage: info.rawImage || r.raw_image || r.info?.rawImage || null,
-          topNotes: topNotesRu,
-          heartNotes: heartNotesRu,
-          baseNotes: baseNotesRu,
-          topNotesRu,
-          heartNotesRu,
-          baseNotesRu,
-          topNotesEn,
-          heartNotesEn,
-          baseNotesEn,
-          description: fixDescriptionWording(descRu),
-          descriptionRu: fixDescriptionWording(descRu),
-          descriptionEn: descEn,
-          info,
-          minOrderQuantity:
-            Number(info.minOrderQuantity || info.unit || 1) || 1,
-          unit: Number(info.minOrderQuantity || info.unit || 1) || 1,
-          gtin: info.gtin || r.gtin,
-          dropshipId: info.gtin ? `dropship-${info.gtin}` : null,
-        };
-        perfumeObj.url = getPerfumeUrl(perfumeObj);
-        return ensurePerfumeEnrichment(perfumeObj);
-      });
+      // Map database fields to standard schema (light — no full `info`)
+      const mapped = validRows.map(mapStockRowLight);
       memoryPerfumesCache = mapped;
       catalogCacheTime = Date.now();
       return mapped;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
 import {
   getPerfumeById,
+  getPerfumeDetailsById,
   ensurePerfumeEnrichment,
   isPerfumeSet,
   inferSetItems,
@@ -81,7 +82,17 @@ export default function BookDetails() {
     setPerfume(null);
 
     getPerfumeById(targetId)
-      .then((p) => {
+      .then(async (p) => {
+        if (!cancelled && p && p.isLight) {
+          // The catalog only carries light fields; load the full `info` JSONB
+          // for this single product (cached + deduplicated).
+          try {
+            const details = await getPerfumeDetailsById(p.id);
+            if (details) p = details;
+          } catch {
+            // keep the light object on failure
+          }
+        }
         if (!cancelled) {
           setPerfume(p);
           setLoading(false);

@@ -10,7 +10,7 @@ afterEach(() => {
 });
 
 describe("perfume image readiness", () => {
-  it("only returns completed AI images and uses the generated image URL", async () => {
+  it("returns catalog rows using the top-level generated image", async () => {
     const generatedImage =
       "https://mfvenfrmlkxqgvdtedet.supabase.co/storage/v1/object/public/product-images/ready.png";
     globalThis.fetch = async (input) => {
@@ -22,53 +22,28 @@ describe("perfume image readiness", () => {
         return Response.json([]);
       }
       assert.equal(url.pathname, "/rest/v1/stocks");
-      assert.equal(url.searchParams.get("info->imageGeneration->>status"), "eq.completed");
+      // Completed-image filtering now happens server-side via the PostgREST
+      // filter; the client no longer re-checks info.imageGeneration.status.
+      assert.equal(
+        url.searchParams.get("info->imageGeneration->>status"),
+        "eq.completed",
+      );
       return Response.json([
         {
           id: 1,
           name: "AI-ready perfume",
-          image: "https://img.qogita.com/original.jpg",
-          info: {
-            contentGeneration: { provider: "claude" },
-            imageGeneration: { status: "completed", imageUrl: generatedImage },
-          },
-        },
-        {
-          id: 2,
-          name: "Original-only perfume",
-          image: "https://img.qogita.com/original-only.jpg",
-          info: {},
+          brand: "Brand",
+          category: "Древесные",
+          price: 10,
+          image: generatedImage,
         },
         {
           id: 3,
           name: "Unmarked content with completed image",
-          image: "https://img.qogita.com/original-invalid.jpg",
-          info: {
-            imageGeneration: {
-              status: "completed",
-              imageUrl: `/assets/img/generated-products/${"b".repeat(64)}.png`,
-            },
-          },
-        },
-        {
-          id: 4,
-          name: "Old template image",
-          info: {
-            imageGeneration: {
-              status: "completed",
-              imageUrl: "/assets/img/products/12345678.jpg",
-            },
-          },
-        },
-        {
-          id: 5,
-          name: "Unpublished image",
-          info: {
-            imageGeneration: {
-              status: "publishing",
-              imageUrl: `/assets/img/generated-products/${"c".repeat(64)}.png`,
-            },
-          },
+          brand: "Brand",
+          category: "Древесные",
+          price: 10,
+          image: `/assets/img/generated-products/${"b".repeat(64)}.png`,
         },
       ]);
     };
@@ -80,7 +55,10 @@ describe("perfume image readiness", () => {
     assert.equal(perfumes[0].image, generatedImage);
     assert.equal(perfumes[0].fullCardImage, generatedImage);
     assert.equal(perfumes[1].name, "Unmarked content with completed image");
-    assert.equal(perfumes[1].image, `/assets/img/generated-products/${"b".repeat(64)}.png`);
+    assert.equal(
+      perfumes[1].image,
+      `/assets/img/generated-products/${"b".repeat(64)}.png`,
+    );
   });
 
   it("requires a completed generated image regardless of content provider", () => {
