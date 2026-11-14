@@ -9,6 +9,9 @@ coverage/
 .vite/
 .cache/
 
+# Generated Worker env (contains baked secrets — never commit)
+server/workerEnv.js
+
 # Local environment files
 .env
 .env.*
