@@ -15,13 +15,15 @@ STUDIO_IMAGE_COMMENT = b"Al-Warda Qogita Gemini original photo edit v3"
 EDIT_PROMPT = """
 Conservatively enhance this exact original product photograph. This is a faithful
 image-to-image restoration, NOT a new product photo, redesign, or scene recreation.
+The original reference image is the absolute source of truth. Preserve the exact
+original product label, all original typography, lettering, numerals, and volume marks.
+Preserve brand logos and trademarks. Preserve Arabic calligraphy exactly as shown.
+Never invent, rewrite, translate, or reconstruct product text; never generate
+alternative letters, numbers, or symbols. Do not redesign the perfume bottle or packaging.
 Keep the complete original rectangular frame and exact aspect ratio. Do not crop,
 zoom, pan, reframe, remove, replace, extend, or blur the background. Keep every
 visible object, including the complete perfume bottle, cap, label, box, props,
 shadows, and reflections in exactly the same position, size, shape, and orientation.
-Preserve the exact bottle model, silhouette, cap, glass, liquid, label artwork,
-brand marks, and all readable text. Do not invent, rewrite, repair, or replace text
-or product details. Do not add any objects, graphics, lighting effects, or styling.
 Only make restrained photographic improvements to clarity, compression noise,
 exposure, and color balance while retaining the original scene and natural colors.
 The result should look almost identical to the input photo, only cleaner and clearer.

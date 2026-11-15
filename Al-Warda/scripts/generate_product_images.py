@@ -948,18 +948,19 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
 def build_edit_prompt():
     return (
         "Use image 0 strictly as a one-to-one product reference. Re-photograph this "
-        "EXACT product — do not redesign, replace, or reinterpret it. The output must "
-        "keep the exact same bottle, cap, glass shape, liquid color, label artwork, brand "
-        "logo, numbers, digits, volume and typography as image 0, completely unchanged. "
-        "All numerals, dates, years, batch numbers, volume indicators, and lettering must "
-        "remain authentic, sharp, crisp, undistorted, and perfectly legible. Never hallucinate, "
-        "invent, distort, rewrite, duplicate or omit numbers, text, labels, or details; never "
-        "generate pseudo-digits or illegible squiggles; never add extra bottles, props, frames "
-        "or markings. Present one large, centered product from a natural front-facing "
-        "three-quarter angle with realistic depth, neutral balanced commercial studio lighting, "
-        "accurate true-to-life product colors, pristine glass and metal reflections, on a plain "
-        "uniform light grey background with no horizon or cast shadow. Keep the complete "
-        "product and cap fully visible with a small clear margin on every side."
+        "EXACT product — do not redesign, replace, or reinterpret it. The original "
+        "reference image is the absolute source of truth. Preserve the exact original "
+        "product label, all original typography, lettering, numerals, and volume marks. "
+        "Preserve brand logos and trademarks. Preserve Arabic calligraphy exactly as shown. "
+        "Never invent, rewrite, translate or reconstruct product text; never generate "
+        "alternative letters, numbers, pseudo-digits, or illegible squiggles. Do not "
+        "redesign the perfume bottle or packaging. The output must keep the exact same "
+        "bottle silhouette, cap, glass geometry, liquid color, label artwork, brand logo, "
+        "and typography as image 0, completely unchanged. Present one large, centered product "
+        "from a natural front-facing three-quarter angle with realistic depth, neutral "
+        "balanced commercial studio lighting, accurate true-to-life product colors, pristine "
+        "glass and metal reflections, on a plain uniform light grey background with no horizon "
+        "or cast shadow. Keep the complete product and cap fully visible with a clear margin."
     )
 
 
