@@ -252,6 +252,7 @@ export default function ProductImageQueue({
   const [account, setAccount] = useState("auto");
   const [regenerateCompleted, setRegenerateCompleted] = useState(false);
   const [runs, setRuns] = useState([]);
+  const [globalHalted, setGlobalHalted] = useState(false);
   const [deletions, setDeletions] = useState([]);
   const deletionRequestedAt = useRef(null);
   const [deletionPending, setDeletionPending] = useState(false);
@@ -300,6 +301,9 @@ export default function ProductImageQueue({
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
       setRuns(payload.runs);
       setDeletions(payload.deletions);
+      if (typeof payload.globalHalted === "boolean") {
+        setGlobalHalted(payload.globalHalted);
+      }
       setActionError("");
       setNeedsQogita(false);
       setRunsLoaded(true);
@@ -364,15 +368,31 @@ export default function ProductImageQueue({
       }
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
-      setActionMessage(
-        action === "start"
-          ? isRussian
+      if (typeof payload.globalHalted === "boolean") {
+        setGlobalHalted(payload.globalHalted);
+      }
+      if (action === "start") {
+        setGlobalHalted(false);
+        setActionMessage(
+          isRussian
             ? "Запуск отправлен в GitHub Actions."
-            : "Workflow dispatch accepted."
-          : isRussian
-            ? "Запрошена остановка. Все сгенерированные к этому моменту изображения будут сохранены и добавлены на сайт."
-            : "Stop requested. All images generated up to this moment will be saved and published to the website.",
-      );
+            : "Workflow dispatch accepted.",
+        );
+      } else if (action === "resume" || action === "resume-global") {
+        setGlobalHalted(false);
+        setActionMessage(
+          isRussian
+            ? "Глобальный процесс генерации возобновлен. Автоматические запуски по расписанию активны."
+            : "Global generation resumed. Scheduled runs are active.",
+        );
+      } else {
+        setGlobalHalted(true);
+        setActionMessage(
+          isRussian
+            ? "Глобальный процесс генерации остановлен. Все сгенерированные к этому моменту изображения сохраняются и добавляются на сайт."
+            : "Global generation stopped. All images generated up to this moment will be saved and published to the website.",
+        );
+      }
       await loadRuns();
     } catch (err) {
       setRunsLoaded(false);
@@ -380,6 +400,31 @@ export default function ProductImageQueue({
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleStopGlobalGeneration = async () => {
+    const isRunning = runs.length > 0;
+    const approved = await confirm({
+      title: isRussian
+        ? "Остановить глобальный процесс генерации?"
+        : "Stop global generation process?",
+      message: isRussian
+        ? isRunning
+          ? "Остановить выполняющуюся генерацию? Текущая задача в GitHub Actions будет отменена, а автоматические запуски по расписанию приостановлены. Все сгенерированные к этому моменту изображения сохранятся."
+          : "Приостановить глобальный процесс генерации? Автоматические запуски по расписанию (раз в 30 минут) выполняться не будут."
+        : isRunning
+          ? "Stop running generation? The active GitHub Actions job will be cancelled and scheduled runs will be paused. Images generated so far will be saved."
+          : "Pause the global generation process? Automatic scheduled runs (every 30 minutes) will be paused.",
+      confirmText: isRussian ? "Остановить" : "Stop",
+      cancelText: isRussian ? "Отмена" : "Cancel",
+      variant: "danger",
+    });
+    if (!approved) return;
+    await runAction("stop");
+  };
+
+  const handleResumeGlobalGeneration = async () => {
+    await runAction("resume");
   };
 
   const loadStatus = useCallback(
@@ -418,6 +463,9 @@ export default function ProductImageQueue({
         }
         setStatus(payload);
         setNowMs(Date.now());
+        if (typeof payload.globalHalted === "boolean") {
+          setGlobalHalted(payload.globalHalted);
+        }
         setSelectedImages((current) =>
           Object.fromEntries(
             Object.entries(current).filter(([id, imageUrl]) =>
@@ -720,29 +768,130 @@ export default function ProductImageQueue({
     <section className="product-image-queue">
       <header className="product-image-queue__header">
         <div>
-          <h2>
-            {isRussian
-              ? "Генерация изображений товаров"
-              : "Product image generation"}
-          </h2>
+          <div className="product-image-queue__header-title-row">
+            <h2>
+              {isRussian
+                ? "Генерация изображений товаров"
+                : "Product image generation"}
+            </h2>
+            {globalHalted ? (
+              <span className="product-image-queue__status-badge product-image-queue__status-badge--halted">
+                <i className="ri-pause-circle-line" />
+                {isRussian ? "Остановлена" : "Halted"}
+              </span>
+            ) : runs.length > 0 ? (
+              <span className="product-image-queue__status-badge product-image-queue__status-badge--running">
+                <span className="product-image-queue__pulse-dot" />
+                {isRussian ? "Выполняется" : "Running"}
+              </span>
+            ) : (
+              <span className="product-image-queue__status-badge product-image-queue__status-badge--active">
+                <i className="ri-checkbox-circle-line" />
+                {isRussian ? "Активна (по расписанию)" : "Active (scheduled)"}
+              </span>
+            )}
+          </div>
           <p>
             {isRussian
               ? "Flux создаёт студийное 3D-изображение по исходному фото, затем фон удаляется. Проверьте детали и края флакона."
               : "Flux creates a studio 3D image from the original photo, then the background is removed. Review the bottle details and edges."}
           </p>
         </div>
-        <a
-          className="product-image-queue__start"
-          href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-generation.yml"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <i className="ri-external-link-line" />
-          {isRussian
-            ? "Открыть запуск в GitHub Actions"
-            : "Open GitHub Actions"}
-        </a>
+        <div className="product-image-queue__header-actions">
+          {runs.length > 0 && (
+            <button
+              type="button"
+              className="product-image-queue__start product-image-queue__start--danger"
+              disabled={busy}
+              onClick={handleStopGlobalGeneration}
+              title={
+                isRussian
+                  ? "Экстренно остановить выполняющуюся генерацию"
+                  : "Emergency stop of running generation"
+              }
+            >
+              <i className="ri-stop-circle-line" />
+              {isRussian ? "Остановить генерацию" : "Stop generation"}
+            </button>
+          )}
+          <a
+            className="product-image-queue__start"
+            href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-generation.yml"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i className="ri-external-link-line" />
+            {isRussian
+              ? "Открыть запуск в GitHub Actions"
+              : "Open GitHub Actions"}
+          </a>
+        </div>
       </header>
+
+      {runs.length > 0 && (
+        <div className="product-image-queue__global-banner product-image-queue__global-banner--running">
+          <div className="product-image-queue__global-banner-info">
+            <span className="product-image-queue__pulse-dot" aria-hidden="true" />
+            <div>
+              <strong>
+                {isRussian
+                  ? "Глобальный процесс генерации выполняется"
+                  : "Global generation process in progress"}
+              </strong>
+              <p>
+                {isRussian
+                  ? `Активных задач в GitHub Actions: ${runs.length}. Сгенерированные фото сохраняются и готовятся к автоматической публикации на сайте.`
+                  : `Active tasks in GitHub Actions: ${runs.length}. Generated images are saved and queued for automatic publishing.`}
+              </p>
+            </div>
+          </div>
+          <div className="product-image-queue__global-banner-actions">
+            <button
+              type="button"
+              className="product-image-queue__start product-image-queue__start--danger"
+              disabled={busy}
+              onClick={handleStopGlobalGeneration}
+            >
+              <i className="ri-stop-circle-line" />
+              {isRussian ? "Остановить процесс" : "Stop process"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {globalHalted && (
+        <div className="product-image-queue__global-banner product-image-queue__global-banner--halted">
+          <div className="product-image-queue__global-banner-info">
+            <i
+              className="ri-pause-circle-line product-image-queue__global-banner-icon"
+              aria-hidden="true"
+            />
+            <div>
+              <strong>
+                {isRussian
+                  ? "Глобальный процесс генерации остановлен"
+                  : "Global generation process stopped"}
+              </strong>
+              <p>
+                {isRussian
+                  ? "Автоматические запуски по расписанию (cron раз в 30 минут) приостановлены. Нажмите «Возобновить генерацию», чтобы вернуть штатный режим."
+                  : "Automatic scheduled runs (every 30 minutes) are paused. Click 'Resume generation' to return to normal schedule."}
+              </p>
+            </div>
+          </div>
+          <div className="product-image-queue__global-banner-actions">
+            <button
+              type="button"
+              className="product-image-queue__start product-image-queue__start--resume"
+              disabled={busy}
+              onClick={handleResumeGlobalGeneration}
+            >
+              <i className="ri-play-circle-line" />
+              {isRussian ? "Возобновить генерацию" : "Resume generation"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="product-image-queue__controls">
         <label>
@@ -815,16 +964,39 @@ export default function ProductImageQueue({
           }
           onClick={() => runAction("start")}
         >
+          <i className="ri-play-line" />
           {isRussian ? "Запустить" : "Start"}
         </button>
         <button
           type="button"
-          className="product-image-queue__start"
-          disabled={busy || !runsLoaded || !runs.length}
-          onClick={() => runAction("stop")}
+          className="product-image-queue__start product-image-queue__start--danger"
+          disabled={busy || deleting}
+          onClick={handleStopGlobalGeneration}
+          title={
+            isRussian
+              ? "Остановить активную или запланированную глобальную генерацию"
+              : "Stop active or scheduled global image generation"
+          }
         >
-          {isRussian ? "Остановить" : "Stop"}
+          <i className="ri-stop-circle-line" />
+          {isRussian ? "Остановить генерацию" : "Stop generation"}
         </button>
+        {globalHalted && (
+          <button
+            type="button"
+            className="product-image-queue__start product-image-queue__start--resume"
+            disabled={busy || deleting}
+            onClick={handleResumeGlobalGeneration}
+            title={
+              isRussian
+                ? "Возобновить автоматическую генерацию по расписанию"
+                : "Resume scheduled global generation"
+            }
+          >
+            <i className="ri-play-circle-line" />
+            {isRussian ? "Возобновить генерацию" : "Resume generation"}
+          </button>
+        )}
       </div>
       {actionError && (
         <div

@@ -1372,7 +1372,26 @@ def select_candidates(rows, now, regenerate_completed=False):
     return eligible, attempts_today
 
 
+def is_global_generation_halted(rows):
+    for row in rows:
+        slug = str(row.get("slug") or "")
+        identifier = str(row.get("id") or "")
+        if slug == "site-settings" or identifier == "site-settings":
+            info = row.get("info") or {}
+            if info.get("globalImageGenerationHalted") or info.get("imageGenerationHalted"):
+                return True
+    return False
+
+
 def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECONDS):
+    if is_global_generation_halted(rows):
+        return {
+            "should_run": False,
+            "reason": "global_generation_halted",
+            "wait_seconds": 0,
+            "pending_count": 0,
+        }
+
     for row in rows:
         info = row.get("info") or {}
         if is_awaiting_publication(image_generation(info)) or is_awaiting_publication(
@@ -2111,7 +2130,14 @@ def main():
             )
             time.sleep(wait_sec)
         elif not status["should_run"]:
-            if status["reason"] == "no_pending_images":
+            if status["reason"] == "global_generation_halted":
+                print(
+                    "Schedule check: global image generation has been stopped by administrator. "
+                    "Skipping scheduled run.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+            elif status["reason"] == "no_pending_images":
                 print("Schedule check: 0 pending images in queue. Skipping scheduled run.", file=sys.stderr, flush=True)
             else:
                 rem_min = int(status.get("wait_seconds", 0) // 60)
@@ -2212,10 +2238,25 @@ def main():
     except (ValueError, AttributeError):
         pass
 
-    for row in candidates[:args.max_images]:
+    for idx, row in enumerate(candidates[:args.max_images]):
         if stop_requested:
             print("Stopping product queue processing per termination signal. Proceeding to publish...", flush=True)
             break
+        if idx > 0 and idx % 5 == 0:
+            try:
+                check_rows = (
+                    fetch_stock_rows(session, supabase_url)
+                    if requests is not None
+                    else fetch_stock_rows_stdlib(supabase_url, service_key)
+                )
+                if is_global_generation_halted(check_rows):
+                    print(
+                        "Global image generation was halted by administrator. Stopping batch gracefully...",
+                        flush=True,
+                    )
+                    break
+            except Exception:
+                pass
         try:
             url = process_product(
                 session,

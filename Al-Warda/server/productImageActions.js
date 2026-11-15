@@ -1,4 +1,9 @@
-import { requirePrivilegedUser, syncCommittedPublishedStocks } from "./productImageQueueAdmin.js";
+import {
+  requirePrivilegedUser,
+  syncCommittedPublishedStocks,
+  getGlobalGenerationHalted,
+  setGlobalGenerationHalted,
+} from "./productImageQueueAdmin.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
 const API = "https://api.github.com/repos/egorgrebennykov-del/Al-Warda";
@@ -63,12 +68,19 @@ export async function handleProductImageActions(request, env) {
   try {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
+    const token = env.GITHUB_TOKEN || env.GH_TOKEN;
+    if (!token) throw new Error("GITHUB_TOKEN is not configured on the server");
     if (request.method === "GET") {
-      const [runs, deletions] = await Promise.all([activeRuns(env), deletionRuns(env)]);
+      const [runs, deletions, globalHalted] = await Promise.all([
+        activeRuns(env),
+        deletionRuns(env),
+        getGlobalGenerationHalted(env),
+      ]);
       return json({
         runs: runs.map(({ id, status, html_url }) => ({ id, status, url: html_url })),
         deletions: deletions.map(({ id, status, conclusion, html_url, created_at }) =>
           ({ id, status, conclusion, url: html_url, createdAt: created_at })),
+        globalHalted,
       });
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -91,17 +103,40 @@ export async function handleProductImageActions(request, env) {
       if ((await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
         return json({ error: "Image deletion is already running; wait for it to finish" }, 409);
       }
+      try {
+        await setGlobalGenerationHalted(env, false);
+      } catch (err) {
+        console.warn("Could not unhalt global generation in DB:", err.message);
+      }
       await github(env, `/actions/workflows/${WORKFLOW}/dispatches`, {
         method: "POST",
         body: JSON.stringify({ ref: "main", inputs: { max_images: String(count), cloudflare_account: body.account, regenerate_completed: String(body.regenerateCompleted) } }),
       });
-      return json({ message: "Workflow dispatch accepted" }, 202);
+      return json({ message: "Workflow dispatch accepted", globalHalted: false }, 202);
     }
-    if (body.action === "stop") {
+    if (body.action === "stop" || body.action === "stop-global") {
       const runs = await activeRuns(env);
-      if (!runs.length) return json({ error: "No active image generation run" }, 409);
       for (const run of runs) await github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" });
-      return json({ message: "Cancellation requested", count: runs.length }, 202);
+      try {
+        await setGlobalGenerationHalted(env, true);
+      } catch (err) {
+        console.warn("Could not set global generation halted in DB:", err.message);
+      }
+      return json({
+        message: runs.length
+          ? "Cancellation requested and global generation halted"
+          : "Global generation process halted",
+        count: runs.length,
+        globalHalted: true,
+      }, 202);
+    }
+    if (body.action === "resume" || body.action === "resume-global") {
+      try {
+        await setGlobalGenerationHalted(env, false);
+      } catch (err) {
+        console.warn("Could not resume global generation in DB:", err.message);
+      }
+      return json({ message: "Global generation resumed", globalHalted: false }, 200);
     }
     if (body.action === "sync") {
       const count = await syncCommittedPublishedStocks(env);

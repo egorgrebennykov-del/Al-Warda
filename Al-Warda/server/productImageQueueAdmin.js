@@ -7,11 +7,11 @@ class MissingServiceKeyError extends Error {
 }
 
 export function getServiceKey(env) {
-  // The data layer now goes through Nhost (NHOST_ADMIN_SECRET) via the proxy,
-  // so the old Supabase service key is no longer required for DB access. It is
-  // still returned when present (some non-DB paths use it as a fallback), but
-  // its absence must not block admin endpoints anymore.
-  return env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY || "";
+  const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SECRET_KEY || "";
+  if (!key && !env?.NHOST_ADMIN_SECRET && !process.env.NHOST_ADMIN_SECRET) {
+    throw new MissingServiceKeyError();
+  }
+  return key;
 }
 
 export function getSupabaseUrl(env) {
@@ -601,6 +601,15 @@ export async function getProductImageQueueStatus(request, env) {
         counts,
         nowMs,
       );
+      let globalHalted = false;
+      const settingsRow = rows.find(
+        (r) =>
+          String(r.slug || "") === "site-settings" ||
+          String(r.id || "") === "site-settings",
+      );
+      if (settingsRow?.info?.globalImageGenerationHalted) {
+        globalHalted = true;
+      }
       const payload = {
         total: eligible,
         ...counts,
@@ -610,6 +619,7 @@ export async function getProductImageQueueStatus(request, env) {
         schedule,
         failedItems,
         images,
+        globalHalted,
       };
 
       if (!isTestEnv) {
@@ -726,9 +736,9 @@ export async function requeueFailedProductItems(request, env) {
   }
 }
 
-const SETTINGS_SLUG = "site-settings";
+export const SETTINGS_SLUG = "site-settings";
 
-async function loadSettingsRow(env, key) {
+export async function loadSettingsRow(env, key) {
   const url = new URL(`${getSupabaseUrl(env)}/rest/v1/stocks`);
   url.searchParams.set("select", "id,info");
   url.searchParams.set("slug", `eq.${SETTINGS_SLUG}`);
@@ -739,6 +749,69 @@ async function loadSettingsRow(env, key) {
   if (!result.ok) throw new Error(`Could not load settings (${result.status})`);
   const rows = await result.json();
   return rows[0] || null;
+}
+
+export async function getGlobalGenerationHalted(env) {
+  try {
+    const key = getServiceKey(env);
+    const row = await loadSettingsRow(env, key);
+    return Boolean(row?.info?.globalImageGenerationHalted);
+  } catch {
+    return false;
+  }
+}
+
+export async function setGlobalGenerationHalted(env, halted) {
+  const key = getServiceKey(env);
+  const baseUrl = getSupabaseUrl(env);
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+    Prefer: "return=minimal",
+  };
+  const row = await loadSettingsRow(env, key);
+  let response;
+  if (row) {
+    const url = new URL(`${baseUrl}/rest/v1/stocks`);
+    url.searchParams.set("id", `eq.${row.id}`);
+    response = await supabaseFetch(env, url, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({
+        info: {
+          ...(row.info || {}),
+          globalImageGenerationHalted: Boolean(halted),
+          globalImageGenerationHaltedAt: halted ? new Date().toISOString() : null,
+        },
+      }),
+    });
+  } else {
+    response = await supabaseFetch(env, `${baseUrl}/rest/v1/stocks`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        slug: SETTINGS_SLUG,
+        name: "Site settings",
+        title: "Site settings",
+        brand: "system",
+        price: 0,
+        in_stock: false,
+        info: {
+          globalImageGenerationHalted: Boolean(halted),
+          globalImageGenerationHaltedAt: halted ? new Date().toISOString() : null,
+        },
+      }),
+    });
+  }
+  if (!response.ok) {
+    const details = (await response.text()).slice(0, 300);
+    throw new Error(
+      `Could not update global generation state (${response.status}): ${details}`,
+    );
+  }
+  invalidateProductImageQueueCache();
+  return Boolean(halted);
 }
 
 export async function getSiteSettings(request, env) {

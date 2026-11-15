@@ -541,6 +541,10 @@ export async function handleRestProxy(request, env = {}) {
 // server-side). Returns a Web `Response` so callers can keep using
 // `res.ok`, `res.status`, `res.json()`, `res.text()`, `res.headers.get(...)`.
 export async function supabaseFetch(env, url, init = {}) {
+  const { adminSecret } = getHasuraConfig(env);
+  if (!adminSecret) {
+    return fetch(url, init);
+  }
   const parsed = new URL(url);
   const proxyUrl = `http://nhost-proxy.local${parsed.pathname}${parsed.search}`;
   const req = new Request(proxyUrl, {

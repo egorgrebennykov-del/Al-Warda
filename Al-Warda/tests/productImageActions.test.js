@@ -16,10 +16,20 @@ afterEach(() => { globalThis.fetch = originalFetch; });
 test("start and stop require a privileged user (no Qogita session) and send scoped GitHub requests", async () => {
   const calls = [];
   let running = false;
+  let storedSettings = { id: 999, slug: "site-settings", info: { globalImageGenerationHalted: false } };
   globalThis.fetch = async (input, options = {}) => {
     const url = String(input);
     if (url.endsWith("/auth/login/")) return Response.json({ accessToken: "qogita-token", accessExp: Date.now() + 3600000 });
     if (url.startsWith("https://db.example/rest/v1/user")) return Response.json([{ id: "1", status: "privileged" }]);
+    if (url.includes("/rest/v1/stocks")) {
+      calls.push({ url, options });
+      if (options.method === "PATCH") {
+        const body = JSON.parse(options.body || "{}");
+        storedSettings.info = { ...storedSettings.info, ...body.info };
+        return new Response(null, { status: 204 });
+      }
+      return Response.json([storedSettings]);
+    }
     calls.push({ url, options });
     if (url.includes("/runs?")) return Response.json({ workflow_runs: running && new URL(url).searchParams.get("status") === "in_progress" ? [{ id: 123, status: "in_progress", html_url: "https://github.com/run" }] : [] });
     if (url.endsWith("/dispatches")) return new Response(null, { status: 204 });
@@ -57,6 +67,19 @@ test("start and stop require a privileged user (no Qogita session) and send scop
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 409);
   assert.equal((await handleProductImageActions(action({ action: "stop" }), env)).status, 202);
   assert.ok(calls.some((call) => call.url.endsWith("/123/cancel")));
+  assert.equal(storedSettings.info.globalImageGenerationHalted, true);
+  running = false;
+  // Global stop also works when no runs are active, halting future scheduled runs
+  const stopGlobalRes = await handleProductImageActions(action({ action: "stop" }), env);
+  assert.equal(stopGlobalRes.status, 202);
+  const stopGlobalJson = await stopGlobalRes.json();
+  assert.equal(stopGlobalJson.globalHalted, true);
+  // Resume global generation
+  const resumeRes = await handleProductImageActions(action({ action: "resume" }), env);
+  assert.equal(resumeRes.status, 200);
+  const resumeJson = await resumeRes.json();
+  assert.equal(resumeJson.globalHalted, false);
+  assert.equal(storedSettings.info.globalImageGenerationHalted, false);
   assert.equal((await handleProductImageActions(action({ action: "sync" }), env)).status, 200);
 });
 
