@@ -452,7 +452,7 @@ export default function BookDetails() {
                     alt={perfume.name}
                     className="warda-details-img"
                     style={{
-                      transformOrigin: `${zoomPoint.x}% ${zoomPoint.y}%`,
+                      transformOrigin: "center center",
                     }}
                     loading="eager"
                     decoding="async"

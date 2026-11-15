@@ -1312,6 +1312,24 @@ def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_s
 
     crop = cleaned_cutout.crop((x1, y1, x2, y2))
     resized = crop.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # For upscaled cutouts from lower-resolution photos, apply bilateral texture smoothing
+    # and unsharp masking to prevent blur, muddy glass, and pixelated packaging contours.
+    if scale > 1.2:
+        try:
+            import cv2
+            arr_res = np.array(resized)
+            rgb_res = arr_res[:, :, :3]
+            alpha_res = arr_res[:, :, 3]
+            denoised_rgb = cv2.bilateralFilter(rgb_res, d=5, sigmaColor=25, sigmaSpace=25)
+            gaussian = cv2.GaussianBlur(denoised_rgb, (0, 0), 2.0)
+            sharp_rgb = cv2.addWeighted(denoised_rgb, 1.35, gaussian, -0.35, 0)
+            arr_res[:, :, :3] = sharp_rgb
+            arr_res[:, :, 3] = alpha_res
+            resized = Image.fromarray(arr_res)
+        except Exception:
+            pass
+
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     pos_x = (canvas_size[0] - new_w) // 2
     pos_y = (canvas_size[1] - new_h) // 2
