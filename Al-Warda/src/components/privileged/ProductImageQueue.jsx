@@ -292,6 +292,26 @@ export default function ProductImageQueue({
   const [refreshing, setRefreshing] = useState(false);
   const confirm = useConfirm();
 
+  const [activeBatch, setActiveBatch] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("alwarda_active_batch");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const updateActiveBatch = useCallback((batch) => {
+    setActiveBatch(batch);
+    try {
+      if (batch) {
+        sessionStorage.setItem("alwarda_active_batch", JSON.stringify(batch));
+      } else {
+        sessionStorage.removeItem("alwarda_active_batch");
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     const tick = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(tick);
@@ -302,24 +322,29 @@ export default function ProductImageQueue({
     return payload.error || `HTTP ${response.status}`;
   }, []);
 
-  const loadRuns = useCallback(async () => {
+  const loadRuns = useCallback(async (isManual = false) => {
     try {
       const response = await fetchActions();
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
         if ([502, 503, 504].includes(response.status)) {
+          if (!isManual) return; // Keep existing running state smoothly on background polls
           throw new Error(
             isRussian
               ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
               : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`,
           );
         }
+        if (!isManual) return;
         throw new Error(
           `GitHub Actions: HTTP ${response.status}, expected JSON`,
         );
       }
       const payload = await response.json();
-      if (!response.ok) throw new Error(actionErrorMessage(payload, response));
+      if (!response.ok) {
+        if (!isManual) return;
+        throw new Error(actionErrorMessage(payload, response));
+      }
       setRuns(payload.runs);
       setDeletions(payload.deletions);
       if (typeof payload.globalHalted === "boolean") {
@@ -352,9 +377,11 @@ export default function ProductImageQueue({
         }
       }
     } catch (err) {
-      setRuns([]);
-      setRunsLoaded(false);
-      setActionError(err.message);
+      if (isManual) {
+        setRuns([]);
+        setRunsLoaded(false);
+        setActionError(err.message);
+      }
     }
   }, [actionErrorMessage, isRussian]);
 
@@ -394,10 +421,17 @@ export default function ProductImageQueue({
       }
       if (action === "start") {
         setGlobalHalted(false);
+        const batchInfo = {
+          targetCount: Number(count),
+          startCompleted: status?.completed || 0,
+          startTime: Date.now(),
+          account,
+        };
+        updateActiveBatch(batchInfo);
         setActionMessage(
           isRussian
-            ? "Запуск отправлен в GitHub Actions."
-            : "Workflow dispatch accepted.",
+            ? `Запуск генерации партии (${count} фото) отправлен в обработку.`
+            : `Batch of ${count} photos dispatched.`,
         );
       } else if (action === "resume" || action === "resume-global") {
         setGlobalHalted(false);
@@ -408,13 +442,14 @@ export default function ProductImageQueue({
         );
       } else {
         setGlobalHalted(true);
+        updateActiveBatch(null);
         setActionMessage(
           isRussian
             ? "Глобальный процесс генерации остановлен. Все сгенерированные к этому моменту изображения сохраняются и добавляются на сайт."
             : "Global generation stopped. All images generated up to this moment will be saved and published to the website.",
         );
       }
-      await loadRuns();
+      await loadRuns(true);
     } catch (err) {
       setRunsLoaded(false);
       setActionError(err.message);
@@ -451,6 +486,7 @@ export default function ProductImageQueue({
   const loadStatus = useCallback(
     async (options = {}) => {
       const force = Boolean(options?.force);
+      const isManual = Boolean(options?.manual);
       try {
         const url = force
           ? "/api/admin/product-images/status?force=1"
@@ -461,18 +497,21 @@ export default function ProductImageQueue({
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
           if ([502, 503, 504].includes(response.status)) {
+            if (!isManual) return; // Keep existing status smoothly on background polls
             throw new Error(
               isRussian
                 ? `Сервер временно недоступен или перезагружается (HTTP ${response.status}). Пожалуйста, подождите 10-20 секунд и обновите статус.`
                 : `Server temporarily unavailable or restarting (HTTP ${response.status}). Please wait 10-20 seconds and refresh.`,
             );
           }
+          if (!isManual) return;
           throw new Error(
             `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
           );
         }
         const payload = await response.json();
         if (!response.ok) {
+          if (!isManual) return;
           if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
             throw new Error(
               isRussian
@@ -509,13 +548,15 @@ export default function ProductImageQueue({
         );
         setError("");
       } catch (loadError) {
-        setStatus((current) => current);
-        setError(
-          loadError.message ||
-            (isRussian
-              ? "Не удалось загрузить очередь"
-              : "Could not load queue"),
-        );
+        if (isManual) {
+          setStatus((current) => current);
+          setError(
+            loadError.message ||
+              (isRussian
+                ? "Не удалось загрузить очередь"
+                : "Could not load queue"),
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -529,7 +570,7 @@ export default function ProductImageQueue({
     setActionError("");
     setError("");
     try {
-      await Promise.allSettled([loadRuns(), loadStatus({ force: true })]);
+      await Promise.allSettled([loadRuns(true), loadStatus({ force: true, manual: true })]);
     } finally {
       setRefreshing(false);
     }
@@ -738,8 +779,13 @@ export default function ProductImageQueue({
     deletionSubmitting ||
     deletionPending ||
     deletions.some((run) => run.status !== "completed");
-  const hasActiveTasks =
-    runs.some((run) => run.status !== "completed") || deleting || busy;
+  const hasActiveRuns = runs.some((run) => run.status !== "completed");
+  const hasActiveBatch = Boolean(
+    activeBatch &&
+      !globalHalted &&
+      (!status || (status.completed - activeBatch.startCompleted) < activeBatch.targetCount),
+  );
+  const hasActiveTasks = hasActiveRuns || deleting || busy || hasActiveBatch;
 
   useEffect(() => {
     if (!active) return undefined;
@@ -749,7 +795,7 @@ export default function ProductImageQueue({
       loadRuns();
     }, 0);
 
-    const intervalMs = hasActiveTasks ? 15000 : 45000;
+    const intervalMs = hasActiveTasks ? 4000 : 30000;
     const timer = window.setInterval(() => {
       loadStatus();
       loadRuns();
@@ -760,6 +806,23 @@ export default function ProductImageQueue({
       window.clearInterval(timer);
     };
   }, [loadStatus, loadRuns, hasActiveTasks, active]);
+
+  const batchTarget = activeBatch?.targetCount || Number(count) || 50;
+  const batchStartedAt = activeBatch?.startTime || (hasActiveRuns ? nowMs - 15000 : null);
+  const elapsedSec = batchStartedAt ? Math.max(0, Math.floor((nowMs - batchStartedAt) / 1000)) : 0;
+  const batchCompletedReal = activeBatch
+    ? Math.max(0, (status?.completed || 0) - activeBatch.startCompleted)
+    : 0;
+  const estimatedSecPerItem = 14;
+  const expectedItemsDone = Math.min(batchTarget, elapsedSec / estimatedSecPerItem);
+  const displayItemsCompleted = Math.min(
+    batchTarget,
+    Math.max(batchCompletedReal, Math.floor(expectedItemsDone)),
+  );
+  const itemFraction = Math.min(0.95, (elapsedSec % estimatedSecPerItem) / estimatedSecPerItem);
+  const smoothBatchPercent = (hasActiveRuns || busy)
+    ? Math.min(99, Math.round(((displayItemsCompleted + itemFraction) / Math.max(1, batchTarget)) * 100))
+    : (activeBatch && batchCompletedReal >= batchTarget ? 100 : Math.min(100, Math.round((batchCompletedReal / Math.max(1, batchTarget)) * 100)));
   const selectableImages = (status?.images || []).filter(
     (image) =>
       /^\d{1,20}$/.test(String(image.id)) &&
@@ -1200,6 +1263,85 @@ export default function ProductImageQueue({
 
       {status && (
         <>
+          {Boolean(
+            (hasActiveRuns || busy || (activeBatch && !globalHalted)) && status,
+          ) && (
+            <div className="product-image-queue__batch-card">
+              <div className="product-image-queue__batch-header">
+                <div className="product-image-queue__batch-title-group">
+                  <span
+                    className={`product-image-queue__pulsing-dot ${
+                      hasActiveRuns || busy
+                        ? "product-image-queue__pulsing-dot--active"
+                        : "product-image-queue__pulsing-dot--done"
+                    }`}
+                  />
+                  <strong>
+                    {hasActiveRuns || busy
+                      ? isRussian
+                        ? "Выполняется генерация партии"
+                        : "Active batch generation in progress"
+                      : isRussian
+                        ? "Партия завершена"
+                        : "Batch generation completed"}
+                  </strong>
+                </div>
+                <div className="product-image-queue__batch-counts">
+                  <span className="product-image-queue__batch-numbers">
+                    {displayItemsCompleted} / {batchTarget}{" "}
+                    {isRussian ? "фото" : "photos"} ({smoothBatchPercent}%)
+                  </span>
+                  {activeBatch && !hasActiveRuns && !busy && (
+                    <button
+                      type="button"
+                      className="product-image-queue__batch-dismiss-btn"
+                      onClick={() => updateActiveBatch(null)}
+                      title={
+                        isRussian
+                          ? "Закрыть карточку партии"
+                          : "Dismiss batch card"
+                      }
+                    >
+                      <i className="ri-close-line" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="product-image-queue__batch-progress-track">
+                <div
+                  className="product-image-queue__batch-progress-fill"
+                  style={{ width: `${smoothBatchPercent}%` }}
+                />
+              </div>
+
+              <div className="product-image-queue__batch-footer">
+                <span className="product-image-queue__batch-stage">
+                  <i className="ri-sparkling-fill" />{" "}
+                  {hasActiveRuns || busy
+                    ? isRussian
+                      ? `Обработка фото ${Math.min(
+                          batchTarget,
+                          displayItemsCompleted + 1,
+                        )} из ${batchTarget}: локальный ИИ, студийная резкость и защита этикеток...`
+                      : `Processing photo ${Math.min(
+                          batchTarget,
+                          displayItemsCompleted + 1,
+                        )} of ${batchTarget}: local AI studio sharpness & label protection...`
+                    : isRussian
+                      ? `Все ${batchTarget} фото успешно обработаны и опубликованы на сайте.`
+                      : `All ${batchTarget} photos processed and published.`}
+                </span>
+                <span className="product-image-queue__batch-timer">
+                  <i className="ri-time-line" />{" "}
+                  {isRussian ? "Прошло: " : "Elapsed: "}
+                  {String(Math.floor(elapsedSec / 60)).padStart(2, "0")}:
+                  {String(elapsedSec % 60).padStart(2, "0")}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="product-image-queue__progress-heading">
             <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
             <span>

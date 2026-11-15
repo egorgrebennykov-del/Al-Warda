@@ -133,7 +133,7 @@ function json(body, status = 200) {
 let statusCache = null;
 let statusCacheTime = 0;
 let inFlightStatusPromise = null;
-const STATUS_CACHE_TTL_MS = 25_000;
+const STATUS_CACHE_TTL_MS = 8_000;
 
 // Shared short-TTL cache for the expensive full `stocks` scan. Multiple admin
 // endpoints (products list, image queue, notes queue, description queue) all
@@ -142,7 +142,7 @@ const STATUS_CACHE_TTL_MS = 25_000;
 let allStocksCache = null;
 let allStocksCacheTime = 0;
 let allStocksCachePromise = null;
-const ALL_STOCKS_CACHE_TTL_MS = 20_000;
+const ALL_STOCKS_CACHE_TTL_MS = 10_000;
 
 export function invalidateAllStocksCache() {
   allStocksCache = null;
@@ -488,7 +488,7 @@ export async function getProductImageQueueStatus(request, env) {
       return json(statusCache);
     }
 
-    if (!isTestEnv && !force && inFlightStatusPromise) {
+    if (!isTestEnv && inFlightStatusPromise) {
       return json(await inFlightStatusPromise);
     }
 
@@ -659,6 +659,9 @@ export async function getProductImageQueueStatus(request, env) {
       inFlightStatusPromise = null;
     }
   } catch (error) {
+    if (statusCache) {
+      return json({ ...statusCache, cachedFallback: true }, 200);
+    }
     if (error instanceof MissingServiceKeyError) {
       return json(
         { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },

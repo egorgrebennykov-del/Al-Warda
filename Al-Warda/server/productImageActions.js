@@ -44,22 +44,25 @@ async function github(env, path, options = {}) {
 }
 
 async function activeRuns(env) {
-  const runs = [];
-  for (const status of ["queued", "in_progress", "requested", "waiting", "pending"]) {
-    for (let page = 1; ; page++) {
-      const data = await github(env, `/actions/workflows/${WORKFLOW}/runs?branch=main&status=${status}&per_page=100&page=${page}`);
-      if (!Array.isArray(data?.workflow_runs)) throw new Error("Invalid GitHub Actions response");
-      runs.push(...data.workflow_runs);
-      if (data.workflow_runs.length < 100) break;
-    }
-  }
-  return runs;
+  const statuses = ["in_progress", "queued", "waiting", "pending"];
+  const results = await Promise.all(
+    statuses.map((status) =>
+      github(env, `/actions/workflows/${WORKFLOW}/runs?branch=main&status=${status}&per_page=10`)
+        .then((data) => (Array.isArray(data?.workflow_runs) ? data.workflow_runs : []))
+        .catch(() => [])
+    )
+  );
+  return results.flat();
 }
 
 async function deletionRuns(env) {
-  const data = await github(env, `/actions/workflows/${DELETE_WORKFLOW}/runs?branch=main&per_page=10`);
-  if (!Array.isArray(data?.workflow_runs)) throw new Error("Invalid GitHub Actions deletion response");
-  return data.workflow_runs;
+  try {
+    const data = await github(env, `/actions/workflows/${DELETE_WORKFLOW}/runs?branch=main&per_page=10`);
+    if (!Array.isArray(data?.workflow_runs)) return [];
+    return data.workflow_runs;
+  } catch {
+    return [];
+  }
 }
 
 export async function handleProductImageActions(request, env) {
@@ -72,17 +75,21 @@ export async function handleProductImageActions(request, env) {
     const token = env.GITHUB_TOKEN || env.GH_TOKEN;
     if (!token) throw new Error("GITHUB_TOKEN is not configured on the server");
     if (request.method === "GET") {
-      const [runs, deletions, globalHalted] = await Promise.all([
-        activeRuns(env),
-        deletionRuns(env),
-        getGlobalGenerationHalted(env),
-      ]);
-      return json({
-        runs: runs.map(({ id, status, html_url }) => ({ id, status, url: html_url })),
-        deletions: deletions.map(({ id, status, conclusion, html_url, created_at }) =>
-          ({ id, status, conclusion, url: html_url, createdAt: created_at })),
-        globalHalted,
-      });
+      try {
+        const [runs, deletions, globalHalted] = await Promise.all([
+          activeRuns(env).catch(() => []),
+          deletionRuns(env).catch(() => []),
+          getGlobalGenerationHalted(env).catch(() => false),
+        ]);
+        return json({
+          runs: runs.map(({ id, status, html_url }) => ({ id, status, url: html_url })),
+          deletions: deletions.map(({ id, status, conclusion, html_url, created_at }) =>
+            ({ id, status, conclusion, url: html_url, createdAt: created_at })),
+          globalHalted,
+        });
+      } catch {
+        return json({ runs: [], deletions: [], globalHalted: false }, 200);
+      }
     }
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
     let body;
