@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import {
   getAllUsers,
@@ -44,6 +50,14 @@ import {
   RomanianFlag,
 } from "../common/FlagIcon";
 import decodeHtmlEntities from "../../../utils/decodeHtmlEntities";
+import {
+  PRIVILEGED_TAB_ALIASES,
+  PRIVILEGED_SUBTAB_ALIASES,
+  PRIVILEGED_DIRECT_SUBTAB_MAP,
+  resolvePrivilegedTab,
+  resolveProductsSubTab,
+  getPrivilegedBasePath,
+} from "../../../utils/privilegedRouting";
 import { useLanguage } from "../../context/languageContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import QogitaManager from "./QogitaManager";
@@ -54,19 +68,36 @@ import DescriptionQueue from "./DescriptionQueue";
 import "./Privileged.css";
 
 /**
- * Вкладка «Товары» содержит три подвкладки:
- *   - Список товаров (управление каталогом)
- *   - Фото товаров (генерация изображений)
- *   - Ароматы (палитры ароматов)
- * Подвкладки переключаются локально, без изменения URL-пути.
+ * Вкладка «Товары» содержит четыре подвкладки:
+ *   - Список товаров (управление каталогом): /products/list
+ *   - Фото товаров (генерация изображений): /products/images
+ *   - Ароматы (палитры ароматов): /products/notes
+ *   - Описание товаров (генерация описаний): /products/descriptions
+ * Каждая подвкладка имеет собственный уникальный URL-путь.
  */
 function ProductsSection({ language }) {
   const isRussian = language === "ru";
-  const [subTab, setSubTab] = useState("list");
+  const { tab: routeTab, subTab: routeSubTab } = useParams();
+  const location = useLocation();
+  const basePath = getPrivilegedBasePath(location.pathname);
+
+  const directSubTab =
+    PRIVILEGED_DIRECT_SUBTAB_MAP[String(routeTab || "").toLowerCase()];
+  const currentSubTab = directSubTab || resolveProductsSubTab(routeSubTab);
+
   // Lazy-mount each sub-tab on first visit and keep it mounted afterwards, so
-  // switching tabs never re-fetches the heavy stocks scan (each sub-tab fetches
-  // the full catalog on mount, which is what made tab switching feel slow).
-  const [mountedTabs, setMountedTabs] = useState({ list: true });
+  // switching tabs never re-fetches the heavy stocks scan.
+  const [mountedTabs, setMountedTabs] = useState(() => ({
+    [currentSubTab]: true,
+  }));
+
+  useEffect(() => {
+    if (currentSubTab) {
+      setMountedTabs((prev) =>
+        prev[currentSubTab] ? prev : { ...prev, [currentSubTab]: true },
+      );
+    }
+  }, [currentSubTab]);
 
   const subTabs = [
     {
@@ -91,27 +122,31 @@ function ProductsSection({ language }) {
     },
   ];
 
-  const selectSubTab = (key) => {
-    setSubTab(key);
-    setMountedTabs((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
-  };
-
-  const subTabBtns = subTabs.map((tab) => (
-    <button
-      key={tab.key}
-      type="button"
-      role="tab"
-      aria-selected={subTab === tab.key}
-      className={`privileged__sub-tab ${subTab === tab.key ? "privileged__sub-tab--active" : ""}`}
-      onClick={() => selectSubTab(tab.key)}
-    >
-      <i className={tab.icon} />
-      <span>{tab.label}</span>
-    </button>
-  ));
+  const subTabBtns = subTabs.map((tab) => {
+    const targetPath = `${basePath}/products/${tab.key}`;
+    const isActive = currentSubTab === tab.key;
+    return (
+      <Link
+        key={tab.key}
+        to={`${targetPath}${location.search || ""}`}
+        role="tab"
+        aria-selected={isActive}
+        className={`privileged__sub-tab ${isActive ? "privileged__sub-tab--active" : ""}`}
+        onClick={() => {
+          setMountedTabs((prev) =>
+            prev[tab.key] ? prev : { ...prev, [tab.key]: true },
+          );
+        }}
+        state={{ preventScrollReset: true }}
+      >
+        <i className={tab.icon} />
+        <span>{tab.label}</span>
+      </Link>
+    );
+  });
 
   const tabPanel = (key) => ({
-    style: { display: subTab === key ? "block" : "none" },
+    style: { display: currentSubTab === key ? "block" : "none" },
   });
 
   return (
@@ -130,7 +165,7 @@ function ProductsSection({ language }) {
           <div {...tabPanel("images")}>
             <ProductImageQueue
               language={language}
-              active={subTab === "images"}
+              active={currentSubTab === "images"}
             />
           </div>
         )}
@@ -174,60 +209,11 @@ function formatDate(dateString, language = "ru") {
   }
 }
 
-const PRIVILEGED_TAB_ALIASES = {
-  users: "users",
-  privileged: "privileged",
-  priviledged: "privileged",
-  admins: "privileged",
-  roles: "privileged",
-  coupons: "coupons",
-  orders: "orders",
-  inquiries: "inquiries",
-  messenger: "inquiries",
-  messages: "inquiries",
-  announcements: "announcements",
-  "git-actions": "git-actions",
-  gitactions: "git-actions",
-  git: "git-actions",
-  actions: "git-actions",
-  products: "products",
-  tovary: "products",
-  items: "products",
-  stock: "products",
-  stocks: "products",
-  catalog: "products",
-  qogita: "qogita",
-  "product-images": "products",
-  productimages: "products",
-  images: "products",
-  photos: "products",
-  "fragrance-notes": "products",
-  fragrancenotes: "products",
-  fragrance: "products",
-  notes: "products",
-  pyramids: "products",
-  other: "other",
-  misc: "other",
-  settings: "other",
-};
-
-function resolvePrivilegedTab(rawTab) {
-  if (!rawTab) return "users";
-  const key = String(rawTab).trim().toLowerCase();
-  return PRIVILEGED_TAB_ALIASES[key] || "users";
-}
-
-function getPrivilegedBasePath(pathname = "") {
-  if (pathname.startsWith("/priviledged")) return "/priviledged";
-  if (pathname.startsWith("/admin")) return "/admin";
-  return "/privileged";
-}
-
 export default function Privileged() {
   const { language, t } = useLanguage();
   const confirm = useConfirm();
   const customAlert = useAlert();
-  const { tab: routeTab } = useParams();
+  const { tab: routeTab, subTab: routeSubTab } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -256,16 +242,33 @@ export default function Privileged() {
   );
 
   useEffect(() => {
+    const raw = String(routeTab || "").toLowerCase();
     const resolved = resolvePrivilegedTab(routeTab);
     setActiveSectionState(resolved);
     const basePath = getPrivilegedBasePath(location.pathname);
-    if (!routeTab || String(routeTab).toLowerCase() !== resolved) {
+    if (!routeTab) {
       navigate(`${basePath}/${resolved}${location.search || ""}`, {
         replace: true,
         state: { preventScrollReset: true },
       });
+      return;
     }
-  }, [routeTab, location.pathname, location.search, navigate]);
+    if (PRIVILEGED_DIRECT_SUBTAB_MAP[raw]) {
+      const targetSub = PRIVILEGED_DIRECT_SUBTAB_MAP[raw];
+      navigate(`${basePath}/products/${targetSub}${location.search || ""}`, {
+        replace: true,
+        state: { preventScrollReset: true },
+      });
+      return;
+    }
+    if (raw !== resolved) {
+      const suffix = routeSubTab ? `/${routeSubTab}` : "";
+      navigate(`${basePath}/${resolved}${suffix}${location.search || ""}`, {
+        replace: true,
+        state: { preventScrollReset: true },
+      });
+    }
+  }, [routeTab, routeSubTab, location.pathname, location.search, navigate]);
 
   const setActiveSection = useCallback(
     (nextTab) => {
@@ -273,7 +276,13 @@ export default function Privileged() {
       setActiveSectionState(resolved);
       const basePath = getPrivilegedBasePath(location.pathname);
       const targetPath = `${basePath}/${resolved}`;
-      if (location.pathname !== targetPath) {
+      if (
+        location.pathname !== targetPath &&
+        !(
+          resolved === "products" &&
+          location.pathname.startsWith(`${targetPath}/`)
+        )
+      ) {
         navigate(targetPath, { state: { preventScrollReset: true } });
       }
     },

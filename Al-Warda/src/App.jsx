@@ -359,6 +359,14 @@ function App() {
             }
           />
           <Route
+            path="/privileged/:tab/:subTab"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/priviledged"
             element={
               <PrivateRoute privilegedOnly>
@@ -375,6 +383,14 @@ function App() {
             }
           />
           <Route
+            path="/priviledged/:tab/:subTab"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <PrivateRoute privilegedOnly>
@@ -384,6 +400,14 @@ function App() {
           />
           <Route
             path="/admin/:tab"
+            element={
+              <PrivateRoute privilegedOnly>
+                <Privileged />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/:tab/:subTab"
             element={
               <PrivateRoute privilegedOnly>
                 <Privileged />

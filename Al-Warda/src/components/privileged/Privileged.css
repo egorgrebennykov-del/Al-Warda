@@ -1916,6 +1916,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  text-decoration: none;
 }
 
 .privileged__sub-tab:hover {
