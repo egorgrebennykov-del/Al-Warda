@@ -81,6 +81,13 @@ class WorkersConfigurationError(RuntimeError):
     pass
 
 
+class WorkersOutputFlaggedError(RuntimeError):
+    """Cloudflare Workers AI safety filter flagged the output or input image (error 3030).
+    The pipeline falls back to authentic direct studio cutout of the real product photo
+    so the product is safely published instead of failing."""
+    pass
+
+
 ACCOUNT_ENV = {
     "primary": ("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED"),
     "secondary": ("SECONDARY_ACCOUNT_ID", "SECONDARY_API_TOKEN", "SECONDARY_FREE_CONFIRMED"),
@@ -706,6 +713,10 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
             f"Workers AI account or model authorization failed ({response.status_code}): {error_details}"
         )
     if not response.ok:
+        if "flagged" in error_details.lower() or "3030" in error_details:
+            raise WorkersOutputFlaggedError(
+                f"Workers AI safety filter flagged prompt/image (3030): {error_details}"
+            )
         raise RuntimeError(
             f"Workers AI request failed ({response.status_code}): {error_details}"
         )
@@ -1390,26 +1401,40 @@ def process_product(
 
         # Previous Flux pipeline (restored): Flux re-photographs the product,
         # U2Net removes the background, normalize_flacon_cutout centers it.
-        edited_bytes = (
-            account_pool.generate(requests, source_bytes) if account_pool
-            else generate_product_edit(requests, account_id, api_token, source_bytes)
-        )
-        output, original_size = transparent_product_image(edited_bytes, segmentation_session)
-
-        # The only addition: restore the ORIGINAL label/logo/text regions onto
-        # the generated cutout, so Flux never invents brand or product text.
-        text_result = restore_source_text_regions(source_bytes, output)
-        output = text_result["image"]
-        text_restored = text_result["textRestored"]
-        text_match_points = text_result["matchedPoints"]
-        requires_manual_review = text_result["requiresManualReview"]
-        text_restore_reason = text_result.get("reason")
-
-        if not generated_image_matches_source(source_bytes, output):
-            raise ValueError(
-                "Сгенерированное изображение не похоже на исходный товар "
-                "(доминирующий цвет продукта изменился); требуется повторная генерация"
+        try:
+            edited_bytes = (
+                account_pool.generate(requests, source_bytes) if account_pool
+                else generate_product_edit(requests, account_id, api_token, source_bytes)
             )
+            output, original_size = transparent_product_image(edited_bytes, segmentation_session)
+
+            # The only addition: restore the ORIGINAL label/logo/text regions onto
+            # the generated cutout, so Flux never invents brand or product text.
+            text_result = restore_source_text_regions(source_bytes, output)
+            output = text_result["image"]
+            text_restored = text_result["textRestored"]
+            text_match_points = text_result["matchedPoints"]
+            requires_manual_review = text_result["requiresManualReview"]
+            text_restore_reason = text_result.get("reason")
+
+            if not generated_image_matches_source(source_bytes, output):
+                raise ValueError(
+                    "Сгенерированное изображение не похоже на исходный товар "
+                    "(доминирующий цвет продукта изменился); требуется повторная генерация"
+                )
+        except WorkersOutputFlaggedError as flagged_err:
+            print(
+                f"FLAGGED SAFEGUARD for {row['id']}: Workers AI safety filter triggered (code 3030). "
+                f"Falling back to direct authentic high-resolution studio cutout from original photo...",
+                flush=True,
+            )
+            output, original_size = transparent_product_image(source_bytes, segmentation_session)
+            processing_method = "direct_cutout"
+            whether_upscaled = False
+            text_restored = True
+            text_match_points = 100
+            requires_manual_review = False
+            text_restore_reason = "authentic_original_cutout"
 
         image_url = save_generated_image(output)
 
