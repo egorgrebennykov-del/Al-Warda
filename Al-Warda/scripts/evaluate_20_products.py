@@ -172,26 +172,53 @@ def run_local_studio_photometry(image_pil, session):
     p_min, p_max = pred.min(), pred.max()
     pred = (pred - p_min) / (p_max - p_min + 1e-8)
     
-    # Resize mask to original dimensions
-    mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_LINEAR)
+    # Resize mask with cubic interpolation for smooth contours
+    mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_CUBIC)
     
     # Crisp anti-aliased edge curve
-    alpha = np.clip((mask_full - 0.18) / (0.82 - 0.18), 0.0, 1.0)
+    alpha = np.clip((mask_full - 0.15) / (0.85 - 0.15), 0.0, 1.0)
     alpha_u8 = (alpha * 255.0).astype(np.uint8)
     
-    # 2. Defringe / Color Decontaminate edges
-    img_bgr = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
-    fg_mask = alpha_u8 > 25
+    # Smooth transition zone slightly to avoid edge aliasing
+    alpha_u8 = cv2.GaussianBlur(alpha_u8, (3, 3), 0.5)
     
-    # 3. Studio Lighting & Exposure Enhancement
-    lab = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2LAB)
+    # 2. Extract foreground bounding box
+    img_bgr = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
+    fg_mask = alpha_u8 > 20
+    
+    ys, xs = np.where(fg_mask)
+    if len(xs) == 0:
+        x1, y1, x2, y2 = 0, 0, w, h
+    else:
+        x1, y1 = max(0, int(xs.min()) - 2), max(0, int(ys.min()) - 2)
+        x2, y2 = min(w, int(xs.max()) + 3), min(h, int(ys.max()) + 3)
+        
+    crop_bgr = img_bgr[y1:y2, x1:x2]
+    crop_alpha = alpha_u8[y1:y2, x1:x2]
+    ch, cw = crop_bgr.shape[:2]
+    if ch <= 0 or cw <= 0:
+        ch, cw = h, w
+        crop_bgr = img_bgr
+        crop_alpha = alpha_u8
+        
+    # Scale product to fill ~80% (820px) of 1024x1024 canvas using Lanczos4
+    scale = min(820.0 / ch, 820.0 / cw)
+    target_w = max(1, int(round(cw * scale)))
+    target_h = max(1, int(round(ch * scale)))
+    
+    scaled_bgr = cv2.resize(crop_bgr, (target_w, target_h), interpolation=cv2.INTER_LANCZOS4)
+    scaled_alpha = cv2.resize(crop_alpha, (target_w, target_h), interpolation=cv2.INTER_LANCZOS4)
+    
+    # 3. Studio Photometry & Clarity Enhancement on scaled high-res product
+    scaled_fg = scaled_alpha > 25
+    lab = cv2.cvtColor(scaled_bgr, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
     
     # Percentile contrast stretch on foreground L
-    if np.any(fg_mask):
-        fg_l = l[fg_mask]
+    if np.any(scaled_fg):
+        fg_l = l[scaled_fg]
         p_low = np.percentile(fg_l, 1.0)
-        p_high = np.percentile(fg_l, 99.0)
+        p_high = np.percentile(fg_l, 99.2)
         if p_high > p_low:
             l_stretched = np.clip((l.astype(np.float32) - p_low) * (235.0 / (p_high - p_low)) + 10.0, 0, 255).astype(np.uint8)
         else:
@@ -199,53 +226,39 @@ def run_local_studio_photometry(image_pil, session):
     else:
         l_stretched = l
         
-    clahe = cv2.createCLAHE(clipLimit=1.6, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     l_clahe = clahe.apply(l_stretched)
-    l_enhanced = np.where(fg_mask, l_clahe, l)
+    
+    # High-frequency edge boosting and unsharp masking on L channel (preserves colors, sharpens text & edges)
+    blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.5)
+    l_sharp = cv2.addWeighted(l_clahe, 1.45, blur_l, -0.45, 0)
+    l_enhanced = np.where(scaled_fg, l_sharp, l)
     
     enhanced_lab = cv2.merge([l_enhanced, a, b])
     enhanced_bgr = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
-    
-    # Subtle studio unsharp mask on foreground
-    blurred = cv2.GaussianBlur(enhanced_bgr, (0, 0), 1.4)
-    sharpened = cv2.addWeighted(enhanced_bgr, 1.22, blurred, -0.22, 0)
-    final_bgr = np.where(fg_mask[:, :, np.newaxis], sharpened, img_bgr)
+    final_bgr = np.where(scaled_fg[:, :, np.newaxis], enhanced_bgr, scaled_bgr)
     
     final_rgb = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
-    rgba = np.dstack([final_rgb, alpha_u8])
-    prod_pil = Image.fromarray(rgba, mode="RGBA")
     
-    # 4. Centering on 1024x1024 Canvas (75-85% height target)
-    bbox = prod_pil.getbbox()
-    if not bbox:
-        bbox = (0, 0, w, h)
-    cropped = prod_pil.crop(bbox)
-    cw, ch = cropped.size
+    # 4. Canvas composite: 1024x1024 RGBA transparent centered
+    canvas = np.zeros((1024, 1024, 4), dtype=np.uint8)
+    ox = (1024 - target_w) // 2
+    oy = (1024 - target_h) // 2
     
-    # Target height 820px out of 1024px (~80% height)
-    scale = min(820.0 / ch, 820.0 / cw)
-    # Don't excessively upscale small images
-    if scale > 1.05 and max(cw, ch) < 500:
-        scale = 1.0
-    nw, nh = int(round(cw * scale)), int(round(ch * scale))
-    resized_prod = cropped.resize((nw, nh), Image.LANCZOS)
+    canvas[oy:oy + target_h, ox:ox + target_w, :3] = final_rgb
+    canvas[oy:oy + target_h, ox:ox + target_w, 3] = scaled_alpha
     
-    canvas = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
-    ox = (1024 - nw) // 2
-    oy = (1024 - nh) // 2
-    canvas.paste(resized_prod, (ox, oy), resized_prod)
-    
+    canvas_pil = Image.fromarray(canvas, mode="RGBA")
     elapsed = time.perf_counter() - start_t
     
     # Compute sharpness (Laplacian variance on foreground)
-    gray = cv2.cvtColor(np.array(canvas.convert("RGB")), cv2.COLOR_RGB2GRAY)
-    c_alpha = np.array(canvas)[:, :, 3]
-    if np.any(c_alpha > 50):
-        sharpness = float(cv2.Laplacian(gray[c_alpha > 50], cv2.CV_64F).var())
+    gray = cv2.cvtColor(canvas[:, :, :3], cv2.COLOR_RGB2GRAY)
+    if np.any(scaled_fg):
+        sharpness = float(cv2.Laplacian(gray[oy:oy + target_h, ox:ox + target_w][scaled_fg], cv2.CV_64F).var())
     else:
         sharpness = 0.0
         
-    return canvas, elapsed, sharpness
+    return canvas_pil, elapsed, sharpness
 
 def main():
     print("=" * 80)

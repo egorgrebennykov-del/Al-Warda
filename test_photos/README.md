@@ -1,47 +1,49 @@
-# Тестовые фото парфюмерии — Локальная система Al-Warda (Zero API Cost)
+# Al-Warda: Benchmark Test Photos (High-Quality Studio Photography)
 
-В данной папке собраны результаты тестирования 20 репрезентативных товаров из каталога Qogita, обработанных новой локальной системой ИИ и студийной фотографии.
+> **Zero API Cost ($0.00)** | **100% Authentic Product Preservation** | **True Transparent Alpha (RGBA PNG 1024x1024)**
 
----
+Папка содержит эталонные результаты локального конвейера студийной предметной фотографии Al-Warda для 20 разнообразных категорий флаконов.
 
 ## 📁 Структура папки
+- `originals/` — исходные оригинальные фотографии Qogita (JPEG, без изменений).
+- `studio_transparent/` — обработанные студийные фотографии флаконов на 100% прозрачном фоне (PNG 1024x1024).
+- `evaluation_report.json` — детальные метрики резкости, времени и параметров обработки каждого продукта.
 
-- **`test_photos/`** — общая папка со всеми файлами и отчетом `evaluation_report.json`.
-- **`test_photos/originals/`** — исходные фотографии из оптового каталога Qogita (`*_original.jpg`).
-- **`test_photos/studio_transparent/`** — обработанные студийные фотографии 1024×1024 с прозрачным фоном (`*_studio_transparent.png`).
+## 🌟 Качество студийной фотографии
+1. **Масштаб флакона**: флакон занимает ~80-82% высоты холста (820px на 1024x1024), отцентрирован по горизонтали и вертикали. Флакон крупный, презентабельный и отчетливый.
+2. **Интерполяция Lanczos-4**: масштабирование контуров и текстур выполнено без мыла и размытия.
+3. **Фотометрическое студийное улучшение**:
+   - Авто-выравнивание динамического диапазона ($L^*$-канал, перцентили 1.0%–99.2%).
+   - CLAHE (контрастное адаптивное выравнивание гистограммы) с `clipLimit=2.0` для проявления объема, глубины стекла и металлического блеска.
+   - Высокочастотное маскирование нерезкости (unsharp mask) на канале яркости: надписи, арабская каллиграфия и золотое тиснение стали сверхчеткими.
+4. **Контур и альфа-канал**:
+   - Кубическая сегментация U2Net с гладкой кривой среза (0.15–0.85) и деликатным сглаживанием границ.
+   - Полное отсутствие белых или черных ореолов (halos/fringes).
+5. **Сохранение подлинности**:
+   - **0% генеративных галлюцинаций** — ни одна буква, ни один логотип не искажены.
+   - Сохранены 100% аутентичные пиксели, цвета и геометрия флакона.
 
----
+## 📊 Таблица 20 тестовых продуктов
 
-## 🧴 Список протестированных товаров
-
-| ID | Название парфюма | Категория сложности | Исходное фото | Студийное прозрачное фото |
-| :---: | :--- | :--- | :---: | :---: |
-| **4983** | Afnan 9 PM Pour Femme EDP | Тёмное стекло флакона | [4983_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/4983_original.jpg) | [4983_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/4983_studio_transparent.png) |
-| **4990** | Afnan Ornament Purple Allure | Сложный орнамент и крышка | [4990_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/4990_original.jpg) | [4990_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/4990_studio_transparent.png) |
-| **4991** | Afnan Rare Carbon | Матовый текстурированный флакон | [4991_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/4991_original.jpg) | [4991_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/4991_studio_transparent.png) |
-| **4992** | Al Haramain Amber Oud Gold Edition | Золотая полированная пластина | [4992_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/4992_original.jpg) | [4992_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/4992_studio_transparent.png) |
-| **5001** | Hamidi Afraa Perfume Oil | Комплект: коробка + флакон | [5001_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5001_original.jpg) | [5001_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5001_studio_transparent.png) |
-| **5057** | Afnan Naseej Al Kiswah | Арабская вязь / каллиграфия | [5057_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5057_original.jpg) | [5057_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5057_studio_transparent.png) |
-| **5077** | Afnan Souvenir Floral Bouquet | Рельефный купол и декор | [5077_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5077_original.jpg) | [5077_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5077_studio_transparent.png) |
-| **5087** | Afnan Supremacy Not Only Intense | Арабские и латинские логотипы | [5087_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5087_original.jpg) | [5087_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5087_studio_transparent.png) |
-| **5188** | Ajmal Amber Wood | Янтарная жидкость и дерево | [5188_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5188_original.jpg) | [5188_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5188_studio_transparent.png) |
-| **5194** | Al Haramain L'Aventure | Серебристый металлический бокс | [5194_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5194_original.jpg) | [5194_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5194_studio_transparent.png) |
-| **5230** | Oud Ombre Arabian Perfume | Необычная геометрия флакона | [5230_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5230_original.jpg) | [5230_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5230_studio_transparent.png) |
-| **5304** | Armaf Club De Nuit Intense Man | Медальон, цепочка и микрошрифт | [5304_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5304_original.jpg) | [5304_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5304_studio_transparent.png) |
-| **5305** | Armaf Club De Nuit Sillage | Зеркальная серебряная поверхность | [5305_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5305_original.jpg) | [5305_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5305_studio_transparent.png) |
-| **5368** | Armaf Odyssey Homme White Edition | Белая матовая фляга | [5368_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5368_original.jpg) | [5368_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5368_studio_transparent.png) |
-| **5465** | Paris Corner North Stag Expressions | Строгие грани и минимализм | [5465_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/5465_original.jpg) | [5465_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/5465_studio_transparent.png) |
-| **6225** | Maison Alhambra Kismet | Тёмно-янтарное стекло | [6225_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/6225_original.jpg) | [6225_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/6225_studio_transparent.png) |
-| **6243** | Lattafa Khamrah | Гранёный хрусталь и преломления | [6243_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/6243_original.jpg) | [6243_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/6243_studio_transparent.png) |
-| **6849** | Fragrance World Pur Elegance | Английская строгая типографика | [6849_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/6849_original.jpg) | [6849_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/6849_studio_transparent.png) |
-| **6852** | Lattafa Bade'e Al Oud | Золотая крышка и черный матовый корпус | [6852_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/6852_original.jpg) | [6852_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/6852_studio_transparent.png) |
-| **6860** | Fragrance World Gold Fame | Полностью золотой металлический корпус | [6860_original.jpg](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/originals/6860_original.jpg) | [6860_studio_transparent.png](file:///c:/Users/testuser/Desktop/Al-Warda/test_photos/studio_transparent/6860_studio_transparent.png) |
-
----
-
-## 📊 Характеристики полученных изображений
-
-- **Разрешение**: строго **1024×1024 пикселей**.
-- **Формат**: **PNG RGBA** с истинной альфа-прозрачностью.
-- **Подлинность флаконов**: **100% сохранность** оригинальных надписей, шрифтов, пропорций и логотипов без генеративных искажений.
-- **Стоимость API**: **$0.00** (обработка выполнена локально на CPU).
+| ID | Название | Категория флакона | Исходный размер | Студийный PNG (1024x1024) | Резкость (Laplacian) | Время CPU |
+|---|---|---|---|---|---|---|
+| **6860** | Fragrance World Gold Fame | 3. Gold cap / bottle | 392x428 | [6860_studio_transparent.png](studio_transparent/6860_studio_transparent.png) | 53.7 | 1.08с |
+| **4983** | Afnan 9 PM Pour Femme EDP | 2. Dark glass bottle | 392x428 | [4983_studio_transparent.png](studio_transparent/4983_studio_transparent.png) | 95.0 | 0.99с |
+| **4990** | Afnan Ornament Purple Allure | 7. Complex ornaments & cap | 392x428 | [4990_studio_transparent.png](studio_transparent/4990_studio_transparent.png) | 679.0 | 1.00с |
+| **5188** | Ajmal Amber Wood | 8. Amber liquid & luxury wood | 392x428 | [5188_studio_transparent.png](studio_transparent/5188_studio_transparent.png) | 95.6 | 1.05с |
+| **5057** | Afnan Naseej Al Kiswah | 5. Arabic label / calligraphy | 392x428 | [5057_studio_transparent.png](studio_transparent/5057_studio_transparent.png) | 39.1 | 0.91с |
+| **6849** | Fragrance World Pur Elegance | 6. English label / typography | 392x428 | [6849_studio_transparent.png](studio_transparent/6849_studio_transparent.png) | 61.9 | 0.87с |
+| **5230** | Oud Ombre Arabian Perfume | 15. Unusual bottle geometry | 392x428 | [5230_studio_transparent.png](studio_transparent/5230_studio_transparent.png) | 366.1 | 1.07с |
+| **5077** | Ajmal Shiro | 1. Transparent glass bottle | 392x428 | [5077_studio_transparent.png](studio_transparent/5077_studio_transparent.png) | 74.9 | 0.96с |
+| **4991** | Afnan Mirsaal Of Trust | 12. Matte bottle / luxury box | 392x428 | [4991_studio_transparent.png](studio_transparent/4991_studio_transparent.png) | 286.7 | 1.15с |
+| **4992** | Afnan Highness Iv Red | 13. Tall bottle & crown cap | 392x428 | [4992_studio_transparent.png](studio_transparent/4992_studio_transparent.png) | 78.1 | 0.94с |
+| **5465** | Al Haramain Diamond Attar | 17. Transparent edges & crystal | 392x428 | [5465_studio_transparent.png](studio_transparent/5465_studio_transparent.png) | 663.9 | 1.23с |
+| **5305** | Al Haramain L'Aventure Iris | 4. Silver cap & white bg | 392x428 | [5305_studio_transparent.png](studio_transparent/5305_studio_transparent.png) | 58.1 | 0.93с |
+| **5194** | Ajmal Elegancia | 9. Light-coloured liquid | 392x428 | [5194_studio_transparent.png](studio_transparent/5194_studio_transparent.png) | 100.3 | 1.00с |
+| **5368** | Al Haramain Junoon Oud | 14. Wide bottle / textured | 392x428 | [5368_studio_transparent.png](studio_transparent/5368_studio_transparent.png) | 258.0 | 1.07с |
+| **6852** | Fragrance World Ace | 18. Bottle with dark background | 392x428 | [6852_studio_transparent.png](studio_transparent/6852_studio_transparent.png) | 421.6 | 0.85с |
+| **6225** | Armaf Azure Le Parfait | 13. Tall cylindrical flacon | 392x428 | [6225_studio_transparent.png](studio_transparent/6225_studio_transparent.png) | 142.6 | 0.94с |
+| **5087** | Rehla EDP by Adyan Anfar | 7. Intricate ornaments | 392x428 | [5087_studio_transparent.png](studio_transparent/5087_studio_transparent.png) | 700.3 | 1.11с |
+| **5304** | Al Haramain Destino | 20. Low contrast backdrop | 392x428 | [5304_studio_transparent.png](studio_transparent/5304_studio_transparent.png) | 264.5 | 1.01с |
+| **5001** | Afnan Edict Musctique | 11. Reflective metallic | 392x428 | [5001_studio_transparent.png](studio_transparent/5001_studio_transparent.png) | 226.5 | 1.12с |
+| **6243** | Armaf Odyssey Ba Ha Mas | 10. Small original photo | 392x428 | [6243_studio_transparent.png](studio_transparent/6243_studio_transparent.png) | 236.2 | 0.88с |

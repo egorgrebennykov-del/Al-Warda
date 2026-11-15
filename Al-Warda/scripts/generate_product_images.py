@@ -328,9 +328,10 @@ def run_onnx_u2net_segmentation(source, session):
     pred = (pred - p_min) / (p_max - p_min + 1e-8)
 
     # Smooth & crisp contrast curve
-    mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_LINEAR)
-    alpha = np.clip((mask_full - 0.18) / (0.82 - 0.18), 0.0, 1.0)
+    mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_CUBIC)
+    alpha = np.clip((mask_full - 0.15) / (0.85 - 0.15), 0.0, 1.0)
     alpha_u8 = (alpha * 255.0).astype(np.uint8)
+    alpha_u8 = cv2.GaussianBlur(alpha_u8, (3, 3), 0.5)
 
     cutout = source.convert("RGBA")
     cutout.putalpha(Image.fromarray(alpha_u8, mode="L"))
@@ -1284,7 +1285,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
                 # Percentile contrast stretch on foreground L
                 fg_l = l[fg_mask]
                 p_low = np.percentile(fg_l, 1.0)
-                p_high = np.percentile(fg_l, 99.0)
+                p_high = np.percentile(fg_l, 99.2)
                 if p_high > p_low:
                     l_stretched = np.clip(
                         (l.astype(np.float32) - p_low) * (235.0 / (p_high - p_low)) + 10.0,
@@ -1294,16 +1295,17 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
                 else:
                     l_stretched = l
 
-                clahe = cv2.createCLAHE(clipLimit=1.6, tileGridSize=(8, 8))
+                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
                 l_clahe = clahe.apply(l_stretched)
-                l_enhanced = np.where(fg_mask, l_clahe, l)
+
+                # High-frequency edge boosting and unsharp masking on L channel
+                blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.5)
+                l_sharp = cv2.addWeighted(l_clahe, 1.45, blur_l, -0.45, 0)
+                l_enhanced = np.where(fg_mask, l_sharp, l)
 
                 enhanced_lab = cv2.merge([l_enhanced, a, b])
                 enhanced_bgr = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
-
-                blurred = cv2.GaussianBlur(enhanced_bgr, (0, 0), 1.4)
-                sharpened = cv2.addWeighted(enhanced_bgr, 1.22, blurred, -0.22, 0)
-                final_bgr = np.where(fg_mask[:, :, np.newaxis], sharpened, bgr)
+                final_bgr = np.where(fg_mask[:, :, np.newaxis], enhanced_bgr, bgr)
                 final_rgb = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
 
                 out_arr = np.dstack((final_rgb, alpha))
