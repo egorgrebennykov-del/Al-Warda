@@ -886,5 +886,17 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertTrue(result["reason"].startswith("error:"))
         self.assertEqual(result["image"], generated_bytes)
 
+    def test_preserve_original_product_preserves_dimensions_and_alpha(self):
+        source = Image.new("RGB", (300, 300), (200, 50, 50))
+        source_data = image_bytes(source)
+        fake_cutout = Image.new("RGBA", (300, 300), (200, 50, 50, 255))
+        with patch.object(queue, "segment_source", return_value=fake_cutout):
+            out_bytes, canvas_sz, orig_sz = queue.preserve_original_product(source_data, None)
+        self.assertEqual(canvas_sz, (1024, 1024))
+        self.assertEqual(orig_sz, (300, 300))
+        with Image.open(io.BytesIO(out_bytes)) as im:
+            self.assertEqual(im.size, (1024, 1024))
+            self.assertEqual(im.mode, "RGBA")
+
 if __name__ == "__main__":
     unittest.main()

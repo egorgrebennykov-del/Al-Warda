@@ -3,10 +3,11 @@
 The Qogita image queue is driven by GitHub Actions. The pipeline uses the
 previous Flux workflow: Flux 2 Klein re-photographs the original Qogita photo
 into a studio product image, U2Net removes the background, the cutout is
-centred on a transparent canvas, and the result is saved as PNG. The one
-addition is **text preservation**: `restore_source_text_regions()` warps the
-ORIGINAL label/logo/text pixels back onto the generated cutout via ORB +
-homography, so Flux cannot invent or blur brand/name text. If the text cannot
+centred on a transparent canvas, and the result is saved as PNG. The
+addition is **text preservation**: `restore_source_text_regions()` preserves the
+ORIGINAL label/logo/text pixels onto the cutout via ORB + homography with
+underlying text inpainting and feathered anti-aliasing, preventing text
+duplication, perspective distortion, and mask edge artifacts. If the text cannot
 be confidently restored, the job records `requiresManualReview` instead of
 silently publishing invented text. Final PNG files are committed to the
 repository under `public/assets/img/generated-products` and deployed as

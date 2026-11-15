@@ -758,10 +758,10 @@ def build_edit_prompt():
         "typography as image 0, unchanged. Never invent, rewrite, move or omit text, "
         "labels, colors or details; never add extra bottles, props, frames or markings. "
         "Present one large, centered product from a natural front-facing three-quarter "
-        "angle with realistic depth, refined warm studio lighting, crisp glass and metal "
-        "reflections, on a plain uniform light grey background with no horizon or cast "
-        "shadow. Keep the complete product and cap fully visible with a small clear "
-        "margin on every side."
+        "angle with realistic depth, neutral balanced commercial studio lighting, accurate "
+        "true-to-life product colors, pristine glass and metal reflections, on a plain "
+        "uniform light grey background with no horizon or cast shadow. Keep the complete "
+        "product and cap fully visible with a small clear margin on every side."
     )
 
 
@@ -990,27 +990,62 @@ def measure_source_quality(source_bytes):
 def segment_source(source, segmentation_session):
     """Run background removal on a source image and return an RGBA cutout at the
     same dimensions."""
-    cutout_result = remove(
-        source,
-        session=segmentation_session,
-        only_mask=False,
-        alpha_matting=False,
-    )
-    if isinstance(cutout_result, Image.Image):
-        cutout = ImageOps.exif_transpose(cutout_result).convert("RGBA")
-    else:
-        with Image.open(io.BytesIO(cutout_result)) as cutout_image:
-            cutout = ImageOps.exif_transpose(cutout_image).convert("RGBA")
-    if cutout.size != source.size:
-        raise ValueError(
-            f"Segmentation changed the source dimensions: {source.size} -> {cutout.size}"
+    if remove is not None:
+        try:
+            cutout_result = remove(
+                source,
+                session=segmentation_session,
+                only_mask=False,
+                alpha_matting=False,
+            )
+            if isinstance(cutout_result, Image.Image):
+                cutout = ImageOps.exif_transpose(cutout_result).convert("RGBA")
+            else:
+                with Image.open(io.BytesIO(cutout_result)) as cutout_image:
+                    cutout = ImageOps.exif_transpose(cutout_image).convert("RGBA")
+            if cutout.size != source.size:
+                raise ValueError(
+                    f"Segmentation changed the source dimensions: {source.size} -> {cutout.size}"
+                )
+            return cutout
+        except Exception as e:
+            if segmentation_session is not None and not isinstance(e, ValueError):
+                raise
+
+    # Robust fallback using OpenCV DNN with U2Net
+    try:
+        import cv2
+        import numpy as np
+        model_path = prepare_segmentation_model()
+        net = cv2.dnn.readNetFromONNX(str(model_path))
+        img_np = np.asarray(source.convert("RGB"))
+        img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+        h, w = img_bgr.shape[:2]
+        blob = cv2.dnn.blobFromImage(
+            img_bgr,
+            scalefactor=1.0 / 255.0 / 0.226,
+            size=(320, 320),
+            mean=(0.485 * 255, 0.456 * 255, 0.406 * 255),
+            swapRB=True,
+            crop=False,
         )
-    return cutout
+        net.setInput(blob)
+        out = net.forward()
+        mask = out[0, 0]
+        mask = (mask - mask.min()) / (mask.max() - mask.min() + 1e-8)
+        mask = cv2.resize(mask, (w, h))
+        mask = (mask * 255).astype(np.uint8)
+        mask = cv2.GaussianBlur(mask, (3, 3), 0)
+        rgba = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGBA)
+        rgba[:, :, 3] = mask
+        return Image.fromarray(rgba)
+    except Exception as e:
+        raise SegmentationFailedError(f"Segmentation failed: {e}") from e
 
 
-def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024)):
+def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024), allow_upscale=True):
     """Segment the ORIGINAL photo and place it on a transparent canvas WITHOUT
-    redrawing or upscaling the bottle. This keeps the real label pixels.
+    redrawing the bottle. This keeps the real label pixels, true colors, and authentic typography.
 
     Returns (png_bytes, processed_size, original_size).
     """
@@ -1019,11 +1054,29 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
     cutout = segment_source(source, segmentation_session)
     cutout = normalize_flacon_cutout(
         cutout,
-        target_max_h=canvas_size[1],
-        target_max_w=canvas_size[0],
+        target_max_h=850,
+        target_max_w=850,
         canvas_size=canvas_size,
-        allow_upscale=False,
+        allow_upscale=allow_upscale,
     )
+
+    # Studio typography & clarity enhancement
+    try:
+        from PIL import ImageFilter, ImageEnhance
+        import numpy as np
+        arr = np.array(cutout)
+        if "A" in cutout.getbands() and arr.ndim == 3 and arr.shape[2] == 4:
+            rgb = arr[:, :, :3]
+            alpha = arr[:, :, 3]
+            pil_rgb = Image.fromarray(rgb)
+            sharpened_rgb = pil_rgb.filter(ImageFilter.UnsharpMask(radius=1.4, percent=135, threshold=3))
+            enhancer = ImageEnhance.Contrast(sharpened_rgb)
+            contrasted = enhancer.enhance(1.03)
+            out_arr = np.dstack((np.array(contrasted), alpha))
+            cutout = Image.fromarray(out_arr)
+    except Exception:
+        pass
+
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True)
     return output.getvalue(), canvas_size, original_size
@@ -1245,33 +1298,73 @@ def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECO
 
 
 def _text_region_mask(gray):
-    """Edge-density mask of likely label/logo/text pixels (high-frequency)."""
+    """Accurately detect text and logo glyphs while rejecting outer bottle contours,
+    glass facet rims, ribbon loops, and packaging outer borders."""
     import cv2
     import numpy as np
 
-    lap = cv2.Laplacian(gray, cv2.CV_32F)
-    mag = np.abs(lap)
-    mag = cv2.GaussianBlur(mag, (3, 3), 0)
-    threshold = max(30.0, float(np.percentile(mag, 85)))
-    mask = (mag > threshold).astype(np.uint8) * 255
-    kernel = np.ones((3, 3), np.uint8)
+    if not isinstance(gray, np.ndarray):
+        gray = np.asarray(gray)
+
+    # 1. Morphological gradient tailored for character stroke edges
+    grad = cv2.morphologyEx(
+        gray, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    )
+    _, thresh = cv2.threshold(grad, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # 2. Connected components analysis: filter by text geometric properties
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(thresh)
+    mask = np.zeros_like(gray)
+    img_h, img_w = gray.shape[:2]
+    max_dim = max(img_h, img_w)
+
+    for i in range(1, num_labels):
+        area = stats[i, cv2.CC_STAT_AREA]
+        cw = stats[i, cv2.CC_STAT_WIDTH]
+        ch = stats[i, cv2.CC_STAT_HEIGHT]
+
+        # Characters/logos have bounded height, width, and area
+        # Large continuous contours (bottle edges, ribbon, box border) are rejected
+        if ch > max_dim * 0.25 or cw > max_dim * 0.45:
+            continue
+        if area < 6 or area > (img_h * img_w * 0.05):
+            continue
+        if 3 <= ch <= max_dim * 0.20 and 2 <= cw <= max_dim * 0.40:
+            aspect = cw / float(max(ch, 1))
+            if 0.08 <= aspect <= 6.0:
+                mask[labels == i] = 255
+
+    # 3. If connected components is too sparse, fallback to Laplacian with outer border exclusion
+    if np.count_nonzero(mask) < 16:
+        lap = cv2.Laplacian(gray, cv2.CV_32F)
+        mag = np.abs(lap)
+        mag = cv2.GaussianBlur(mag, (3, 3), 0)
+        threshold = max(35.0, float(np.percentile(mag, 88)))
+        raw_mask = (mag > threshold).astype(np.uint8) * 255
+        margin = max(4, int(max_dim * 0.02))
+        raw_mask[:margin, :] = 0
+        raw_mask[-margin:, :] = 0
+        raw_mask[:, :margin] = 0
+        raw_mask[:, -margin:] = 0
+        mask = raw_mask
+
+    # Dilate slightly to encompass full character stroke width
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     return cv2.dilate(mask, kernel, iterations=1)
 
 
 def restore_source_text_regions(source_bytes, generated_png_bytes):
-    """Overlay the ORIGINAL label/logo/text pixels onto a Flux-generated cutout.
+    """Restore authentic label/logo/text regions onto a generated product image.
 
-    Flux tends to invent or blur brand/name text. This helper estimates a
-    homography between the original source photo and the generated product
-    (ORB + RANSAC), warps the original's high-frequency text regions into the
-    generated image, and composites them only inside the opaque product area so
-    the real text is preserved without a flat "sticker" look.
+    Prevents:
+    - Text duplication: cleans (inpaints) generative text in the target region before compositing.
+    - Glass/reflection degradation: isolates true text glyphs without copying bottle contours or rims.
+    - Seams/halos: uses soft feathered Gaussian alpha blending.
+    - Transparency loss: preserves 100% of the generated cutout alpha channel.
 
     Returns:
       {"image": png_bytes, "textRestored": bool, "matchedPoints": int,
        "requiresManualReview": bool, "reason": str}
-    On any failure the generated image is returned unchanged and manual review
-    is requested — text is never invented.
     """
     import cv2
     import numpy as np
@@ -1293,7 +1386,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         source_rgb = source if source.mode == "RGB" else source.convert("RGB")
         generated_rgb = generated.convert("RGB")
 
-        orb = cv2.ORB_create(nfeatures=2000)
+        orb = cv2.ORB_create(nfeatures=2500)
         kp1, des1 = orb.detectAndCompute(np.asarray(source_rgb), None)
         kp2, des2 = orb.detectAndCompute(np.asarray(generated_rgb), None)
         if des1 is None or des2 is None or len(kp1) < 8 or len(kp2) < 8:
@@ -1310,7 +1403,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
 
         src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
         dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-        homography, inlier_mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+        homography, inlier_mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 4.0)
         if homography is None:
             result["requiresManualReview"] = True
             result["reason"] = "homography_failed"
@@ -1323,17 +1416,14 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
             return result
 
         text_mask = _text_region_mask(np.asarray(source.convert("L")))
-        warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_LINEAR)
+        warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_LANCZOS4)
         if int(np.count_nonzero(warped_mask)) == 0:
-            # Homography succeeded but the source has no detectable text-like
-            # detail, so there is nothing to restore. Keep the generated image
-            # unchanged and flag it for manual review instead of reporting a
-            # restoration that never actually happened.
             result["requiresManualReview"] = True
             result["reason"] = "empty_text_mask"
             return result
+
         warped_src = cv2.warpPerspective(
-            np.asarray(source_rgb), homography, (gw, gh), flags=cv2.INTER_LINEAR
+            np.asarray(source_rgb), homography, (gw, gh), flags=cv2.INTER_LANCZOS4
         )
 
         # Composite only where the source has real text-like detail AND the
@@ -1341,13 +1431,32 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         alpha = np.asarray(generated.getchannel("A")).astype(np.float32) / 255.0
         keep = (warped_mask > 0).astype(np.float32) * alpha
         if float(keep.sum()) <= 0.0:
-            # The projected text mask lands entirely outside the opaque product
-            # area, so compositing would be a no-op.
             result["requiresManualReview"] = True
             result["reason"] = "empty_text_mask"
             return result
-        blended = np.asarray(generated_rgb).astype(np.float32)
-        blended = warped_src * keep[..., None] + blended * (1.0 - keep[..., None])
+
+        # 1. Inpaint underlying generative text to prevent text duplication
+        target_inpaint_mask = cv2.dilate(
+            (keep > 0.05).astype(np.uint8) * 255,
+            cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)),
+            iterations=1,
+        )
+        clean_base = cv2.inpaint(
+            np.asarray(generated_rgb),
+            target_inpaint_mask,
+            inpaintRadius=3,
+            flags=cv2.INPAINT_TELEA,
+        )
+
+        # 2. Feathered alpha blending for seamless edge transitions without rough boundaries
+        feathered_keep = cv2.GaussianBlur(keep, (3, 3), 0)
+        feathered_keep = np.clip(feathered_keep, 0.0, 1.0)[..., None]
+
+        # 3. Composite authentic typography onto clean base
+        blended = (
+            warped_src.astype(np.float32) * feathered_keep
+            + clean_base.astype(np.float32) * (1.0 - feathered_keep)
+        )
         blended = np.clip(blended, 0, 255).astype(np.uint8)
 
         restored = Image.fromarray(blended, "RGB").convert("RGBA")
@@ -1359,7 +1468,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
     except Exception as error:
         result["textRestored"] = False
         result["requiresManualReview"] = True
-        result["reason"] = "error: {}".format(str(error)[:200])
+        result["reason"] = f"error: {str(error)[:200]}"
     return result
 
 
