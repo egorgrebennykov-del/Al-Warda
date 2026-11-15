@@ -968,3 +968,36 @@
 .product-image-queue__start--manual:hover:not(:disabled) {
   background: #9a7327;
 }
+
+.product-image-queue__pipeline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  color: #8f651c;
+  font-weight: 600;
+}
+
+.product-image-queue__pipeline-badge i {
+  font-size: 1.15rem;
+  color: #b58934;
+}
+
+.product-image-queue__gallery-btn--compare {
+  background: #fdf8ef;
+  border-color: #c9a463;
+  color: #724c16;
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+.product-image-queue__gallery-btn--compare:hover {
+  background: #f7ebce;
+  border-color: #b38b45;
+  color: #4b3009;
+}

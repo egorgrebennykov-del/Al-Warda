@@ -33,6 +33,11 @@ test-results/
 .DS_Store
 Thumbs.db
 
+# Python virtual environments
+.venv/
+venv/
+.pilot-venv/
+
 # Python cache
 __pycache__/
 *.py[cod]

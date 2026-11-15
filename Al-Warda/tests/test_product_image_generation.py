@@ -11,6 +11,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+if not hasattr(unittest.mock._Call, "args"):
+    unittest.mock._Call.args = property(lambda self: self[0])
+    unittest.mock._Call.kwargs = property(lambda self: self[1])
+
 from PIL import Image
 import numpy as np
 import cv2

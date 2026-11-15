@@ -25,6 +25,14 @@ Al-Warda/.env.*
 logs/
 *.log
 
+# Python virtual environments
+.venv/
+venv/
+.pilot-venv/
+Al-Warda/.pilot-venv/
+Al-Warda/.venv/
+Al-Warda/venv/
+
 # Python cache
 __pycache__/
 *.py[cod]

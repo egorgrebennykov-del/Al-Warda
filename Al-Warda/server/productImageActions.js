@@ -98,7 +98,9 @@ export async function handleProductImageActions(request, env) {
       if (!Number.isSafeInteger(count) || count < 1 || count > 100000) {
         return json({ error: "Image count must be an integer from 1 to 100000" }, 400);
       }
-      if (!["auto", "primary", "secondary", "third", "fourth", "fifth"].includes(body.account)) return json({ error: "Invalid Cloudflare account" }, 400);
+      const allowedAccounts = ["local", "auto", "primary", "secondary", "third", "fourth", "fifth"];
+      const account = body.account || "local";
+      if (!allowedAccounts.includes(account)) return json({ error: "Invalid Cloudflare account" }, 400);
       if (typeof body.regenerateCompleted !== "boolean") return json({ error: "Invalid regeneration option" }, 400);
       if ((await activeRuns(env)).length) return json({ error: "An image generation run is already active" }, 409);
       if ((await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
@@ -111,7 +113,7 @@ export async function handleProductImageActions(request, env) {
       }
       await github(env, `/actions/workflows/${WORKFLOW}/dispatches`, {
         method: "POST",
-        body: JSON.stringify({ ref: "main", inputs: { max_images: String(count), cloudflare_account: body.account, regenerate_completed: String(body.regenerateCompleted) } }),
+        body: JSON.stringify({ ref: "main", inputs: { max_images: String(count), cloudflare_account: account, regenerate_completed: String(body.regenerateCompleted) } }),
       });
       return json({ message: "Workflow dispatch accepted", globalHalted: false }, 202);
     }
