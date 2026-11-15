@@ -8,8 +8,6 @@
     "command": "npm install && npm run build",
   },
   "vars": {
-    "SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
-    "VITE_SUPABASE_URL": "https://mfvenfrmlkxqgvdtedet.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB",
     "NHOST_GRAPHQL_URL": "https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1",
   },

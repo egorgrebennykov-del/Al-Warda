@@ -18,9 +18,7 @@ dotenv.config({ path: path.resolve(rootDir, ".env") });
 const KEYS = [
   "GEMINI_API_KEY",
   "VITE_GEMINI_API_KEY",
-  "SUPABASE_URL",
-  "VITE_SUPABASE_URL",
-  "SUPABASE_SECRET_KEY",
+  "SUPABASE_ANON_KEY",
   "VITE_SUPABASE_ANON_KEY",
   "RESEND_API_KEY",
   "SUPPORT_EMAIL",

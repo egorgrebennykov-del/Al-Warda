@@ -29,7 +29,7 @@ function resolveCardImage(img, gtin, rawImage) {
 }
 
 export function hasCompletedGeneratedImage(product) {
-  return hasCompletedGeneratedImageImpl(product, SUPABASE_URL);
+  return hasCompletedGeneratedImageImpl(product);
 }
 
 export function slugifyPerfumeName(name) {
