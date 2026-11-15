@@ -32,6 +32,8 @@ export function hasCompletedGeneratedImage(product) {
   return hasCompletedGeneratedImageImpl(product);
 }
 
+export { isGeneratedProductImage };
+
 export function slugifyPerfumeName(name) {
   if (!name) return "perfume";
   return String(name)

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
-import { getPerfumeUrl } from "../../../utils/perfumes";
+import { getPerfumeUrl, isGeneratedProductImage } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductsManager.css";
 
@@ -457,7 +457,7 @@ export default function ProductsManager({ language = "ru" }) {
         <>
           <div className="products-manager__grid">
             {displayedProducts.map((p) => {
-              const imgUrl = p.image || p.rawImage;
+              const imgUrl = isGeneratedProductImage(p.image) ? p.image : "";
               const productUrl = p.url || getPerfumeUrl(p);
               const isDeleting = deletingId === p.id;
               return (

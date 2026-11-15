@@ -1,4 +1,5 @@
 import { supabaseFetch } from "./hasuraProxy.js";
+import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 
 class MissingServiceKeyError extends Error {
   constructor() {
@@ -1118,24 +1119,19 @@ export async function saveManualProductItem(request, env) {
     }
 
     // 2. Resolve image
-    // Do not accept uploaded or newly supplied original photos on this endpoint.
-    // Manual photo upload was removed from the UI; only the already stored
-    // product image (rawImage or existingRow.image) may remain on the product.
-    const existingImage =
-      (typeof existingInfo.rawImage === "string"
-        ? existingInfo.rawImage
+    // Original/raw supplier photos must NEVER be set or used as the product image.
+    // Only genuine completed generated images are preserved.
+    const genCandidate =
+      (typeof existingInfo.imageGeneration?.imageUrl === "string" &&
+      isGeneratedProductImage(existingInfo.imageGeneration.imageUrl.trim())
+        ? existingInfo.imageGeneration.imageUrl.trim()
         : "") ||
-      (typeof existingRow.image === "string" ? existingRow.image : "");
+      (typeof existingRow.image === "string" &&
+      isGeneratedProductImage(existingRow.image.trim())
+        ? existingRow.image.trim()
+        : "");
 
-    // If base64 imageData is sent, it may contain an original photo that must
-    // not be stored or used as the product image. Ignore it deliberately.
-    const base64Data =
-      typeof body.imageData === "string" &&
-      body.imageData.startsWith("data:image/")
-        ? body.imageData
-        : null;
-
-    let finalImageUrl = existingImage;
+    let finalImageUrl = genCandidate;
 
     if (body.image === "") {
       finalImageUrl = "";
@@ -1152,7 +1148,7 @@ export async function saveManualProductItem(request, env) {
       }
     }
 
-    if (base64Data) {
+    if (body.imageData) {
       console.warn(
         "Ignoring base64 imageData in manual-save request; original photo upload is disabled",
       );
@@ -1431,7 +1427,10 @@ export async function getAllAdminProducts(request, env) {
           brand: row.brand || "Al-Warda",
           price: Number(row.price) || (info.price ? Number(info.price) : 29.99),
           currency: row.currency || "EUR",
-          image: row.image || gen.imageUrl || info.rawImage || null,
+          image:
+            (isGeneratedProductImage(row.image) ? row.image : "") ||
+            (isGeneratedProductImage(gen.imageUrl) ? gen.imageUrl : "") ||
+            null,
           rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
           category: info.category || "Восточные",
           categorySlug: info.categorySlug || "oud",

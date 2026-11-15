@@ -4,6 +4,7 @@ import {
   generateRichPerfumeDescriptions,
   stripVolumeFromName,
   extractVolumeFromName,
+  isGeneratedProductImage,
 } from "../../../utils/perfumes";
 import "./ProductManualConfigModal.css";
 
@@ -96,11 +97,10 @@ export default function ProductManualConfigModal({
       descriptionRu: enriched.descriptionRu || enriched.description || "",
       descriptionEn: enriched.descriptionEn || "",
       image:
-        item?.image ||
-        item?.rawImage ||
-        item?.info?.imageGeneration?.imageUrl ||
-        item?.info?.rawImage ||
-        "",
+        (isGeneratedProductImage(item?.image) ? item?.image : "") ||
+        (isGeneratedProductImage(item?.info?.imageGeneration?.imageUrl)
+          ? item?.info?.imageGeneration?.imageUrl
+          : ""),
     };
   });
 
@@ -454,25 +454,6 @@ export default function ProductManualConfigModal({
                 <i className="ri-image-2-line" />
                 {isRussian ? "1. Фотография флакона" : "1. Flacon Visual"}
               </h3>
-              {(item?.rawImage || item?.info?.rawImage) && (
-                <button
-                  type="button"
-                  className="product-manual-modal__qogita-btn"
-                  onClick={() =>
-                    setImage(item?.rawImage || item?.info?.rawImage)
-                  }
-                  title={
-                    isRussian
-                      ? "Использовать исходное фото Qogita"
-                      : "Use original Qogita image"
-                  }
-                >
-                  <i className="ri-image-line" />
-                  {isRussian
-                    ? "Взять фото поставщика (Qogita)"
-                    : "Use Qogita Photo"}
-                </button>
-              )}
             </div>
 
             <div className="product-manual-modal__image-layout">

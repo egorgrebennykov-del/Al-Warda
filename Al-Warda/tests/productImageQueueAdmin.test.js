@@ -348,12 +348,14 @@ describe("product image queue admin API", () => {
             brand: "Lattafa",
             price: 28.5,
             currency: "EUR",
-            image: "https://img.qogita.com/yara-raw.jpg",
+            image:
+              "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
             info: {
               rawImage: "https://img.qogita.com/yara-raw.jpg",
               imageGeneration: {
-                status: "failed",
-                error: "Flagged by AI safety filter",
+                status: "completed",
+                imageUrl:
+                  "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
               },
             },
           },
@@ -405,11 +407,11 @@ describe("product image queue admin API", () => {
     assert.equal(patchedBody.info.imageGeneration.failed, false);
     assert.strictEqual(
       patchedBody.info.imageGeneration.imageUrl,
-      "https://img.qogita.com/yara-raw.jpg",
+      "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
     );
     assert.strictEqual(
       patchedBody.image,
-      "https://img.qogita.com/yara-raw.jpg",
+      "/assets/img/generated-products/d7d505ab1c19170d00a33322cf477015e6f9a4f61d01b36706becef35a7049f9.png",
     );
 
     // Verify hasCompletedGeneratedImage recognizes the manually configured product

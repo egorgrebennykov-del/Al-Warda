@@ -94,8 +94,7 @@ function GalleryImageItem({
   onRequeue,
   onManualConfig,
 }) {
-  const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "raw" | "failed"
-  const rawCandidate = image.rawImage || image.image;
+  const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "failed"
 
   const [lastImageUrl, setLastImageUrl] = useState(image.imageUrl);
   if (image.imageUrl !== lastImageUrl) {
@@ -103,19 +102,11 @@ function GalleryImageItem({
     setImgStatus("initial");
   }
 
-  const currentSrc = imgStatus === "raw" ? rawCandidate : image.imageUrl;
+  const currentSrc = image.imageUrl;
   const productUrl = image.url || getPerfumeUrl(image);
 
   const handleImageError = () => {
-    if (
-      imgStatus === "initial" &&
-      rawCandidate &&
-      rawCandidate !== image.imageUrl
-    ) {
-      setImgStatus("raw");
-    } else {
-      setImgStatus("failed");
-    }
+    setImgStatus("failed");
   };
 
   return (
@@ -137,19 +128,6 @@ function GalleryImageItem({
           />
           {isRussian ? "Выбрать" : "Select"}
         </label>
-        {imgStatus === "raw" && (
-          <span
-            className="product-image-queue__raw-badge"
-            title={
-              isRussian
-                ? "Сгенерированный файл недоступен, показано исходное фото поставщика"
-                : "Generated file unavailable, showing supplier photo"
-            }
-          >
-            <i className="ri-camera-lens-line" />
-            {isRussian ? "Исходное фото" : "Raw photo"}
-          </span>
-        )}
       </div>
 
       <div className="product-image-queue__gallery-thumb-wrap">
