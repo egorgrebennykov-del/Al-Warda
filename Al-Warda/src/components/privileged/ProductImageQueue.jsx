@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import { useConfirm } from "../../context/ConfirmContext";
+import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductImageQueue.css";
 
@@ -102,6 +104,7 @@ function GalleryImageItem({
   }
 
   const currentSrc = imgStatus === "raw" ? rawCandidate : image.imageUrl;
+  const productUrl = image.url || getPerfumeUrl(image);
 
   const handleImageError = () => {
     if (
@@ -171,7 +174,16 @@ function GalleryImageItem({
             </span>
           </div>
         ) : (
-          <a href={currentSrc} target="_blank" rel="noopener noreferrer">
+          <Link
+            to={productUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={
+              isRussian
+                ? "Открыть страницу товара"
+                : "Open product page"
+            }
+          >
             <img
               src={currentSrc}
               alt={
@@ -181,13 +193,25 @@ function GalleryImageItem({
               loading="lazy"
               onError={handleImageError}
             />
-          </a>
+          </Link>
         )}
       </div>
 
       <strong>
-        {image.name ||
-          (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}
+        <Link
+          to={productUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="product-image-queue__product-link"
+          title={
+            isRussian
+              ? "Открыть страницу товара"
+              : "Open product page"
+          }
+        >
+          {image.name ||
+            (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}
+        </Link>
       </strong>
       {image.brand && <span>{image.brand}</span>}
       {image.completedAt ? (
@@ -1486,15 +1510,15 @@ export default function ProductImageQueue({
 
                         <div className="product-image-queue__failed-body">
                           {item.rawImage && (
-                            <a
-                              href={item.rawImage}
+                            <Link
+                              to={item.url || getPerfumeUrl(item)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="product-image-queue__failed-thumb"
                               title={
                                 isRussian
-                                  ? "Открыть исходное фото Qogita"
-                                  : "Open original Qogita photo"
+                                  ? "Открыть страницу товара"
+                                  : "Open product page"
                               }
                             >
                               <img
@@ -1502,14 +1526,26 @@ export default function ProductImageQueue({
                                 alt={item.name || `ID ${itemId}`}
                                 loading="lazy"
                               />
-                            </a>
+                            </Link>
                           )}
                           <div className="product-image-queue__failed-info">
                             <strong>
-                              {item.name ||
-                                (isRussian
-                                  ? `Товар #${itemId}`
-                                  : `Product #${itemId}`)}
+                              <Link
+                                to={item.url || getPerfumeUrl(item)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="product-image-queue__product-link"
+                                title={
+                                  isRussian
+                                    ? "Открыть страницу товара"
+                                    : "Open product page"
+                                }
+                              >
+                                {item.name ||
+                                  (isRussian
+                                    ? `Товар #${itemId}`
+                                    : `Product #${itemId}`)}
+                              </Link>
                             </strong>
                             {item.brand && (
                               <span className="product-image-queue__failed-brand">

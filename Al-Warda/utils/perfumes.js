@@ -2732,6 +2732,17 @@ export async function getPerfumeById(id, options = {}) {
     if (found) return ensurePerfumeEnrichment(found);
   }
 
+  // 6. Direct fallback search by ID in database for items not yet in the ready catalog
+  const numMatch = clean.match(/(?:^|\D)(\d+)$/);
+  if (numMatch) {
+    try {
+      const direct = await getPerfumeDetailsById(numMatch[1]);
+      if (direct) return ensurePerfumeEnrichment(direct);
+    } catch {
+      // ignore
+    }
+  }
+
   return null;
 }
 

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
+import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductsManager.css";
 
@@ -456,10 +458,21 @@ export default function ProductsManager({ language = "ru" }) {
           <div className="products-manager__grid">
             {displayedProducts.map((p) => {
               const imgUrl = p.image || p.rawImage;
+              const productUrl = p.url || getPerfumeUrl(p);
               const isDeleting = deletingId === p.id;
               return (
                 <article key={p.id} className="products-manager__card">
-                  <div className="products-manager__card-thumb">
+                  <Link
+                    to={productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="products-manager__card-thumb"
+                    title={
+                      isRussian
+                        ? "Открыть страницу товара"
+                        : "Open product page"
+                    }
+                  >
                     {imgUrl ? (
                       <img src={imgUrl} alt={p.name} loading="lazy" />
                     ) : (
@@ -488,7 +501,7 @@ export default function ProductsManager({ language = "ru" }) {
                             : "Out of stock"}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   <div className="products-manager__card-body">
                     <div className="products-manager__card-meta">
@@ -497,7 +510,19 @@ export default function ProductsManager({ language = "ru" }) {
                     </div>
 
                     <h3 className="products-manager__card-title" title={p.name}>
-                      {p.name}
+                      <Link
+                        to={productUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="products-manager__card-title-link"
+                        title={
+                          isRussian
+                            ? "Открыть страницу товара"
+                            : "Open product page"
+                        }
+                      >
+                        {p.name}
+                      </Link>
                     </h3>
 
                     <div className="products-manager__card-details">

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router";
+import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./FragranceNotesQueue.css";
 
@@ -301,7 +303,13 @@ export default function FragranceNotesQueue({ language = "ru" }) {
           <span className="fragrance-notes__check-spacer" aria-hidden="true" />
         )}
 
-        <div className="fragrance-notes__thumb">
+        <Link
+          to={item.url || getPerfumeUrl(item)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fragrance-notes__thumb"
+          title={isRussian ? "Открыть страницу товара" : "Open product page"}
+        >
           {item.image ? (
             <img
               src={item.image}
@@ -314,11 +322,25 @@ export default function FragranceNotesQueue({ language = "ru" }) {
           ) : (
             <span>{labels.noImage}</span>
           )}
-        </div>
+        </Link>
 
         <div className="fragrance-notes__info">
           <div className="fragrance-notes__name-row">
-            <strong>{item.name || "—"}</strong>
+            <strong>
+              <Link
+                to={item.url || getPerfumeUrl(item)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fragrance-notes__product-link"
+                title={
+                  isRussian
+                    ? "Открыть страницу товара"
+                    : "Open product page"
+                }
+              >
+                {item.name || "—"}
+              </Link>
+            </strong>
             <span className={`fragrance-notes__badge fragrance-notes__badge--${item.status}`}>
               {labels.statusLabels[item.status] || item.status}
             </span>

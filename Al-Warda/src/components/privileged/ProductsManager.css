@@ -214,6 +214,8 @@
   justify-content: center;
   overflow: hidden;
   border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .products-manager__card-thumb img {
@@ -318,6 +320,17 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.products-manager__card-title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.products-manager__card-title-link:hover {
+  color: #e5ca72;
+  text-decoration: underline;
 }
 
 .products-manager__card-details {

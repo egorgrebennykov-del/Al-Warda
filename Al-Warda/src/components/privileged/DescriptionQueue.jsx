@@ -1,5 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router";
 import { useConfirm } from "../../context/ConfirmContext";
+import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./DescriptionQueue.css";
 
@@ -530,7 +532,13 @@ export default function DescriptionQueue({ language = "ru" }) {
             />
           )}
 
-          <div className="description-queue__thumb">
+          <Link
+            to={item.url || getPerfumeUrl(item)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="description-queue__thumb"
+            title={isRussian ? "Открыть страницу товара" : "Open product page"}
+          >
             {item.image ? (
               <img
                 src={item.image}
@@ -546,10 +554,24 @@ export default function DescriptionQueue({ language = "ru" }) {
                 <small>{labels.noImage}</small>
               </span>
             )}
-          </div>
+          </Link>
 
           <div className="description-queue__info">
-            <div className="description-queue__name">{item.name || "—"}</div>
+            <div className="description-queue__name">
+              <Link
+                to={item.url || getPerfumeUrl(item)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="description-queue__product-link"
+                title={
+                  isRussian
+                    ? "Открыть страницу товара"
+                    : "Open product page"
+                }
+              >
+                {item.name || "—"}
+              </Link>
+            </div>
             <div className="description-queue__brand">{item.brand || "—"}</div>
             <div className="description-queue__meta">
               <span
