@@ -82,3 +82,31 @@ test("extractQogitaPriceForMov correctly selects lowest price from MOV <= 500 EU
   assert.equal(bestFromService.amount, 8.61, "Service price for MOV <= 500 must resolve to 8.61");
   assert.equal(bestFromService.hasEligibleTier, true);
 });
+
+test("Just Jack Frontier Qogita tiers accurately resolve to 11.73 EUR for MOV <= 500", async () => {
+  const { extractQogitaPriceForMov } = await import("../server/qogitaService.js");
+  const { extractBestPriceForMov } = await import("../scripts/sync_qogita_mov_prices.js");
+
+  // Replicating supplier G7HOK7 tiers for Just Jack Frontier (GTIN 6294015192315)
+  const frontierOffers = {
+    offers: [
+      {
+        seller: "G7HOK7",
+        tieredPrices: [
+          { tierPrice: { amount: "11.68", currency: "EUR" }, tierMov: { amount: "15000.00" } },
+          { tierPrice: { amount: "11.70", currency: "EUR" }, tierMov: { amount: "1500.00" } },
+          { tierPrice: { amount: "11.73", currency: "EUR" }, tierMov: { amount: "500.00" } },
+        ],
+      },
+    ],
+  };
+
+  const bestFromOffers = extractBestPriceForMov(frontierOffers, 500);
+  assert.equal(bestFromOffers.price, 11.73, "Best price for MOV <= 500 must be 11.73");
+  assert.equal(bestFromOffers.seller, "G7HOK7");
+  assert.equal(bestFromOffers.mov, 500);
+
+  const bestFromService = extractQogitaPriceForMov({ offers: frontierOffers.offers }, 500);
+  assert.equal(bestFromService.amount, 11.73, "Service price for MOV <= 500 must resolve to 11.73");
+  assert.equal(bestFromService.hasEligibleTier, true);
+});

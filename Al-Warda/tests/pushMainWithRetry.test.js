@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,7 +7,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 const script = resolve(fileURLToPath(new URL("../../.github/scripts/push-main-with-retry.sh", import.meta.url)));
-const bash = process.env.BASH_PATH || "bash";
+const bash =
+  process.env.BASH_PATH ||
+  (process.platform === "win32" && existsSync("C:\\Program Files\\Git\\bin\\bash.exe")
+    ? "C:\\Program Files\\Git\\bin\\bash.exe"
+    : "bash");
 
 function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();

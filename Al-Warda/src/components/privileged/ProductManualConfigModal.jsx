@@ -42,6 +42,17 @@ export default function ProductManualConfigModal({
   const [initialData] = useState(() => {
     const rawName = item?.name || item?.title || "";
     const cleanName = stripVolumeFromName(rawName);
+    const resolvedItemPrice =
+      item?.price !== undefined && item?.price !== null && item?.price !== ""
+        ? Number(item.price)
+        : item?.info?.price !== undefined && item?.info?.price !== null && item?.info?.price !== ""
+          ? Number(item.info.price)
+          : item?.info?.movPrice !== undefined && item?.info?.movPrice !== null && item?.info?.movPrice !== ""
+            ? Number(item.info.movPrice)
+            : item?.info?.unitPrice !== undefined && item?.info?.unitPrice !== null && item?.info?.unitPrice !== ""
+              ? Number(item.info.unitPrice)
+              : "";
+
     const enriched = isNew
       ? {}
       : ensurePerfumeEnrichment({
@@ -49,9 +60,7 @@ export default function ProductManualConfigModal({
           name: cleanName,
           title: cleanName,
           brand: item?.brand || "Al-Warda",
-          price:
-            item?.price ||
-            (item?.info?.price ? Number(item?.info?.price) : 29.99),
+          price: resolvedItemPrice !== "" ? resolvedItemPrice : 0,
           image: item?.image || item?.rawImage || "",
           rawImage: item?.rawImage || item?.info?.rawImage || null,
           info: item?.info || {},
@@ -82,8 +91,7 @@ export default function ProductManualConfigModal({
           : enriched.gender === "Мужской"
             ? "Men"
             : "Unisex"),
-      price:
-        item?.price || (item?.info?.price ? Number(item?.info?.price) : 29.99),
+      price: resolvedItemPrice,
       longevity: enriched.longevity || "8–12 часов",
       sillage: enriched.sillage || "Выразительный, шлейфовый",
       notesSummaryRu: enriched.notesSummaryRu || enriched.notesSummary || "",
@@ -341,7 +349,7 @@ export default function ProductManualConfigModal({
             : gender === "Мужской"
               ? "Men"
               : "Unisex",
-        price: Number(price) || 29.99,
+        price: Number(price) || 0,
         currency: "EUR",
         longevity: longevity.trim(),
         sillage: sillage.trim(),

@@ -626,10 +626,23 @@ async function main() {
         catNotes.notes,
       );
 
+      const rawItemPrice =
+        item?.price !== undefined && item?.price !== null && item?.price !== ""
+          ? Number(item.price)
+          : item?.info?.price !== undefined && item?.info?.price !== null && item?.info?.price !== ""
+            ? Number(item.info.price)
+            : item?.info?.movPrice !== undefined && item?.info?.movPrice !== null && item?.info?.movPrice !== ""
+              ? Number(item.info.movPrice)
+              : 0;
+      const resolvedItemPrice =
+        Number.isFinite(rawItemPrice) && rawItemPrice > 0
+          ? Math.round(rawItemPrice * 100) / 100
+          : 0;
+
       enriched = {
         name: item.name,
         brand: item.brand || "Al-Warda",
-        price: Number(item.price) || 29.99,
+        price: resolvedItemPrice,
         image: item.image || "/assets/img/perfumes/hero-perfume.png",
         description: descriptionRu,
         info: {
@@ -690,7 +703,7 @@ async function main() {
       enrichedList.push({
         name: enriched.name,
         brand: enriched.brand || "Al-Warda",
-        price: enriched.price || 29.99,
+        price: Number(enriched.price) || 0,
         image: enriched.image || "/assets/img/perfumes/hero-perfume.png",
         description: enriched.description || enriched.info?.descriptionRu || "",
         info: enriched.info || {},

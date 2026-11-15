@@ -205,4 +205,42 @@ describe("catalog / details split", () => {
     assert.equal(second.price, 20);
     assert.equal(detailsCalls, 2);
   });
+
+  it("details request selects price and preserves the real database/MOV tier price instead of defaulting to 29.99", async () => {
+    let requestedSelect = "";
+    globalThis.fetch = async (input) => {
+      const url = new URL(input, "https://shop.example");
+      if (url.searchParams.get("id")) {
+        requestedSelect = url.searchParams.get("select") || "";
+        return jsonResponse([
+          {
+            id: 7340,
+            name: "Just Jack Frontier Eau De Parfum",
+            brand: "Just Jack",
+            price: 11.73,
+            image: GEN_IMG,
+            info: { gtin: "6294015192315", price: 11.73 },
+          },
+        ]);
+      }
+      return jsonResponse([]);
+    };
+
+    const obj = await getPerfumeDetailsById("7340");
+    assert.ok(obj);
+    assert.ok(
+      requestedSelect.includes("price"),
+      "details query select must include `price` column",
+    );
+    assert.equal(
+      obj.price,
+      11.73,
+      "price must match Qogita MOV <= 500 tier price (11.73)",
+    );
+    assert.notEqual(
+      obj.price,
+      29.99,
+      "price must never fall back to 29.99 when a real price exists",
+    );
+  });
 });

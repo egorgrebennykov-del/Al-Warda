@@ -270,6 +270,8 @@ async function main() {
 
             const updatedInfo = {
               ...(perfume.info || {}),
+              price: newPrice,
+              movPrice: newPrice,
               variantFid: result.fid,
             };
 
@@ -305,6 +307,8 @@ async function main() {
             if (key && enrichedStocks[key]) {
               enrichedStocks[key].price = newPrice;
               if (enrichedStocks[key].info) {
+                enrichedStocks[key].info.price = newPrice;
+                enrichedStocks[key].info.movPrice = newPrice;
                 enrichedStocks[key].info.variantFid = result.fid;
               }
             }

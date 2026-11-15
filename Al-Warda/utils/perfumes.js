@@ -2072,6 +2072,19 @@ function mapStockRowLight(r) {
   const rawPerfumeName = r.name || r.title;
   const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
 
+  const rawPrice =
+    r.price !== undefined && r.price !== null && r.price !== ""
+      ? Number(r.price)
+      : info.price !== undefined && info.price !== null && info.price !== ""
+        ? Number(info.price)
+        : info.movPrice !== undefined && info.movPrice !== null && info.movPrice !== ""
+          ? Number(info.movPrice)
+          : null;
+  const parsedPrice =
+    Number.isFinite(rawPrice) && rawPrice > 0
+      ? Math.round(rawPrice * 100) / 100
+      : (Number(r.price) || 0);
+
   const perfumeObj = {
     id: String(r.id),
     slug: `stock-${r.id}`,
@@ -2088,9 +2101,9 @@ function mapStockRowLight(r) {
     notesVerified: false,
     notesSource: null,
     notesLookup: null,
-    price: Number(r.price) || 29.99,
+    price: parsedPrice,
     currency: r.currency || "EUR",
-    priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+    priceMdl: Math.round(parsedPrice * 19.5),
     rawName: rawPerfumeName,
     rawDescription: r.description || "",
     volume: resolvePerfumeVolume({
@@ -2212,6 +2225,21 @@ function mapStockRowRich(r) {
   const rawPerfumeName = r.name || r.title;
   const cleanPerfumeName = stripVolumeFromName(rawPerfumeName);
 
+  const rawPrice =
+    r.price !== undefined && r.price !== null && r.price !== ""
+      ? Number(r.price)
+      : info.price !== undefined && info.price !== null && info.price !== ""
+        ? Number(info.price)
+        : info.movPrice !== undefined && info.movPrice !== null && info.movPrice !== ""
+          ? Number(info.movPrice)
+          : info.unitPrice !== undefined && info.unitPrice !== null && info.unitPrice !== ""
+            ? Number(info.unitPrice)
+            : null;
+  const parsedPrice =
+    Number.isFinite(rawPrice) && rawPrice > 0
+      ? Math.round(rawPrice * 100) / 100
+      : (Number(r.price) || 0);
+
   const perfumeObj = {
     id: String(r.id),
     slug: `stock-${r.id}`,
@@ -2234,9 +2262,9 @@ function mapStockRowRich(r) {
     notesVerified,
     notesSource: info.notesSource || null,
     notesLookup: info.notesLookup || null,
-    price: Number(r.price) || 29.99,
-    currency: r.currency || "EUR",
-    priceMdl: Math.round((Number(r.price) || 29.99) * 19.5),
+    price: parsedPrice,
+    currency: r.currency || info.currency || "EUR",
+    priceMdl: Math.round(parsedPrice * 19.5),
     rawName: rawPerfumeName,
     rawDescription: r.description || "",
     volume: resolvePerfumeVolume({
@@ -2319,7 +2347,7 @@ export function invalidateCatalogCache() {
 
 async function fetchPerfumeDetailsById(id) {
   const res = await fetch(
-    `${TABLE_PERFUMES}?select=id,name,brand,image,info&id=eq.${encodeURIComponent(id)}&limit=1`,
+    `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description,info&id=eq.${encodeURIComponent(id)}&limit=1`,
     {
       headers: {
         apikey: "",
@@ -2352,17 +2380,25 @@ export async function getPerfumeDetailsById(id) {
   const promise = fetchPerfumeDetailsById(key)
     .then((obj) => {
       if (obj) {
-        detailsCache.set(key, { obj, expiresAt: Date.now() + DETAILS_TTL_MS });
         if (memoryPerfumesCache) {
           const idx = memoryPerfumesCache.findIndex(
             (p) => String(p.id) === key,
           );
-          // Only replace a still-light entry; never overwrite a newer rich
-          // object with an older details fetch result.
-          if (idx > -1 && memoryPerfumesCache[idx]?.isLight) {
-            memoryPerfumesCache[idx] = obj;
+          if (idx > -1) {
+            const existing = memoryPerfumesCache[idx];
+            // If the fetched object has no valid price, but catalog cache already has one, retain the known price
+            if ((!obj.price || obj.price <= 0) && existing?.price > 0) {
+              obj.price = existing.price;
+              obj.priceMdl = existing.priceMdl || Math.round(obj.price * 19.5);
+            }
+            // Only replace a still-light entry; never overwrite a newer rich
+            // object with an older details fetch result.
+            if (existing?.isLight) {
+              memoryPerfumesCache[idx] = obj;
+            }
           }
         }
+        detailsCache.set(key, { obj, expiresAt: Date.now() + DETAILS_TTL_MS });
       }
       return obj;
     })
