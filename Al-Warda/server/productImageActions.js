@@ -145,7 +145,18 @@ export async function handleProductImageActions(request, env) {
       const count = await syncCommittedPublishedStocks(env);
       return json({ message: "Sync completed", synced: count }, 200);
     }
-    if (body.action === "delete") {
+    if (body.action === "delete" || body.action === "delete-all") {
+      if (body.action === "delete-all" || body.all === true || body.images === "all") {
+        if ((await activeRuns(env)).length || (await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
+          return json({ error: "Image generation or deletion is already running; wait for it to finish" }, 409);
+        }
+        await github(env, `/actions/workflows/${DELETE_WORKFLOW}/dispatches`, {
+          method: "POST",
+          body: JSON.stringify({ ref: "main", inputs: { images: "all" } }),
+        });
+        return json({ message: "Image deletion queued for all products" }, 202);
+      }
+
       if (!Array.isArray(body.images) || body.images.length < 1 ||
           body.images.some((item) => !item || !/^\d{1,20}$/.test(String(item.id)) ||
             typeof item.imageUrl !== "string" ||

@@ -841,7 +841,12 @@ export async function savePendingDeletedImages(env, images) {
     "Content-Type": "application/json",
     Prefer: "return=minimal",
   };
-  const row = await loadSettingsRow(env, key);
+  let row = null;
+  try {
+    row = await loadSettingsRow(env, key);
+  } catch (err) {
+    console.warn("Could not load settings row for pending deletes:", err.message);
+  }
   let response;
   if (row) {
     const url = new URL(`${baseUrl}/rest/v1/stocks`);
@@ -866,7 +871,10 @@ export async function savePendingDeletedImages(env, images) {
         slug: SETTINGS_SLUG,
         name: "Site settings",
         title: "Site settings",
+        description: "Site settings",
         brand: "system",
+        category: "oriental",
+        image: "",
         price: 0,
         in_stock: false,
         info: {

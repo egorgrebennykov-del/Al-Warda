@@ -640,11 +640,22 @@ export default function ProductImageQueue({
       imageUrl,
     }));
     if (!images.length) return;
+    const isAll = selectableImages.length > 0 && images.length >= selectableImages.length;
     const approved = await confirm({
-      title: isRussian ? "Удалить изображения" : "Delete images",
+      title: isRussian
+        ? isAll
+          ? "Удалить ВСЕ изображения"
+          : "Удалить изображения"
+        : isAll
+          ? "Delete ALL images"
+          : "Delete images",
       message: isRussian
-        ? `Удалить ${images.length} фото? Товары исчезнут из каталога и вернутся в очередь генерации.`
-        : `Delete ${images.length} images? The products will leave the catalog and return to the generation queue.`,
+        ? isAll
+          ? `Удалить ВСЕ ${images.length} фото? Все товары вернутся в очередь генерации.`
+          : `Удалить ${images.length} фото? Товары исчезнут из каталога и вернутся в очередь генерации.`
+        : isAll
+          ? `Delete ALL ${images.length} images? All products will return to the generation queue.`
+          : `Delete ${images.length} images? The products will leave the catalog and return to the generation queue.`,
     });
     if (!approved) return;
     setBusy(true);
@@ -656,7 +667,7 @@ export default function ProductImageQueue({
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", images }),
+        body: JSON.stringify(isAll ? { action: "delete", all: true } : { action: "delete", images }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
@@ -665,8 +676,53 @@ export default function ProductImageQueue({
       setSelectedImages({});
       setActionMessage(
         isRussian
-          ? "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
-          : "Deletion queued in GitHub Actions. The list will update after it runs.",
+          ? isAll
+            ? `Удаление всех ${images.length} фото запущено в GitHub Actions. Список обновится после выполнения.`
+            : "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
+          : isAll
+            ? `Deletion of all ${images.length} images queued in GitHub Actions. The list will update after it runs.`
+            : "Deletion queued in GitHub Actions. The list will update after it runs.",
+      );
+      await loadStatus({ force: true });
+      await loadRuns();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setDeletionSubmitting(false);
+      setBusy(false);
+    }
+  };
+
+  const deleteAllImages = async () => {
+    if (!selectableImages.length) return;
+    const totalCount = selectableImages.length;
+    const approved = await confirm({
+      title: isRussian ? "Удалить ВСЕ изображения" : "Delete ALL images",
+      message: isRussian
+        ? `Вы действительно хотите удалить ВСЕ ${totalCount} фото товаров разом? Все товары исчезнут из каталога и вернутся в очередь генерации.`
+        : `Are you sure you want to delete ALL ${totalCount} product images at once? All products will leave the catalog and return to the generation queue.`,
+    });
+    if (!approved) return;
+    setBusy(true);
+    setDeletionSubmitting(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetchActions({
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", all: true }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(actionErrorMessage(payload, response));
+      deletionRequestedAt.current = Date.now();
+      setDeletionPending(true);
+      setSelectedImages({});
+      setActionMessage(
+        isRussian
+          ? `Удаление всех ${totalCount} фото запущено в GitHub Actions. Список обновится после выполнения.`
+          : `Deletion of all ${totalCount} images queued in GitHub Actions. The list will update after it runs.`,
       );
       await loadStatus({ force: true });
       await loadRuns();
@@ -1657,6 +1713,21 @@ export default function ProductImageQueue({
                   >
                     {isRussian ? "Удалить выбранные" : "Delete selected"} (
                     {Object.keys(selectedImages).length})
+                  </button>
+                  <button
+                    type="button"
+                    className="product-image-queue__start product-image-queue__start--danger"
+                    disabled={
+                      busy ||
+                      deleting ||
+                      !runsLoaded ||
+                      runs.length > 0 ||
+                      !selectableImages.length
+                    }
+                    onClick={deleteAllImages}
+                  >
+                    {isRussian ? "Удалить ВСЕ фото разом" : "Delete ALL images"} (
+                    {selectableImages.length})
                   </button>
                   <a
                     href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-delete.yml"

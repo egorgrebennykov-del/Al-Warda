@@ -48,5 +48,24 @@ class TestGlobalGenerationHalt(unittest.TestCase):
         self.assertEqual(status["reason"], "global_generation_halted")
 
 
+    def test_delete_all_images_resets_completed_rows(self):
+        rows = [
+            {"id": "1", "image": f"/assets/img/generated-products/{'a'*64}.png", "info": {"imageGeneration": {"status": "completed", "imageUrl": f"/assets/img/generated-products/{'a'*64}.png"}}},
+            {"id": "2", "image": "http://example.com/raw.jpg", "info": {"imageGeneration": {"status": "pending"}}},
+        ]
+        patched = []
+        def capture_patch(session, url, row, info, image=None, only_if_unchanged=False):
+            patched.append((row["id"], info, image))
+
+        with patch.object(gen, "fetch_stock_rows", return_value=rows), \
+             patch.object(gen, "patch_stock", side_effect=capture_patch):
+            gen.delete_all_images(object(), "https://example.com")
+
+        self.assertEqual(len(patched), 1)
+        self.assertEqual(patched[0][0], "1")
+        self.assertEqual(patched[0][1]["imageGeneration"]["status"], "pending")
+        self.assertEqual(patched[0][2], "")
+
+
 if __name__ == "__main__":
     unittest.main()

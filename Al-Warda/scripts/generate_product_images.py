@@ -466,20 +466,29 @@ def fetch_stock_rows_stdlib(supabase_url, service_key):
 
 def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=False):
     if only_if_unchanged:
-        response = session.post(
-            f"{supabase_url}/rest/v1/rpc/update_stock_image_if_unchanged",
-            json={
-                "p_stock_id": row["id"],
-                "p_expected_info": row.get("info") or {},
-                "p_expected_image": row.get("image"),
-                "p_new_info": info,
-                "p_new_image": image,
-            },
-            timeout=30,
-        )
-        if not response.ok or not response.json():
-            raise RuntimeError(f"Stock {row['id']} changed during deletion; skipping delete")
-        return
+        try:
+            response = session.post(
+                f"{supabase_url}/rest/v1/rpc/update_stock_image_if_unchanged",
+                json={
+                    "p_id": str(row["id"]),
+                    "p_stock_id": row["id"],
+                    "p_expected_info": row.get("info") or {},
+                    "p_expected_image": row.get("image"),
+                    "p_info": info,
+                    "p_new_info": info,
+                    "p_image": image,
+                    "p_new_image": image,
+                },
+                timeout=30,
+            )
+            if response.ok and response.json() is True:
+                return
+            if response.ok and response.json() is False:
+                raise RuntimeError(f"Stock {row['id']} changed during deletion; skipping delete")
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
 
     fields = {"info": info}
     if image is not None:
@@ -2254,6 +2263,78 @@ def cleanup_replaced_images(session, supabase_url):
             print(f"REMOVED retired image: {image_url}", flush=True)
 
 
+def delete_all_images(session, supabase_url):
+    rows = fetch_stock_rows(session, supabase_url)
+    to_reset = []
+    for row in rows:
+        info = dict(row.get("info") or {})
+        job = info.get("imageGeneration") or {}
+        rep = info.get("imageGenerationReplacement") or {}
+        img = str(row.get("image") or "")
+        job_img = str(job.get("imageUrl") or "")
+        rep_img = str(rep.get("imageUrl") or "")
+        if (
+            job.get("status") in ("completed", "publishing")
+            or rep.get("status") in ("completed", "publishing")
+            or "/assets/img/generated-products/" in img
+            or "/assets/img/generated-products/" in job_img
+            or "/assets/img/generated-products/" in rep_img
+        ):
+            to_reset.append(row)
+
+    if not to_reset:
+        print("No completed generated product images to delete.", flush=True)
+        return
+
+    print(f"Deleting and resetting {len(to_reset)} product images to pending...", flush=True)
+    errors = []
+
+    def reset_one(row):
+        identifier = str(row["id"])
+        info = dict(row.get("info") or {})
+        job = info.get("imageGeneration") or {}
+        image_url = str(job.get("imageUrl") or row.get("image") or "")
+        retired = info.get("retiredGeneratedImages")
+        retired = list(retired) if isinstance(retired, list) else []
+        if image_url and image_url not in retired:
+            retired.append(image_url)
+        info["retiredGeneratedImages"] = retired
+        info["imageGeneration"] = {"status": "pending"}
+        info.pop("imageGenerationReplacement", None)
+        try:
+            patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=False)
+            print(f"QUEUED {identifier}: image removed", flush=True)
+        except Exception as error:
+            print(f"Error resetting {identifier}: {error}", flush=True)
+            errors.append(f"{identifier}: {error}")
+
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            list(executor.map(reset_one, to_reset))
+    except Exception as ex:
+        print(f"Parallel reset error ({ex}); falling back to sequential", flush=True)
+        for row in to_reset:
+            reset_one(row)
+
+    # Clean up pendingDeletedImages in site-settings if present
+    for row in rows:
+        slug = str(row.get("slug") or "")
+        identifier = str(row.get("id") or "")
+        if slug == "site-settings" or identifier in ("site-settings", "999999"):
+            info = dict(row.get("info") or {})
+            if "pendingDeletedImages" in info:
+                info.pop("pendingDeletedImages", None)
+                try:
+                    patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=False)
+                except Exception:
+                    pass
+
+    if errors:
+        print(f"Warning: {len(errors)} stocks could not be updated: {'; '.join(errors[:5])}", flush=True)
+    print(f"Successfully reset {len(to_reset) - len(errors)} of {len(to_reset)} images to queue.", flush=True)
+
+
 def delete_selected_images(session, supabase_url, selected):
     if not isinstance(selected, list) or len(selected) < 1:
         raise ValueError("Select at least 1 image to delete")
@@ -2322,6 +2403,8 @@ def main():
                         help="Immediately complete all committed images in Supabase")
     parser.add_argument("--cleanup-replaced", action="store_true")
     parser.add_argument("--delete-selected", action="store_true")
+    parser.add_argument("--delete-all", action="store_true",
+                        help="Delete and return all generated product images back to queue")
     parser.add_argument("--mark-unpublished-failed", metavar="PATH_LIST")
     parser.add_argument("--check-schedule-ready", action="store_true",
                         help="Check if there are pending images and all 5 accounts are available")
@@ -2382,6 +2465,7 @@ def main():
         or args.complete_committed
         or args.cleanup_replaced
         or args.delete_selected
+        or args.delete_all
         or args.mark_unpublished_failed
     ):
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
@@ -2398,9 +2482,15 @@ def main():
         elif args.mark_unpublished_failed:
             paths = Path(args.mark_unpublished_failed).read_text(encoding="utf-8").splitlines()
             mark_unpublished_failed(make_session(), supabase_url, paths)
+        elif args.delete_all:
+            session = make_session()
+            delete_all_images(session, supabase_url)
         elif args.delete_selected:
             raw_input = os.environ.get("SELECTED_IMAGES", "").strip()
-            if raw_input == "from_settings" or not raw_input:
+            if raw_input == "all":
+                session = make_session()
+                delete_all_images(session, supabase_url)
+            elif raw_input == "from_settings" or not raw_input:
                 session = make_session()
                 settings_rows = [
                     r for r in fetch_stock_rows(session, supabase_url)
@@ -2408,10 +2498,11 @@ def main():
                 ]
                 info = (settings_rows[0].get("info") or {}) if settings_rows else {}
                 selected = info.get("pendingDeletedImages") or []
+                delete_selected_images(session, supabase_url, selected)
             else:
                 session = make_session()
                 selected = json.loads(raw_input)
-            delete_selected_images(session, supabase_url, selected)
+                delete_selected_images(session, supabase_url, selected)
         elif args.cleanup_replaced:
             cleanup_replaced_images(make_session(), supabase_url)
         else:

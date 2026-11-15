@@ -67,6 +67,12 @@ test("start and stop require a privileged user (no Qogita session) and send scop
   const latestDeletion = calls.filter((call) => call.url.includes("/product-image-delete.yml/dispatches")).at(-1);
   assert.deepEqual(JSON.parse(latestDeletion.options.body).inputs.images, "from_settings");
   assert.equal(storedSettings.info.pendingDeletedImages.length, 600);
+  assert.equal((await handleProductImageActions(action({ action: "delete", all: true }), env)).status, 202);
+  const allDeletion = calls.filter((call) => call.url.includes("/product-image-delete.yml/dispatches")).at(-1);
+  assert.deepEqual(JSON.parse(allDeletion.options.body).inputs.images, "all");
+  assert.equal((await handleProductImageActions(action({ action: "delete-all" }), env)).status, 202);
+  const deleteAllCall = calls.filter((call) => call.url.includes("/product-image-delete.yml/dispatches")).at(-1);
+  assert.deepEqual(JSON.parse(deleteAllCall.options.body).inputs.images, "all");
   running = true;
   assert.equal((await handleProductImageActions(action({ action: "start", count: 2, account: "primary", regenerateCompleted: false }), env)).status, 409);
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 409);
