@@ -2,18 +2,11 @@ import { getCookieUser } from "./auth.js";
 import { getPerfumeUrl, createSampleCartItem } from "./perfumes.js";
 import { restUrl } from "./restBase.js";
 
-const SUPABASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
-  "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const TABLE_URL = restUrl("cart");
-const KEY =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 const headers = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
+  apikey: "",
+  Authorization: "",
   "Content-Type": "application/json",
 };
 

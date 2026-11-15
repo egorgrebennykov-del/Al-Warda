@@ -327,7 +327,17 @@ def fetch_stock_rows(session, supabase_url):
                 f"Could not read Supabase stocks ({response.status_code}): "
                 f"{response.text[:400]}"
             )
-        page = response.json()
+        body = (response.text or "").strip()
+        if not body:
+            # Supabase returned an empty body (e.g. quota-limited or transient
+            # failure). Treat as end of data instead of crashing with
+            # json.JSONDecodeError: "Expecting value: line 1 column 1 (char 0)".
+            break
+        try:
+            page = response.json()
+        except json.JSONDecodeError:
+            print(f"WARNING: Supabase returned invalid JSON at offset {start}, stopping.", flush=True)
+            break
         if not isinstance(page, list):
             raise RuntimeError("Supabase stocks response was not a list")
         rows.extend(page)
@@ -352,7 +362,14 @@ def fetch_stock_rows_stdlib(supabase_url, service_key):
             },
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
-            page = json.loads(resp.read().decode("utf-8"))
+            raw = resp.read().decode("utf-8").strip()
+            if not raw:
+                break
+            try:
+                page = json.loads(raw)
+            except json.JSONDecodeError:
+                print(f"WARNING: Supabase returned invalid JSON at offset {start}, stopping.", flush=True)
+                break
         if not isinstance(page, list):
             raise RuntimeError("Supabase stocks response was not a list")
         rows.extend(page)
@@ -1803,8 +1820,14 @@ def main():
         or args.mark_unpublished_failed
     ):
         supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
-        if not supabase_url or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
-            raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+        service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        if not supabase_url or not service_key:
+            print(
+                "Supabase is not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing). "
+                "Skipping image queue operations.",
+                flush=True,
+            )
+            return
         if args.complete_committed:
             complete_committed_images(make_session(), supabase_url)
         elif args.mark_unpublished_failed:
@@ -1823,14 +1846,13 @@ def main():
         parser.error(f"--max-images must be between 1 and {MAX_BATCH_SIZE}")
     supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
     service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
-    missing = [
-        name for name, value in (
-            ("SUPABASE_URL", supabase_url),
-            ("SUPABASE_SERVICE_ROLE_KEY", service_key),
-        ) if not value
-    ]
-    if missing:
-        raise RuntimeError(f"Missing server-side environment variables: {', '.join(missing)}")
+    if not supabase_url or not service_key:
+        print(
+            "Supabase is not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing). "
+            "Skipping image generation.",
+            flush=True,
+        )
+        return
 
     session = make_session()
     rows = fetch_stock_rows(session, supabase_url)

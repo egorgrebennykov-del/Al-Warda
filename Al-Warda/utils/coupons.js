@@ -1,15 +1,9 @@
 import { restUrl } from "./restBase.js";
 
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const TABLE_URL = restUrl("coupons");
-const KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 const headers = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
+  apikey: "",
+  Authorization: "",
   "Content-Type": "application/json",
 };
 

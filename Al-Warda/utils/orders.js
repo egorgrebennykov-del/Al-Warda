@@ -1,13 +1,7 @@
 import { getCookieUser } from "./auth.js";
 import { restUrl } from "./restBase.js";
 
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://mfvenfrmlkxqgvdtedet.supabase.co";
 const TABLE_URL = restUrl("orders_in_progress");
-const KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
 
 export async function createOrderInProgress({
   userId,

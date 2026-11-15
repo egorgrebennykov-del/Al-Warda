@@ -10,15 +10,6 @@ import {
 import QOGITA_MIN_ORDER_OVERRIDES from "../src/data/qogitaMinOrderOverrides.js";
 import { restUrl } from "./restBase.js";
 
-const SUPABASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
-  "https://mfvenfrmlkxqgvdtedet.supabase.co";
-
-const SUPABASE_KEY =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB";
-
 const TABLE_PERFUMES = restUrl("stocks");
 let memoryPerfumesCache = null;
 let catalogRefresh = null;
