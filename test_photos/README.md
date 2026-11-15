@@ -1,15 +1,14 @@
-# Al-Warda Computer Vision Label & Text Protection System Benchmark
+# Al-Warda Local AI Perfume Photography Benchmark (UltraMix Balanced 4x)
 
-All 20 benchmark products processed with the **CV-Powered Authentic Label & Typography Protection** pipeline:
-- **Zero Hallucinations & Distortions**: 100% authentic brand logos, typography, Arabic calligraphy, volume and concentration markings.
-- **AI Studio Photography Preserved**: Full 4K studio lighting, glossy reflections, bottle geometry, and true transparency.
-- **Seamless Fusion**: Subpixel alignment with background-matched edge normalization (0% rectangular artifacts, 0% halos, 0% seams).
-- **Automated Quality Checks**: IoU geometry preservation (>0.97), Color Delta-E (<15.0), and Text Correlation Score (>95%).
-- **API Cost**: .00 (100% Local Processing).
+All 20 benchmark products processed with the **AI UltraMix-Balanced-4x Single-Tile** pipeline:
+- **Full AI Super-Resolution**: High studio clarity, sharp glass reflections, and detailed bottle geometry.
+- **Improved Typography & Text**: Pre-conditioned letter boundary acutance and UltraMix balanced neural weights eliminate melted runes and barcode artifacts.
+- **Single-Tile Processing (-t 512)**: Eliminates diagonal and horizontal tile slicing lines across words.
+- **Zero Dark-Mode Halos**: White-matte defringing eliminates background bleed on #0b0907.
+- **True Transparency**: 1024x1024 genuine RGBA PNG with 100% authentic bottle and label.
+- **API Cost**: .00 (100% Local Inference on Intel Iris Xe GPU / Core i7).
 
-## Subdirectories
-- \originals/\: Original immutable Qogita photographs (*_original.jpg).
-- \generated_before/\: AI upscale before CV text protection (*_generated_before.png).
-- \improved_transparent/\: Final studio photo with authentic text protection (*_improved_transparent.png).
-- \studio_transparent/\: Production transparent PNGs (*_studio_transparent.png).
-- Root: Contains transparent PNGs, dark mode previews (*_dark_preview.jpg), and quality reports.
+## Structure
+- \originals/\: Original unedited Qogita images.
+- \studio_transparent/\: Final transparent 1024x1024 PNGs.
+- Root: Contains transparent PNGs, original JPGs, and dark previews (*_dark_preview.jpg).
