@@ -1274,8 +1274,8 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
     cutout = segment_source(source, segmentation_session)
     cutout = normalize_flacon_cutout(
         cutout,
-        target_max_h=850,
-        target_max_w=850,
+        target_max_h=880,
+        target_max_w=880,
         canvas_size=canvas_size,
         allow_upscale=allow_upscale,
     )
@@ -1338,7 +1338,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
     return output.getvalue(), canvas_size, original_size
 
 
-def normalize_flacon_cutout(cutout, target_max_h=850, target_max_w=850, canvas_size=(1024, 1024), allow_upscale=True):
+def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True):
     if "A" not in cutout.getbands():
         return cutout
     import numpy as np
@@ -1932,9 +1932,10 @@ def process_product(
                 text_restore_reason = "authentic_original_cutout"
         else:
             output, processed_size, original_size = preserve_original_product(
-                source_bytes, segmentation_session, allow_upscale=False
+                source_bytes, segmentation_session, allow_upscale=True
             )
             processing_method = "local_studio_photometry"
+            whether_upscaled = processed_size != original_size
 
         image_url = save_generated_image(output)
 
