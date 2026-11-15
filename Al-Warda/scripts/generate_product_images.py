@@ -1295,12 +1295,12 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
                 else:
                     l_stretched = l
 
-                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+                clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
                 l_clahe = clahe.apply(l_stretched)
 
-                # High-frequency edge boosting and unsharp masking on L channel
-                blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.5)
-                l_sharp = cv2.addWeighted(l_clahe, 1.45, blur_l, -0.45, 0)
+                # Gentle edge clarity that preserves micro-typography and fine metallic textures
+                blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.0)
+                l_sharp = cv2.addWeighted(l_clahe, 1.18, blur_l, -0.18, 0)
                 l_enhanced = np.where(fg_mask, l_sharp, l)
 
                 enhanced_lab = cv2.merge([l_enhanced, a, b])

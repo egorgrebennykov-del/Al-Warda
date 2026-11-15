@@ -164,17 +164,19 @@ def find_upscayl_binary():
 
 def run_ai_super_resolution(input_path, output_path, upscayl_bin, models_dir):
     """
-    Executes local AI Super-Resolution (UltraSharp-4x) via native GPU/Vulkan engine.
-    Restores high-frequency typography, removes JPEG compression blocking, and reconstructs razor-sharp details.
+    Executes local AI Super-Resolution (High-Fidelity-4x) via native GPU/Vulkan engine.
+    Uses single-tile processing (tile size 512 >= image dimension) to eliminate tile seams,
+    and High-Fidelity weights to preserve delicate typography and complex metallic/crystal structures
+    without hallucinating barcode artifacts or pattern distortion.
     """
     cmd = [
         upscayl_bin,
         "-i", input_path,
         "-o", output_path,
         "-m", models_dir,
-        "-n", "ultrasharp-4x",
+        "-n", "high-fidelity-4x",
         "-s", "4",
-        "-t", "128"
+        "-t", "512"
     ]
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     return res
@@ -200,8 +202,8 @@ def run_local_studio_photometry(image_pil, session):
     - Anti-aliased edge matting and 1px morphological refinement
     - White-matte defringing and color decontamination (zero dark-mode halo)
     - Studio lighting & exposure optimization (percentile auto-levels)
-    - Luminance depth & glass reflection enhancement (CLAHE on L-channel)
-    - High-frequency edge boosting and unsharp masking for crystal-clear labels & typography
+    - Luminance depth & glass reflection enhancement (gentle CLAHE on L-channel)
+    - Subtle edge boosting that protects fine text, gold leaf, and intricate facets
     - 1024x1024 RGBA transparent square canvas centering (820px target height, ~80%)
     """
     start_t = time.perf_counter()
@@ -224,7 +226,7 @@ def run_local_studio_photometry(image_pil, session):
     mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_CUBIC)
     
     # Crisp anti-aliased edge curve
-    alpha = np.clip((mask_full - 0.22) / (0.85 - 0.22), 0.0, 1.0)
+    alpha = np.clip((mask_full - 0.18) / (0.82 - 0.18), 0.0, 1.0)
     alpha_u8 = (alpha * 255.0).astype(np.uint8)
     
     # 1px morphological edge cleaning to prevent halo bleed
@@ -261,12 +263,11 @@ def run_local_studio_photometry(image_pil, session):
     scaled_rgb = cv2.resize(crop_rgb, (target_w, target_h), interpolation=interp)
     scaled_alpha = cv2.resize(crop_alpha, (target_w, target_h), interpolation=interp)
     
-    # 3. Studio Photometry & Clarity Enhancement on scaled high-res product
+    # 3. Clean Studio Photometry: preserves delicate typography and micro-textures
     scaled_fg = scaled_alpha > 25
     lab = cv2.cvtColor(scaled_rgb, cv2.COLOR_RGB2LAB)
     l, a, b = cv2.split(lab)
     
-    # Percentile contrast stretch on foreground L
     if np.any(scaled_fg):
         fg_l = l[scaled_fg]
         p_low = np.percentile(fg_l, 1.0)
@@ -278,12 +279,11 @@ def run_local_studio_photometry(image_pil, session):
     else:
         l_stretched = l
         
-    clahe = cv2.createCLAHE(clipLimit=2.2, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
     l_clahe = clahe.apply(l_stretched)
     
-    # High-frequency edge boosting and unsharp masking on L channel
-    blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.2)
-    l_sharp = cv2.addWeighted(l_clahe, 1.5, blur_l, -0.5, 0)
+    blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.0)
+    l_sharp = cv2.addWeighted(l_clahe, 1.18, blur_l, -0.18, 0)
     l_enhanced = np.where(scaled_fg, l_sharp, l)
     
     enhanced_lab = cv2.merge([l_enhanced, a, b])
@@ -296,18 +296,6 @@ def run_local_studio_photometry(image_pil, session):
     
     canvas[oy:oy + target_h, ox:ox + target_w, :3] = final_rgb
     canvas[oy:oy + target_h, ox:ox + target_w, 3] = scaled_alpha
-    
-    canvas_pil = Image.fromarray(canvas, mode="RGBA")
-    elapsed = time.perf_counter() - start_t
-    
-    # Compute sharpness (Laplacian variance on foreground)
-    gray = cv2.cvtColor(canvas[:, :, :3], cv2.COLOR_RGB2GRAY)
-    if np.any(scaled_fg):
-        sharpness = float(cv2.Laplacian(gray[oy:oy + target_h, ox:ox + target_w][scaled_fg], cv2.CV_64F).var())
-    else:
-        sharpness = 0.0
-        
-    return canvas_pil, elapsed, sharpness
     
     canvas_pil = Image.fromarray(canvas, mode="RGBA")
     elapsed = time.perf_counter() - start_t
@@ -356,7 +344,7 @@ def main():
                 "category": item["category"],
                 "original_dimensions": "392x428",
                 "processed_dimensions": "1024x1024",
-                "ai_super_resolution": "UltraSharp-4x (Local Vulkan GPU)",
+                "ai_super_resolution": "High-Fidelity-4x (Vulkan GPU)",
                 "transparency": "100% Genuine Alpha",
                 "halo_defringing": "Color Decontamination (0% dark-mode halo)",
                 "bottle_preservation": "100% Authentic (Source of Truth)",
@@ -421,7 +409,7 @@ def main():
                 "category": item["category"],
                 "original_dimensions": f"{orig_img.width}x{orig_img.height}",
                 "processed_dimensions": "1024x1024",
-                "ai_super_resolution": "UltraSharp-4x (Local Vulkan GPU)" if upscayl_bin else "None",
+                "ai_super_resolution": "High-Fidelity-4x (Vulkan GPU)" if upscayl_bin else "None",
                 "transparency": "100% Genuine Alpha",
                 "halo_defringing": "Color Decontamination (0% dark-mode halo)",
                 "bottle_preservation": "100% Authentic (Source of Truth)",
