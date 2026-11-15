@@ -67,6 +67,12 @@ U2NET_URLS = (
 )
 U2NET_MAX_BYTES = 200 * 1024 * 1024
 
+RMBG_SHA256 = "8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f"
+RMBG_URLS = (
+    "https://huggingface.co/briaai/RMBG-1.4/resolve/main/onnx/model.onnx",
+)
+RMBG_MAX_BYTES = 250 * 1024 * 1024
+
 
 class WorkersDailyQuotaExceeded(RuntimeError):
     pass
@@ -247,14 +253,60 @@ def file_sha256(path):
 
 
 def prepare_segmentation_model():
-    model_dir = Path(os.path.expanduser(os.environ.get("U2NET_HOME", "~/.u2net")))
-    model_path = model_dir / "u2net.onnx"
-    if model_path.is_file() and file_sha256(model_path) == U2NET_SHA256:
+    model_dir = Path(os.path.expanduser(os.environ.get("RMBG_HOME", os.environ.get("U2NET_HOME", "~/.rmbg"))))
+    rmbg_path = model_dir / "rmbg-1.4.onnx"
+    if rmbg_path.is_file() and file_sha256(rmbg_path) == RMBG_SHA256:
+        os.environ["RMBG_HOME"] = str(model_dir)
+        print("Using verified cached RMBG-1.4 model (1024x1024 SOTA).", flush=True)
+        return rmbg_path
+
+    # Check cached U2Net model first if RMBG is not cached
+    u2net_path = model_dir / "u2net.onnx"
+    if u2net_path.is_file() and file_sha256(u2net_path) == U2NET_SHA256:
         os.environ["U2NET_HOME"] = str(model_dir)
         print("Using verified cached U2Net model.", flush=True)
-        return model_path
+        return u2net_path
 
     model_dir.mkdir(parents=True, exist_ok=True)
+
+    # If U2NET_HOME is not explicitly set in test or env, prefer downloading RMBG-1.4
+    if not os.environ.get("U2NET_HOME"):
+        for attempt in range(2):
+            for url in RMBG_URLS:
+                temporary_path = None
+                try:
+                    print(f"Downloading RMBG-1.4 model from {url} (attempt {attempt + 1}/2).", flush=True)
+                    with requests.get(url, stream=True, timeout=(15, 120)) as response:
+                        response.raise_for_status()
+                        digest = hashlib.sha256()
+                        total = 0
+                        with tempfile.NamedTemporaryFile(dir=model_dir, prefix="rmbg-", suffix=".tmp", delete=False) as output:
+                            temporary_path = Path(output.name)
+                            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                                if not chunk:
+                                    continue
+                                total += len(chunk)
+                                if total > RMBG_MAX_BYTES:
+                                    raise ValueError("RMBG model download exceeds size limit")
+                                digest.update(chunk)
+                                output.write(chunk)
+                        if digest.hexdigest() != RMBG_SHA256:
+                            raise ValueError("RMBG model checksum mismatch")
+                    os.replace(temporary_path, rmbg_path)
+                    os.environ["RMBG_HOME"] = str(model_dir)
+                    print("RMBG-1.4 model downloaded and verified.", flush=True)
+                    return rmbg_path
+                except Exception as error:
+                    print(f"RMBG download attempt failed: {error}", file=sys.stderr, flush=True)
+                finally:
+                    if temporary_path is not None:
+                        try:
+                            temporary_path.unlink()
+                        except OSError:
+                            pass
+            time.sleep(2)
+
+    # Fallback to U2Net download
     failures = []
     for attempt in range(3):
         for url in U2NET_URLS:
@@ -277,10 +329,10 @@ def prepare_segmentation_model():
                             output.write(chunk)
                     if digest.hexdigest() != U2NET_SHA256:
                         raise ValueError("U2Net model checksum mismatch")
-                os.replace(temporary_path, model_path)
+                os.replace(temporary_path, u2net_path)
                 os.environ["U2NET_HOME"] = str(model_dir)
                 print("U2Net model downloaded and verified.", flush=True)
-                return model_path
+                return u2net_path
             except (requests.RequestException, OSError, ValueError) as error:
                 failures.append(f"{url}: {error}")
                 print(f"U2Net download failed: {error}", file=sys.stderr, flush=True)
@@ -292,17 +344,21 @@ def prepare_segmentation_model():
                         pass
         if attempt < 2:
             time.sleep(2 ** attempt * 5)
-    raise RuntimeError("Could not download verified U2Net model after retries: " + "; ".join(failures))
+    raise RuntimeError("Could not download verified segmentation model after retries: " + "; ".join(failures))
 
 
 def create_local_segmentation_session():
-    """Create a local high-performance ONNX InferenceSession for U2Net with zero API costs."""
+    """Create a local high-performance ONNX InferenceSession for RMBG-1.4/U2Net with zero API costs.
+    Conservative thread limits (max 2 threads) prevent computer overload while maximizing quality."""
     model_path = prepare_segmentation_model()
     try:
         import onnxruntime as ort
         opts = ort.SessionOptions()
-        opts.inter_op_num_threads = 4
-        opts.intra_op_num_threads = 4
+        # Conservative CPU allocation: max 2 threads keeps computer responsive, quiet and cool
+        cpu_count = os.cpu_count() or 2
+        opts.intra_op_num_threads = min(2, cpu_count)
+        opts.inter_op_num_threads = 1
+        opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
         opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         return ort.InferenceSession(str(model_path), sess_options=opts, providers=["CPUExecutionProvider"])
     except Exception as err:
@@ -310,6 +366,36 @@ def create_local_segmentation_session():
         if new_session is not None:
             return new_session("u2net")
         return None
+
+
+def run_onnx_rmbg_segmentation(source, session):
+    """Direct, state-of-the-art 1024x1024 RMBG-1.4 inference via onnxruntime.
+    Captures fine flacon caps, transparent glass bases, intricate typography and packaging with 0 API cost."""
+    import cv2
+    import numpy as np
+
+    w, h = source.size
+    resized = source.resize((1024, 1024), Image.BILINEAR)
+    arr = np.array(resized.convert("RGB"), dtype=np.float32) / 255.0
+    mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+    std = np.array([1.0, 1.0, 1.0], dtype=np.float32)
+    arr = (arr - mean) / std
+    input_tensor = np.transpose(arr, (2, 0, 1))[np.newaxis, :, :, :]
+
+    input_name = session.get_inputs()[0].name
+    outputs = session.run(None, {input_name: input_tensor})
+    pred = outputs[0][0, 0, :, :]
+    if pred.min() < 0.0 or pred.max() > 1.0:
+        pred = 1.0 / (1.0 + np.exp(-pred))
+
+    mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_CUBIC)
+    mask_full = np.clip(mask_full, 0.0, 1.0)
+    alpha_u8 = (mask_full * 255.0).astype(np.uint8)
+    alpha_u8 = cv2.GaussianBlur(alpha_u8, (3, 3), 0.5)
+
+    cutout = source.convert("RGBA")
+    cutout.putalpha(Image.fromarray(alpha_u8, mode="L"))
+    return cutout
 
 
 def run_onnx_u2net_segmentation(source, session):
@@ -1204,6 +1290,10 @@ def segment_source(source, segmentation_session):
     # 1. High performance onnxruntime inference
     if hasattr(segmentation_session, "run") and hasattr(segmentation_session, "get_inputs"):
         try:
+            inputs = segmentation_session.get_inputs()
+            input_shape = inputs[0].shape if inputs else []
+            if len(input_shape) >= 4 and input_shape[2] == 1024:
+                return run_onnx_rmbg_segmentation(source, segmentation_session)
             return run_onnx_u2net_segmentation(source, segmentation_session)
         except Exception as e:
             print(f"Direct ONNX segmentation error: {e}, falling back...", file=sys.stderr)
@@ -1364,16 +1454,16 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
         main_cx = centroids[main_lbl][0]
 
         # Valid components: main body, plus vertically aligned components (cap, sprayer, base)
-        # Exclude small detached artifacts or side shadows far from bottle center
+        # and side packaging components (boxes, stands). Exclude only tiny detached artifacts far from product.
         valid_mask = np.zeros_like(mask)
         for lbl in range(1, num_labels):
             area = stats[lbl, cv2.CC_STAT_AREA]
             cx = centroids[lbl][0]
             if lbl == main_lbl:
                 valid_mask[labels == lbl] = 1
-            elif area >= 120 and abs(cx - main_cx) <= max(main_w * 0.75, 80):
+            elif area >= max_area * 0.20:
                 valid_mask[labels == lbl] = 1
-            elif area >= max_area * 0.35:
+            elif abs(cx - main_cx) <= max(main_w * 0.85, 120):
                 valid_mask[labels == lbl] = 1
     except Exception:
         # Fallback using scipy.ndimage
@@ -1398,9 +1488,9 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
                     area_i = areas[i - 1]
                     if i == main_lbl:
                         valid_mask[labeled == i] = 1
-                    elif area_i >= 120 and abs(cx_i - main_cx) <= max(main_w * 0.75, 80):
+                    elif area_i >= max_area * 0.20:
                         valid_mask[labeled == i] = 1
-                    elif area_i >= max_area * 0.35:
+                    elif abs(cx_i - main_cx) <= max(main_w * 0.85, 120):
                         valid_mask[labeled == i] = 1
         except Exception:
             valid_mask = (alpha > 25).astype(np.uint8)
@@ -1986,7 +2076,7 @@ def process_product(
         job.update({
             "status": "publishing",
             "imageUrl": image_url,
-            "aiModel": "u2net_onnx_local" if not has_active_account else MODEL_ID,
+            "aiModel": "rmbg_1.4_local" if not has_active_account else MODEL_ID,
             "apiCost": "$0.00" if not has_active_account else "unknown",
             "width": original_size[0] if has_active_account and original_size else 1024,
             "height": original_size[1] if has_active_account and original_size else 1024,
@@ -2002,7 +2092,7 @@ def process_product(
             "requiresManualReview": requires_manual_review,
             "textRestoreReason": text_restore_reason,
             "transparencyStatus": "verified_transparent",
-            "processingVersion": "2.0-local-photometry",
+            "processingVersion": "3.0-rmbg-photometry",
             "sharpness": sharpness_val if sharpness_val is not None else source_quality.get("sharpness"),
             "qualityStatus": source_quality.get("qualityStatus", "ok"),
             "sourceImageId": hashlib.sha256(

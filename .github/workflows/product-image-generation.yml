@@ -74,13 +74,15 @@ jobs:
         run: python Al-Warda/scripts/generate_product_images.py --complete-committed
       - name: Configure segmentation model directory
         if: steps.schedule_gate.outputs.should_run == 'true'
-        run: echo "U2NET_HOME=$RUNNER_TEMP/al-warda-u2net" >> "$GITHUB_ENV"
+        run: |
+          echo "RMBG_HOME=$RUNNER_TEMP/al-warda-rmbg" >> "$GITHUB_ENV"
+          echo "U2NET_HOME=$RUNNER_TEMP/al-warda-rmbg" >> "$GITHUB_ENV"
       - name: Restore segmentation model cache
         if: steps.schedule_gate.outputs.should_run == 'true'
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/al-warda-u2net
-          key: u2net-8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491
+          path: ${{ runner.temp }}/al-warda-rmbg
+          key: rmbg-8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f
       - name: Process queued products
         if: steps.schedule_gate.outputs.should_run == 'true'
         env:
