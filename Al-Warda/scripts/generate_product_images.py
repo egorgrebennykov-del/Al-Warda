@@ -312,19 +312,29 @@ def make_session():
     return session
 
 
+def rest_stocks_url(supabase_url):
+    base = (supabase_url or "").rstrip("/")
+    if "workers.dev" in base and not "/api" in base:
+        return f"{base}/api/rest/v1/stocks"
+    if base.endswith("/api"):
+        return f"{base}/rest/v1/stocks"
+    return f"{base}/rest/v1/stocks"
+
+
 def fetch_stock_rows(session, supabase_url):
     rows = []
     start = 0
+    endpoint = rest_stocks_url(supabase_url)
     while True:
         response = session.get(
-            f"{supabase_url}/rest/v1/stocks",
+            endpoint,
             params={"select": "id,name,brand,image,info", "order": "id.asc"},
             headers={"Range-Unit": "items", "Range": f"{start}-{start + PAGE_SIZE - 1}"},
             timeout=30,
         )
         if not response.ok:
             raise RuntimeError(
-                f"Could not read Supabase stocks ({response.status_code}): "
+                f"Could not read Supabase stocks from {endpoint} ({response.status_code}): "
                 f"{response.text[:400]}"
             )
         body = (response.text or "").strip()
@@ -336,10 +346,20 @@ def fetch_stock_rows(session, supabase_url):
         try:
             page = response.json()
         except json.JSONDecodeError:
-            print(f"WARNING: Supabase returned invalid JSON at offset {start}, stopping.", flush=True)
+            print(
+                f"WARNING: Supabase endpoint {endpoint} returned invalid JSON at offset {start} "
+                f"(status {response.status_code}, content-type {response.headers.get('content-type')}): "
+                f"{body[:200]}",
+                flush=True,
+            )
+            if start == 0:
+                raise RuntimeError(
+                    f"Fatal: Supabase endpoint {endpoint} returned non-JSON response at offset 0 "
+                    f"(status {response.status_code}, content-type {response.headers.get('content-type')}): {body[:200]}"
+                )
             break
         if not isinstance(page, list):
-            raise RuntimeError("Supabase stocks response was not a list")
+            raise RuntimeError(f"Supabase stocks response was not a list: {page}")
         rows.extend(page)
         if len(page) < PAGE_SIZE:
             break
@@ -350,10 +370,11 @@ def fetch_stock_rows(session, supabase_url):
 def fetch_stock_rows_stdlib(supabase_url, service_key):
     rows = []
     start = 0
+    endpoint = rest_stocks_url(supabase_url)
     query = urlencode({"select": "id,name,brand,image,info", "order": "id.asc"})
     while True:
         req = urllib.request.Request(
-            f"{supabase_url}/rest/v1/stocks?{query}",
+            f"{endpoint}?{query}",
             headers={
                 "apikey": service_key,
                 "Authorization": f"Bearer {service_key}",
@@ -368,7 +389,14 @@ def fetch_stock_rows_stdlib(supabase_url, service_key):
             try:
                 page = json.loads(raw)
             except json.JSONDecodeError:
-                print(f"WARNING: Supabase returned invalid JSON at offset {start}, stopping.", flush=True)
+                print(
+                    f"WARNING: Supabase endpoint {endpoint} returned invalid JSON at offset {start}: {raw[:200]}",
+                    flush=True,
+                )
+                if start == 0:
+                    raise RuntimeError(
+                        f"Fatal: Supabase endpoint {endpoint} returned non-JSON response at offset 0: {raw[:200]}"
+                    )
                 break
         if not isinstance(page, list):
             raise RuntimeError("Supabase stocks response was not a list")
@@ -387,8 +415,9 @@ def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=
     if image is not None:
         fields["image"] = image
     params = {"id": f"eq.{row['id']}"}
+    endpoint = rest_stocks_url(supabase_url)
     response = session.patch(
-        f"{supabase_url}/rest/v1/stocks",
+        endpoint,
         params=params,
         headers={"Prefer": "return=minimal"},
         json=fields,
@@ -396,7 +425,7 @@ def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=
     )
     if not response.ok:
         raise RuntimeError(
-            f"Could not update stock {row['id']} ({response.status_code}): "
+            f"Could not update stock {row['id']} via {endpoint} ({response.status_code}): "
             f"{response.text[:400]}"
         )
 

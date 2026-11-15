@@ -388,7 +388,13 @@ def sync_to_supabase(perfumes_list):
         "Content-Type": "application/json",
         "Prefer": "resolution=merge-duplicates",
     }
-    url = f"{SUPABASE_URL}/rest/v1/stocks"
+    base = (SUPABASE_URL or "").rstrip("/")
+    if "workers.dev" in base and not "/api" in base:
+        url = f"{base}/api/rest/v1/stocks"
+    elif base.endswith("/api"):
+        url = f"{base}/rest/v1/stocks"
+    else:
+        url = f"{base}/rest/v1/stocks"
 
     existing_by_gtin = {}
     existing_by_name = {}
