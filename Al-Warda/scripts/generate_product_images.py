@@ -889,12 +889,15 @@ def build_edit_prompt():
     return (
         "Use image 0 strictly as a one-to-one product reference. Re-photograph this "
         "EXACT product — do not redesign, replace, or reinterpret it. The output must "
-        "keep the same bottle, cap, glass shape, liquid color, label artwork, logo and "
-        "typography as image 0, unchanged. Never invent, rewrite, move or omit text, "
-        "labels, colors or details; never add extra bottles, props, frames or markings. "
-        "Present one large, centered product from a natural front-facing three-quarter "
-        "angle with realistic depth, neutral balanced commercial studio lighting, accurate "
-        "true-to-life product colors, pristine glass and metal reflections, on a plain "
+        "keep the exact same bottle, cap, glass shape, liquid color, label artwork, brand "
+        "logo, numbers, digits, volume and typography as image 0, completely unchanged. "
+        "All numerals, dates, years, batch numbers, volume indicators, and lettering must "
+        "remain authentic, sharp, crisp, undistorted, and perfectly legible. Never hallucinate, "
+        "invent, distort, rewrite, duplicate or omit numbers, text, labels, or details; never "
+        "generate pseudo-digits or illegible squiggles; never add extra bottles, props, frames "
+        "or markings. Present one large, centered product from a natural front-facing "
+        "three-quarter angle with realistic depth, neutral balanced commercial studio lighting, "
+        "accurate true-to-life product colors, pristine glass and metal reflections, on a plain "
         "uniform light grey background with no horizon or cast shadow. Keep the complete "
         "product and cap fully visible with a small clear margin on every side."
     )
@@ -1452,25 +1455,39 @@ def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECO
 
 
 def _text_region_mask(gray):
-    """Accurately detect text and logo glyphs while rejecting outer bottle contours,
-    glass facet rims, ribbon loops, and packaging outer borders."""
+    """Accurately detect text, numbers, logo glyphs, volume and concentration markings
+    while rejecting outer bottle contours, glass facet rims, ribbon loops, and packaging
+    outer borders."""
     import cv2
     import numpy as np
 
     if not isinstance(gray, np.ndarray):
         gray = np.asarray(gray)
 
-    # 1. Morphological gradient tailored for character stroke edges
-    grad = cv2.morphologyEx(
-        gray, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    )
-    _, thresh = cv2.threshold(grad, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-    # 2. Connected components analysis: filter by text geometric properties
-    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(thresh)
-    mask = np.zeros_like(gray)
     img_h, img_w = gray.shape[:2]
     max_dim = max(img_h, img_w)
+
+    # 1. Bilateral filter to suppress JPEG compression noise while preserving crisp character and numeral edges
+    denoised = cv2.bilateralFilter(gray, d=5, sigmaColor=30, sigmaSpace=30)
+
+    # 2. Dual-polarity Top-Hat and Black-Hat morphology:
+    # - Top-Hat extracts light glyphs/numerals on dark background (e.g. gold/white text on dark labels/glass)
+    # - Black-Hat extracts dark glyphs/numerals on light background (e.g. black text on light labels/boxes)
+    # This preserves internal loops of numbers (0, 4, 6, 8, 9) and avoids filling them with solid ink.
+    k = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    tophat = cv2.morphologyEx(denoised, cv2.MORPH_TOPHAT, k)
+    blackhat = cv2.morphologyEx(denoised, cv2.MORPH_BLACKHAT, k)
+    contrast_map = cv2.max(tophat, blackhat)
+
+    grad = cv2.morphologyEx(
+        denoised, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    )
+    feature_map = cv2.max(contrast_map, grad)
+    _, thresh = cv2.threshold(feature_map, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # 3. Connected components analysis: filter by text & numeral geometric properties
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(thresh)
+    mask = np.zeros_like(gray)
 
     for i in range(1, num_labels):
         area = stats[i, cv2.CC_STAT_AREA]
@@ -1481,16 +1498,18 @@ def _text_region_mask(gray):
         # Large continuous contours (bottle edges, ribbon, box border) are rejected
         if ch > max_dim * 0.25 or cw > max_dim * 0.45:
             continue
-        if area < 6 or area > (img_h * img_w * 0.05):
+        # Allow small areas for dots in dates/volumes e.g. .1691. or 3.4 FL.OZ and accents
+        if area < 2 or area > (img_h * img_w * 0.05):
             continue
-        if 3 <= ch <= max_dim * 0.20 and 2 <= cw <= max_dim * 0.40:
+        # Numerals like '1' can have cw >= 1; dots and dashes can have ch >= 2
+        if 2 <= ch <= max_dim * 0.25 and 1 <= cw <= max_dim * 0.45:
             aspect = cw / float(max(ch, 1))
-            if 0.08 <= aspect <= 6.0:
+            if 0.04 <= aspect <= 8.0:
                 mask[labels == i] = 255
 
-    # 3. If connected components is too sparse, fallback to Laplacian with outer border exclusion
+    # 4. If connected components is too sparse, fallback to Laplacian with outer border exclusion
     if np.count_nonzero(mask) < 16:
-        lap = cv2.Laplacian(gray, cv2.CV_32F)
+        lap = cv2.Laplacian(denoised, cv2.CV_32F)
         mag = np.abs(lap)
         mag = cv2.GaussianBlur(mag, (3, 3), 0)
         threshold = max(35.0, float(np.percentile(mag, 88)))
@@ -1502,18 +1521,19 @@ def _text_region_mask(gray):
         raw_mask[:, -margin:] = 0
         mask = raw_mask
 
-    # Dilate slightly to encompass full character stroke width
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    # Dilate with a cross to cover thin strokes without clogging inner numeral loops
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
     return cv2.dilate(mask, kernel, iterations=1)
 
 
 def restore_source_text_regions(source_bytes, generated_png_bytes):
-    """Restore authentic label/logo/text regions onto a generated product image.
+    """Restore authentic label/logo/text/digits regions onto a generated product image.
 
     Prevents:
     - Text duplication: cleans (inpaints) generative text in the target region before compositing.
-    - Glass/reflection degradation: isolates true text glyphs without copying bottle contours or rims.
-    - Seams/halos: uses soft feathered Gaussian alpha blending.
+    - Numeral deformation: preserves fine digit loops (0, 4, 6, 8, 9) and thin vertical strokes (1).
+    - Ringing / halos: uses bicubic subpixel interpolation without Lanczos negative-sinc ripples.
+    - Seams/boxes: uses background-matched edge normalization and smooth Gaussian alpha blending.
     - Transparency loss: preserves 100% of the generated cutout alpha channel.
 
     Returns:
@@ -1570,29 +1590,30 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
             return result
 
         text_mask = _text_region_mask(np.asarray(source.convert("L")))
-        warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_LANCZOS4)
+        warped_mask = cv2.warpPerspective(text_mask, homography, (gw, gh), flags=cv2.INTER_CUBIC)
         if int(np.count_nonzero(warped_mask)) == 0:
             result["requiresManualReview"] = True
             result["reason"] = "empty_text_mask"
             return result
 
+        source_denoised = cv2.bilateralFilter(np.asarray(source_rgb), d=5, sigmaColor=30, sigmaSpace=30)
         warped_src = cv2.warpPerspective(
-            np.asarray(source_rgb), homography, (gw, gh), flags=cv2.INTER_LANCZOS4
+            source_denoised, homography, (gw, gh), flags=cv2.INTER_CUBIC
         )
 
         # Composite only where the source has real text-like detail AND the
         # generated cutout is opaque (inside the product).
         alpha = np.asarray(generated.getchannel("A")).astype(np.float32) / 255.0
-        keep = (warped_mask > 0).astype(np.float32) * alpha
+        keep = (warped_mask > 20).astype(np.float32) * alpha
         if float(keep.sum()) <= 0.0:
             result["requiresManualReview"] = True
             result["reason"] = "empty_text_mask"
             return result
 
-        # 1. Inpaint underlying generative text to prevent text duplication
+        # 1. Inpaint underlying generative text to prevent ghosting/duplication
         target_inpaint_mask = cv2.dilate(
             (keep > 0.05).astype(np.uint8) * 255,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)),
+            cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)),
             iterations=1,
         )
         clean_base = cv2.inpaint(
@@ -1602,13 +1623,24 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
             flags=cv2.INPAINT_TELEA,
         )
 
-        # 2. Feathered alpha blending for seamless edge transitions without rough boundaries
-        feathered_keep = cv2.GaussianBlur(keep, (3, 3), 0)
-        feathered_keep = np.clip(feathered_keep, 0.0, 1.0)[..., None]
+        # 2. Background-matched edge normalization:
+        # Seamlessly match the local background luminance/chroma at the text border so that
+        # there is no dark box, halo, or visible inpainting seam around digits or typography.
+        feathered_keep = cv2.GaussianBlur(keep, (5, 5), 0)[..., None]
+        delta_bg = cv2.medianBlur(clean_base, 15).astype(np.float32) - cv2.medianBlur(warped_src, 15).astype(np.float32)
+        matched_src = np.clip(
+            warped_src.astype(np.float32) + delta_bg * (1.0 - np.clip(feathered_keep * 1.5, 0.0, 1.0)),
+            0,
+            255,
+        )
 
-        # 3. Composite authentic typography onto clean base
+        # 3. Subpixel unsharp edge enhancement for ultra-crisp numerals and small text
+        blurred_src = cv2.GaussianBlur(matched_src, (3, 3), 0)
+        sharp_src = np.clip(matched_src * 1.25 - blurred_src * 0.25, 0, 255)
+
+        # 4. Smooth feathered compositing onto clean base
         blended = (
-            warped_src.astype(np.float32) * feathered_keep
+            sharp_src * feathered_keep
             + clean_base.astype(np.float32) * (1.0 - feathered_keep)
         )
         blended = np.clip(blended, 0, 255).astype(np.uint8)

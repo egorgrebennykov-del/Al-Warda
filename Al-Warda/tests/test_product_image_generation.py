@@ -886,6 +886,19 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertTrue(result["reason"].startswith("error:"))
         self.assertEqual(result["image"], generated_bytes)
 
+    def test_text_region_mask_detects_numerals_and_dots(self):
+        # Create an image simulating a dark perfume label with numbers ". 1691 ."
+        canvas = np.full((120, 120), 25, dtype=np.uint8)
+        cv2.putText(canvas, ". 1691 .", (10, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.6, 220, 2, cv2.LINE_AA)
+        mask = queue._text_region_mask(canvas)
+        # Verify that digits and dots are detected in the mask
+        self.assertGreater(cv2.countNonZero(mask), 50)
+        # Verify that inner loop of '6' or '9' is not completely clogged solid across the whole row
+        loop_crop = mask[55:65, 40:70]
+        self.assertGreater(cv2.countNonZero(loop_crop), 0)
+        # Check that there are background pixels inside or between glyphs
+        self.assertGreater(int(np.sum(loop_crop == 0)), 0)
+
     def test_preserve_original_product_preserves_dimensions_and_alpha(self):
         source = Image.new("RGB", (300, 300), (200, 50, 50))
         source_data = image_bytes(source)
