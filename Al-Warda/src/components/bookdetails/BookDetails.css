@@ -508,36 +508,82 @@
     height: 320px;
   }
 
-  /* On mobile the image should fill the width and determine its own height
-     instead of living inside a fixed box that leaves black gaps. */
+  /* On mobile the image fills the width naturally with optimal flacon scale
+     without leaving massive black letterboxing gaps */
+  .warda-details-card {
+    padding: 0;
+    margin: 0 auto;
+    width: 100%;
+  }
+
   .warda-details-img-wrap {
-    min-height: auto;
-    height: auto;
-    padding: 0.15rem;
+    min-height: unset !important;
+    height: auto !important;
+    max-height: 400px;
+    padding: 0.25rem 0 !important;
   }
 
   .warda-details-photo {
-    max-width: 100%;
-    max-height: none;
+    width: 100%;
+    max-width: 340px;
+    max-height: 380px;
     height: auto;
+    margin: 0 auto;
   }
 
   .warda-details-img {
-    max-width: 100%;
-    max-height: none;
+    width: 100%;
+    max-width: 340px;
+    max-height: 360px;
     height: auto;
+    object-fit: contain;
+    transform: scale(1.15) translateZ(0);
+  }
+
+  .warda-details-img-wrap:hover .warda-details-img {
+    transform: scale(1.15) translateZ(0);
   }
 
   .warda-details-aura {
-    width: 85%;
-    height: 85%;
+    width: 280px;
+    height: 300px;
+    filter: blur(35px);
+  }
+
+  .warda-details-zoom-pill {
+    top: 8px;
+    right: 8px;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.6rem;
   }
 }
 
 @media screen and (max-width: 600px) {
   .warda-details-img-wrap {
-    min-height: auto;
-    padding: 0.1rem;
+    min-height: unset !important;
+    height: auto !important;
+    max-height: 360px;
+    padding: 0 !important;
+  }
+
+  .warda-details-photo {
+    max-width: 300px;
+    max-height: 340px;
+  }
+
+  .warda-details-img {
+    max-width: 300px;
+    max-height: 320px;
+    transform: scale(1.18) translateZ(0);
+  }
+
+  .warda-details-img-wrap:hover .warda-details-img {
+    transform: scale(1.18) translateZ(0);
+  }
+
+  .warda-details-aura {
+    width: 240px;
+    height: 260px;
   }
 }
 

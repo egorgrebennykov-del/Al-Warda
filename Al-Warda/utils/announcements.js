@@ -23,6 +23,18 @@ function safeParse(val) {
 // Site languages, in display order. All announcements are translated into every one.
 export const ANNOUNCEMENT_LANGS = ["ru", "en", "hu", "bg", "el", "ro"];
 
+export const KNOWN_ANNOUNCEMENT_TRANSLATIONS = {
+  testPromo: {
+    match: (txt) => /промокод\s+test|promo\s+code\s+test|test\s+promókódot/i.test(txt || ""),
+    ru: "Пока Al-Warda находится в разработке, реальные заказы недоступны. Используйте промокод TEST, чтобы получить скидку 100% на весь заказ.",
+    en: "Al-Warda is currently under development, and real orders are not yet available. Use promo code TEST to get 100% off your entire order.",
+    hu: "Az Al-Warda jelenleg fejlesztés alatt áll, a valórendelések még nem érhetők el. Használja a TEST promókódot, hogy a teljes rendszerre 100% kedvezményt kapjon.",
+    bg: "Al-Warda все още е в разработка и реалните поръчки все още не са налични. Използвайте промокод TEST, за да получите 100% отстъпка по цялата поръчка.",
+    el: "Το Al-Warda βρίσκεται ακόμα υπό ανάπτυξη και οι πραγματικές παραγγελίες δεν είναι ακόμα διαθέσιμες. Χρησιμοποιήστε τον κωδικό TEST για να λάβετε έκπτωση 100% σε ολόκληρη την παραγγελία σας.",
+    ro: "Al-Warda este în curs de dezvoltare, iar comenzile reale nu sunt încă disponibile. Folosiți codul PROMO TEST pentru a primi 100% reducere la întreaga comandă.",
+  },
+};
+
 /**
  * Normalizes an announcement row from Supabase.
  * Supports localized `content_<lang>` for every site language as well as legacy `content`.
@@ -30,11 +42,41 @@ export const ANNOUNCEMENT_LANGS = ["ru", "en", "hu", "bg", "el", "ro"];
 export function normalizeAnnouncement(row) {
   if (!row) return null;
 
+  const enObj = safeParse(row.content_en);
+  const ruObj = safeParse(row.content_ru);
+  const legacy = safeParse(row.content);
+  const nestedTranslations =
+    enObj.translations || ruObj.translations || legacy.translations || {};
+
   const parsed = {};
   for (const lang of ANNOUNCEMENT_LANGS) {
-    parsed[lang] = safeParse(row[`content_${lang}`]);
+    const direct = safeParse(row[`content_${lang}`]);
+    const nested = safeParse(nestedTranslations[lang]);
+    parsed[lang] = {
+      ...nested,
+      ...direct,
+    };
   }
-  const legacy = safeParse(row.content);
+
+  // Check known translations fallback if text is missing for some language
+  const ruText = parsed.ru?.text || ruObj.text || "";
+  const enText = parsed.en?.text || enObj.text || "";
+  const baseText = ruText || enText;
+
+  for (const k of Object.keys(KNOWN_ANNOUNCEMENT_TRANSLATIONS)) {
+    const known = KNOWN_ANNOUNCEMENT_TRANSLATIONS[k];
+    if (known.match(baseText)) {
+      for (const lang of ANNOUNCEMENT_LANGS) {
+        if (!parsed[lang]?.text && known[lang]) {
+          parsed[lang] = {
+            ...parsed[lang],
+            text: known[lang],
+          };
+        }
+      }
+      break;
+    }
+  }
 
   const type =
     parsed.ru.type === "large" ||
@@ -516,6 +558,18 @@ export async function createAnnouncement({
     : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
+  const translations = {};
+  for (const lang of ["hu", "bg", "el", "ro"]) {
+    translations[lang] = {
+      type: type === "large" ? "large" : "small",
+      text: explicitLangs[lang],
+      imageUrl: explicitImages[lang],
+      linkUrl: explicitLinks[lang],
+      order: Number(order) || 0,
+      active: true,
+    };
+  }
+
   const payload = {
     user_id: userId || null,
     starts_at: fromDate,
@@ -529,6 +583,7 @@ export async function createAnnouncement({
       linkUrl: explicitLinks[lang],
       order: Number(order) || 0,
       active: true,
+      translations,
     };
   }
 
@@ -660,6 +715,18 @@ export async function updateAnnouncement(
     : new Date().toISOString();
   const untilDate = new Date(until).toISOString();
 
+  const translations = {};
+  for (const lang of ["hu", "bg", "el", "ro"]) {
+    translations[lang] = {
+      type: type === "large" ? "large" : "small",
+      text: explicitLangs[lang],
+      imageUrl: explicitImages[lang],
+      linkUrl: explicitLinks[lang],
+      order: Number(order) || 0,
+      active: active !== false,
+    };
+  }
+
   const payload = {
     starts_at: fromDate,
     until: untilDate,
@@ -672,6 +739,7 @@ export async function updateAnnouncement(
       linkUrl: explicitLinks[lang],
       order: Number(order) || 0,
       active: active !== false,
+      translations,
     };
   }
 

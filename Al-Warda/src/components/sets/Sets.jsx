@@ -41,6 +41,9 @@ function isSetOrDiscoveryProduct(item) {
 }
 
 function getSetBadgeLabel(item, language = "ru", t) {
+  if (isMiniatureOrSample(item)) {
+    return t ? t("sets.sampleVial", "ПРОБНИК") : "ПРОБНИК";
+  }
   const isDisc = isDiscoveryOrMiniSet(item);
   if (t) {
     return isDisc ? t("sets.badgeDiscovery") : t("sets.badgeGift");
@@ -190,11 +193,18 @@ export default function Sets() {
 
     // Filter by type (tab)
     if (selectedType === "discovery") {
-      result = result.filter(isDiscoveryOrMiniSet);
+      result = result.filter(
+        (item) => isDiscoveryOrMiniSet(item) && !isMiniatureOrSample(item),
+      );
     } else if (selectedType === "gift") {
       result = result.filter(
-        (item) => isPerfumeSet(item) && !isDiscoveryOrMiniSet(item),
+        (item) =>
+          isPerfumeSet(item) &&
+          !isDiscoveryOrMiniSet(item) &&
+          !isMiniatureOrSample(item),
       );
+    } else if (selectedType === "samples") {
+      result = result.filter(isMiniatureOrSample);
     }
 
     // Filter by brand
@@ -379,6 +389,11 @@ export default function Sets() {
                 icon: "ri-magic-line",
               },
               { id: "gift", label: t("sets.tabGift"), icon: "ri-gift-line" },
+              {
+                id: "samples",
+                label: t("sets.tabSamples", "Пробники"),
+                icon: "ri-flask-line",
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
