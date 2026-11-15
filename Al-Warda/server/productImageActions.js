@@ -4,6 +4,7 @@ import {
   getGlobalGenerationHalted,
   setGlobalGenerationHalted,
   savePendingDeletedImages,
+  invalidateProductImageQueueCache,
 } from "./productImageQueueAdmin.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
@@ -11,6 +12,19 @@ const API = "https://api.github.com/repos/egorgrebennykov-del/Al-Warda";
 const WORKFLOW = "product-image-generation.yml";
 const DELETE_WORKFLOW = "product-image-delete.yml";
 const ACTIVE_STATUSES = new Set(["queued", "in_progress", "requested", "waiting", "pending"]);
+
+let activeRunsCache = null;
+let activeRunsCacheTime = 0;
+let deletionRunsCache = null;
+let deletionRunsCacheTime = 0;
+const ACTIONS_CACHE_TTL_MS = 2500;
+
+export function invalidateActionsCache() {
+  activeRunsCache = null;
+  activeRunsCacheTime = 0;
+  deletionRunsCache = null;
+  deletionRunsCacheTime = 0;
+}
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -43,7 +57,11 @@ async function github(env, path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-async function activeRuns(env) {
+async function activeRuns(env, force = false) {
+  const now = Date.now();
+  if (!force && activeRunsCache && now - activeRunsCacheTime < ACTIONS_CACHE_TTL_MS) {
+    return activeRunsCache;
+  }
   const statuses = ["in_progress", "queued", "waiting", "pending"];
   const results = await Promise.all(
     statuses.map((status) =>
@@ -52,14 +70,23 @@ async function activeRuns(env) {
         .catch(() => [])
     )
   );
-  return results.flat();
+  const flattened = results.flat();
+  activeRunsCache = flattened;
+  activeRunsCacheTime = Date.now();
+  return flattened;
 }
 
-async function deletionRuns(env) {
+async function deletionRuns(env, force = false) {
+  const now = Date.now();
+  if (!force && deletionRunsCache && now - deletionRunsCacheTime < ACTIONS_CACHE_TTL_MS) {
+    return deletionRunsCache;
+  }
   try {
     const data = await github(env, `/actions/workflows/${DELETE_WORKFLOW}/runs?branch=main&per_page=10`);
-    if (!Array.isArray(data?.workflow_runs)) return [];
-    return data.workflow_runs;
+    const runs = Array.isArray(data?.workflow_runs) ? data.workflow_runs : [];
+    deletionRunsCache = runs;
+    deletionRunsCacheTime = Date.now();
+    return runs;
   } catch {
     return [];
   }
@@ -109,8 +136,8 @@ export async function handleProductImageActions(request, env) {
       const account = body.account || "local";
       if (!allowedAccounts.includes(account)) return json({ error: "Invalid Cloudflare account" }, 400);
       if (typeof body.regenerateCompleted !== "boolean") return json({ error: "Invalid regeneration option" }, 400);
-      if ((await activeRuns(env)).length) return json({ error: "An image generation run is already active" }, 409);
-      if ((await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
+      if ((await activeRuns(env, true)).length) return json({ error: "An image generation run is already active" }, 409);
+      if ((await deletionRuns(env, true)).some((run) => ACTIVE_STATUSES.has(run.status))) {
         return json({ error: "Image deletion is already running; wait for it to finish" }, 409);
       }
       try {
@@ -118,6 +145,8 @@ export async function handleProductImageActions(request, env) {
       } catch (err) {
         console.warn("Could not unhalt global generation in DB:", err.message);
       }
+      invalidateActionsCache();
+      invalidateProductImageQueueCache();
       await github(env, `/actions/workflows/${WORKFLOW}/dispatches`, {
         method: "POST",
         body: JSON.stringify({ ref: "main", inputs: { max_images: String(count), cloudflare_account: account, regenerate_completed: String(body.regenerateCompleted) } }),
@@ -125,13 +154,15 @@ export async function handleProductImageActions(request, env) {
       return json({ message: "Workflow dispatch accepted", globalHalted: false }, 202);
     }
     if (body.action === "stop" || body.action === "stop-global") {
-      const runs = await activeRuns(env);
+      const runs = await activeRuns(env, true);
       for (const run of runs) await github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" });
       try {
         await setGlobalGenerationHalted(env, true);
       } catch (err) {
         console.warn("Could not set global generation halted in DB:", err.message);
       }
+      invalidateActionsCache();
+      invalidateProductImageQueueCache();
       return json({
         message: runs.length
           ? "Cancellation requested and global generation halted"
@@ -146,6 +177,8 @@ export async function handleProductImageActions(request, env) {
       } catch (err) {
         console.warn("Could not resume global generation in DB:", err.message);
       }
+      invalidateActionsCache();
+      invalidateProductImageQueueCache();
       return json({ message: "Global generation resumed", globalHalted: false }, 200);
     }
     if (body.action === "sync") {

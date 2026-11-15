@@ -103,6 +103,10 @@ class ProductImageGenerationTests(unittest.TestCase):
         with self.assertRaisesRegex(queue.WorkersConfigurationError, "distinct"):
             queue.load_image_accounts(environ)
 
+    def test_local_pipeline_selection_returns_empty_accounts(self):
+        self.assertEqual(queue.load_image_accounts({"CLOUDFLARE_IMAGE_ACCOUNT": "local"}), [])
+        self.assertEqual(queue.load_image_accounts({}), [])
+
     def test_segmentation_model_uses_verified_cache(self):
         data = b"known model"
         with tempfile.TemporaryDirectory() as temp_dir:

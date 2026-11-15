@@ -6,11 +6,33 @@ import ProductManualConfigModal from "./ProductManualConfigModal";
 import ProductImageCompareModal from "./ProductImageCompareModal";
 import "./ProductImageQueue.css";
 
+async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 1000) {
+  let lastResponse = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, {
+        credentials: "same-origin",
+        ...options,
+      });
+      if ([502, 503, 504].includes(response.status) && attempt < retries) {
+        lastResponse = response;
+        await new Promise((r) => setTimeout(r, delayMs * (attempt + 1)));
+        continue;
+      }
+      return response;
+    } catch (err) {
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, delayMs * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  return lastResponse;
+}
+
 async function fetchActions(options = {}) {
-  return fetch("/api/admin/product-images/actions", {
-    credentials: "same-origin",
-    ...options,
-  });
+  return fetchWithRetry("/api/admin/product-images/actions", options);
 }
 
 function formatDuration(ms, isRussian = true, includeSeconds = true) {
@@ -378,8 +400,6 @@ export default function ProductImageQueue({
       }
     } catch (err) {
       if (isManual) {
-        setRuns([]);
-        setRunsLoaded(false);
         setActionError(err.message);
       }
     }
@@ -449,7 +469,9 @@ export default function ProductImageQueue({
             : "Global generation stopped. All images generated up to this moment will be saved and published to the website.",
         );
       }
-      await loadRuns(true);
+      try {
+        await loadRuns(false);
+      } catch {}
     } catch (err) {
       setRunsLoaded(false);
       setActionError(err.message);
@@ -491,9 +513,7 @@ export default function ProductImageQueue({
         const url = force
           ? "/api/admin/product-images/status?force=1"
           : "/api/admin/product-images/status";
-        const response = await fetch(url, {
-          credentials: "same-origin",
-        });
+        const response = await fetchWithRetry(url);
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
           if ([502, 503, 504].includes(response.status)) {
@@ -780,12 +800,18 @@ export default function ProductImageQueue({
     deletionPending ||
     deletions.some((run) => run.status !== "completed");
   const hasActiveRuns = runs.some((run) => run.status !== "completed");
-  const hasActiveBatch = Boolean(
-    activeBatch &&
-      !globalHalted &&
-      (!status || (status.completed - activeBatch.startCompleted) < activeBatch.targetCount),
+  const batchCompletedReal = activeBatch
+    ? Math.max(0, (status?.completed || 0) - activeBatch.startCompleted)
+    : 0;
+  const batchTarget = activeBatch?.targetCount || Number(count) || 50;
+
+  const isBatchRunning = Boolean(
+    !globalHalted &&
+      (hasActiveRuns ||
+        busy ||
+        (activeBatch && batchCompletedReal < batchTarget)),
   );
-  const hasActiveTasks = hasActiveRuns || deleting || busy || hasActiveBatch;
+  const hasActiveTasks = hasActiveRuns || deleting || busy || isBatchRunning;
 
   useEffect(() => {
     if (!active) return undefined;
@@ -795,9 +821,9 @@ export default function ProductImageQueue({
       loadRuns();
     }, 0);
 
-    const intervalMs = hasActiveTasks ? 4000 : 30000;
+    const intervalMs = hasActiveTasks ? 3000 : 30000;
     const timer = window.setInterval(() => {
-      loadStatus();
+      loadStatus({ force: hasActiveTasks });
       loadRuns();
     }, intervalMs);
 
@@ -807,22 +833,72 @@ export default function ProductImageQueue({
     };
   }, [loadStatus, loadRuns, hasActiveTasks, active]);
 
-  const batchTarget = activeBatch?.targetCount || Number(count) || 50;
-  const batchStartedAt = activeBatch?.startTime || (hasActiveRuns ? nowMs - 15000 : null);
-  const elapsedSec = batchStartedAt ? Math.max(0, Math.floor((nowMs - batchStartedAt) / 1000)) : 0;
-  const batchCompletedReal = activeBatch
-    ? Math.max(0, (status?.completed || 0) - activeBatch.startCompleted)
+  const batchStartedAt =
+    activeBatch?.startTime || (hasActiveRuns ? nowMs - 15000 : null);
+  const elapsedSec = batchStartedAt
+    ? Math.max(0, Math.floor((nowMs - batchStartedAt) / 1000))
     : 0;
-  const estimatedSecPerItem = 14;
-  const expectedItemsDone = Math.min(batchTarget, elapsedSec / estimatedSecPerItem);
-  const displayItemsCompleted = Math.min(
-    batchTarget,
-    Math.max(batchCompletedReal, Math.floor(expectedItemsDone)),
+
+  const secPerItem = 12;
+  const startupSec = 15;
+  const elapsedAfterStartup = Math.max(0, elapsedSec - startupSec);
+  const simulatedDone = Math.min(
+    batchTarget - 0.05,
+    elapsedSec < startupSec
+      ? (elapsedSec / startupSec) * 0.4
+      : 0.4 + elapsedAfterStartup / secPerItem,
   );
-  const itemFraction = Math.min(0.95, (elapsedSec % estimatedSecPerItem) / estimatedSecPerItem);
-  const smoothBatchPercent = (hasActiveRuns || busy)
-    ? Math.min(99, Math.round(((displayItemsCompleted + itemFraction) / Math.max(1, batchTarget)) * 100))
-    : (activeBatch && batchCompletedReal >= batchTarget ? 100 : Math.min(100, Math.round((batchCompletedReal / Math.max(1, batchTarget)) * 100)));
+
+  const currentItemElapsed = Math.max(
+    0,
+    elapsedSec - batchCompletedReal * secPerItem,
+  );
+  const currentFraction = Math.min(
+    0.95,
+    1 - Math.exp(-currentItemElapsed / (secPerItem * 0.8)),
+  );
+  const virtualCompleted = Math.max(
+    batchCompletedReal + currentFraction,
+    simulatedDone,
+  );
+
+  const displayItemsCompleted = isBatchRunning
+    ? Math.min(
+        batchTarget,
+        Math.max(batchCompletedReal, Math.floor(virtualCompleted)),
+      )
+    : activeBatch && batchCompletedReal >= batchTarget
+      ? batchTarget
+      : batchCompletedReal;
+
+  const rawBatchPercent = isBatchRunning
+    ? Math.min(
+        99,
+        Math.max(1, (virtualCompleted / Math.max(1, batchTarget)) * 100),
+      )
+    : activeBatch && batchCompletedReal >= batchTarget
+      ? 100
+      : Math.min(
+          100,
+          Math.round((batchCompletedReal / Math.max(1, batchTarget)) * 100),
+        );
+
+  const smoothBatchPercent = Math.round(rawBatchPercent);
+
+  const displayOverallCompleted = Math.min(
+    status?.total || 0,
+    Math.max(
+      status?.completed || 0,
+      (activeBatch?.startCompleted || 0) + displayItemsCompleted,
+    ),
+  );
+  const overallProgress = status?.total
+    ? Math.min(
+        100,
+        Math.round((displayOverallCompleted / status.total) * 100),
+      )
+    : 0;
+
   const selectableImages = (status?.images || []).filter(
     (image) =>
       /^\d{1,20}$/.test(String(image.id)) &&
@@ -844,9 +920,7 @@ export default function ProductImageQueue({
     failedItems.length > 0 &&
     failedItems.every((item) => Boolean(selectedFailed[String(item.id)]));
 
-  const progress = status?.total
-    ? Math.min(100, Math.round((status.completed / status.total) * 100))
-    : 0;
+  const progress = overallProgress;
 
   const liveAccounts = (status?.accounts || []).map((item) => {
     const availableAtMs = item.availableAt ? Date.parse(item.availableAt) : 0;
@@ -1271,13 +1345,13 @@ export default function ProductImageQueue({
                 <div className="product-image-queue__batch-title-group">
                   <span
                     className={`product-image-queue__pulsing-dot ${
-                      hasActiveRuns || busy
+                      isBatchRunning
                         ? "product-image-queue__pulsing-dot--active"
                         : "product-image-queue__pulsing-dot--done"
                     }`}
                   />
                   <strong>
-                    {hasActiveRuns || busy
+                    {isBatchRunning
                       ? isRussian
                         ? "Выполняется генерация партии"
                         : "Active batch generation in progress"
@@ -1291,7 +1365,7 @@ export default function ProductImageQueue({
                     {displayItemsCompleted} / {batchTarget}{" "}
                     {isRussian ? "фото" : "photos"} ({smoothBatchPercent}%)
                   </span>
-                  {activeBatch && !hasActiveRuns && !busy && (
+                  {activeBatch && !isBatchRunning && (
                     <button
                       type="button"
                       className="product-image-queue__batch-dismiss-btn"
@@ -1311,14 +1385,16 @@ export default function ProductImageQueue({
               <div className="product-image-queue__batch-progress-track">
                 <div
                   className="product-image-queue__batch-progress-fill"
-                  style={{ width: `${smoothBatchPercent}%` }}
+                  style={{
+                    width: `${isBatchRunning ? rawBatchPercent.toFixed(1) : smoothBatchPercent}%`,
+                  }}
                 />
               </div>
 
               <div className="product-image-queue__batch-footer">
                 <span className="product-image-queue__batch-stage">
                   <i className="ri-sparkling-fill" />{" "}
-                  {hasActiveRuns || busy
+                  {isBatchRunning
                     ? isRussian
                       ? `Обработка фото ${Math.min(
                           batchTarget,
@@ -1345,13 +1421,13 @@ export default function ProductImageQueue({
           <div className="product-image-queue__progress-heading">
             <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
             <span>
-              {status.completed.toLocaleString()} /{" "}
-              {status.total.toLocaleString()} ({progress}%)
+              {displayOverallCompleted.toLocaleString()} /{" "}
+              {status.total.toLocaleString()} ({overallProgress}%)
             </span>
           </div>
           <progress
             className="product-image-queue__progress"
-            value={progress}
+            value={overallProgress}
             max="100"
           />
 

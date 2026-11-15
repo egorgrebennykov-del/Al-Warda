@@ -164,7 +164,11 @@ def extract_account_quotas(rows):
 
 
 def load_image_accounts(environ):
-    selected = environ.get("CLOUDFLARE_IMAGE_ACCOUNT", "primary")
+    selected = environ.get("CLOUDFLARE_IMAGE_ACCOUNT")
+    if not selected:
+        selected = "primary" if environ.get("CLOUDFLARE_ACCOUNT_ID") else "local"
+    if selected == "local":
+        return []
     if selected != "auto" and selected not in ACCOUNT_ENV:
         raise WorkersConfigurationError("Unknown Cloudflare account selection")
     names = list(ACCOUNT_ENV) if selected == "auto" else [selected]
@@ -1573,6 +1577,18 @@ def check_schedule_ready(rows, now, wait_up_to_seconds=SCHEDULE_WAIT_WINDOW_SECO
             "reason": "no_pending_images",
             "wait_seconds": 0,
             "pending_count": 0,
+        }
+
+    selected_account = os.environ.get("CLOUDFLARE_IMAGE_ACCOUNT")
+    if not selected_account:
+        selected_account = "primary" if os.environ.get("CLOUDFLARE_ACCOUNT_ID") else "local"
+    has_cf = bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_API_TOKEN"))
+    if selected_account == "local" or not has_cf:
+        return {
+            "should_run": True,
+            "reason": "local_pipeline_ready",
+            "wait_seconds": 0,
+            "pending_count": len(candidates),
         }
 
     quotas = extract_account_quotas(rows)

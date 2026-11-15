@@ -274,17 +274,18 @@ async function fetchAllStocksUncached(env, key) {
   }
 }
 
-export async function fetchAllStocks(env, key) {
+export async function fetchAllStocks(env, key, force = false) {
   const cacheKey = getSupabaseUrl(env);
   const now = Date.now();
   if (
+    !force &&
     allStocksCache &&
     allStocksCache.key === cacheKey &&
     now - allStocksCacheTime < ALL_STOCKS_CACHE_TTL_MS
   ) {
     return allStocksCache.rows;
   }
-  if (allStocksCachePromise && allStocksCachePromise.key === cacheKey) {
+  if (!force && allStocksCachePromise && allStocksCachePromise.key === cacheKey) {
     return allStocksCachePromise.promise;
   }
   const promise = fetchAllStocksUncached(env, key)
@@ -493,7 +494,7 @@ export async function getProductImageQueueStatus(request, env) {
     }
 
     const computeStatus = async () => {
-      const rows = await fetchAllStocks(env, getServiceKey(env));
+      const rows = await fetchAllStocks(env, getServiceKey(env), force);
       const nowMs = Date.now();
       const today = new Date(nowMs).toISOString().slice(0, 10);
       const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };

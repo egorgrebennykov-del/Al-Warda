@@ -52,6 +52,10 @@ jobs:
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          CLOUDFLARE_IMAGE_ACCOUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_account || 'local' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED: ${{ secrets.CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED }}
         run: |
           if [ "$EVENT_NAME" = "schedule" ]; then
             python3 Al-Warda/scripts/generate_product_images.py --check-schedule-ready >> "$GITHUB_OUTPUT"
@@ -82,6 +86,10 @@ jobs:
         env:
           MAX_IMAGES: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.max_images) || '500' }}
           REGENERATE_COMPLETED: ${{ inputs.regenerate_completed || false }}
+          CLOUDFLARE_IMAGE_ACCOUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.cloudflare_account || 'local' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED: ${{ secrets.CLOUDFLARE_WORKERS_AI_FREE_PLAN_CONFIRMED }}
         run: |
           if [ "$REGENERATE_COMPLETED" = "true" ]; then
             python Al-Warda/scripts/generate_product_images.py --max-images "$MAX_IMAGES" --regenerate-completed
