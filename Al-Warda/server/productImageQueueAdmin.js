@@ -1137,6 +1137,10 @@ export async function saveManualProductItem(request, env) {
 
     let finalImageUrl = existingImage;
 
+    if (body.image === "") {
+      finalImageUrl = "";
+    }
+
     // External image URLs sent by the client must not replace the existing
     // image. Reject them by ignoring body.image entirely.
     if (body.image && typeof body.image === "string") {
@@ -1345,6 +1349,9 @@ export async function saveManualProductItem(request, env) {
       currency,
       info: updatedInfo,
     };
+    if (finalImageUrl) {
+      patchPayload.image = finalImageUrl;
+    }
 
     if (isNew) {
       const insertUrl = new URL(`${baseUrl}/rest/v1/stocks`);

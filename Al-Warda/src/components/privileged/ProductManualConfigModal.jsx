@@ -24,6 +24,9 @@ const GENDER_OPTIONS = [
   { ru: "Женский", en: "Women" },
 ];
 
+const asNoteString = (val) =>
+  Array.isArray(val) ? val.join(", ") : typeof val === "string" ? val : "";
+
 export default function ProductManualConfigModal({
   item,
   onClose,
@@ -84,15 +87,20 @@ export default function ProductManualConfigModal({
       sillage: enriched.sillage || "Выразительный, шлейфовый",
       notesSummaryRu: enriched.notesSummaryRu || enriched.notesSummary || "",
       notesSummaryEn: enriched.notesSummaryEn || "",
-      topNotesRu: (enriched.topNotesRu || []).join(", "),
-      heartNotesRu: (enriched.heartNotesRu || []).join(", "),
-      baseNotesRu: (enriched.baseNotesRu || []).join(", "),
-      topNotesEn: (enriched.topNotesEn || []).join(", "),
-      heartNotesEn: (enriched.heartNotesEn || []).join(", "),
-      baseNotesEn: (enriched.baseNotesEn || []).join(", "),
+      topNotesRu: asNoteString(enriched.topNotesRu || enriched.topNotes),
+      heartNotesRu: asNoteString(enriched.heartNotesRu || enriched.heartNotes),
+      baseNotesRu: asNoteString(enriched.baseNotesRu || enriched.baseNotes),
+      topNotesEn: asNoteString(enriched.topNotesEn),
+      heartNotesEn: asNoteString(enriched.heartNotesEn),
+      baseNotesEn: asNoteString(enriched.baseNotesEn),
       descriptionRu: enriched.descriptionRu || enriched.description || "",
       descriptionEn: enriched.descriptionEn || "",
-      image: item?.image || item?.rawImage || "",
+      image:
+        item?.image ||
+        item?.rawImage ||
+        item?.info?.imageGeneration?.imageUrl ||
+        item?.info?.rawImage ||
+        "",
     };
   });
 
@@ -158,7 +166,7 @@ export default function ProductManualConfigModal({
 
   // Fetch notes/description from the pipeline (DeepSeek + Gemini) for the
   // current name/brand and pre-fill the form with the generated data.
-  const handleFetchNotes = async () => {
+  const handleGenerateNotes = async () => {
     if (!name.trim()) {
       setError(
         isRussian
@@ -356,6 +364,7 @@ export default function ProductManualConfigModal({
         ].some((value) => String(value || "").trim().length > 0),
         descriptionRu: descriptionRu.trim(),
         descriptionEn: descriptionEn.trim(),
+        image: image || "",
         inStock: true,
         minOrderQuantity: 1,
       };
@@ -438,13 +447,32 @@ export default function ProductManualConfigModal({
         </header>
 
         <form onSubmit={handleSubmit} className="product-manual-modal__body">
-          {/* SECTION 1: Product Image (read-only preview) */}
+          {/* SECTION 1: Product Image */}
           <div className="product-manual-modal__section">
             <div className="product-manual-modal__section-header">
               <h3 className="product-manual-modal__section-title">
                 <i className="ri-image-2-line" />
                 {isRussian ? "1. Фотография флакона" : "1. Flacon Visual"}
               </h3>
+              {(item?.rawImage || item?.info?.rawImage) && (
+                <button
+                  type="button"
+                  className="product-manual-modal__qogita-btn"
+                  onClick={() =>
+                    setImage(item?.rawImage || item?.info?.rawImage)
+                  }
+                  title={
+                    isRussian
+                      ? "Использовать исходное фото Qogita"
+                      : "Use original Qogita image"
+                  }
+                >
+                  <i className="ri-image-line" />
+                  {isRussian
+                    ? "Взять фото поставщика (Qogita)"
+                    : "Use Qogita Photo"}
+                </button>
+              )}
             </div>
 
             <div className="product-manual-modal__image-layout">
@@ -463,6 +491,17 @@ export default function ProductManualConfigModal({
                     </div>
                   )}
                 </div>
+                {image && (
+                  <button
+                    type="button"
+                    className="product-manual-modal__clear-btn"
+                    onClick={() => setImage("")}
+                    title={isRussian ? "Удалить фото" : "Clear image"}
+                  >
+                    <i className="ri-delete-bin-line" />
+                    {isRussian ? "Удалить фото" : "Clear image"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

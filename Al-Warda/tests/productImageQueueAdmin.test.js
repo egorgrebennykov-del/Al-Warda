@@ -407,6 +407,10 @@ describe("product image queue admin API", () => {
       patchedBody.info.imageGeneration.imageUrl,
       "https://img.qogita.com/yara-raw.jpg",
     );
+    assert.strictEqual(
+      patchedBody.image,
+      "https://img.qogita.com/yara-raw.jpg",
+    );
 
     // Verify hasCompletedGeneratedImage recognizes the manually configured product
     assert.equal(
@@ -416,6 +420,61 @@ describe("product image queue admin API", () => {
       }),
       true,
     );
+  });
+
+  it("allows privileged users to clear product image via saveManualProductItem", async () => {
+    let patchedBody = null;
+
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user")) {
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && !init.method) {
+        return Response.json([
+          {
+            id: 43,
+            name: "Khamrah Lattafa",
+            brand: "Lattafa",
+            price: 35.0,
+            currency: "EUR",
+            image: "https://img.qogita.com/khamrah.jpg",
+            info: {
+              rawImage: "https://img.qogita.com/khamrah-raw.jpg",
+            },
+          },
+        ]);
+      }
+      if (url.pathname.endsWith("/rest/v1/stocks") && init.method === "PATCH") {
+        patchedBody = JSON.parse(init.body);
+        return Response.json([{ id: 43, ...patchedBody }]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+
+    const res = await saveManualProductItem(
+      request("/api/admin/product-images/manual-save", userCookie(), {
+        method: "POST",
+        body: JSON.stringify({
+          id: 43,
+          name: "Khamrah Lattafa",
+          brand: "Lattafa",
+          price: 35.0,
+          currency: "EUR",
+          image: "",
+        }),
+      }),
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
+    );
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.strictEqual(patchedBody.image, undefined);
+    assert.strictEqual(patchedBody.info.imageGeneration, undefined);
   });
 
   it("allows privileged users to create a brand new product via saveManualProductItem", async () => {

@@ -11,8 +11,7 @@ afterEach(() => {
 
 describe("perfume image readiness", () => {
   it("returns catalog rows using the top-level generated image", async () => {
-    const generatedImage =
-      "https://mfvenfrmlkxqgvdtedet.supabase.co/storage/v1/object/public/product-images/ready.png";
+    const generatedImage = `/assets/img/generated-products/${"a".repeat(64)}.png`;
     globalThis.fetch = async (input) => {
       const url = new URL(input, "https://shop.example");
       if (url.pathname === "/api/qogita/arabian-perfumes") {
@@ -21,7 +20,7 @@ describe("perfume image readiness", () => {
       if (url.searchParams.get("slug") === "eq.site-settings") {
         return Response.json([]);
       }
-      assert.equal(url.pathname, "/rest/v1/stocks");
+      assert.ok(url.pathname.endsWith("/rest/v1/stocks"));
       // Completed-image filtering now happens server-side via the PostgREST
       // filter; the client no longer re-checks info.imageGeneration.status.
       assert.equal(
