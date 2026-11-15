@@ -124,8 +124,8 @@ async function dispatchGuestEmailViaEmailJs({
 
 const TABLE_URL = restUrl("inquiries");
 const headers = {
-  apikey: SUPABASE_KEY,
-  Authorization: `Bearer ${SUPABASE_KEY}`,
+  apikey: "",
+  Authorization: "",
   "Content-Type": "application/json",
 };
 

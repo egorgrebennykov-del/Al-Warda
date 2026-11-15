@@ -17,8 +17,8 @@ export async function createOrderInProgress({
     const response = await fetch(TABLE_URL, {
       method: "POST",
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
         "Content-Type": "application/json",
         Prefer: "return=representation",
       },
@@ -57,8 +57,8 @@ export async function getUserOrders(userId) {
     });
     const response = await fetch(`${TABLE_URL}?${params}`, {
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
       },
     });
     if (!response.ok) return [];
@@ -90,8 +90,8 @@ export async function getAllOrdersAdmin() {
     });
     const response = await fetch(`${TABLE_URL}?${params}`, {
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
       },
     });
     if (!response.ok) return [];
@@ -109,8 +109,8 @@ export async function updateOrderStatus(orderId, newStatus) {
     {
       method: "PATCH",
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
         "Content-Type": "application/json",
         Prefer: "return=representation",
       },

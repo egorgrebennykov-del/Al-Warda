@@ -2306,8 +2306,8 @@ async function fetchPerfumeDetailsById(id) {
     `${TABLE_PERFUMES}?select=id,name,brand,image,info&id=eq.${encodeURIComponent(id)}&limit=1`,
     {
       headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
+        apikey: "",
+        Authorization: "",
       },
     },
   );
@@ -2375,8 +2375,8 @@ export async function fetchPerfumesFromSupabase() {
         `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description&order=id.asc&info->imageGeneration->>status=eq.completed&limit=${pageSize}&offset=${from}`,
         {
           headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            apikey: "",
+            Authorization: "",
           },
           signal: controller?.signal,
         },
@@ -2576,8 +2576,8 @@ export async function fetchMinOrderSettings(force = false) {
         `${TABLE_PERFUMES}?select=info&slug=eq.site-settings&limit=1`,
         {
           headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            apikey: "",
+            Authorization: "",
           },
         },
       );

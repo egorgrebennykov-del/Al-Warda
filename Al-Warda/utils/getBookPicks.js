@@ -12,7 +12,6 @@ export function getCachedBookPicks() {
 }
 
 export default async function getBookPicks() {
-  if (!KEY) throw new Error("VITE_SUPABASE_ANON_KEY is not configured");
   if (cachedPicks !== null && Date.now() < cacheExpiry) {
     return cachedPicks;
   }
@@ -21,8 +20,8 @@ export default async function getBookPicks() {
   inflight = (async () => {
     const response = await fetch(`${TABLE_URL}?select=books&limit=1`, {
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
       },
     });
 

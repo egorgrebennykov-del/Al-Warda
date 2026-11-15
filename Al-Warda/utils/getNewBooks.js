@@ -20,8 +20,8 @@ export default async function getNewBooks() {
   inflight = (async () => {
     const response = await fetch(`${TABLE_URL}?select=books&limit=1`, {
       headers: {
-        apikey: KEY,
-        Authorization: `Bearer ${KEY}`,
+        apikey: "",
+        Authorization: "",
       },
     });
 
