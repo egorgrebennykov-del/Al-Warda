@@ -766,6 +766,27 @@ class ProductImageGenerationTests(unittest.TestCase):
         self.assertEqual(job["textMatchPoints"], 15)
         self.assertEqual(job["requiresManualReview"], False)
 
+    def test_process_product_flagged_safeguard_falls_back_to_direct_cutout(self):
+        source = image_bytes(Image.new("RGB", (60, 60), (200, 30, 30)))
+        response = types.SimpleNamespace(ok=True, iter_content=lambda **_kwargs: iter([source]))
+        row = {"id": 8, "info": {"rawImage": "https://img.qogita.com/photo.jpg"}}
+        captured = {}
+        def capture_update(_session, _url, _row, info, **_kwargs):
+            captured.update(info)
+        with patch.object(queue.requests, "get", return_value=response), \
+             patch.object(queue, "generate_product_edit", side_effect=queue.WorkersOutputFlaggedError("flagged")), \
+             patch.object(queue, "transparent_product_image", return_value=(image_bytes(Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))), (1024, 1024))) as mock_cutout, \
+             patch.object(queue, "fetch_verified_notes", return_value=None), \
+             patch.object(queue, "generate_ai_perfume_description", return_value=None), \
+             patch.object(queue, "save_generated_image", return_value="/assets/img/generated-products/cutout.png"), \
+             patch.object(queue, "patch_stock", side_effect=capture_update):
+            queue.process_product(object(), row, "https://db.example", "account", "token", None, datetime.now(timezone.utc))
+        job = captured["imageGeneration"]
+        self.assertEqual(job["status"], "publishing")
+        self.assertEqual(job["processingMethod"], "direct_cutout")
+        self.assertEqual(job["textRestoreReason"], "authentic_original_cutout")
+        mock_cutout.assert_called_once_with(source, None, allow_arbitrary_dimensions=True)
+
     def test_restore_source_text_regions_returns_unchanged_when_no_features(self):
         source = image_bytes(Image.new("RGB", (80, 80), (128, 128, 128)))
         generated = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))

@@ -282,7 +282,10 @@ def prepare_segmentation_model():
                 print(f"U2Net download failed: {error}", file=sys.stderr, flush=True)
             finally:
                 if temporary_path is not None:
-                    temporary_path.unlink(missing_ok=True)
+                    try:
+                        temporary_path.unlink()
+                    except OSError:
+                        pass
         if attempt < 2:
             time.sleep(2 ** attempt * 5)
     raise RuntimeError("Could not download verified U2Net model after retries: " + "; ".join(failures))
@@ -663,6 +666,22 @@ def generate_ai_perfume_description(
     )
 
 
+def is_workers_flagged_error(response):
+    if response is None or getattr(response, "ok", False):
+        return False
+    text = (getattr(response, "text", "") or "")
+    if "3030" in text or "flagged" in text.lower() or "nsfw" in text.lower():
+        return True
+    try:
+        data = response.json()
+        for err in data.get("errors", []):
+            if err.get("code") == 3030 or "flagged" in str(err.get("message", "")).lower():
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def generate_product_edit(session, account_id, api_token, source_bytes):
     source = decode_source(source_bytes)
     # Keep the full-resolution photo as the Flux reference. Only downscale when
@@ -680,8 +699,8 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
         files={"input_image_0": ("reference.png", reference.getvalue(), "image/png")},
         timeout=(15, 180),
     )
-    error_details = response.text[:400] if not response.ok else ""
-    if not response.ok and ("flagged" in error_details.lower() or "3030" in error_details):
+    error_details = response.text[:1000] if not response.ok else ""
+    if not response.ok and is_workers_flagged_error(response):
         print("Flagged prompt/image detected; retrying with clean studio prompt...", flush=True)
         safe_prompt = (
             "Professional commercial studio product photography of a luxury perfume flacon, "
@@ -694,7 +713,7 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
             files={"input_image_0": ("reference.png", reference.getvalue(), "image/png")},
             timeout=(15, 180),
         )
-        error_details = response.text[:400] if not response.ok else ""
+        error_details = response.text[:1000] if not response.ok else ""
     quota_error = re.search(
         r"daily.{0,50}(quota|limit|allocation|neuron)|(?:quota|limit|allocation).{0,30}daily",
         error_details,
@@ -713,9 +732,9 @@ def generate_product_edit(session, account_id, api_token, source_bytes):
             f"Workers AI account or model authorization failed ({response.status_code}): {error_details}"
         )
     if not response.ok:
-        if "flagged" in error_details.lower() or "3030" in error_details:
+        if is_workers_flagged_error(response):
             raise WorkersOutputFlaggedError(
-                f"Workers AI safety filter flagged prompt/image (3030): {error_details}"
+                f"Workers AI request failed ({response.status_code}): safety filter flagged prompt/image (3030): {error_details}"
             )
         raise RuntimeError(
             f"Workers AI request failed ({response.status_code}): {error_details}"
@@ -801,12 +820,12 @@ def save_generated_image(image_bytes):
     return f"{GENERATED_URL}{digest}.png"
 
 
-def transparent_product_image(image_bytes, segmentation_session):
+def transparent_product_image(image_bytes, segmentation_session, allow_arbitrary_dimensions=False):
     with Image.open(io.BytesIO(image_bytes)) as edited:
         edited.load()
-        if edited.size != (1024, 1024):
+        if not allow_arbitrary_dimensions and edited.size != (1024, 1024):
             raise ValueError(f"Unexpected generated image dimensions: {edited.size}")
-        source = edited.convert("RGB")
+        source = ImageOps.exif_transpose(edited).convert("RGB")
 
     cutout_result = remove(source, session=segmentation_session, only_mask=False, alpha_matting=False)
     if isinstance(cutout_result, Image.Image):
@@ -824,32 +843,33 @@ def transparent_product_image(image_bytes, segmentation_session):
     edge += alpha.crop((0, height - 1, width, height)).tobytes()
     edge += alpha.crop((0, 1, 1, height - 1)).tobytes()
     edge += alpha.crop((width - 1, 1, width, height - 1)).tobytes()
-    if sum(value > 32 for value in edge) > len(edge) * 0.05:
+    if not allow_arbitrary_dimensions and sum(value > 32 for value in edge) > len(edge) * 0.05:
         raise ValueError("The segmented image has an opaque border; the product must be regenerated")
 
-    # Validate perfume flacon solidity vs hollow jewelry/bracelet/non-perfume object
-    bbox = alpha.getbbox()
-    if bbox:
-        bx1, by1, bx2, by2 = bbox
-        bw = bx2 - bx1
-        bh = by2 - by1
-        if bw * bh > 0:
-            import numpy as np
-            alpha_arr = np.array(alpha)
-            obj_pixels = int(np.sum(alpha_arr[by1:by2, bx1:bx2] > 20))
-            bbox_fill = obj_pixels / (bw * bh)
-            cx1, cx2 = int(bx1 + bw * 0.35), int(bx1 + bw * 0.65)
-            cy1, cy2 = int(by1 + bh * 0.35), int(by1 + bh * 0.65)
-            center_sub = alpha_arr[cy1:cy2, cx1:cx2]
-            center_fill = float(np.mean(center_sub > 20)) if center_sub.size > 0 else 0.0
-            if center_fill < 0.20 and bbox_fill < 0.35:
-                raise ValueError(
-                    f"Изображение не содержит флакон парфюма: обнаружен полый предмет (бижутерия / браслет / кольцо, заполнение центра: {center_fill*100:.1f}%)"
-                )
-            if bbox_fill < 0.22:
-                raise ValueError(
-                    f"Изображение не содержит флакон парфюма: объект слишком неплотный ({bbox_fill*100:.1f}%) для флакона духов"
-                )
+    if not allow_arbitrary_dimensions:
+        # Validate perfume flacon solidity vs hollow jewelry/bracelet/non-perfume object
+        bbox = alpha.getbbox()
+        if bbox:
+            bx1, by1, bx2, by2 = bbox
+            bw = bx2 - bx1
+            bh = by2 - by1
+            if bw * bh > 0:
+                import numpy as np
+                alpha_arr = np.array(alpha)
+                obj_pixels = int(np.sum(alpha_arr[by1:by2, bx1:bx2] > 20))
+                bbox_fill = obj_pixels / (bw * bh)
+                cx1, cx2 = int(bx1 + bw * 0.35), int(bx1 + bw * 0.65)
+                cy1, cy2 = int(by1 + bh * 0.35), int(by1 + bh * 0.65)
+                center_sub = alpha_arr[cy1:cy2, cx1:cx2]
+                center_fill = float(np.mean(center_sub > 20)) if center_sub.size > 0 else 0.0
+                if center_fill < 0.20 and bbox_fill < 0.35:
+                    raise ValueError(
+                        f"Изображение не содержит флакон парфюма: обнаружен полый предмет (бижутерия / браслет / кольцо, заполнение центра: {center_fill*100:.1f}%)"
+                    )
+                if bbox_fill < 0.22:
+                    raise ValueError(
+                        f"Изображение не содержит флакон парфюма: объект слишком неплотный ({bbox_fill*100:.1f}%) для флакона духов"
+                    )
 
     cutout = normalize_flacon_cutout(cutout)
 
@@ -1428,7 +1448,9 @@ def process_product(
                 f"Falling back to direct authentic high-resolution studio cutout from original photo...",
                 flush=True,
             )
-            output, original_size = transparent_product_image(source_bytes, segmentation_session)
+            output, original_size = transparent_product_image(
+                source_bytes, segmentation_session, allow_arbitrary_dimensions=True
+            )
             processing_method = "direct_cutout"
             whether_upscaled = False
             text_restored = True
