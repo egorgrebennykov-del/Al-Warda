@@ -1308,6 +1308,13 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
                 final_bgr = np.where(fg_mask[:, :, np.newaxis], enhanced_bgr, bgr)
                 final_rgb = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
 
+                # White-matte defringing / color decontamination (eliminates halos against dark background)
+                a_f = (alpha.astype(np.float32) / 255.0)[:, :, np.newaxis]
+                unpremult = (final_rgb.astype(np.float32) - (1.0 - a_f) * 255.0) / np.maximum(a_f, 0.02)
+                clean_rgb = np.clip(unpremult, 0.0, 255.0).astype(np.uint8)
+                edge_zone = (alpha > 0) & (alpha < 252)
+                final_rgb[edge_zone] = clean_rgb[edge_zone]
+
                 out_arr = np.dstack((final_rgb, alpha))
                 cutout = Image.fromarray(out_arr, mode="RGBA")
     except Exception:
