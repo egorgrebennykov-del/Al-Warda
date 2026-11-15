@@ -800,7 +800,22 @@ export default function ProductImageQueue({
           </p>
         </div>
         <div className="product-image-queue__header-actions">
-          {runs.length > 0 && (
+          {globalHalted ? (
+            <button
+              type="button"
+              className="product-image-queue__start product-image-queue__start--resume"
+              disabled={busy}
+              onClick={handleResumeGlobalGeneration}
+              title={
+                isRussian
+                  ? "Возобновить глобальный процесс генерации"
+                  : "Resume global generation"
+              }
+            >
+              <i className="ri-play-circle-line" />
+              {isRussian ? "Возобновить генерацию" : "Resume generation"}
+            </button>
+          ) : runs.length > 0 ? (
             <button
               type="button"
               className="product-image-queue__start product-image-queue__start--danger"
@@ -815,7 +830,7 @@ export default function ProductImageQueue({
               <i className="ri-stop-circle-line" />
               {isRussian ? "Остановить генерацию" : "Stop generation"}
             </button>
-          )}
+          ) : null}
           <a
             className="product-image-queue__start"
             href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-generation.yml"
@@ -830,7 +845,7 @@ export default function ProductImageQueue({
         </div>
       </header>
 
-      {runs.length > 0 && (
+      {!globalHalted && runs.length > 0 && (
         <div className="product-image-queue__global-banner product-image-queue__global-banner--running">
           <div className="product-image-queue__global-banner-info">
             <span className="product-image-queue__pulse-dot" aria-hidden="true" />
@@ -871,13 +886,21 @@ export default function ProductImageQueue({
             <div>
               <strong>
                 {isRussian
-                  ? "Глобальный процесс генерации остановлен"
-                  : "Global generation process stopped"}
+                  ? runs.length > 0
+                    ? "Глобальный процесс генерации останавливается"
+                    : "Глобальный процесс генерации остановлен"
+                  : runs.length > 0
+                    ? "Global generation process stopping"
+                    : "Global generation process stopped"}
               </strong>
               <p>
                 {isRussian
-                  ? "Автоматические запуски по расписанию (cron раз в 30 минут) приостановлены. Нажмите «Возобновить генерацию», чтобы вернуть штатный режим."
-                  : "Automatic scheduled runs (every 30 minutes) are paused. Click 'Resume generation' to return to normal schedule."}
+                  ? runs.length > 0
+                    ? `Отправлен сигнал остановки (${runs.length} задач в GitHub Actions завершают сохранение). Автоматические запуски по расписанию приостановлены.`
+                    : "Автоматические запуски по расписанию (cron раз в 30 минут) приостановлены. Нажмите «Возобновить генерацию», чтобы вернуть штатный режим."
+                  : runs.length > 0
+                    ? `Stop signal sent (${runs.length} GitHub Actions tasks finishing up). Scheduled runs are paused.`
+                    : "Automatic scheduled runs (every 30 minutes) are paused. Click 'Resume generation' to return to normal schedule."}
               </p>
             </div>
           </div>

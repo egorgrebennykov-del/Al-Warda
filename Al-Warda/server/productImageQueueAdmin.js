@@ -16,7 +16,15 @@ export function getServiceKey(env) {
 }
 
 export function getSupabaseUrl(env) {
-  const url = env?.SUPABASE_URL || env?.VITE_SUPABASE_URL;
+  const url =
+    env?.SUPABASE_URL ||
+    env?.VITE_SUPABASE_URL ||
+    (env?.NHOST_GRAPHQL_URL ||
+    env?.NHOST_HASURA_URL ||
+    env?.NHOST_ADMIN_SECRET ||
+    process.env?.NHOST_ADMIN_SECRET
+      ? "https://nhost-proxy.local"
+      : "");
   if (!url) throw new Error("SUPABASE_URL is not configured on the server");
   return url.replace(/\/+$/, "");
 }
@@ -792,6 +800,7 @@ export async function setGlobalGenerationHalted(env, halted) {
       method: "POST",
       headers,
       body: JSON.stringify({
+        id: 999999,
         slug: SETTINGS_SLUG,
         name: "Site settings",
         title: "Site settings",
@@ -892,6 +901,7 @@ export async function saveSiteSettings(request, env) {
         method: "POST",
         headers,
         body: JSON.stringify({
+          id: 999999,
           slug: SETTINGS_SLUG,
           name: "Site settings",
           title: "Site settings",

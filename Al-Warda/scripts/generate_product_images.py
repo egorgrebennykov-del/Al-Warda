@@ -1397,10 +1397,37 @@ def is_global_generation_halted(rows):
     for row in rows:
         slug = str(row.get("slug") or "")
         identifier = str(row.get("id") or "")
-        if slug == "site-settings" or identifier == "site-settings":
+        if slug == "site-settings" or identifier in ("site-settings", "999999"):
             info = row.get("info") or {}
             if info.get("globalImageGenerationHalted") or info.get("imageGenerationHalted"):
                 return True
+    return False
+
+
+def check_global_halt_remote(session, supabase_url, service_key=""):
+    """Check if global image generation is halted via a lightweight single-row query."""
+    try:
+        endpoint = rest_stocks_url(supabase_url)
+        params = {"select": "id,slug,info", "slug": "eq.site-settings", "limit": 1}
+        if session is not None and hasattr(session, "get"):
+            resp = session.get(endpoint, params=params, timeout=5)
+            if resp.ok:
+                data = resp.json()
+                if isinstance(data, list):
+                    return is_global_generation_halted(data)
+        elif service_key:
+            query = urlencode(params)
+            headers = {
+                "apikey": service_key,
+                "Authorization": f"Bearer {service_key}",
+            }
+            req = urllib.request.Request(f"{endpoint}?{query}", headers=headers)
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if isinstance(data, list):
+                    return is_global_generation_halted(data)
+    except Exception:
+        pass
     return False
 
 
@@ -2252,6 +2279,9 @@ def main():
 
     session = make_session()
     rows = fetch_stock_rows(session, supabase_url)
+    if is_global_generation_halted(rows):
+        print("Global image generation is halted by administrator. Exiting.", flush=True)
+        return
     account_pool = ImageAccountPool(
         load_image_accounts(os.environ),
         quotas=extract_account_quotas(rows),
@@ -2292,14 +2322,9 @@ def main():
         if stop_requested:
             print("Stopping product queue processing per termination signal. Proceeding to publish...", flush=True)
             break
-        if idx > 0 and idx % 5 == 0:
+        if idx > 0:
             try:
-                check_rows = (
-                    fetch_stock_rows(session, supabase_url)
-                    if requests is not None
-                    else fetch_stock_rows_stdlib(supabase_url, service_key)
-                )
-                if is_global_generation_halted(check_rows):
+                if check_global_halt_remote(session, supabase_url, service_key):
                     print(
                         "Global image generation was halted by administrator. Stopping batch gracefully...",
                         flush=True,

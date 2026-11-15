@@ -22,6 +22,13 @@ class TestGlobalGenerationHalt(unittest.TestCase):
         ]
         self.assertFalse(gen.is_global_generation_halted(rows))
 
+    def test_is_global_generation_halted_numeric_id(self):
+        rows = [
+            {"id": "1", "slug": "item-1", "info": {}},
+            {"id": 999999, "slug": "site-settings", "info": {"globalImageGenerationHalted": True}},
+        ]
+        self.assertTrue(gen.is_global_generation_halted(rows))
+
     def test_check_schedule_ready_halts_when_flag_set(self):
         now = datetime.now(timezone.utc)
         rows = [
