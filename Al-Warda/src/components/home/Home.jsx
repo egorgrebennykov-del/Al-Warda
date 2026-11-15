@@ -94,9 +94,20 @@ export default function Home() {
     checkScroll();
     el.addEventListener("scroll", scheduleCheck, { passive: true });
     window.addEventListener("resize", scheduleCheck);
+
+    const handleWindowScroll = () => {
+      const slides = el.querySelectorAll(".warda-cat-slide");
+      slides.forEach((slide) => {
+        slide.style.setProperty("--tilt-x", "0deg");
+        slide.style.setProperty("--tilt-y", "0deg");
+      });
+    };
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+
     return () => {
       el.removeEventListener("scroll", scheduleCheck);
       window.removeEventListener("resize", scheduleCheck);
+      window.removeEventListener("scroll", handleWindowScroll);
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [categories]);

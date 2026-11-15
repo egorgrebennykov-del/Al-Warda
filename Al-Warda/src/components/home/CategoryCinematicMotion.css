@@ -11,7 +11,7 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .warda-cm-container--back {
@@ -528,44 +528,6 @@
 
 .warda-cm--gourmand .warda-cm-aura {
   background: radial-gradient(circle at center, rgba(245, 158, 11, 0.52) 0%, rgba(180, 83, 9, 0.28) 42%, rgba(120, 53, 15, 0.12) 65%, transparent 75%);
-}
-
-/* Diagonal glass prism sheen sweep */
-.warda-cm-glass-sheen {
-  position: absolute;
-  top: -40%;
-  left: -80%;
-  width: 45%;
-  height: 200%;
-  background: linear-gradient(
-    108deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.02) 35%,
-    rgba(255, 235, 180, 0.35) 50%,
-    rgba(255, 255, 255, 0.6) 52%,
-    rgba(255, 235, 180, 0.35) 54%,
-    rgba(255, 255, 255, 0.02) 65%,
-    transparent 100%
-  );
-  transform: rotate(24deg) translateX(-140%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.warda-cat-slide:hover .warda-cm-glass-sheen {
-  opacity: 1;
-  animation: glassSheenGlide 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes glassSheenGlide {
-  0% {
-    transform: rotate(24deg) translateX(-150%);
-  }
-  100% {
-    transform: rotate(24deg) translateX(360%);
-  }
 }
 
 .warda-cm-container * {

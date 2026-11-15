@@ -23,7 +23,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--oud">
-        <div className="warda-cm-glass-sheen" />
         {/* Soft, perfectly round glowing incense embers rising through the smoke */}
         <span className="warda-cm-ember warda-cm-ember--1" />
         <span className="warda-cm-ember warda-cm-ember--2" />
@@ -51,7 +50,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--citrus">
-        <div className="warda-cm-glass-sheen" />
         <div className="warda-cm-leaf warda-cm-leaf--front-1">
           <BotanicalLeafSvg variant="vibrant" />
         </div>
@@ -78,7 +76,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--fresh">
-        <div className="warda-cm-glass-sheen" />
         <div className="warda-cm-drop warda-cm-drop--aqua-1">
           <LiquidDropSvg color="aqua" />
         </div>
@@ -106,7 +103,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--floral">
-        <div className="warda-cm-glass-sheen" />
         <div className="warda-cm-petal warda-cm-petal--front-1">
           <RosePetalSvg color="ruby" />
         </div>
@@ -134,7 +130,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--fougere">
-        <div className="warda-cm-glass-sheen" />
         <div className="warda-cm-leaf warda-cm-leaf--oak-front">
           <OakLeafSvg variant="emerald" />
         </div>
@@ -156,7 +151,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
     }
     return (
       <div className="warda-cm-container warda-cm-container--front warda-cm--spices">
-        <div className="warda-cm-glass-sheen" />
         {/* Soft, naturally glowing spice embers / warmth */}
         <span className="warda-cm-ember warda-cm-ember--1" />
         <span className="warda-cm-ember warda-cm-ember--2" />
@@ -176,7 +170,6 @@ export default function CategoryCinematicMotion({ categoryId, layer = "front" })
   }
   return (
     <div className="warda-cm-container warda-cm-container--front warda-cm--gourmand">
-      <div className="warda-cm-glass-sheen" />
       <span className="warda-cm-ember warda-cm-ember--gold" />
       <span className="warda-cm-ember warda-cm-ember--gold-2" />
       <span className="warda-cm-ember warda-cm-ember--gold-3" />
