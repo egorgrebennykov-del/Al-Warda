@@ -91,12 +91,19 @@ export default function BookImage({
         ) {
           // 4. Carteamea high-res failed -> try raw thumbnail
           setOverrideSrc(src);
+        } else if (
+          /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(currentSrc)
+        ) {
+          // 5. Generated product image -> fallback to GitHub raw repository
+          setOverrideSrc(
+            `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${currentSrc}`
+          );
         } else if (src || currentSrc) {
-          // 5. Try backend proxy cache which bypasses browser certificate/CORS/hotlink issues
+          // 6. Try backend proxy cache which bypasses browser certificate/CORS/hotlink issues
           const target = src || currentSrc;
           setOverrideSrc(`/api/enhance-image?url=${encodeURIComponent(target)}`);
         } else {
-          // 6. Final fallback to placeholder
+          // 7. Final fallback to placeholder
           setFailed(true);
           onError?.();
         }

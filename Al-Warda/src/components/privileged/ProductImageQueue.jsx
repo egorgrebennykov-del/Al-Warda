@@ -108,29 +108,94 @@ function describeErrorSummary(errorText = "", isRussian = true) {
   return null;
 }
 
+function getRawGithubUrl(imageUrl) {
+  if (
+    typeof imageUrl === "string" &&
+    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(imageUrl)
+  ) {
+    return `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${imageUrl}`;
+  }
+  return null;
+}
+
 function GalleryImageItem({
   image,
   isRussian,
   isSelected,
   isDisabled,
+  refreshKey,
   onToggleSelect,
   onRequeue,
   onManualConfig,
   onCompare,
 }) {
-  const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "failed"
+  const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "syncing" | "failed"
+  const [sourceIndex, setSourceIndex] = useState(0); // 0 = primary, 1 = raw github
+  const [retryCount, setRetryCount] = useState(0);
+  const [cacheBuster, setCacheBuster] = useState("");
 
   const [lastImageUrl, setLastImageUrl] = useState(image.imageUrl);
+  const [lastRefreshKey, setLastRefreshKey] = useState(refreshKey);
+
   if (image.imageUrl !== lastImageUrl) {
     setLastImageUrl(image.imageUrl);
     setImgStatus("initial");
+    setSourceIndex(0);
+    setRetryCount(0);
+    setCacheBuster("");
   }
 
-  const currentSrc = image.imageUrl;
+  if (refreshKey && refreshKey !== lastRefreshKey) {
+    setLastRefreshKey(refreshKey);
+    if (imgStatus === "failed") {
+      setImgStatus("initial");
+      setSourceIndex(0);
+      setRetryCount(0);
+      setCacheBuster(`?t=${Date.now()}`);
+    }
+  }
+
+  const rawUrl = getRawGithubUrl(image.imageUrl);
+  let currentSrc = image.imageUrl;
+  if (sourceIndex === 1 && rawUrl) {
+    currentSrc = rawUrl;
+  }
+  if (cacheBuster && currentSrc) {
+    currentSrc = `${currentSrc}${currentSrc.includes("?") ? "&" : "?"}${cacheBuster.replace(/^\?/, "")}`;
+  }
+
   const productUrl = image.url || getPerfumeUrl(image);
 
   const handleImageError = () => {
+    // If primary relative URL failed and raw GitHub fallback is available, try it first
+    if (sourceIndex === 0 && rawUrl) {
+      setSourceIndex(1);
+      return;
+    }
+
+    // Both primary and raw GitHub failed on this attempt
+    if (retryCount < 3) {
+      setImgStatus("syncing");
+      const nextRetry = retryCount + 1;
+      setTimeout(() => {
+        setRetryCount(nextRetry);
+        setSourceIndex(0);
+        setCacheBuster(`?retry=${nextRetry}_${Date.now()}`);
+        setImgStatus("initial");
+      }, 2500);
+      return;
+    }
+
     setImgStatus("failed");
+  };
+
+  const handleManualRetry = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImgStatus("initial");
+    setSourceIndex(0);
+    setRetryCount(0);
+    setCacheBuster(`?manual=${Date.now()}`);
   };
 
   return (
@@ -155,7 +220,26 @@ function GalleryImageItem({
       </div>
 
       <div className="product-image-queue__gallery-thumb-wrap">
-        {imgStatus === "failed" ? (
+        {imgStatus === "syncing" ? (
+          <div
+            className="product-image-queue__gallery-placeholder product-image-queue__gallery-placeholder--syncing"
+            title={
+              isRussian
+                ? "Синхронизация файла изображения с хранилищем..."
+                : "Syncing image file with storage..."
+            }
+          >
+            <i className="ri-loader-4-line ri-spin" style={{ color: "#d97706" }} />
+            <span className="product-image-queue__syncing-badge">
+              {isRussian ? "Публикация..." : "Publishing..."}
+            </span>
+            <span className="product-image-queue__broken-hint">
+              {isRussian
+                ? "Синхронизация с сервером..."
+                : "Syncing with server..."}
+            </span>
+          </div>
+        ) : imgStatus === "failed" ? (
           <div
             className="product-image-queue__gallery-placeholder"
             title={
@@ -174,6 +258,15 @@ function GalleryImageItem({
                 ? "Файл не опубликован или удалён"
                 : "Not published or missing"}
             </span>
+            <button
+              type="button"
+              className="product-image-queue__retry-btn"
+              onClick={handleManualRetry}
+              title={isRussian ? "Повторить проверку файла" : "Retry checking image"}
+            >
+              <i className="ri-refresh-line" />
+              {isRussian ? "Повторить загрузку" : "Retry"}
+            </button>
           </div>
         ) : (
           <Link
@@ -194,6 +287,9 @@ function GalleryImageItem({
               }
               loading="lazy"
               onError={handleImageError}
+              onLoad={() => {
+                if (imgStatus !== "initial") setImgStatus("initial");
+              }}
             />
           </Link>
         )}
@@ -1966,6 +2062,7 @@ export default function ProductImageQueue({
                       key={image.id}
                       image={image}
                       isRussian={isRussian}
+                      refreshKey={nowMs}
                       isSelected={selectedImages[image.id] === image.imageUrl}
                       isDisabled={
                         !/^\d{1,20}$/.test(String(image.id)) ||

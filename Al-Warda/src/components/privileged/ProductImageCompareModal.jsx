@@ -23,6 +23,13 @@ export default function ProductImageCompareModal({
 
   const originalSrc = item.rawImage || item.image || item.info?.rawImage;
   const studioSrc = item.imageUrl;
+  const [studioFailed, setStudioFailed] = useState(false);
+  const currentStudioSrc =
+    studioFailed &&
+    typeof studioSrc === "string" &&
+    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(studioSrc)
+      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${studioSrc}`
+      : studioSrc;
 
   return (
     <div
@@ -143,11 +150,14 @@ export default function ProductImageCompareModal({
               <div
                 className={`product-compare-card__preview product-compare-card__preview--${backgroundMode}`}
               >
-                {studioSrc ? (
+                {currentStudioSrc ? (
                   <img
-                    src={studioSrc}
+                    src={currentStudioSrc}
                     alt={isRussian ? "Студийное фото" : "Studio photo"}
                     loading="lazy"
+                    onError={() => {
+                      if (!studioFailed) setStudioFailed(true);
+                    }}
                   />
                 ) : (
                   <div className="product-compare-card__empty">

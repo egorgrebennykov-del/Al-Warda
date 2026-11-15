@@ -187,6 +187,31 @@ const server = createServer(async (req, res) => {
     if (!fs.existsSync(filePath)) {
       filePath = path.join(appDir, "public", safePath);
     }
+    if (
+      !fs.existsSync(filePath) &&
+      /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(pathname)
+    ) {
+      try {
+        const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${pathname}`;
+        const resp = await axios.get(rawGithubUrl, {
+          responseType: "arraybuffer",
+          timeout: 8000,
+        });
+        if (resp.status === 200 && resp.data) {
+          try {
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+            fs.writeFileSync(filePath, Buffer.from(resp.data));
+          } catch {}
+          res.writeHead(200, {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=2592000, immutable",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(resp.data);
+          return;
+        }
+      } catch {}
+    }
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const mimeTypes = {

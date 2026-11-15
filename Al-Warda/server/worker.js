@@ -541,7 +541,51 @@ export default {
             headers,
           });
         }
+        if (
+          (!response || response.status === 404) &&
+          /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(pathname)
+        ) {
+          try {
+            const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${pathname}`;
+            const ghResponse = await fetch(rawGithubUrl);
+            if (ghResponse.ok) {
+              const headers = new Headers(ghResponse.headers);
+              headers.set("Content-Type", "image/png");
+              headers.set(
+                "Cache-Control",
+                "public, max-age=86400, stale-while-revalidate=604800",
+              );
+              return new Response(ghResponse.body, {
+                status: 200,
+                headers,
+              });
+            }
+          } catch {
+            // fall through to original response
+          }
+        }
         return response;
+      }
+
+      if (/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(pathname)) {
+        try {
+          const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${pathname}`;
+          const ghResponse = await fetch(rawGithubUrl);
+          if (ghResponse.ok) {
+            const headers = new Headers(ghResponse.headers);
+            headers.set("Content-Type", "image/png");
+            headers.set(
+              "Cache-Control",
+              "public, max-age=86400, stale-while-revalidate=604800",
+            );
+            return new Response(ghResponse.body, {
+              status: 200,
+              headers,
+            });
+          }
+        } catch {
+          // fall through
+        }
       }
 
       return new Response("Not found", { status: 404 });
