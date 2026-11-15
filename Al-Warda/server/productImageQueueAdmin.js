@@ -824,6 +824,57 @@ export async function setGlobalGenerationHalted(env, halted) {
   return Boolean(halted);
 }
 
+export async function savePendingDeletedImages(env, images) {
+  const key = getServiceKey(env);
+  const baseUrl = getSupabaseUrl(env);
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+    Prefer: "return=minimal",
+  };
+  const row = await loadSettingsRow(env, key);
+  let response;
+  if (row) {
+    const url = new URL(`${baseUrl}/rest/v1/stocks`);
+    url.searchParams.set("id", `eq.${row.id}`);
+    response = await supabaseFetch(env, url, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({
+        info: {
+          ...(row.info || {}),
+          pendingDeletedImages: images,
+        },
+      }),
+    });
+  } else {
+    const url = new URL(`${baseUrl}/rest/v1/stocks`);
+    response = await supabaseFetch(env, url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        id: 999999,
+        slug: SETTINGS_SLUG,
+        name: "Site settings",
+        title: "Site settings",
+        brand: "system",
+        price: 0,
+        in_stock: false,
+        info: {
+          pendingDeletedImages: images,
+        },
+      }),
+    });
+  }
+  if (!response.ok) {
+    const details = (await response.text()).slice(0, 300);
+    throw new Error(
+      `Could not save pending deleted images (${response.status}): ${details}`,
+    );
+  }
+}
+
 export async function getSiteSettings(request, env) {
   try {
     const auth = await requirePrivilegedUser(request, env);

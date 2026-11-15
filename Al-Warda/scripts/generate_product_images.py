@@ -2127,8 +2127,8 @@ def cleanup_replaced_images(session, supabase_url):
 
 
 def delete_selected_images(session, supabase_url, selected):
-    if not isinstance(selected, list) or not 1 <= len(selected) <= 400:
-        raise ValueError("Select between 1 and 400 images")
+    if not isinstance(selected, list) or len(selected) < 1:
+        raise ValueError("Select at least 1 image to delete")
     seen = set()
     for item in selected:
         if not isinstance(item, dict):
@@ -2165,6 +2165,20 @@ def delete_selected_images(session, supabase_url, selected):
             errors.append(f"{identifier}: {error}")
             continue
         print(f"QUEUED {identifier}: image removed", flush=True)
+
+    # Clean up pendingDeletedImages in site-settings if present
+    for row in rows.values():
+        slug = str(row.get("slug") or "")
+        identifier = str(row.get("id") or "")
+        if slug == "site-settings" or identifier in ("site-settings", "999999"):
+            info = dict(row.get("info") or {})
+            if "pendingDeletedImages" in info:
+                info.pop("pendingDeletedImages", None)
+                try:
+                    patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=False)
+                except Exception:
+                    pass
+
     if errors:
         raise RuntimeError("Some images were not deleted: " + "; ".join(errors))
 
@@ -2257,7 +2271,19 @@ def main():
             paths = Path(args.mark_unpublished_failed).read_text(encoding="utf-8").splitlines()
             mark_unpublished_failed(make_session(), supabase_url, paths)
         elif args.delete_selected:
-            delete_selected_images(make_session(), supabase_url, json.loads(os.environ["SELECTED_IMAGES"]))
+            raw_input = os.environ.get("SELECTED_IMAGES", "").strip()
+            if raw_input == "from_settings" or not raw_input:
+                session = make_session()
+                settings_rows = [
+                    r for r in fetch_stock_rows(session, supabase_url)
+                    if str(r.get("slug")) == "site-settings" or str(r.get("id")) in ("site-settings", "999999")
+                ]
+                info = (settings_rows[0].get("info") or {}) if settings_rows else {}
+                selected = info.get("pendingDeletedImages") or []
+            else:
+                session = make_session()
+                selected = json.loads(raw_input)
+            delete_selected_images(session, supabase_url, selected)
         elif args.cleanup_replaced:
             cleanup_replaced_images(make_session(), supabase_url)
         else:

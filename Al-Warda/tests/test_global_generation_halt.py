@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 import sys
 import os
@@ -28,6 +29,13 @@ class TestGlobalGenerationHalt(unittest.TestCase):
             {"id": 999999, "slug": "site-settings", "info": {"globalImageGenerationHalted": True}},
         ]
         self.assertTrue(gen.is_global_generation_halted(rows))
+
+    def test_delete_selected_images_accepts_over_400(self):
+        selected = [{"id": str(i), "imageUrl": f"/assets/img/generated-products/{'a'*64}.png"} for i in range(1, 501)]
+        with patch.object(gen, "fetch_stock_rows", return_value=[]):
+            with self.assertRaises(RuntimeError) as ctx:
+                gen.delete_selected_images(object(), "https://example.com", selected)
+            self.assertIn("product no longer exists", str(ctx.exception))
 
     def test_check_schedule_ready_halts_when_flag_set(self):
         now = datetime.now(timezone.utc)

@@ -60,8 +60,13 @@ test("start and stop require a privileged user (no Qogita session) and send scop
   assert.equal((await handleProductImageActions(action({ action: "delete", images: [{ id: "7", imageUrl: "/bad" }] }), env)).status, 400);
   const many = Array.from({ length: 141 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
   assert.equal((await handleProductImageActions(action({ action: "delete", images: many }), env)).status, 202);
-  const tooMany = Array.from({ length: 401 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
-  assert.equal((await handleProductImageActions(action({ action: "delete", images: tooMany }), env)).status, 400);
+  const largeBatch = Array.from({ length: 401 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
+  assert.equal((await handleProductImageActions(action({ action: "delete", images: largeBatch }), env)).status, 202);
+  const veryLargeBatch = Array.from({ length: 600 }, (_, index) => ({ id: String(index + 1), imageUrl: selected[0].imageUrl }));
+  assert.equal((await handleProductImageActions(action({ action: "delete", images: veryLargeBatch }), env)).status, 202);
+  const latestDeletion = calls.filter((call) => call.url.includes("/product-image-delete.yml/dispatches")).at(-1);
+  assert.deepEqual(JSON.parse(latestDeletion.options.body).inputs.images, "from_settings");
+  assert.equal(storedSettings.info.pendingDeletedImages.length, 600);
   running = true;
   assert.equal((await handleProductImageActions(action({ action: "start", count: 2, account: "primary", regenerateCompleted: false }), env)).status, 409);
   assert.equal((await handleProductImageActions(action({ action: "delete", images: selected }), env)).status, 409);

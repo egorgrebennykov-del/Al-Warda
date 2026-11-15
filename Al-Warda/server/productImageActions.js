@@ -3,6 +3,7 @@ import {
   syncCommittedPublishedStocks,
   getGlobalGenerationHalted,
   setGlobalGenerationHalted,
+  savePendingDeletedImages,
 } from "./productImageQueueAdmin.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
@@ -143,11 +144,11 @@ export async function handleProductImageActions(request, env) {
       return json({ message: "Sync completed", synced: count }, 200);
     }
     if (body.action === "delete") {
-      if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 400 ||
+      if (!Array.isArray(body.images) || body.images.length < 1 ||
           body.images.some((item) => !item || !/^\d{1,20}$/.test(String(item.id)) ||
             typeof item.imageUrl !== "string" ||
             !/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(item.imageUrl))) {
-        return json({ error: "Select between 1 and 400 repository-generated images" }, 400);
+        return json({ error: "Select repository-generated images" }, 400);
       }
       if (new Set(body.images.map((item) => String(item.id))).size !== body.images.length) {
         return json({ error: "Duplicate product IDs are not allowed" }, 400);
@@ -155,9 +156,19 @@ export async function handleProductImageActions(request, env) {
       if ((await activeRuns(env)).length || (await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
         return json({ error: "Image generation or deletion is already running; wait for it to finish" }, 409);
       }
+
+      const payloadString = JSON.stringify(body.images);
+      let workflowInputs;
+      if (payloadString.length < 60000) {
+        workflowInputs = { images: payloadString };
+      } else {
+        await savePendingDeletedImages(env, body.images);
+        workflowInputs = { images: "from_settings" };
+      }
+
       await github(env, `/actions/workflows/${DELETE_WORKFLOW}/dispatches`, {
         method: "POST",
-        body: JSON.stringify({ ref: "main", inputs: { images: JSON.stringify(body.images) } }),
+        body: JSON.stringify({ ref: "main", inputs: workflowInputs }),
       });
       return json({ message: "Image deletion queued" }, 202);
     }

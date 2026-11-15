@@ -621,14 +621,6 @@ export default function ProductImageQueue({
       imageUrl,
     }));
     if (!images.length) return;
-    if (images.length > 400) {
-      setActionError(
-        isRussian
-          ? "За один раз можно удалить до 400 фото. Снимите часть отметок."
-          : "You can delete up to 400 images at a time. Deselect some images.",
-      );
-      return;
-    }
     const approved = await confirm({
       title: isRussian ? "Удалить изображения" : "Delete images",
       message: isRussian
@@ -1664,8 +1656,8 @@ export default function ProductImageQueue({
                 </div>
                 <p>
                   {isRussian
-                    ? "Можно удалить до 400 фото из хранилища сайта за один раз. Дождитесь окончания генерации или предыдущего удаления."
-                    : "Delete up to 400 site-hosted images at a time. Wait for generation or the previous deletion to finish."}
+                    ? "Удаление фото из каталога и хранилища сайта. Выбранные товары вернутся в очередь генерации без ограничений по количеству."
+                    : "Delete images from catalog and site repository. Selected products will return to the generation queue with no batch limits."}
                 </p>
                 <div className="product-image-queue__gallery-grid">
                   {status.images.slice(0, visibleImages).map((image) => (
