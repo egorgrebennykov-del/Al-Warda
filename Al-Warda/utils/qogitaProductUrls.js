@@ -32,12 +32,32 @@ export function getQogitaProductUrl(perfume) {
     const brand = (perfume.brand || perfume.info?.brand || "").trim();
     const normName = slugifyPerfumeName(name);
 
-    // 2. Direct match by exact slug in Qogita products map
+    // 2. Direct match by variant FID if product contains it
+    const variantFid =
+      perfume.variantFid ||
+      perfume.variant_fid ||
+      perfume.info?.variantFid ||
+      perfume.info?.variant_fid ||
+      perfume.qogitaFid ||
+      perfume.info?.qogitaFid;
+
+    if (variantFid && typeof variantFid === "string") {
+      return `https://www.qogita.com/products/${encodeURIComponent(variantFid)}/${normName || "product"}/`;
+    }
+
+    // 3. Direct match by GTIN in Qogita products map
+    const gtin = getPerfumeGtin(perfume);
+    if (gtin && QOGITA_PRODUCTS_MAP && QOGITA_PRODUCTS_MAP[gtin]) {
+      const mappedId = QOGITA_PRODUCTS_MAP[gtin];
+      return `https://www.qogita.com/products/${mappedId}/${normName || "product"}/`;
+    }
+
+    // 4. Direct match by exact slug in Qogita products map
     if (QOGITA_PRODUCTS_MAP && QOGITA_PRODUCTS_MAP[normName]) {
       return `https://www.qogita.com/products/${QOGITA_PRODUCTS_MAP[normName]}/${normName}/`;
     }
 
-    // 3. Match by key perfume name words
+    // 5. Match by key perfume name words
     if (QOGITA_PRODUCTS_MAP && normName) {
       const stopWords = new Set([
         "eau",
@@ -116,12 +136,9 @@ export function getQogitaProductUrl(perfume) {
       }
     }
 
-    // 4. GTIN search link on Qogita. Use the public catalog page: the
-    // buyer-account catalog (`/account/catalog/`) is login-gated and bounced
-    // anonymous visitors to a blank login wall, which looked like a dead link.
-    const gtin = getPerfumeGtin(perfume);
+    // 6. GTIN search link in wholesale portal on Qogita.
     if (gtin) {
-      return `https://www.qogita.com/catalog/?search=${encodeURIComponent(gtin)}`;
+      return `https://www.qogita.com/account/catalog/?search=${encodeURIComponent(gtin)}`;
     }
 
     // 5. Brand page fallback on Qogita

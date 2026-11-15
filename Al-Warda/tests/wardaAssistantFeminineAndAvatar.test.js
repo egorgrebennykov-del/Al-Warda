@@ -581,6 +581,40 @@ test("getPerfumeGtin and getQogitaProductUrl generate accurate Qogita product pa
     getQogitaProductUrl(p6),
     "https://www.qogita.com/brands/al-haramain/"
   );
+
+  // 8. Direct product URL resolution for Just Jack Frontier
+  const p7 = {
+    id: 7340,
+    name: "Just Jack Frontier Eau De Parfum",
+    brand: "Just Jack",
+    gtin: "6294015192315",
+  };
+  assert.equal(
+    getQogitaProductUrl(p7),
+    "https://www.qogita.com/products/e77bd151d0454b7bac5962229595f0e9/just-jack-frontier-eau-de-parfum/"
+  );
+
+  // 9. Direct product URL from variantFid
+  const p8 = {
+    name: "Afnan 9 PM Pour Femme",
+    brand: "Afnan",
+    variantFid: "NND11Z",
+  };
+  assert.equal(
+    getQogitaProductUrl(p8),
+    "https://www.qogita.com/products/NND11Z/afnan-9-pm-pour-femme/"
+  );
+
+  // 10. Fallback for unmapped GTIN to Qogita wholesale account catalog search
+  const p9 = {
+    name: "Completely Unknown Unmapped Perfume",
+    brand: "Unknown Brand",
+    gtin: "9999999999999",
+  };
+  assert.equal(
+    getQogitaProductUrl(p9),
+    "https://www.qogita.com/account/catalog/?search=9999999999999"
+  );
 });
 
 test("Al-Warda catalog strictly operates on genuine Qogita products with no decanting", async () => {

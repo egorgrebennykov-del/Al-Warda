@@ -1432,20 +1432,34 @@ export function generateRichPerfumeDescriptions({
   return { descriptionRu, descriptionEn };
 }
 
+const GENERIC_DESCRIPTION_MARKERS = [
+  "Сертифицированная оригинальная",
+  "оригинальный премиальный парфюм",
+  "премиальный оригинальный арабский",
+  "Роскошный восточный аромат Al-Warda",
+  "Поставляется напрямую со складов",
+  "Delivered directly from certified distribution hubs",
+  "exquisite authentic luxury Arabian fragrance",
+  "селективный аромат Ближнего Востока",
+  "в лучших традициях восточного парфюмерного искусства",
+  "Высокая концентрация натуральных эфирных масел",
+  "Оригинальная продукция от сертифицированных парфюмерных домов",
+  "Оригинальная продукция, поставляется в заводской упаковке",
+  "opulent niche fragrance from the Middle East",
+  "opulent niche fragrance of the Middle East",
+  "crafted in the finest traditions of oriental perfumery",
+  "unforgettable and sophisticated trail",
+  "authentic creation sourced directly from certified perfume houses",
+  "Authentic product supplied in factory-sealed packaging",
+  "от парфюмерного дома роскошный",
+  "ОАЭ",
+  "UAE",
+];
+
 function isGenericOrShortDescription(text = "") {
   const clean = String(text || "").trim();
   if (clean.length < 160) return true;
-  return (
-    clean.includes("Сертифицированная оригинальная") ||
-    clean.includes("оригинальный премиальный парфюм") ||
-    clean.includes("премиальный оригинальный арабский") ||
-    clean.includes("Роскошный восточный аромат Al-Warda") ||
-    clean.includes("Поставляется напрямую со складов") ||
-    clean.includes("Delivered directly from certified distribution hubs") ||
-    clean.includes("exquisite authentic luxury Arabian fragrance") ||
-    clean.includes("ОАЭ") ||
-    clean.includes("UAE")
-  );
+  return GENERIC_DESCRIPTION_MARKERS.some((m) => clean.includes(m));
 }
 
 export function inferSetItems(perfumeName = "", brand = "") {

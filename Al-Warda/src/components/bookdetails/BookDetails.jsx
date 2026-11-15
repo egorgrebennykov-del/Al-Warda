@@ -191,7 +191,7 @@ export default function BookDetails() {
     return () => {
       cancelled = true;
     };
-  }, [isPriv, perfume]);
+  }, [isPriv, perfume, enrichedPerfume]);
 
   const perfumeGtin =
     isPriv && (perfume || enrichedPerfume)

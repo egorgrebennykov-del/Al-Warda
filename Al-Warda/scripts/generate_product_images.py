@@ -440,6 +440,13 @@ def patch_stock(session, supabase_url, row, info, image=None, only_if_unchanged=
         )
 
 
+def hash_perfume_seed(s):
+    h = 0
+    for ch in str(s or ""):
+        h = ((h * 31) + ord(ch)) & 0xFFFFFFFF
+    return h
+
+
 def generate_luxury_fallback_description(
     name,
     brand,
@@ -452,39 +459,167 @@ def generate_luxury_fallback_description(
     heart_notes_en=None,
     base_notes_en=None,
 ):
-    """Luxury description. Fragrance notes are mentioned ONLY when they are verified (passed in);
-    otherwise the text is note-free - notes are never guessed."""
+    """Luxury description strictly generated according to Al-Warda olfactory template.
+    Fragrance notes are mentioned ONLY when verified; otherwise the narrative is note-free."""
 
     def join(values):
         return ", ".join(values) if isinstance(values, list) else str(values or "")
 
-    has_notes = bool((top_notes or heart_notes or base_notes))
-    desc_ru = (
-        f"{name} от парфюмерного дома {brand} — роскошный селективный аромат Ближнего Востока, "
-        f"созданный в лучших традициях восточного парфюмерного искусства."
+    clean_name = str(name or "").strip()
+    clean_brand = str(brand or "Al-Warda").strip()
+    seed = hash_perfume_seed(f"{clean_name}-{clean_brand}")
+
+    cat_map = {
+        "древесные": "oud",
+        "восточные": "oud",
+        "уд": "oud",
+        "гурманские": "gourmand",
+        "цветочные": "floral",
+        "свежие": "fresh",
+        "акватические": "fresh",
+        "фужерные": "fougere",
+        "цитрусовые": "citrus-fresh",
+        "пряные": "spicy",
+    }
+    cat_key = cat_map.get(str(category or "").lower(), "spicy")
+
+    cat_mood_ru = {
+        "oud": [
+            "величественная и гипнотическая композиция, вдохновлённая древними парфюмерными традициями Ближнего Востока",
+            "глубокий и статусный аромат, сочетающий благородную древесную теплоту и мистическое восточное очарование",
+            "роскошное ольфакторное полотно с бархатистым дымным характером, созданное мастерами парфюмерии Ближнего Востока",
+        ],
+        "gourmand": [
+            "чувственный и обволакивающий эликсир с утончённым гурманским характером, рождённый на Ближнем Востоке",
+            "соблазнительная и тёплая симфония сладости и благородных восточных акцентов, притягивающая внимание с первого вдоха",
+            "изысканный десертно-пряный аромат, в котором восточная роскошь гармонично переплетается с мягкой бархатной нежностью",
+        ],
+        "floral": [
+            "утончённый и сияющий букет, воспевающий королевскую красоту цветущих садов Ближнего Востока",
+            "элегантная и пленительная композиция, наполненная нежностью лепестков и тёплым восточным магнетизмом",
+            "воздушная и грациозная парфюмерная история, сочетающая цветочную утончённость с чувственной глубиной",
+        ],
+        "fresh": [
+            "кристально чистый и бодрящий аромат, дарящий ощущение прохладного бриза и безупречной элегантности",
+            "динамичная и освежающая композиция, в которой прохлада акватических аккордов встречается с благородной восточной базой",
+            "современный и энергичный парфюм с ярким характером, наполняющий каждый момент свежестью и внутренней свободой",
+        ],
+        "fougere": [
+            "аристократичный и харизматичный фужерный аромат с безупречным балансом свежести, пряных трав и благородной древесины",
+            "стильная и выразительная композиция, подчёркивающая уверенность, утончённый вкус и природный магнетизм",
+            "многогранный ароматический парфюм с породистым звучанием, сочетающий классическую элегантность и восточную стойкость",
+        ],
+        "citrus-fresh": [
+            "искрящийся и солнечный аромат, заряжающий яркой энергией спелых цитрусов и утончённой восточной прохладой",
+            "жизнерадостная и сияющая композиция, где сочная цитрусовая свежесть обрамлена дорогим шлейфовым аккордом",
+            "динамичный и свежий эликсир с благородным звучанием, созданный для ярких акцентов в любое время года",
+        ],
+        "spicy": [
+            "страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока",
+            "богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней",
+            "выразительный и глубокий парфюм, в котором экзотические пряности создают неповторимую ауру роскоши и тайны",
+        ],
+    }
+
+    cat_mood_en = {
+        "oud": [
+            "a majestic and hypnotic creation inspired by the timeless perfumery traditions of the Middle East",
+            "a deep, commanding fragrance that unites noble woody warmth with mystical Middle Eastern allure",
+            "an opulent olfactory masterpiece with a velvety, resinous character crafted by master perfumers of the Middle East",
+        ],
+        "gourmand": [
+            "a sensual and enveloping elixir with a refined gourmand character born in the Middle East",
+            "a seductive symphony of warm sweetness and noble oriental accords that captivates from the very first breath",
+            "an exquisite gourmand-oriental fragrance where Middle Eastern luxury meets velvety softness",
+        ],
+        "floral": [
+            "a radiant and sophisticated bouquet celebrating the royal blooming gardens of the Middle East",
+            "a harmonious blend of delicate petals and warm oriental magnetism woven into a captivating composition",
+            "a graceful and luminous fragrance story blending floral refinement with sensual Middle Eastern depth",
+        ],
+        "fresh": [
+            "a crystalline and invigorating fragrance that evokes a cool coastal breeze and effortless elegance",
+            "a dynamic, refreshing composition where crisp aquatic accords meet a noble Middle Eastern base",
+            "a modern, energetic scent with a luminous profile that brings freshness and poise to every moment",
+        ],
+        "fougere": [
+            "an aristocratic and charismatic fougère fragrance balancing crisp aromatic herbs with noble woods",
+            "a refined, expressive composition that highlights confidence, impeccable taste, and natural magnetism",
+            "a multifaceted aromatic creation uniting classic elegance with enduring Middle Eastern craftsmanship",
+        ],
+        "citrus-fresh": [
+            "a sparkling, sun-drenched fragrance brimming with vibrant citrus energy and refined Middle Eastern elegance",
+            "a luminous and uplifting composition where zesty citrus freshness is framed by a luxurious sillage",
+            "a dynamic, radiant elixir with a noble profile designed to leave a memorable impression in any season",
+        ],
+        "spicy": [
+            "a passionate, warming spicy-oriental fragrance woven from rare spices and precious resins of the Middle East",
+            "a rich, temperamental composition with a hypnotic aura that unfolds in warm, sensual layers",
+            "an expressive and opulent scent where exotic spices create an unforgettable atmosphere of mystery and luxury",
+        ],
+    }
+
+    moods_ru = cat_mood_ru.get(cat_key, cat_mood_ru["spicy"])
+    moods_en = cat_mood_en.get(cat_key, cat_mood_en["spicy"])
+    mood_ru = moods_ru[seed % len(moods_ru)]
+    mood_en = moods_en[seed % len(moods_en)]
+
+    brand_intro_ru = (
+        f"{clean_name} от парфюмерного дома {clean_brand}"
+        if clean_brand.lower() in clean_name.lower()
+        else f"{clean_brand} {clean_name}"
     )
-    desc_en = (
-        f"{name} by {brand} is an opulent niche fragrance of the Middle East, crafted in the finest "
-        f"traditions of oriental perfumery."
+    brand_intro_en = (
+        f"{clean_name} by the house of {clean_brand}"
+        if clean_brand.lower() in clean_name.lower()
+        else f"{clean_brand} {clean_name}"
     )
-    if has_notes:
-        parts_ru, parts_en = [], []
-        if top_notes:
-            parts_ru.append(f"верхние ноты — {join(top_notes)}")
-        if heart_notes:
-            parts_ru.append(f"сердце — {join(heart_notes)}")
-        if base_notes:
-            parts_ru.append(f"база — {join(base_notes)}")
-        if top_notes_en or top_notes:
-            parts_en.append(f"top notes of {join(top_notes_en or top_notes)}")
-        if heart_notes_en or heart_notes:
-            parts_en.append(f"a heart of {join(heart_notes_en or heart_notes)}")
-        if base_notes_en or base_notes:
-            parts_en.append(f"a base of {join(base_notes_en or base_notes)}")
-        desc_ru += " Нотный состав: " + "; ".join(parts_ru) + "."
-        desc_en += " The composition features " + ", ".join(parts_en) + "."
-    desc_ru += " Оригинальная продукция, поставляется в заводской упаковке."
-    desc_en += " Authentic product supplied in factory-sealed packaging."
+
+    ru_clauses = []
+    if top_notes:
+        ru_clauses.append(
+            f"С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются {join(top_notes)}."
+        )
+    if heart_notes:
+        ru_clauses.append(
+            f"Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: {join(heart_notes)}, придающих звучанию глубину и объём."
+        )
+    if base_notes:
+        ru_clauses.append(
+            f"В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: {join(base_notes)}."
+        )
+    if not ru_clauses:
+        ru_clauses.append(
+            "Композиция раскрывается постепенно и оставляет благородный, долгоиграющий шлейф (стойкость 10–14 часов)."
+        )
+
+    en_clauses = []
+    if top_notes_en or top_notes:
+        en_clauses.append(
+            f"From the very first spritz, the composition captivates with a vibrant opening of {join(top_notes_en or top_notes)}."
+        )
+    if heart_notes_en or heart_notes:
+        en_clauses.append(
+            f"As it warms on the skin, the fragrance reveals an alluring heart of {join(heart_notes_en or heart_notes)}, lending remarkable depth and dimension."
+        )
+    if base_notes_en or base_notes:
+        en_clauses.append(
+            f"It settles into a velvety, long-lasting sillage (longevity 10–14 hours) crafted from {join(base_notes_en or base_notes)}."
+        )
+    if not en_clauses:
+        en_clauses.append(
+            "The composition unfolds gradually and leaves a noble, long-lasting sillage (longevity 10–14 hours)."
+        )
+
+    audience_ru = "Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела."
+    audience_en = "Its versatile unisex character adapts beautifully to both men and women, evolving uniquely on the skin."
+
+    category_ru = category or "Восточные"
+    category_en = "Oriental" if category_ru.lower() in ("восточные", "oud") else category_ru
+
+    desc_ru = f"{brand_intro_ru} — {mood_ru} ({category_ru.lower()}). {' '.join(ru_clauses)} {audience_ru}"
+    desc_en = f"{brand_intro_en} is {mood_en} ({category_en.lower()}). {' '.join(en_clauses)} {audience_en}"
+
     return {
         "descriptionRu": desc_ru,
         "descriptionEn": desc_en,
@@ -545,7 +680,7 @@ def generate_ai_perfume_description(
     # 1. Try Google Gemini API if key is available in environment
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
     if gemini_key and requests_module:
-        for model in ("gemini-3.8-flash",):
+        for model in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.1-flash-lite"):
             try:
                 prompt_text = (
                     f"Perfume Name: {name}\n"
