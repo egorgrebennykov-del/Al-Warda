@@ -92422,7 +92422,7 @@
     "name": "Afnan Edict Musctique Extrait De Parfum",
     "brand": "Afnan",
     "price": 49.05,
-    "image": "/assets/img/products/6290171071945.jpg",
+    "image": "/assets/img/generated-products/52a70ba3515f7eac0b2faf9edae25443720ddfe11f8ceee0899fbc12fc6129da.png",
     "info": {
       "category": "Пряные и восточные",
       "gender": "Унисекс",
@@ -92485,7 +92485,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "Y1L939"
+      "variantFid": "Y1L939",
+      "image": "/assets/img/generated-products/52a70ba3515f7eac0b2faf9edae25443720ddfe11f8ceee0899fbc12fc6129da.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/52a70ba3515f7eac0b2faf9edae25443720ddfe11f8ceee0899fbc12fc6129da.png",
+        "publishedImageUrl": "/assets/img/generated-products/52a70ba3515f7eac0b2faf9edae25443720ddfe11f8ceee0899fbc12fc6129da.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:00:00.000Z"
+      }
     },
     "description": "Afnan Edict Musctique Extrait De Parfum от парфюмерного дома Afnan — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (пряные и восточные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются кардамон, розовый перец, корица, шафран. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дамасская роза, табачный лист, пачули, кофе, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: золотая амбра, бобы тонка, сандал, ваниль. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
     "minOrderQuantity": 1,

@@ -83,6 +83,31 @@ jobs:
         with:
           path: ${{ runner.temp }}/al-warda-rmbg
           key: rmbg-8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f
+      - name: Restore super-resolution engine cache
+        if: steps.schedule_gate.outputs.should_run == 'true'
+        id: cache_realesrgan
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/al-warda-realesrgan
+          key: realesrgan-v0.2.5.0-ubuntu
+      - name: Download super-resolution engine
+        if: steps.schedule_gate.outputs.should_run == 'true' && steps.cache_realesrgan.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/al-warda-realesrgan"
+          curl -sL "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip" -o "$RUNNER_TEMP/realesrgan.zip" || true
+          if [ -f "$RUNNER_TEMP/realesrgan.zip" ]; then
+            unzip -q -o "$RUNNER_TEMP/realesrgan.zip" -d "$RUNNER_TEMP/al-warda-realesrgan" || true
+            chmod +x "$RUNNER_TEMP/al-warda-realesrgan/realesrgan-ncnn-vulkan" 2>/dev/null || true
+          fi
+      - name: Configure super-resolution environment
+        if: steps.schedule_gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/al-warda-realesrgan/realesrgan-ncnn-vulkan" ]; then
+            echo "UPSCAYL_BIN=$RUNNER_TEMP/al-warda-realesrgan/realesrgan-ncnn-vulkan" >> "$GITHUB_ENV"
+            echo "UPSCAYL_MODELS=$RUNNER_TEMP/al-warda-realesrgan/models" >> "$GITHUB_ENV"
+          fi
       - name: Process queued products
         if: steps.schedule_gate.outputs.should_run == 'true'
         env:

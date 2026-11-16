@@ -1352,15 +1352,108 @@ def segment_source(source, segmentation_session):
         raise SegmentationFailedError(f"Segmentation failed: {e}") from e
 
 
+def find_superres_binary():
+    """Find local Upscayl or Real-ESRGAN binary and models directory."""
+    import shutil
+    env_bin = os.environ.get("UPSCAYL_BIN")
+    env_models = os.environ.get("UPSCAYL_MODELS")
+    if env_bin and os.path.isfile(env_bin):
+        models_dir = env_models or os.path.join(os.path.dirname(os.path.dirname(env_bin)), "models")
+        return env_bin, models_dir if (models_dir and os.path.isdir(models_dir)) else None
+
+    candidates = [
+        ("C:/Program Files/Upscayl/resources/bin/upscayl-bin.exe", "C:/Program Files/Upscayl/resources/models"),
+        ("C:/Program Files (x86)/Upscayl/resources/bin/upscayl-bin.exe", "C:/Program Files (x86)/Upscayl/resources/models"),
+    ]
+    for b, m in candidates:
+        if os.path.isfile(b):
+            return b, m if os.path.isdir(m) else None
+
+    which = shutil.which("upscayl-bin") or shutil.which("realesrgan-ncnn-vulkan")
+    if which:
+        cand_m = env_models or os.path.join(os.path.dirname(which), "models")
+        return which, cand_m if (cand_m and os.path.isdir(cand_m)) else None
+
+    return None, None
+
+
+def super_resolve_product_image_if_needed(image, min_dim=900):
+    """Enhance low-resolution or compressed product photos using AI Super-Resolution (Upscayl / UltraSharp-4x).
+    Reconstructs fine textures, sharpens typography and metallic embossing, and removes JPEG compression noise
+    without overloading the host (using throttled threads and gentle batching)."""
+    if Image is None or image is None:
+        return image
+
+    w, h = image.size
+    # If the image is already high resolution, super-resolution is not needed
+    if max(w, h) >= min_dim:
+        return image
+
+    bin_path, models_dir = find_superres_binary()
+    if bin_path:
+        try:
+            import subprocess
+            scale = 2 if max(w, h) >= 600 else 4
+            with tempfile.TemporaryDirectory() as td:
+                in_path = os.path.join(td, "src.png")
+                out_path = os.path.join(td, "dst.png")
+                image.convert("RGB").save(in_path, format="PNG")
+                cmd = [bin_path, "-i", in_path, "-o", out_path, "-s", str(scale), "-c", "0", "-j", "1:1:1"]
+                if models_dir and os.path.isdir(models_dir):
+                    if os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "realesrgan-x4plus.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "realesrgan-x4plus"])
+                    else:
+                        cmd.extend(["-m", models_dir])
+                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=120)
+                if res.returncode == 0 and os.path.isfile(out_path):
+                    upscaled = Image.open(out_path)
+                    upscaled.load()
+                    print(f"AI Super-Resolution succeeded: ({w}, {h}) -> {upscaled.size}", flush=True)
+                    return upscaled
+                else:
+                    print(f"AI Super-Resolution binary returned {res.returncode}: {res.stderr[:200]}", flush=True)
+        except Exception as e:
+            print(f"AI Super-Resolution execution note: {e}", flush=True)
+
+    # Built-in edge-preserving super-resolution fallback
+    try:
+        import cv2
+        import numpy as np
+        target_w = max(1024, int(w * 2))
+        target_h = max(1024, int(h * 2))
+        arr = np.array(image.convert("RGB"))
+        denoised = cv2.bilateralFilter(arr, d=5, sigmaColor=20, sigmaSpace=20)
+        resized = cv2.resize(denoised, (target_w, target_h), interpolation=cv2.INTER_LANCZOS4)
+        lab = cv2.cvtColor(resized, cv2.COLOR_RGB2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=1.2, tileGridSize=(8, 8))
+        l_clahe = clahe.apply(l)
+        blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.0)
+        l_sharp = cv2.addWeighted(l_clahe, 1.25, blur_l, -0.25, 0)
+        enhanced_lab = cv2.merge([l_sharp, a, b])
+        enhanced_rgb = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2RGB)
+        return Image.fromarray(enhanced_rgb)
+    except Exception:
+        return image
+
+
 def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024), allow_upscale=True):
     """Segment the ORIGINAL photo and place it on a transparent canvas WITHOUT
-    redrawing the bottle. Applies studio lighting enhancement (CLAHE, percentile auto-levels,
-    unsharp masking) while keeping 100% authentic label pixels, true colors, and typography.
+    redrawing the bottle. Applies AI Super-Resolution (Upscayl / UltraSharp) on compressed/low-res inputs,
+    and studio lighting enhancement (CLAHE, percentile auto-levels, edge-preserving clarity)
+    while keeping 100% authentic label pixels, true colors, and typography.
 
     Returns (png_bytes, processed_size, original_size).
     """
     source = decode_source(source_bytes)
     original_size = source.size
+
+    # If the source photo is low-resolution or compressed, apply AI Super-Resolution first!
+    if allow_upscale and max(original_size) < 1200:
+        source = super_resolve_product_image_if_needed(source)
+
     cutout = segment_source(source, segmentation_session)
     cutout = normalize_flacon_cutout(
         cutout,
@@ -1456,15 +1549,23 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
         # Valid components: main body, plus vertically aligned components (cap, sprayer, base)
         # and side packaging components (boxes, stands). Exclude only tiny detached artifacts far from product.
         valid_mask = np.zeros_like(mask)
+        H, W = mask.shape[:2]
         for lbl in range(1, num_labels):
             area = stats[lbl, cv2.CC_STAT_AREA]
             cx = centroids[lbl][0]
+            x = stats[lbl, cv2.CC_STAT_LEFT]
+            y = stats[lbl, cv2.CC_STAT_TOP]
+            w = stats[lbl, cv2.CC_STAT_WIDTH]
+            h = stats[lbl, cv2.CC_STAT_HEIGHT]
+            touches_corner = (x <= 1 or x + w >= W - 1) and (y <= 1 or y + h >= H - 1)
             if lbl == main_lbl:
                 valid_mask[labels == lbl] = 1
-            elif area >= max_area * 0.20:
-                valid_mask[labels == lbl] = 1
-            elif abs(cx - main_cx) <= max(main_w * 0.85, 120):
-                valid_mask[labels == lbl] = 1
+            elif area >= max_area * 0.05:
+                if not (touches_corner and area < max_area * 0.08):
+                    valid_mask[labels == lbl] = 1
+            elif area >= 60 and abs(cx - main_cx) <= max(main_w * 1.5, 300):
+                if not (touches_corner and area < max_area * 0.08):
+                    valid_mask[labels == lbl] = 1
     except Exception:
         # Fallback using scipy.ndimage
         try:
@@ -1480,18 +1581,24 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
                 main_w = xs_m.max() - xs_m.min() + 1
                 main_cx = float(np.mean(xs_m))
                 valid_mask = np.zeros_like(mask)
+                H, W = mask.shape[:2]
                 for i in range(1, num_features + 1):
                     ys_i, xs_i = np.where(labeled == i)
                     if len(xs_i) == 0:
                         continue
                     cx_i = float(np.mean(xs_i))
                     area_i = areas[i - 1]
+                    x_min, x_max = int(xs_i.min()), int(xs_i.max())
+                    y_min, y_max = int(ys_i.min()), int(ys_i.max())
+                    touches_corner = (x_min <= 1 or x_max >= W - 1) and (y_min <= 1 or y_max >= H - 1)
                     if i == main_lbl:
                         valid_mask[labeled == i] = 1
-                    elif area_i >= max_area * 0.20:
-                        valid_mask[labeled == i] = 1
-                    elif abs(cx_i - main_cx) <= max(main_w * 0.85, 120):
-                        valid_mask[labeled == i] = 1
+                    elif area_i >= max_area * 0.05:
+                        if not (touches_corner and area_i < max_area * 0.08):
+                            valid_mask[labeled == i] = 1
+                    elif area_i >= 60 and abs(cx_i - main_cx) <= max(main_w * 1.5, 300):
+                        if not (touches_corner and area_i < max_area * 0.08):
+                            valid_mask[labeled == i] = 1
         except Exception:
             valid_mask = (alpha > 25).astype(np.uint8)
 
@@ -1529,9 +1636,9 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
             arr_res = np.array(resized)
             rgb_res = arr_res[:, :, :3]
             alpha_res = arr_res[:, :, 3]
-            denoised_rgb = cv2.bilateralFilter(rgb_res, d=5, sigmaColor=25, sigmaSpace=25)
-            gaussian = cv2.GaussianBlur(denoised_rgb, (0, 0), 2.0)
-            sharp_rgb = cv2.addWeighted(denoised_rgb, 1.35, gaussian, -0.35, 0)
+            denoised_rgb = cv2.bilateralFilter(rgb_res, d=5, sigmaColor=15, sigmaSpace=15)
+            gaussian = cv2.GaussianBlur(denoised_rgb, (0, 0), 1.2)
+            sharp_rgb = cv2.addWeighted(denoised_rgb, 1.2, gaussian, -0.2, 0)
             arr_res[:, :, :3] = sharp_rgb
             arr_res[:, :, 3] = alpha_res
             resized = Image.fromarray(arr_res)
