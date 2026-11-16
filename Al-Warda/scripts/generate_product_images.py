@@ -2569,12 +2569,29 @@ def cleanup_replaced_images(session, supabase_url):
     rows = fetch_stock_rows(session, supabase_url)
     referenced = set()
     retired = set()
+    now_ts = datetime.now(timezone.utc).timestamp()
     for row in rows:
         info = row.get("info") or {}
         for value in (row.get("image"), (info.get("imageGeneration") or {}).get("imageUrl"),
                       (info.get("imageGenerationReplacement") or {}).get("imageUrl")):
             if isinstance(value, str):
                 referenced.add(value)
+        # Protect images in 3-day trash archive from cleanup
+        trashed = info.get("trashedImageGeneration")
+        if isinstance(trashed, dict):
+            restore_until = trashed.get("restoreUntil")
+            is_active = True
+            if isinstance(restore_until, str):
+                try:
+                    ru_ts = datetime.fromisoformat(restore_until.replace("Z", "+00:00")).timestamp()
+                    is_active = ru_ts > now_ts
+                except Exception:
+                    is_active = True
+            if is_active:
+                for k in ("image", "imageUrl"):
+                    val = trashed.get(k)
+                    if isinstance(val, str) and val:
+                        referenced.add(val)
         candidates = info.get("retiredGeneratedImages")
         if isinstance(candidates, list):
             retired.update(value for value in candidates if isinstance(value, str))
@@ -2614,7 +2631,11 @@ def delete_all_images(session, supabase_url):
         print("No completed generated product images to delete.", flush=True)
         return
 
-    print(f"Deleting and resetting {len(to_reset)} product images to pending...", flush=True)
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    restore_until_iso = (now + timedelta(days=3)).isoformat()
+
+    print(f"Soft-deleting {len(to_reset)} product images with 3-day DB archive retention...", flush=True)
     errors = []
 
     def reset_one(row):
@@ -2622,18 +2643,20 @@ def delete_all_images(session, supabase_url):
         info = dict(row.get("info") or {})
         job = info.get("imageGeneration") or {}
         image_url = str(job.get("imageUrl") or row.get("image") or "")
-        retired = info.get("retiredGeneratedImages")
-        retired = list(retired) if isinstance(retired, list) else []
-        if image_url and image_url not in retired:
-            retired.append(image_url)
-        info["retiredGeneratedImages"] = retired
+        info["trashedImageGeneration"] = {
+            "image": str(row.get("image") or image_url),
+            "imageUrl": image_url,
+            "imageGeneration": job,
+            "trashedAt": now_iso,
+            "restoreUntil": restore_until_iso,
+        }
         info["imageGeneration"] = {"status": "pending"}
         info.pop("imageGenerationReplacement", None)
         try:
             patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=False)
-            print(f"QUEUED {identifier}: image removed", flush=True)
+            print(f"TRASHED {identifier}: image removed from site, archived in DB for 3 days", flush=True)
         except Exception as error:
-            print(f"Error resetting {identifier}: {error}", flush=True)
+            print(f"Error soft-deleting {identifier}: {error}", flush=True)
             errors.append(f"{identifier}: {error}")
 
     try:
@@ -2660,7 +2683,67 @@ def delete_all_images(session, supabase_url):
 
     if errors:
         print(f"Warning: {len(errors)} stocks could not be updated: {'; '.join(errors[:5])}", flush=True)
-    print(f"Successfully reset {len(to_reset) - len(errors)} of {len(to_reset)} images to queue.", flush=True)
+    print(f"Successfully soft-deleted {len(to_reset) - len(errors)} of {len(to_reset)} images (archived in DB for 3 days).", flush=True)
+
+
+def restore_all_images(session, supabase_url):
+    rows = fetch_stock_rows(session, supabase_url)
+    to_restore = []
+    now_ts = datetime.now(timezone.utc).timestamp()
+    for row in rows:
+        info = dict(row.get("info") or {})
+        trashed = info.get("trashedImageGeneration")
+        if not isinstance(trashed, dict):
+            continue
+        restore_until = trashed.get("restoreUntil")
+        if isinstance(restore_until, str):
+            try:
+                ru_ts = datetime.fromisoformat(restore_until.replace("Z", "+00:00")).timestamp()
+                if ru_ts <= now_ts:
+                    continue
+            except Exception:
+                pass
+        to_restore.append(row)
+
+    if not to_restore:
+        print("No trashed product images eligible for restoration in DB archive.", flush=True)
+        return
+
+    print(f"Restoring {len(to_restore)} product images from 3-day DB archive to site...", flush=True)
+    errors = []
+
+    def restore_one(row):
+        identifier = str(row["id"])
+        info = dict(row.get("info") or {})
+        trashed = info.get("trashedImageGeneration") or {}
+        restored_img = trashed.get("image") or trashed.get("imageUrl") or ""
+        restored_job = trashed.get("imageGeneration") or {
+            "status": "completed",
+            "imageUrl": restored_img,
+            "completedAt": datetime.now(timezone.utc).isoformat(),
+        }
+        if restored_job.get("status") == "trashed":
+            restored_job["status"] = "completed"
+        info["imageGeneration"] = restored_job
+        info.pop("trashedImageGeneration", None)
+        try:
+            patch_stock(session, supabase_url, row, info, image=restored_img, only_if_unchanged=False)
+            print(f"RESTORED {identifier}: image restored to site", flush=True)
+        except Exception as error:
+            print(f"Error restoring {identifier}: {error}", flush=True)
+            errors.append(f"{identifier}: {error}")
+
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            list(executor.map(restore_one, to_restore))
+    except Exception as ex:
+        for row in to_restore:
+            restore_one(row)
+
+    if errors:
+        print(f"Warning: {len(errors)} stocks could not be restored: {'; '.join(errors[:5])}", flush=True)
+    print(f"Successfully restored {len(to_restore) - len(errors)} of {len(to_restore)} images to site.", flush=True)
 
 
 def delete_selected_images(session, supabase_url, selected):
@@ -2745,6 +2828,8 @@ def main():
     parser.add_argument("--delete-selected", action="store_true")
     parser.add_argument("--delete-all", action="store_true",
                         help="Delete and return all generated product images back to queue")
+    parser.add_argument("--restore-all", action="store_true",
+                        help="Restore all product images from 3-day DB archive back to site")
     parser.add_argument("--mark-unpublished-failed", metavar="PATH_LIST")
     parser.add_argument("--check-schedule-ready", action="store_true",
                         help="Check if there are pending images and all 5 accounts are available")
@@ -2825,6 +2910,9 @@ def main():
         elif args.delete_all:
             session = make_session()
             delete_all_images(session, supabase_url)
+        elif args.restore_all:
+            session = make_session()
+            restore_all_images(session, supabase_url)
         elif args.delete_selected:
             raw_input = os.environ.get("SELECTED_IMAGES", "").strip()
             if raw_input == "all":

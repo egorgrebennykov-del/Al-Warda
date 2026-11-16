@@ -482,6 +482,8 @@ export default function ProductImageQueue({
   const [deletingFailed, setDeletingFailed] = useState(false);
   const [manualConfigItem, setManualConfigItem] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [showGpuAnalysisModal, setShowGpuAnalysisModal] = useState(false);
   const [gpuDeviceProfile, setGpuDeviceProfile] = useState(() =>
     getSavedDeviceProfile(),
@@ -1032,16 +1034,9 @@ export default function ProductImageQueue({
     }
   };
 
-  const deleteAllImages = async () => {
+  const executeDeleteAllImages = async () => {
     if (!selectableImages.length) return;
     const totalCount = selectableImages.length;
-    const approved = await confirm({
-      title: isRussian ? "Удалить ВСЕ изображения" : "Delete ALL images",
-      message: isRussian
-        ? `Вы действительно хотите удалить ВСЕ ${totalCount} фото товаров разом? Все товары исчезнут из каталога и вернутся в очередь генерации.`
-        : `Are you sure you want to delete ALL ${totalCount} product images at once? All products will leave the catalog and return to the generation queue.`,
-    });
-    if (!approved) return;
     setBusy(true);
     setDeletionSubmitting(true);
     setActionError("");
@@ -1051,7 +1046,7 @@ export default function ProductImageQueue({
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", all: true }),
+        body: JSON.stringify({ action: "delete-all", all: true }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(actionErrorMessage(payload, response));
@@ -1060,8 +1055,8 @@ export default function ProductImageQueue({
       setSelectedImages({});
       setActionMessage(
         isRussian
-          ? `Удаление всех ${totalCount} фото запущено в GitHub Actions. Список обновится после выполнения.`
-          : `Deletion of all ${totalCount} images queued in GitHub Actions. The list will update after it runs.`,
+          ? `Все фото (${totalCount} шт.) удалены с сайта и сохранены в архиве базы данных на 3 дня. Вы можете восстановить их в любой момент.`
+          : `All images (${totalCount}) removed from site and preserved in database archive for 3 days. You can restore them anytime.`,
       );
       await loadStatus({ force: true });
       await loadRuns();
@@ -1069,6 +1064,35 @@ export default function ProductImageQueue({
       setActionError(err.message);
     } finally {
       setDeletionSubmitting(false);
+      setBusy(false);
+    }
+  };
+
+  const restoreAllImages = async () => {
+    setBusy(true);
+    setRestoring(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetchActions({
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore-all" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(actionErrorMessage(payload, response));
+      setActionMessage(
+        isRussian
+          ? `Все фото (${payload.restoredCount || 0} шт.) успешно восстановлены на сайт!`
+          : `All images (${payload.restoredCount || 0}) successfully restored to the site!`,
+      );
+      await loadStatus({ force: true });
+      await loadRuns();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setRestoring(false);
       setBusy(false);
     }
   };
@@ -2062,6 +2086,38 @@ export default function ProductImageQueue({
                 ? "Сначала новые. Время завершения публикации указано в вашем часовом поясе."
                 : "Newest first. Publication completion time is shown in your time zone."}
             </p>
+            {Number(status?.trashedImagesCount) > 0 && (
+              <div className="product-image-queue__archive-banner">
+                <div className="product-image-queue__archive-info">
+                  <div className="product-image-queue__archive-icon">
+                    <i className="ri-archive-2-line" />
+                  </div>
+                  <div>
+                    <strong className="product-image-queue__archive-title">
+                      {isRussian
+                        ? `В архиве базы данных: ${status.trashedImagesCount} удалённых фото`
+                        : `In database archive: ${status.trashedImagesCount} deleted images`}
+                    </strong>
+                    <p className="product-image-queue__archive-subtitle">
+                      {isRussian
+                        ? `Фотографии скрыты с сайта, но сохраняются в БД. Вы можете восстановить их до ${formatDateTime(status.trashedRestoreUntil, isRussian)}.`
+                        : `Images are hidden from the site, but preserved in the DB. You can restore them until ${formatDateTime(status.trashedRestoreUntil, isRussian)}.`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="product-image-queue__start product-image-queue__start--restore"
+                  disabled={busy || restoring}
+                  onClick={restoreAllImages}
+                >
+                  <i className="ri-restart-line" />
+                  {restoring
+                    ? isRussian ? "Восстановление..." : "Restoring..."
+                    : isRussian ? "Восстановить все фото" : "Restore all images"}
+                </button>
+              </div>
+            )}
             {status.images.length === 0 ? (
               <p>
                 {isRussian
@@ -2126,25 +2182,31 @@ export default function ProductImageQueue({
                     {isRussian ? "Удалить выбранные" : "Delete selected"} (
                     {Object.keys(selectedImages).length})
                   </button>
-                  <button
-                    type="button"
-                    className="product-image-queue__start product-image-queue__start--danger"
-                    disabled={
-                      busy ||
-                      deleting ||
-                      !selectableImages.length
-                    }
-                    onClick={deleteAllImages}
-                    title={
-                      isRussian
-                        ? `Удалить ВСЕ ${selectableImages.length} готовых фото и вернуть товары в очередь`
-                        : `Delete ALL ${selectableImages.length} images`
-                    }
-                  >
-                    <i className="ri-delete-bin-2-line" />
-                    {isRussian ? "Удалить ВСЕ фото разом" : "Delete ALL images"} (
-                    {selectableImages.length})
-                  </button>
+                  <div className="product-image-queue__danger-zone-wrapper">
+                    <span className="product-image-queue__danger-zone-badge">
+                      <i className="ri-alarm-warning-fill" />
+                      {isRussian ? "Опасная зона" : "Danger Zone"}
+                    </span>
+                    <button
+                      type="button"
+                      className="product-image-queue__start product-image-queue__start--danger product-image-queue__start--danger-zone"
+                      disabled={
+                        busy ||
+                        deleting ||
+                        !selectableImages.length
+                      }
+                      onClick={() => setShowDeleteAllModal(true)}
+                      title={
+                        isRussian
+                          ? `Удалить все ${selectableImages.length} готовых фото (сохраняются в БД на 3 дня)`
+                          : `Delete all ${selectableImages.length} images (preserved in DB for 3 days)`
+                      }
+                    >
+                      <i className="ri-delete-bin-2-line" />
+                      {isRussian ? "Удалить все фото" : "Delete all images"} (
+                      {selectableImages.length})
+                    </button>
+                  </div>
                   <a
                     href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-delete.yml"
                     target="_blank"
@@ -2240,6 +2302,95 @@ export default function ProductImageQueue({
           executeGpuGeneration();
         }}
       />
+
+      {showDeleteAllModal && (
+        <div
+          className="warda-confirm-backdrop"
+          onClick={() => !deleting && !busy && setShowDeleteAllModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="warda-confirm-modal product-image-queue__delete-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="warda-confirm-close"
+              onClick={() => !deleting && !busy && setShowDeleteAllModal(false)}
+              aria-label={isRussian ? "Закрыть" : "Close"}
+            >
+              ×
+            </button>
+            <div className="product-image-queue__modal-danger-icon">
+              <i className="ri-error-warning-fill" />
+            </div>
+            <h3 className="product-image-queue__modal-title">
+              {isRussian ? "Удалить все фото товаров?" : "Delete all product images?"}
+            </h3>
+            <div className="product-image-queue__modal-danger-tag">
+              <i className="ri-alarm-warning-fill" /> {isRussian ? "Опасная зона" : "Danger Zone"}
+            </div>
+            <div className="product-image-queue__modal-body">
+              <p className="product-image-queue__modal-lead">
+                {isRussian
+                  ? `Вы собираетесь удалить все готовые фото товаров (${selectableImages.length} шт.).`
+                  : `You are about to delete all ready product images (${selectableImages.length} items).`}
+              </p>
+              <ul className="product-image-queue__modal-points">
+                <li>
+                  <i className="ri-eye-off-line" />
+                  <span>
+                    {isRussian
+                      ? "Фотографии мгновенно исчезнут со страниц каталога и сайта."
+                      : "Images will immediately disappear from catalog and website pages."}
+                  </span>
+                </li>
+                <li>
+                  <i className="ri-database-2-line" />
+                  <span>
+                    {isRussian
+                      ? "Оригиналы сохраняются в базе данных в течение 3 дней."
+                      : "Originals are safely preserved in the database for 3 days."}
+                  </span>
+                </li>
+                <li>
+                  <i className="ri-history-line" />
+                  <span>
+                    {isRussian
+                      ? "В любой момент в течение 3 дней вы сможете восстановить их кнопкой «Восстановить все фото»."
+                      : "You can restore them at any time within 3 days via «Restore all images»."}
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div className="product-image-queue__modal-actions">
+              <button
+                type="button"
+                className="product-image-queue__modal-btn product-image-queue__modal-btn--cancel"
+                disabled={deleting || busy}
+                onClick={() => setShowDeleteAllModal(false)}
+              >
+                {isRussian ? "Отмена" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="product-image-queue__modal-btn product-image-queue__modal-btn--danger"
+                disabled={deleting || busy || !selectableImages.length}
+                onClick={async () => {
+                  setShowDeleteAllModal(false);
+                  await executeDeleteAllImages();
+                }}
+              >
+                <i className="ri-delete-bin-2-line" />
+                {deleting || busy
+                  ? isRussian ? "Удаление..." : "Deleting..."
+                  : isRussian ? "Удалить все фото" : "Delete all images"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

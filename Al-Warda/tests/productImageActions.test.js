@@ -92,6 +92,10 @@ test("start and stop require a privileged user (no Qogita session) and send scop
   assert.equal(resumeJson.globalHalted, false);
   assert.equal(storedSettings.info.globalImageGenerationHalted, false);
   assert.equal((await handleProductImageActions(action({ action: "sync" }), env)).status, 200);
+  const restoreAllRes = await handleProductImageActions(action({ action: "restore-all" }), env);
+  assert.equal(restoreAllRes.status, 200);
+  const restoreAllJson = await restoreAllRes.json();
+  assert.equal(typeof restoreAllJson.restoredCount, "number");
 });
 
 test("requests without a user cookie are rejected and do not need a Qogita session", async () => {

@@ -503,8 +503,20 @@ export async function getProductImageQueueStatus(request, env) {
       const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
       let eligible = 0;
       let attemptedToday = 0;
+      let trashedImagesCount = 0;
+      let trashedRestoreUntil = null;
       for (const row of rows) {
         const info = row.info && typeof row.info === "object" ? row.info : {};
+        const trashed = info.trashedImageGeneration;
+        if (trashed && typeof trashed === "object") {
+          const restoreUntilMs = Date.parse(trashed.restoreUntil);
+          if (!Number.isFinite(restoreUntilMs) || restoreUntilMs > nowMs) {
+            trashedImagesCount++;
+            if (!trashedRestoreUntil || (Number.isFinite(restoreUntilMs) && restoreUntilMs < Date.parse(trashedRestoreUntil))) {
+              trashedRestoreUntil = trashed.restoreUntil;
+            }
+          }
+        }
         if (
           info.imageGenerationAccountQuotas &&
           typeof info.imageGenerationAccountQuotas === "object"
@@ -649,6 +661,8 @@ export async function getProductImageQueueStatus(request, env) {
         schedule,
         failedItems,
         images,
+        trashedImagesCount,
+        trashedRestoreUntil,
         globalHalted,
       };
 
@@ -1161,6 +1175,141 @@ export async function syncCommittedPublishedStocks(env) {
   } catch {
     return 0;
   }
+}
+
+export async function softDeleteAllProductImages(env) {
+  const key = getServiceKey(env);
+  const baseUrl = getSupabaseUrl(env);
+  const rows = await fetchAllStocks(env, key, true);
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const restoreUntil = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+  const toSoftDelete = rows.filter((row) => {
+    if (!row || !row.id || String(row.slug || "").includes("site-settings")) return false;
+    const info = row.info && typeof row.info === "object" ? row.info : {};
+    const job = info.imageGeneration || {};
+    const rep = info.imageGenerationReplacement || {};
+    const img = String(row.image || "");
+    const jobImg = String(job.imageUrl || "");
+    const repImg = String(rep.imageUrl || "");
+    return (
+      job.status === "completed" ||
+      rep.status === "completed" ||
+      img.includes("/assets/img/generated-products/") ||
+      jobImg.includes("/assets/img/generated-products/") ||
+      repImg.includes("/assets/img/generated-products/")
+    );
+  });
+
+  if (!toSoftDelete.length) {
+    return { ok: true, trashedCount: 0, restoreUntil };
+  }
+
+  let trashedCount = 0;
+  for (const row of toSoftDelete) {
+    const info = structuredClone(row.info && typeof row.info === "object" ? row.info : {});
+    const existingJob = info.imageGeneration || {};
+    const imgUrl = row.image || existingJob.imageUrl || "";
+
+    info.trashedImageGeneration = {
+      image: row.image || "",
+      imageUrl: imgUrl,
+      imageGeneration: structuredClone(existingJob),
+      trashedAt: nowIso,
+      restoreUntil,
+    };
+
+    info.imageGeneration = {
+      status: "pending",
+    };
+    delete info.imageGenerationReplacement;
+
+    const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+    patchUrl.searchParams.set("id", `eq.${row.id}`);
+    try {
+      const patchRes = await supabaseFetch(env, patchUrl, {
+        method: "PATCH",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json; charset=utf-8",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          image: "",
+          info,
+        }),
+      });
+      if (patchRes.ok) trashedCount++;
+    } catch (err) {
+      console.warn(`Could not soft delete stock ${row.id}:`, err.message);
+    }
+  }
+
+  invalidateProductImageQueueCache();
+  return { ok: true, trashedCount, restoreUntil };
+}
+
+export async function restoreAllProductImages(env) {
+  const key = getServiceKey(env);
+  const baseUrl = getSupabaseUrl(env);
+  const rows = await fetchAllStocks(env, key, true);
+  const nowMs = Date.now();
+
+  const toRestore = rows.filter((row) => {
+    if (!row || !row.id || String(row.slug || "").includes("site-settings")) return false;
+    const info = row.info && typeof row.info === "object" ? row.info : {};
+    const trashed = info.trashedImageGeneration;
+    if (!trashed || typeof trashed !== "object") return false;
+    const restoreUntilMs = Date.parse(trashed.restoreUntil);
+    return !Number.isFinite(restoreUntilMs) || restoreUntilMs > nowMs;
+  });
+
+  if (!toRestore.length) {
+    return { ok: true, restoredCount: 0 };
+  }
+
+  let restoredCount = 0;
+  for (const row of toRestore) {
+    const info = structuredClone(row.info && typeof row.info === "object" ? row.info : {});
+    const trashed = info.trashedImageGeneration || {};
+    const restoredImage = trashed.image || trashed.imageUrl || "";
+    const restoredJob = trashed.imageGeneration || {
+      status: "completed",
+      imageUrl: restoredImage,
+      completedAt: new Date().toISOString(),
+    };
+    if (restoredJob.status === "trashed") {
+      restoredJob.status = "completed";
+    }
+    info.imageGeneration = restoredJob;
+    delete info.trashedImageGeneration;
+
+    const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+    patchUrl.searchParams.set("id", `eq.${row.id}`);
+    try {
+      const patchRes = await supabaseFetch(env, patchUrl, {
+        method: "PATCH",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json; charset=utf-8",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          image: restoredImage,
+          info,
+        }),
+      });
+      if (patchRes.ok) restoredCount++;
+    } catch (err) {
+      console.warn(`Could not restore stock ${row.id}:`, err.message);
+    }
+  }
+
+  invalidateProductImageQueueCache();
+  return { ok: true, restoredCount };
 }
 
 export async function saveManualProductItem(request, env) {

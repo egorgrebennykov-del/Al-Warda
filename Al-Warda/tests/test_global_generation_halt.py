@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import sys
 import os
 
@@ -65,6 +65,39 @@ class TestGlobalGenerationHalt(unittest.TestCase):
         self.assertEqual(patched[0][0], "1")
         self.assertEqual(patched[0][1]["imageGeneration"]["status"], "pending")
         self.assertEqual(patched[0][2], "")
+        self.assertIn("trashedImageGeneration", patched[0][1])
+
+    def test_restore_all_images_restores_from_trash(self):
+        img_url = f"/assets/img/generated-products/{'a'*64}.png"
+        future_iso = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
+        rows = [
+            {
+                "id": "1",
+                "image": "",
+                "info": {
+                    "imageGeneration": {"status": "pending"},
+                    "trashedImageGeneration": {
+                        "image": img_url,
+                        "imageUrl": img_url,
+                        "imageGeneration": {"status": "completed", "imageUrl": img_url},
+                        "restoreUntil": future_iso,
+                    }
+                }
+            }
+        ]
+        patched = []
+        def capture_patch(session, url, row, info, image=None, only_if_unchanged=False):
+            patched.append((row["id"], info, image))
+
+        with patch.object(gen, "fetch_stock_rows", return_value=rows), \
+             patch.object(gen, "patch_stock", side_effect=capture_patch):
+            gen.restore_all_images(object(), "https://example.com")
+
+        self.assertEqual(len(patched), 1)
+        self.assertEqual(patched[0][0], "1")
+        self.assertEqual(patched[0][1]["imageGeneration"]["status"], "completed")
+        self.assertEqual(patched[0][2], img_url)
+        self.assertNotIn("trashedImageGeneration", patched[0][1])
 
 
 if __name__ == "__main__":

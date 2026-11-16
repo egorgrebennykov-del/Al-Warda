@@ -5,6 +5,8 @@ import {
   setGlobalGenerationHalted,
   savePendingDeletedImages,
   invalidateProductImageQueueCache,
+  softDeleteAllProductImages,
+  restoreAllProductImages,
 } from "./productImageQueueAdmin.js";
 import { isSameOrigin } from "./sameOrigin.js";
 
@@ -196,16 +198,43 @@ export async function handleProductImageActions(request, env) {
       const count = await syncCommittedPublishedStocks(env);
       return json({ message: "Sync completed", synced: count }, 200);
     }
+    if (body.action === "restore-all") {
+      try {
+        const result = await restoreAllProductImages(env);
+        invalidateActionsCache();
+        return json({
+          message: `Restored ${result.restoredCount} images to site`,
+          restoredCount: result.restoredCount,
+        }, 200);
+      } catch (err) {
+        return json({ error: err.message || "Could not restore images" }, 500);
+      }
+    }
     if (body.action === "delete" || body.action === "delete-all") {
       if (body.action === "delete-all" || body.all === true || body.images === "all") {
         if ((await activeRuns(env)).length || (await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
           return json({ error: "Image generation or deletion is already running; wait for it to finish" }, 409);
         }
-        await github(env, `/actions/workflows/${DELETE_WORKFLOW}/dispatches`, {
-          method: "POST",
-          body: JSON.stringify({ ref: "main", inputs: { images: "all" } }),
-        });
-        return json({ message: "Image deletion queued for all products" }, 202);
+        let softDeleteResult = { ok: true, trashedCount: 0 };
+        try {
+          softDeleteResult = await softDeleteAllProductImages(env);
+        } catch (err) {
+          console.warn("softDeleteAllProductImages warning:", err.message);
+        }
+        try {
+          await github(env, `/actions/workflows/${DELETE_WORKFLOW}/dispatches`, {
+            method: "POST",
+            body: JSON.stringify({ ref: "main", inputs: { images: "all" } }),
+          });
+        } catch (err) {
+          console.warn("GitHub dispatch warning for delete-all:", err.message);
+        }
+        invalidateActionsCache();
+        return json({
+          message: "Image deletion queued for all products (archived in DB for 3 days)",
+          trashedCount: softDeleteResult?.trashedCount ?? 0,
+          restoreUntil: softDeleteResult?.restoreUntil,
+        }, 202);
       }
 
       if (!Array.isArray(body.images) || body.images.length < 1 ||
