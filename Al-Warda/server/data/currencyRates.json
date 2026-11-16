@@ -2,10 +2,10 @@
   "base": "EUR",
   "rates": {
     "EUR": 1,
-    "RON": 5.343,
+    "RON": 5.3494,
     "HUF": 365.6
   },
-  "lastUpdated": "2026-11-16T03:05:04.700Z",
+  "lastUpdated": "2026-11-16T03:18:07.533Z",
   "currencies": {
     "EUR": {
       "code": "EUR",
@@ -25,13 +25,14 @@
       "nameRu": "Румынский лей",
       "nameEn": "Romanian Leu",
       "nameHu": "Román lej",
-      "rate": 5.343,
-      "lastSyncRate": 5.343,
-      "lastChecked": "2026-11-15T03:15:26.357Z",
+      "rate": 5.3494,
+      "lastSyncRate": 5.3494,
+      "lastChecked": "2026-11-16T03:18:07.533Z",
       "decimals": 2,
       "symbolPosition": "after",
       "latestObservedRate": 5.3494,
-      "observationDate": "2026-11-13"
+      "observationDate": "2026-11-13",
+      "lastSyncDate": "2026-11-16T03:18:07.533Z"
     },
     "HUF": {
       "code": "HUF",
