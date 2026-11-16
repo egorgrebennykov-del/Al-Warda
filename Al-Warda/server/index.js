@@ -52,6 +52,11 @@ import {
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
 import {
+  getGpuGenerationStatus,
+  startGpuGeneration,
+  stopGpuGeneration,
+} from "./gpuGenerationService.js";
+import {
   getFragranceNotes,
   getFragranceNotesQueue,
   refreshFragranceNotes,
@@ -365,6 +370,38 @@ const server = createServer(async (req, res) => {
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/gpu-generation/status" && req.method === "GET") {
+    try {
+      const status = getGpuGenerationStatus();
+      respond(res, 200, status, req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/gpu-generation/start" && req.method === "POST") {
+    try {
+      const body = await readRawBody(req);
+      const payload = body && body.length ? JSON.parse(body.toString("utf-8")) : {};
+      const result = startGpuGeneration(payload);
+      respond(res, result.ok ? 200 : 400, result, req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/gpu-generation/stop" && req.method === "POST") {
+    try {
+      const result = stopGpuGeneration();
+      respond(res, 200, result, req);
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
     }
     return;
   }

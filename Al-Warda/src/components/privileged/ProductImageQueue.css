@@ -1211,3 +1211,310 @@
   color: #e6ca65;
   font-weight: 600;
 }
+
+/* ==========================================================================
+   GPU Hardware Generation Hub (Local Intel Iris Xe / Vulkan)
+   ========================================================================== */
+.product-image-queue__gpu-hub {
+  background: linear-gradient(145deg, #1f1a14 0%, #16120e 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: #f7eedb;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image-queue__gpu-hub::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #d4af37, #f3e5ab, #d4af37);
+}
+
+.product-image-queue__gpu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.product-image-queue__gpu-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.product-image-queue__gpu-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #dfbd69;
+}
+
+.product-image-queue__gpu-title-group h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f7eedb;
+}
+
+.product-image-queue__gpu-title-group p {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: #b5a995;
+}
+
+.product-image-queue__gpu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+.product-image-queue__gpu-badge--untested {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #fde047;
+}
+
+.product-image-queue__gpu-retest-btn {
+  background: transparent;
+  border: none;
+  color: #dfbd69;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.product-image-queue__gpu-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+@media (max-width: 800px) {
+  .product-image-queue__gpu-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.product-image-queue__gpu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.product-image-queue__gpu-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #e5d8b8;
+}
+
+.product-image-queue__gpu-radio-label input[type="radio"] {
+  accent-color: #d4af37;
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+}
+
+.product-image-queue__gpu-custom-input {
+  width: 80px;
+  background: #110e0b;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-left: 0.4rem;
+}
+
+.product-image-queue__gpu-safeguard {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #93c5fd;
+  margin-top: 0.35rem;
+}
+
+.product-image-queue__gpu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 200px;
+}
+
+.product-image-queue__gpu-btn-launch {
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  color: #120e0a;
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 1.4rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+  transition: all 0.2s ease;
+}
+
+.product-image-queue__gpu-btn-launch:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.5);
+}
+
+.product-image-queue__gpu-btn-launch:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.product-image-queue__gpu-btn-stop {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  transition: all 0.2s;
+}
+
+.product-image-queue__gpu-btn-stop:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* GPU Running Monitor */
+.product-image-queue__gpu-monitor {
+  margin-top: 1.25rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.product-image-queue__gpu-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.product-image-queue__gpu-monitor-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #dfbd69;
+  font-size: 0.95rem;
+}
+
+.product-image-queue__gpu-progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #2a2218;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+  position: relative;
+}
+
+.product-image-queue__gpu-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4af37, #4ade80);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.product-image-queue__gpu-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: gpuShimmer 1.8s infinite;
+}
+
+@keyframes gpuShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.product-image-queue__gpu-monitor-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #cfb997;
+}
+
+.product-image-queue__gpu-log-preview {
+  margin-top: 0.85rem;
+  background: #0d0a08;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #a8a29e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.privileged__gpu-gen-btn {
+  background: linear-gradient(135deg, #382d21 0%, #221c15 100%) !important;
+  border: 1px solid #d4af37 !important;
+  color: #dfbd69 !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+}
+
+.privileged__gpu-gen-btn:hover {
+  background: linear-gradient(135deg, #4d3d2c 0%, #2f271c 100%) !important;
+  color: #f7eedb !important;
+}

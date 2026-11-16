@@ -4,7 +4,36 @@ import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import ProductImageCompareModal from "./ProductImageCompareModal";
+import GpuDeviceAnalysisModal from "./GpuDeviceAnalysisModal";
+import {
+  getSavedDeviceProfile,
+  clearSavedDeviceProfile,
+} from "../../utils/deviceGpuAnalysis";
 import "./ProductImageQueue.css";
+
+async function callGpuApi(endpoint, options = {}) {
+  try {
+    const res = await fetch(`/api/admin/gpu-generation/${endpoint}`, {
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.isCloudflare) return data;
+    }
+  } catch {}
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/admin/gpu-generation/${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (res.ok) return await res.json();
+  } catch {}
+
+  return null;
+}
 
 async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 1000) {
   let lastResponse = null;
@@ -408,6 +437,16 @@ export default function ProductImageQueue({
   const [deletingFailed, setDeletingFailed] = useState(false);
   const [manualConfigItem, setManualConfigItem] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showGpuAnalysisModal, setShowGpuAnalysisModal] = useState(false);
+  const [gpuDeviceProfile, setGpuDeviceProfile] = useState(() =>
+    getSavedDeviceProfile(),
+  );
+  const [gpuCountMode, setGpuCountMode] = useState("all");
+  const [gpuCustomCount, setGpuCustomCount] = useState("50");
+  const [gpuJobStatus, setGpuJobStatus] = useState(null);
+  const [gpuBusy, setGpuBusy] = useState(false);
+  const [gpuError, setGpuError] = useState("");
+  const [showGpuLogs, setShowGpuLogs] = useState(false);
   const confirm = useConfirm();
   const alert = useAlert();
 
@@ -692,6 +731,91 @@ export default function ProductImageQueue({
       setRefreshing(false);
     }
   }, [refreshing, loadRuns, loadStatus]);
+
+  const handleGpuButtonClick = () => {
+    setGpuError("");
+    const profile = getSavedDeviceProfile();
+    if (!profile) {
+      setShowGpuAnalysisModal(true);
+    } else {
+      executeGpuGeneration();
+    }
+  };
+
+  const executeGpuGeneration = async () => {
+    setGpuBusy(true);
+    setGpuError("");
+    try {
+      const countVal =
+        gpuCountMode === "all"
+          ? "all"
+          : Math.max(1, parseInt(gpuCustomCount, 10) || 50);
+      const res = await callGpuApi("start", {
+        method: "POST",
+        body: JSON.stringify({ count: countVal, coolingDelay: 0.8 }),
+      });
+      if (res && res.ok) {
+        setGpuJobStatus(res.job);
+      } else {
+        const msg =
+          res?.error ||
+          res?.message ||
+          (isRussian
+            ? "Локальный сервис GPU не запущен на порту 5000. Запустите «Запустить_Генерацию_ИИ_GPU.bat» на компьютере или команду npm run dev."
+            : "Local GPU service is not running on port 5000. Run 'Запустить_Генерацию_ИИ_GPU.bat' on your PC or npm run dev.");
+        setGpuError(msg);
+      }
+    } catch (err) {
+      setGpuError(err.message);
+    } finally {
+      setGpuBusy(false);
+    }
+  };
+
+  const handleStopGpuGeneration = async () => {
+    setGpuBusy(true);
+    try {
+      await callGpuApi("stop", { method: "POST" });
+      const statusRes = await callGpuApi("status");
+      if (statusRes) setGpuJobStatus(statusRes);
+    } catch (err) {
+      setGpuError(err.message);
+    } finally {
+      setGpuBusy(false);
+    }
+  };
+
+  // Poll GPU generation status while active
+  useEffect(() => {
+    let timer = null;
+    let cancelled = false;
+
+    const checkStatus = async () => {
+      try {
+        const data = await callGpuApi("status");
+        if (data && !cancelled) {
+          setGpuJobStatus((prev) => {
+            if (prev?.isRunning && !data.isRunning) {
+              loadStatus();
+              loadRuns(false);
+            }
+            return data;
+          });
+        }
+      } catch {}
+    };
+
+    checkStatus();
+
+    timer = setInterval(() => {
+      checkStatus();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      if (timer) clearInterval(timer);
+    };
+  }, [loadStatus, loadRuns]);
 
   const deleteFailedFromDb = async (explicitIds = null) => {
     let ids =
@@ -1230,6 +1354,244 @@ export default function ProductImageQueue({
           </div>
         </div>
       )}
+
+      {/* GPU Hardware Generation Hub (Local Intel Iris Xe / Vulkan) */}
+      <section className="product-image-queue__gpu-hub">
+        <div className="product-image-queue__gpu-header">
+          <div className="product-image-queue__gpu-title-group">
+            <div className="product-image-queue__gpu-icon">
+              <i className="ri-cpu-line" />
+            </div>
+            <div>
+              <h3>
+                {isRussian
+                  ? "Генерация на видеокарте устройства (GPU)"
+                  : "Device GPU Hardware Generation"}
+              </h3>
+              <p>
+                {isRussian
+                  ? "Прямое аппаратное супер-разрешение Upscayl Vulkan: неограниченное количество фото, 100% четкость и защита устройства от перегрузки."
+                  : "Direct Upscayl Vulkan hardware super-resolution: unlimited photos, true clarity, and thermal overload protection."}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {gpuDeviceProfile ? (
+              <span className="product-image-queue__gpu-badge">
+                <i className="ri-checkbox-circle-fill" />
+                {gpuDeviceProfile.gpuName || "GPU проверен"}
+                <button
+                  type="button"
+                  className="product-image-queue__gpu-retest-btn"
+                  onClick={() => setShowGpuAnalysisModal(true)}
+                  title={isRussian ? "Запустить повторный тест устройства" : "Retest hardware"}
+                >
+                  {isRussian ? "Перепроверить" : "Retest"}
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="product-image-queue__gpu-badge product-image-queue__gpu-badge--untested"
+                onClick={() => setShowGpuAnalysisModal(true)}
+                style={{ cursor: "pointer" }}
+              >
+                <i className="ri-radar-line" />
+                {isRussian ? "Выполнить анализ устройства" : "Analyze Device"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="product-image-queue__gpu-body">
+          <div className="product-image-queue__gpu-options">
+            <label className="product-image-queue__gpu-radio-label">
+              <input
+                type="radio"
+                name="gpuCountMode"
+                value="all"
+                checked={gpuCountMode === "all"}
+                onChange={() => setGpuCountMode("all")}
+              />
+              <span>
+                <strong>{isRussian ? "Вся очередь товаров" : "All queue products"}</strong>{" "}
+                ({isRussian ? "неограниченное количество фото" : "unlimited photos"})
+              </span>
+            </label>
+
+            <label className="product-image-queue__gpu-radio-label">
+              <input
+                type="radio"
+                name="gpuCountMode"
+                value="custom"
+                checked={gpuCountMode === "custom"}
+                onChange={() => setGpuCountMode("custom")}
+              />
+              <span>
+                {isRussian ? "Выбранное количество фото:" : "Custom photo count:"}
+                <input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  className="product-image-queue__gpu-custom-input"
+                  value={gpuCustomCount}
+                  disabled={gpuCountMode !== "custom"}
+                  onChange={(e) => setGpuCustomCount(e.target.value)}
+                  onClick={() => setGpuCountMode("custom")}
+                />
+              </span>
+            </label>
+
+            <div className="product-image-queue__gpu-safeguard">
+              <i className="ri-shield-check-line" />
+              <span>
+                {isRussian
+                  ? "Защита от перегрузки включена: пауза 0.8с между товарами, фоновый приоритет Windows (BELOW_NORMAL), защита от нагрева."
+                  : "Overload protection active: 0.8s cooling pause, Windows below-normal priority, anti-freeze guard."}
+              </span>
+            </div>
+          </div>
+
+          <div className="product-image-queue__gpu-actions">
+            {gpuJobStatus?.isRunning ? (
+              <button
+                type="button"
+                className="product-image-queue__gpu-btn-stop"
+                disabled={gpuBusy}
+                onClick={handleStopGpuGeneration}
+              >
+                <i className="ri-stop-circle-line" />
+                {isRussian ? "Остановить генерацию на GPU" : "Stop GPU Generation"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="product-image-queue__gpu-btn-launch"
+                disabled={gpuBusy}
+                onClick={handleGpuButtonClick}
+              >
+                <i className="ri-flashlight-fill" />
+                {isRussian ? "Запустить генерацию на видеокарте" : "Launch GPU Generation"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {gpuError && (
+          <div
+            className="product-image-queue__message product-image-queue__message--error"
+            style={{ marginTop: "1rem" }}
+          >
+            <span>{gpuError}</span>
+            <button
+              type="button"
+              className="product-image-queue__retry-btn"
+              onClick={() => setGpuError("")}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {gpuJobStatus && (gpuJobStatus.isRunning || gpuJobStatus.completedCount > 0) && (
+          <div className="product-image-queue__gpu-monitor">
+            <div className="product-image-queue__gpu-monitor-header">
+              <div className="product-image-queue__gpu-monitor-title">
+                {gpuJobStatus.isRunning ? (
+                  <>
+                    <span className="product-image-queue__pulse-dot" />
+                    <span>
+                      {isRussian
+                        ? "Выполняется генерация на видеокарте..."
+                        : "Generating on device GPU..."}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-check-double-line" style={{ color: "#4ade80" }} />
+                    <span style={{ color: "#4ade80" }}>
+                      {isRussian
+                        ? "Генерация на видеокарте завершена"
+                        : "GPU generation finished"}
+                    </span>
+                  </>
+                )}
+              </div>
+              <span style={{ fontSize: "0.85rem", color: "#e5d8b8" }}>
+                {isRussian ? "Готово:" : "Completed:"}{" "}
+                <strong>{gpuJobStatus.completedCount}</strong>
+                {gpuJobStatus.totalCandidates > 0
+                  ? ` / ${gpuJobStatus.totalCandidates}`
+                  : gpuJobStatus.targetCount !== "unlimited"
+                  ? ` / ${gpuJobStatus.targetCount}`
+                  : " фото"}
+              </span>
+            </div>
+
+            <div className="product-image-queue__gpu-progress-bar">
+              <div
+                className="product-image-queue__gpu-progress-fill"
+                style={{
+                  width: `${
+                    gpuJobStatus.totalCandidates > 0
+                      ? Math.min(
+                          100,
+                          Math.round(
+                            (gpuJobStatus.completedCount / gpuJobStatus.totalCandidates) * 100
+                          )
+                        )
+                      : gpuJobStatus.isRunning
+                      ? 50
+                      : 100
+                  }%`,
+                }}
+              />
+            </div>
+
+            <div className="product-image-queue__gpu-monitor-status">
+              <div>
+                {gpuJobStatus.currentProduct ? (
+                  <span>
+                    <i className="ri-loader-4-line ri-spin" /> {gpuJobStatus.currentProduct}
+                  </span>
+                ) : (
+                  <span>{gpuJobStatus.lastLogLine || "Ожидание следующего товара..."}</span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="product-image-queue__gpu-retest-btn"
+                onClick={() => setShowGpuLogs((v) => !v)}
+              >
+                {showGpuLogs
+                  ? isRussian ? "Скрыть журнал" : "Hide log"
+                  : isRussian ? "Показать журнал" : "Show log"}
+              </button>
+            </div>
+
+            {showGpuLogs && gpuJobStatus.logs && (
+              <div
+                style={{
+                  marginTop: "0.75rem",
+                  background: "#0a0806",
+                  padding: "0.75rem",
+                  borderRadius: "6px",
+                  maxHeight: "160px",
+                  overflowY: "auto",
+                  fontFamily: "monospace",
+                  fontSize: "0.75rem",
+                  color: "#d4af37",
+                }}
+              >
+                {gpuJobStatus.logs.map((l, i) => (
+                  <div key={i}>{l}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
       <div className="product-image-queue__controls">
         <label>
@@ -2179,6 +2541,19 @@ export default function ProductImageQueue({
           onClose={() => setCompareItem(null)}
         />
       )}
+
+      <GpuDeviceAnalysisModal
+        isOpen={showGpuAnalysisModal}
+        language={language}
+        onClose={() => {
+          setShowGpuAnalysisModal(false);
+          setGpuDeviceProfile(getSavedDeviceProfile());
+        }}
+        onConfirmStart={() => {
+          setGpuDeviceProfile(getSavedDeviceProfile());
+          executeGpuGeneration();
+        }}
+      />
     </section>
   );
 }

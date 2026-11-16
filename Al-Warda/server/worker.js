@@ -356,6 +356,18 @@ export default {
       if (method === "GET" && pathname === "/api/admin/product-images/status") {
         return getProductImageQueueStatus(request, env);
       }
+      if (pathname.startsWith("/api/admin/gpu-generation/")) {
+        return jsonResponse({
+          ok: true,
+          isCloudflare: true,
+          isRunning: false,
+          environment: {
+            hasLocalPython: false,
+            hasUpscaylGpu: false,
+            message: "Cloudflare edge worker runtime. GPU generation connects to local machine runner.",
+          },
+        });
+      }
       if (
         (method === "POST" || method === "DELETE") &&
         pathname === "/api/admin/product-images/failed"

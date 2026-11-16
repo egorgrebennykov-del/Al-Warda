@@ -2694,6 +2694,10 @@ def main():
         "--local-gpu", action="store_true",
         help="Use local GPU hardware acceleration (Upscayl Vulkan) with authentic photography preservation (prevents AI hallucination/deformed text)",
     )
+    parser.add_argument(
+        "--cooling-delay", type=float, default=0.8,
+        help="Cooling pause in seconds between items to prevent GPU/CPU thermal throttling and overheating (default: 0.8s)",
+    )
     parser.add_argument("--publish-only", action="store_true")
     parser.add_argument("--complete-committed", action="store_true",
                         help="Immediately complete all committed images in Supabase")
@@ -2866,6 +2870,14 @@ def main():
     except (ValueError, AttributeError):
         pass
 
+    if is_local_gpu:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00004000)
+            print("Windows priority set to BELOW_NORMAL to keep system smooth and responsive.", flush=True)
+        except Exception:
+            pass
+
     for idx, row in enumerate(candidates[:args.max_images]):
         if stop_requested:
             print("Stopping product queue processing per termination signal. Proceeding to publish...", flush=True)
@@ -2896,6 +2908,13 @@ def main():
             )
             completed += 1
             print(f"COMPLETED {row['id']}: {url}")
+            if args.cooling_delay > 0:
+                try:
+                    import gc
+                    gc.collect()
+                except Exception:
+                    pass
+                time.sleep(args.cooling_delay)
         except KeyboardInterrupt:
             print("\nKeyboardInterrupt caught. Stopping batch and proceeding to publish...", flush=True)
             break
