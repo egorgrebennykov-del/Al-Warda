@@ -18,6 +18,11 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/health", "/rest/v1/*"],
+    "run_worker_first": [
+      "/api/*",
+      "/health",
+      "/rest/v1/*",
+      "/assets/img/generated-products/*"
+    ],
   },
 }
