@@ -99,6 +99,42 @@ class TestGlobalGenerationHalt(unittest.TestCase):
         self.assertEqual(patched[0][2], img_url)
         self.assertNotIn("trashedImageGeneration", patched[0][1])
 
+    def test_delete_selected_tolerates_pending_or_already_cleared(self):
+        img_url = f"/assets/img/generated-products/{'c'*64}.png"
+        rows = [
+            {
+                "id": "5465",
+                "image": "",
+                "info": {
+                    "image": img_url,
+                    "imageGeneration": {"status": "pending"},
+                }
+            },
+            {
+                "id": "5467",
+                "image": "",
+                "info": {
+                    "imageGeneration": {"status": "pending"},
+                }
+            }
+        ]
+        patched = []
+        def capture_patch(session, url, row, info, image=None, only_if_unchanged=False):
+            patched.append((row["id"], info, image))
+
+        with patch.object(gen, "fetch_stock_rows", return_value=rows), \
+             patch.object(gen, "patch_stock", side_effect=capture_patch):
+            # Should NOT raise RuntimeError: "image has changed; refresh the list"
+            gen.delete_selected_images(object(), "https://example.com", [
+                {"id": "5465", "imageUrl": img_url},
+                {"id": "5467", "imageUrl": img_url},
+            ])
+
+        self.assertEqual(len(patched), 1)
+        self.assertEqual(patched[0][0], "5465")
+        self.assertEqual(patched[0][1]["imageGeneration"]["status"], "pending")
+        self.assertIn(img_url, patched[0][1]["retiredGeneratedImages"])
+
 
 if __name__ == "__main__":
     unittest.main()

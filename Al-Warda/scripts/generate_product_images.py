@@ -2769,9 +2769,25 @@ def delete_selected_images(session, supabase_url, selected):
             continue
         info = dict(row.get("info") or {})
         job = info.get("imageGeneration") or {}
-        if job.get("status") != "completed" or (job.get("imageUrl") or row.get("image")) != image_url:
+        rep = info.get("imageGenerationReplacement") or {}
+        row_image = str(row.get("image") or "").strip()
+        job_image = str(job.get("imageUrl") or "").strip()
+        rep_image = str(rep.get("imageUrl") or "").strip()
+        info_image = str(info.get("image") or "").strip()
+
+        # Find any current active image on this product
+        active_image = row_image or job_image or rep_image or info_image
+
+        # If product has a DIFFERENT active generated image, report that it changed
+        if active_image and active_image != image_url:
             errors.append(f"{identifier}: image has changed; refresh the list")
             continue
+
+        # If product already has no image and status is pending or trashed, it's already removed
+        if not active_image and job.get("status") in ("pending", "trashed"):
+            print(f"ALREADY CLEARED {identifier}: image already removed", flush=True)
+            continue
+
         retired = info.get("retiredGeneratedImages")
         retired = list(retired) if isinstance(retired, list) else []
         if image_url not in retired:
@@ -2779,8 +2795,10 @@ def delete_selected_images(session, supabase_url, selected):
         info["retiredGeneratedImages"] = retired
         info["imageGeneration"] = {"status": "pending"}
         info.pop("imageGenerationReplacement", None)
+        if "image" in info and info["image"] == image_url:
+            info["image"] = ""
         try:
-            patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=True)
+            patch_stock(session, supabase_url, row, info, image="", only_if_unchanged=False)
         except RuntimeError as error:
             errors.append(f"{identifier}: {error}")
             continue
