@@ -735,6 +735,46 @@ class ProductImageGenerationTests(unittest.TestCase):
         # The product is not enlarged beyond its original ~100px width.
         self.assertLessEqual(int(xs.max()) - int(xs.min()) + 1, 120)
 
+    def test_normalize_flacon_cutout_preserves_both_box_and_bottle(self):
+        # Packaging box (400x600) + separate bottle (150x450) next to it
+        im = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+        box = Image.new('RGBA', (400, 600), (30, 40, 80, 255))
+        bottle = Image.new('RGBA', (150, 450), (220, 180, 60, 255))
+        im.paste(box, (150, 200))
+        im.paste(bottle, (600, 350))
+        normalized = queue.normalize_flacon_cutout(im)
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        self.assertTrue(len(xs) > 0)
+        # Verify the span covers both the box and the bottle (not just the box)
+        total_span_w = int(xs.max()) - int(xs.min()) + 1
+        self.assertGreater(total_span_w, 450)
+
+    def test_normalize_flacon_cutout_preserves_cap_and_vertical_components(self):
+        # Flacon body (200x500) + smaller cap (60x80) on top
+        im = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+        bottle = Image.new('RGBA', (200, 500), (100, 50, 20, 255))
+        cap = Image.new('RGBA', (60, 80), (250, 215, 0, 255))
+        im.paste(bottle, (412, 400))
+        im.paste(cap, (482, 300))  # Centered above bottle
+        normalized = queue.normalize_flacon_cutout(im)
+        arr = np.array(normalized)
+        ys, xs = np.where(arr[:, :, 3] > 25)
+        total_span_h = int(ys.max()) - int(ys.min()) + 1
+        # Combined height should be substantially greater than bottle alone
+        self.assertGreater(total_span_h, 650)
+
+    def test_super_resolve_product_image_if_needed_enlarges_small_source(self):
+        small = Image.new("RGB", (250, 250), (180, 120, 50))
+        upscaled = queue.super_resolve_product_image_if_needed(small, min_dim=900)
+        self.assertGreaterEqual(upscaled.size[0], 500)
+        self.assertGreaterEqual(upscaled.size[1], 500)
+
+    def test_super_resolve_product_image_skips_large_source(self):
+        large = Image.new("RGB", (1200, 1200), (180, 120, 50))
+        same = queue.super_resolve_product_image_if_needed(large, min_dim=900)
+        self.assertEqual(same.size, (1200, 1200))
+
     def test_measure_source_quality_flags_low_resolution(self):
         small = image_bytes(Image.new("RGB", (120, 120), "red"))
         quality = queue.measure_source_quality(small)

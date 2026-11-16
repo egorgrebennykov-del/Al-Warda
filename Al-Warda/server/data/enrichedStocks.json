@@ -91249,7 +91249,7 @@
     "name": "Afnan Zimaya Men's Abadi Saga Eau De Parfum Spray",
     "brand": "Afnan",
     "price": 11.99,
-    "image": "/assets/img/products/6290171075080.jpg",
+    "image": "/assets/img/generated-products/d58e93c5e6d17079b61659fececb65d56901755b3909045fd506e02fbb957d6c.png",
     "info": {
       "category": "Фужерные и цитрусовые",
       "gender": "Мужской",
@@ -91310,7 +91310,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "9f96cdd366af4fd1a35d33943fc47940"
+      "variantFid": "9f96cdd366af4fd1a35d33943fc47940",
+      "image": "/assets/img/generated-products/d58e93c5e6d17079b61659fececb65d56901755b3909045fd506e02fbb957d6c.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/d58e93c5e6d17079b61659fececb65d56901755b3909045fd506e02fbb957d6c.png",
+        "publishedImageUrl": "/assets/img/generated-products/d58e93c5e6d17079b61659fececb65d56901755b3909045fd506e02fbb957d6c.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Zimaya Men's Abadi Saga Eau De Parfum Spray 34 Oz от парфюмерного дома Afnan — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (фужерные и цитрусовые). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются сицилийский бергамот, грейпфрут, имбирь, кардамон. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: французская лаванда, дубовый мох, шалфей, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: ветивер, благородный кедр, серая амбра, пачули. Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке.",
     "minOrderQuantity": 1,
@@ -91321,7 +91330,7 @@
     "name": "Afnan Delicious Bouquet EDP",
     "brand": "Afnan",
     "price": 23.67,
-    "image": "/assets/img/products/6290171075752.jpg",
+    "image": "/assets/img/generated-products/cedcdc01b9e27da8a6a5b0a63dc64cdc9bcfafcab675fa0f9a1b243abe36962e.png",
     "info": {
       "category": "Пряные и восточные",
       "gender": "Унисекс",
@@ -91384,7 +91393,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "50a26f58706543c38b7caba089dacc47"
+      "variantFid": "50a26f58706543c38b7caba089dacc47",
+      "image": "/assets/img/generated-products/cedcdc01b9e27da8a6a5b0a63dc64cdc9bcfafcab675fa0f9a1b243abe36962e.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/cedcdc01b9e27da8a6a5b0a63dc64cdc9bcfafcab675fa0f9a1b243abe36962e.png",
+        "publishedImageUrl": "/assets/img/generated-products/cedcdc01b9e27da8a6a5b0a63dc64cdc9bcfafcab675fa0f9a1b243abe36962e.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Delicious Bouquet 80ml EDP от парфюмерного дома Afnan — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (пряные и восточные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются кардамон, розовый перец, корица, шафран. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дамасская роза, табачный лист, пачули, кофе, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: золотая амбра, бобы тонка, сандал, ваниль. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
     "minOrderQuantity": 1,
@@ -91395,7 +91413,7 @@
     "name": "Afnan Zimaya Amber Is Great Extrait De Parfum Men Spray",
     "brand": "Afnan",
     "price": 12.49,
-    "image": "/assets/img/products/6290171070283.jpg",
+    "image": "/assets/img/generated-products/8f2d57d29b5c618ae021e5c10a1cc8978fd0848f77307dfc49dae27a2aa63ff3.png",
     "info": {
       "category": "Гурманские и амбровые",
       "gender": "Мужской",
@@ -91458,7 +91476,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "YL7DO4"
+      "variantFid": "YL7DO4",
+      "image": "/assets/img/generated-products/8f2d57d29b5c618ae021e5c10a1cc8978fd0848f77307dfc49dae27a2aa63ff3.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/8f2d57d29b5c618ae021e5c10a1cc8978fd0848f77307dfc49dae27a2aa63ff3.png",
+        "publishedImageUrl": "/assets/img/generated-products/8f2d57d29b5c618ae021e5c10a1cc8978fd0848f77307dfc49dae27a2aa63ff3.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Zimaya Amber Is Great Extrait De Parfum 100ml Men Spray от парфюмерного дома Afnan — страстный и согревающий восточно-пряный аромат, сотканный из редких специй и драгоценных смол Ближнего Востока (гурманские и амбровые). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются шафран, бергамот, персик, мандарин. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: золотая амбра, карамель, груша, древесные ноты, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: мадагаскарская ваниль, белый мускус, сандал, благородный уд. Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке.",
     "minOrderQuantity": 1,
@@ -91469,7 +91496,7 @@
     "name": "Afnan Supremacy Gold Eau De Parfum Spray",
     "brand": "Afnan",
     "price": 15.79,
-    "image": "/assets/img/products/6290171000983.jpg",
+    "image": "/assets/img/generated-products/b114c395b2d93005ce1e5a4c62945507d17025face1a621c173cd04f74d174dd.png",
     "info": {
       "category": "Восточные и гурманские",
       "gender": "Унисекс",
@@ -91530,7 +91557,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "AFpLeAyXdv"
+      "variantFid": "AFpLeAyXdv",
+      "image": "/assets/img/generated-products/b114c395b2d93005ce1e5a4c62945507d17025face1a621c173cd04f74d174dd.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/b114c395b2d93005ce1e5a4c62945507d17025face1a621c173cd04f74d174dd.png",
+        "publishedImageUrl": "/assets/img/generated-products/b114c395b2d93005ce1e5a4c62945507d17025face1a621c173cd04f74d174dd.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Supremacy Gold Eau De Parfum 100ml Spray от парфюмерного дома Afnan — выразительный и глубокий парфюм, в котором экзотические пряности создают неповторимую ауру роскоши и тайны (восточные и гурманские). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются фиалка, мускатный орех, персик, кумин. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: ирис, пачули, дамасская роза, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: мадагаскарская ваниль, золотая амбра, благородный уд, бобы тонка. Универсальная формула унисекс великолепно раскрывается как на мужской, так и на женской коже, адаптируясь к индивидуальной химии тела.",
     "minOrderQuantity": 1,
@@ -91541,7 +91577,7 @@
     "name": "Afnan Supremacy Not Only Intense Eau De Parfum For Men",
     "brand": "Afnan",
     "price": 42.27,
-    "image": "/assets/img/products/6290171072775.jpg",
+    "image": "/assets/img/generated-products/261a57f49b6d49c45e8d5348bc4e66ac192cf81e089d79e75672a12b20be54a2.png",
     "info": {
       "category": "Цитрусовые и фужерные",
       "gender": "Мужской",
@@ -91604,7 +91640,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "8400ca1353f242ba95ebf1b170aade92"
+      "variantFid": "8400ca1353f242ba95ebf1b170aade92",
+      "image": "/assets/img/generated-products/261a57f49b6d49c45e8d5348bc4e66ac192cf81e089d79e75672a12b20be54a2.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/261a57f49b6d49c45e8d5348bc4e66ac192cf81e089d79e75672a12b20be54a2.png",
+        "publishedImageUrl": "/assets/img/generated-products/261a57f49b6d49c45e8d5348bc4e66ac192cf81e089d79e75672a12b20be54a2.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Supremacy Not Only Intense Eau De Parfum 150ml For Men от парфюмерного дома Afnan — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (цитрусовые и фужерные). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются черная смородина, сицилийский бергамот, зеленое яблоко, грейпфрут. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: дубовый мох, пачули, французская лаванда, кардамон, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: серая амбра, шафран, белый мускус, ветивер. Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке.",
     "minOrderQuantity": 1,
@@ -91615,7 +91660,7 @@
     "name": "Afnan Ornament Purple Allure Eau De Parfum Spray",
     "brand": "Afnan",
     "price": 20.01,
-    "image": "/assets/img/products/6290171070375.jpg",
+    "image": "/assets/img/generated-products/c59139023de967621234a8560021765bac52508e10fb93c6bbf843103701c7b8.png",
     "info": {
       "category": "Цветочные и гурманские",
       "gender": "Мужской",
@@ -91680,7 +91725,16 @@
       },
       "minOrderQuantity": 1,
       "unit": 1,
-      "variantFid": "826ON0"
+      "variantFid": "826ON0",
+      "image": "/assets/img/generated-products/c59139023de967621234a8560021765bac52508e10fb93c6bbf843103701c7b8.png",
+      "imageGeneration": {
+        "status": "completed",
+        "generatedImageUrl": "/assets/img/generated-products/c59139023de967621234a8560021765bac52508e10fb93c6bbf843103701c7b8.png",
+        "publishedImageUrl": "/assets/img/generated-products/c59139023de967621234a8560021765bac52508e10fb93c6bbf843103701c7b8.png",
+        "processingMethod": "upscayl_ai_superres_studio",
+        "whetherUpscaled": true,
+        "completedAt": "2026-11-16T10:40:00.000Z"
+      }
     },
     "description": "Afnan Ornament Purple Allure Eau De Parfum Spray 100ml от парфюмерного дома Afnan — богатая и темпераментная композиция с гипнотическим характером, раскрывающаяся множеством тёплых граней (цветочные и гурманские). С первых мгновений композиция завораживает ярким вступлением, в котором гармонично переплетаются малина, персик, мандарин, грейпфрут. Постепенно согреваясь на коже, аромат раскрывает своё богатое сердце из нот: флердоранж, жасмин, кардамон, иланг-иланг, придающих звучанию глубину и объём. В финале остаётся благородный, долгоиграющий шлейф (стойкость 10–14 часов), сотканный из оттенков: ваниль, белый мускус, пачули, миндаль, золотая амбра. Безупречно дополняет мужской образ, подчёркивая статус, харизму и уверенность в любой обстановке.",
     "minOrderQuantity": 1,
