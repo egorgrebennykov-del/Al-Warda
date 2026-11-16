@@ -1389,6 +1389,17 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
     if max(w, h) >= min_dim:
         return image
 
+    # Pre-deblock: remove blocky JPEG compression boundaries before feeding into AI models.
+    # This prevents GAN super-resolution from amplifying compression blocks into barcode/ladder lines on small text.
+    try:
+        import cv2
+        import numpy as np
+        arr_pre = np.array(image.convert("RGB"))
+        deblocked = cv2.bilateralFilter(arr_pre, d=5, sigmaColor=30, sigmaSpace=30)
+        image = Image.fromarray(deblocked)
+    except Exception:
+        pass
+
     bin_path, models_dir = find_superres_binary()
     if bin_path:
         try:
@@ -1400,7 +1411,12 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
                 image.convert("RGB").save(in_path, format="PNG")
                 cmd = [bin_path, "-i", in_path, "-o", out_path, "-s", str(scale), "-c", "0", "-j", "1:1:1"]
                 if models_dir and os.path.isdir(models_dir):
-                    if os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
+                    # For realistic photography, remacri-4x and high-fidelity-4x prevent GAN hallucinatory artifacts on tiny fonts
+                    if os.path.isfile(os.path.join(models_dir, "remacri-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "high-fidelity-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "high-fidelity-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
                         cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
                     elif os.path.isfile(os.path.join(models_dir, "realesrgan-x4plus.bin")):
                         cmd.extend(["-m", models_dir, "-n", "realesrgan-x4plus"])
