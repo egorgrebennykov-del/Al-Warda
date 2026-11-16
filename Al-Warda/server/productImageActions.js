@@ -154,8 +154,6 @@ export async function handleProductImageActions(request, env) {
       return json({ message: "Workflow dispatch accepted", globalHalted: false }, 202);
     }
     if (body.action === "stop" || body.action === "stop-global") {
-      const runs = await activeRuns(env, true);
-      for (const run of runs) await github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" });
       try {
         await setGlobalGenerationHalted(env, true);
       } catch (err) {
@@ -163,6 +161,19 @@ export async function handleProductImageActions(request, env) {
       }
       invalidateActionsCache();
       invalidateProductImageQueueCache();
+
+      let runs = [];
+      try {
+        runs = await activeRuns(env, true);
+        await Promise.allSettled(
+          runs.map((run) =>
+            github(env, `/actions/runs/${run.id}/cancel`, { method: "POST" }),
+          ),
+        );
+      } catch (err) {
+        console.warn("Could not cancel GitHub Actions runs:", err.message);
+      }
+
       return json({
         message: runs.length
           ? "Cancellation requested and global generation halted"

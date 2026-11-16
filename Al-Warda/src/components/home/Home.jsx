@@ -72,10 +72,8 @@ export default function Home() {
 
     fetchBestSellers();
 
-    const timer = window.setInterval(fetchBestSellers, 30000);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
     };
   }, []);
 

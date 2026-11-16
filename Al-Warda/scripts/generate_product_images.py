@@ -1103,7 +1103,7 @@ def composite_original_product(source_bytes, background_bytes, segmentation_sess
 
     result = Image.alpha_composite(background, source_rgba)
     output = io.BytesIO()
-    result.save(output, format="PNG", optimize=True)
+    result.save(output, format="PNG", optimize=True, compress_level=9)
     return output.getvalue(), original_size
 
 
@@ -1114,6 +1114,12 @@ def save_generated_image(image_bytes):
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     path = GENERATED_DIR / f"{digest}.png"
     path.write_bytes(image_bytes)
+    try:
+        webp_path = GENERATED_DIR / f"{digest}.webp"
+        with Image.open(io.BytesIO(image_bytes)) as im:
+            im.save(webp_path, format="WEBP", quality=85, method=6)
+    except Exception as e:
+        print(f"Warning: could not create WebP variant for {digest}: {e}", file=sys.stderr)
     return f"{GENERATED_URL}{digest}.png"
 
 
@@ -1171,7 +1177,7 @@ def transparent_product_image(image_bytes, segmentation_session, allow_arbitrary
     cutout = normalize_flacon_cutout(cutout)
 
     output = io.BytesIO()
-    cutout.save(output, format="PNG", optimize=True)
+    cutout.save(output, format="PNG", optimize=True, compress_level=9)
     return output.getvalue(), cutout.size
 
 
@@ -1533,7 +1539,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         pass
 
     output = io.BytesIO()
-    cutout.save(output, format="PNG", optimize=True)
+    cutout.save(output, format="PNG", optimize=True, compress_level=9)
     return output.getvalue(), canvas_size, original_size
 
 
@@ -2036,7 +2042,7 @@ def restore_source_text_regions(source_bytes, generated_png_bytes):
         restored = Image.fromarray(blended, "RGB").convert("RGBA")
         restored.putalpha(generated.getchannel("A"))
         buffer = io.BytesIO()
-        restored.save(buffer, format="PNG", optimize=True)
+        restored.save(buffer, format="PNG", optimize=True, compress_level=9)
         result["image"] = buffer.getvalue()
         result["textRestored"] = True
     except Exception as error:

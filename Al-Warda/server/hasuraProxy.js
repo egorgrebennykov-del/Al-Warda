@@ -442,6 +442,26 @@ export function extractRows(data, translated) {
     : [];
 }
 
+const PUBLIC_READ_TABLES = new Set([
+  "stocks",
+  "announcements",
+  "coupons",
+  "discounts",
+  "feedbacks",
+  "new_perfumes",
+  "perfume_picks",
+  "perfumes_on_home_page",
+]);
+
+function computeFastEtag(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return `W/"${(h >>> 0).toString(16)}-${str.length.toString(16)}"`;
+}
+
 function jsonResponse(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
@@ -520,6 +540,47 @@ export async function handleRestProxy(request, env = {}) {
       const from = offset || 0;
       const to = from + Math.max(rows.length - 1, 0);
       headers["Content-Range"] = `${from}-${to}/${totalCount}`;
+    }
+
+    if (method === "GET") {
+      const isPublic = PUBLIC_READ_TABLES.has(translated.table);
+      const cacheControl = isPublic
+        ? "public, max-age=60, s-maxage=300, stale-while-revalidate=1800"
+        : "private, no-store";
+      headers["Cache-Control"] = cacheControl;
+
+      const bodyStr = JSON.stringify(rows);
+      const etag = computeFastEtag(bodyStr);
+      headers["ETag"] = etag;
+
+      const ifNoneMatch = request.headers.get("if-none-match");
+      if (
+        ifNoneMatch &&
+        (ifNoneMatch === etag ||
+          ifNoneMatch.replace(/^W\//, "") === etag.replace(/^W\//, ""))
+      ) {
+        return new Response(null, {
+          status: 304,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+            "Cache-Control": cacheControl,
+            ETag: etag,
+          },
+        });
+      }
+
+      return new Response(bodyStr, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+          ...headers,
+        },
+      });
     }
 
     return jsonResponse(rows, method === "POST" ? 201 : 200, headers);

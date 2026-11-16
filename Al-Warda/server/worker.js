@@ -132,6 +132,165 @@ function jsonResponse(body, status = 200) {
   });
 }
 
+async function serveGeneratedProductImage(request, pathname, env, ctx) {
+  const match =
+    /^\/assets\/img\/generated-products\/([a-f0-9]{64})\.(png|webp)$/.exec(
+      pathname,
+    );
+  if (!match) return null;
+
+  const hash = match[1];
+  const requestedExt = match[2];
+  const etag = `W/"${hash}"`;
+
+  // 1. Fast 304 check on client-provided If-None-Match
+  const ifNoneMatch = request.headers.get("if-none-match");
+  if (
+    ifNoneMatch &&
+    (ifNoneMatch === etag ||
+      ifNoneMatch === hash ||
+      ifNoneMatch.includes(hash))
+  ) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        "Cache-Control":
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+        ETag: etag,
+        "Access-Control-Allow-Origin": "*",
+        Vary: "Accept",
+      },
+    });
+  }
+
+  // 2. Check Cloudflare Edge Cache API (caches.default)
+  const cache =
+    typeof caches !== "undefined" && caches.default ? caches.default : null;
+  const acceptHeader = request.headers.get("accept") || "";
+  const supportsWebp = acceptHeader.includes("image/webp");
+
+  const cacheUrl = new URL(request.url);
+  if (supportsWebp && requestedExt === "png") {
+    cacheUrl.searchParams.set("format", "webp");
+  }
+  const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
+
+  if (cache) {
+    try {
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    } catch {
+      // cache match failed, proceed to fetch
+    }
+  }
+
+  // 3. Try serving from env.ASSETS first if available
+  if (env?.ASSETS) {
+    try {
+      if (supportsWebp) {
+        const webpReq = new Request(
+          new URL(`/assets/img/generated-products/${hash}.webp`, request.url),
+        );
+        const webpRes = await env.ASSETS.fetch(webpReq);
+        if (webpRes && webpRes.ok) {
+          const headers = new Headers(webpRes.headers);
+          headers.set("Content-Type", "image/webp");
+          headers.set(
+            "Cache-Control",
+            "public, max-age=31536000, s-maxage=31536000, immutable",
+          );
+          headers.set("ETag", etag);
+          headers.set("Access-Control-Allow-Origin", "*");
+          headers.set("Vary", "Accept");
+          const finalRes = new Response(webpRes.body, { status: 200, headers });
+          if (cache && ctx?.waitUntil) {
+            ctx.waitUntil(cache.put(cacheKey, finalRes.clone()));
+          }
+          return finalRes;
+        }
+      }
+
+      const assetRes = await env.ASSETS.fetch(request);
+      if (assetRes && assetRes.ok) {
+        const headers = new Headers(assetRes.headers);
+        headers.set(
+          "Content-Type",
+          requestedExt === "webp" ? "image/webp" : "image/png",
+        );
+        headers.set(
+          "Cache-Control",
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+        );
+        headers.set("ETag", etag);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Vary", "Accept");
+        const finalRes = new Response(assetRes.body, {
+          status: 200,
+          headers,
+        });
+        if (cache && ctx?.waitUntil) {
+          ctx.waitUntil(cache.put(cacheKey, finalRes.clone()));
+        }
+        return finalRes;
+      }
+    } catch {
+      // fall through to GitHub Raw proxy
+    }
+  }
+
+  // 4. Fallback: Fetch from GitHub Raw
+  try {
+    if (supportsWebp) {
+      const ghWebpUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public/assets/img/generated-products/${hash}.webp`;
+      const ghWebpRes = await fetch(ghWebpUrl);
+      if (ghWebpRes && ghWebpRes.ok) {
+        const headers = new Headers(ghWebpRes.headers);
+        headers.set("Content-Type", "image/webp");
+        headers.set(
+          "Cache-Control",
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+        );
+        headers.set("ETag", etag);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Vary", "Accept");
+        const finalRes = new Response(ghWebpRes.body, { status: 200, headers });
+        if (cache && ctx?.waitUntil) {
+          ctx.waitUntil(cache.put(cacheKey, finalRes.clone()));
+        }
+        return finalRes;
+      }
+    }
+
+    const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public/assets/img/generated-products/${hash}.${requestedExt}`;
+    const ghResponse = await fetch(rawGithubUrl);
+    if (ghResponse && ghResponse.ok) {
+      const headers = new Headers(ghResponse.headers);
+      headers.set(
+        "Content-Type",
+        requestedExt === "webp" ? "image/webp" : "image/png",
+      );
+      headers.set(
+        "Cache-Control",
+        "public, max-age=31536000, s-maxage=31536000, immutable",
+      );
+      headers.set("ETag", etag);
+      headers.set("Access-Control-Allow-Origin", "*");
+      headers.set("Vary", "Accept");
+      const finalRes = new Response(ghResponse.body, { status: 200, headers });
+      if (cache && ctx?.waitUntil) {
+        ctx.waitUntil(cache.put(cacheKey, finalRes.clone()));
+      }
+      return finalRes;
+    }
+  } catch {
+    // fall through
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
 export default {
   async fetch(request, env, ctx) {
     try {
@@ -256,6 +415,19 @@ export default {
       if (method === "GET" && pathname === "/api/transparent-image") {
         const targetUrl = urlObj.searchParams.get("url");
         if (!targetUrl) return new Response("Missing url", { status: 400 });
+        const cache =
+          typeof caches !== "undefined" && caches.default
+            ? caches.default
+            : null;
+        const cacheKey = new Request(request.url, { method: "GET" });
+        if (cache) {
+          try {
+            const cached = await cache.match(cacheKey);
+            if (cached) return cached;
+          } catch {
+            // ignore cache match error
+          }
+        }
         try {
           const upstream = await fetch(targetUrl, {
             headers: {
@@ -264,11 +436,18 @@ export default {
           });
           const headers = new Headers(upstream.headers);
           headers.set("Access-Control-Allow-Origin", "*");
-          headers.set("Cache-Control", "public, max-age=604800, immutable");
-          return new Response(upstream.body, {
+          headers.set(
+            "Cache-Control",
+            "public, max-age=31536000, s-maxage=31536000, immutable",
+          );
+          const finalRes = new Response(upstream.body, {
             status: upstream.status,
             headers,
           });
+          if (cache && ctx?.waitUntil && upstream.ok) {
+            ctx.waitUntil(cache.put(cacheKey, finalRes.clone()));
+          }
+          return finalRes;
         } catch (e) {
           return new Response(e.message, { status: 502 });
         }
@@ -529,63 +708,40 @@ export default {
         return jsonResponse({ error: "Endpoint not found" }, 404);
       }
 
+      if (
+        /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.(png|webp)$/.test(
+          pathname,
+        )
+      ) {
+        const generatedRes = await serveGeneratedProductImage(
+          request,
+          pathname,
+          env,
+          ctx,
+        );
+        if (generatedRes) return generatedRes;
+      }
+
       // Static assets & SPA fallback
       if (env?.ASSETS) {
         const response = await env.ASSETS.fetch(request);
-        if (response && response.ok && pathname.startsWith("/assets/")) {
+        if (response && response.ok) {
           const headers = new Headers(response.headers);
-          headers.set("Cache-Control", "public, max-age=31536000, immutable");
+          if (pathname.startsWith("/assets/")) {
+            headers.set("Cache-Control", "public, max-age=31536000, immutable");
+          } else {
+            headers.set(
+              "Cache-Control",
+              "public, max-age=604800, stale-while-revalidate=86400",
+            );
+          }
           return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,
             headers,
           });
         }
-        if (
-          (!response || response.status === 404) &&
-          /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(pathname)
-        ) {
-          try {
-            const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${pathname}`;
-            const ghResponse = await fetch(rawGithubUrl);
-            if (ghResponse.ok) {
-              const headers = new Headers(ghResponse.headers);
-              headers.set("Content-Type", "image/png");
-              headers.set(
-                "Cache-Control",
-                "public, max-age=86400, stale-while-revalidate=604800",
-              );
-              return new Response(ghResponse.body, {
-                status: 200,
-                headers,
-              });
-            }
-          } catch {
-            // fall through to original response
-          }
-        }
         return response;
-      }
-
-      if (/^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(pathname)) {
-        try {
-          const rawGithubUrl = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${pathname}`;
-          const ghResponse = await fetch(rawGithubUrl);
-          if (ghResponse.ok) {
-            const headers = new Headers(ghResponse.headers);
-            headers.set("Content-Type", "image/png");
-            headers.set(
-              "Cache-Control",
-              "public, max-age=86400, stale-while-revalidate=604800",
-            );
-            return new Response(ghResponse.body, {
-              status: 200,
-              headers,
-            });
-          }
-        } catch {
-          // fall through
-        }
       }
 
       return new Response("Not found", { status: 404 });

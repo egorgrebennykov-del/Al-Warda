@@ -80,19 +80,27 @@ export default function WardaCharacter({
       aria-label={alt}
     >
       <div className="warda-character__aura" aria-hidden="true" />
-      <img
-        src={imageSrc}
-        alt={alt}
-        className="warda-character__image"
-        onError={(e) => {
-          if (!e.target.src.includes("greeting.png")) {
-            e.target.src = "/assets/img/warda_assistant/greeting.png";
-          } else {
-            setImgError(true);
-          }
-        }}
-        draggable={false}
-      />
+      <picture>
+        <source
+          srcSet={`/assets/img/warda_assistant/${cleanEmotion}.webp`}
+          type="image/webp"
+        />
+        <img
+          src={imageSrc}
+          alt={alt}
+          className="warda-character__image"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            if (!e.target.src.includes("greeting.png")) {
+              e.target.src = "/assets/img/warda_assistant/greeting.png";
+            } else {
+              setImgError(true);
+            }
+          }}
+          draggable={false}
+        />
+      </picture>
     </div>
   );
 }
