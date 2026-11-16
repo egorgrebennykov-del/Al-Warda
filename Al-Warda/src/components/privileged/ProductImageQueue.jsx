@@ -1249,147 +1249,37 @@ export default function ProductImageQueue({
                 ? "Генерация изображений товаров"
                 : "Product image generation"}
             </h2>
-            {globalHalted ? (
-              <span className="product-image-queue__status-badge product-image-queue__status-badge--halted">
-                <i className="ri-pause-circle-line" />
-                {isRussian ? "Остановлена" : "Halted"}
-              </span>
-            ) : runs.length > 0 ? (
+            {gpuJobStatus?.isRunning ? (
               <span className="product-image-queue__status-badge product-image-queue__status-badge--running">
                 <span className="product-image-queue__pulse-dot" />
-                {isRussian ? "Выполняется" : "Running"}
+                {isRussian ? "Генерация на видеокарте" : "GPU Generation Running"}
               </span>
             ) : (
               <span className="product-image-queue__status-badge product-image-queue__status-badge--active">
-                <i className="ri-checkbox-circle-line" />
-                {isRussian ? "Активна (по расписанию)" : "Active (scheduled)"}
+                <i className="ri-cpu-line" />
+                {isRussian ? "Локальный GPU активен" : "Local GPU Ready"}
               </span>
             )}
           </div>
           <p>
             {isRussian
-              ? "Локальный конвейер искусственного интеллекта Al-Warda: 100% сохранение подлинного флакона, U2Net ONNX сегментация фона, студийная фотометрия и адаптивный динамический диапазон. $0.00 затрат на API."
-              : "Al-Warda Local AI Pipeline: 100% authentic bottle preservation, U2Net ONNX background segmentation, studio photometry and adaptive dynamic range. $0.00 API cost."}
+              ? "Генерация изображений флаконов выполняется прямиком на компьютере (локальная видеокарта GPU с аппаратным ускорением Vulkan и RMBG-1.4). Без облачных процессов и без автоматических запусков."
+              : "Product images are generated directly on your computer's GPU with Vulkan hardware acceleration and RMBG-1.4. No cloud processes and no automated background jobs."}
           </p>
         </div>
         <div className="product-image-queue__header-actions">
-          {globalHalted ? (
-            <button
-              type="button"
-              className="product-image-queue__start product-image-queue__start--resume"
-              disabled={busy}
-              onClick={handleResumeGlobalGeneration}
-              title={
-                isRussian
-                  ? "Возобновить глобальный процесс генерации"
-                  : "Resume global generation"
-              }
-            >
-              <i className="ri-play-circle-line" />
-              {isRussian ? "Возобновить генерацию" : "Resume generation"}
-            </button>
-          ) : runs.length > 0 ? (
-            <button
-              type="button"
-              className="product-image-queue__start product-image-queue__start--danger"
-              disabled={busy}
-              onClick={handleStopGlobalGeneration}
-              title={
-                isRussian
-                  ? "Экстренно остановить выполняющуюся генерацию"
-                  : "Emergency stop of running generation"
-              }
-            >
-              <i className="ri-stop-circle-line" />
-              {isRussian ? "Остановить генерацию" : "Stop generation"}
-            </button>
-          ) : null}
-          <a
+          <button
+            type="button"
             className="product-image-queue__start"
-            href="https://github.com/egorgrebennykov-del/Al-Warda/actions/workflows/product-image-generation.yml"
-            target="_blank"
-            rel="noopener noreferrer"
+            disabled={refreshing}
+            onClick={handleManualRefresh}
+            title={isRussian ? "Обновить данные очереди" : "Refresh queue"}
           >
-            <i className="ri-external-link-line" />
-            {isRussian
-              ? "Открыть запуск в GitHub Actions"
-              : "Open GitHub Actions"}
-          </a>
+            <i className={`ri-refresh-line ${refreshing ? "ri-spin" : ""}`} />
+            {isRussian ? "Обновить статус" : "Refresh"}
+          </button>
         </div>
       </header>
-
-      {!globalHalted && runs.length > 0 && (
-        <div className="product-image-queue__global-banner product-image-queue__global-banner--running">
-          <div className="product-image-queue__global-banner-info">
-            <span className="product-image-queue__pulse-dot" aria-hidden="true" />
-            <div>
-              <strong>
-                {isRussian
-                  ? "Глобальный процесс генерации выполняется"
-                  : "Global generation process in progress"}
-              </strong>
-              <p>
-                {isRussian
-                  ? `Активных задач в GitHub Actions: ${runs.length}. Сгенерированные фото сохраняются и готовятся к автоматической публикации на сайте.`
-                  : `Active tasks in GitHub Actions: ${runs.length}. Generated images are saved and queued for automatic publishing.`}
-              </p>
-            </div>
-          </div>
-          <div className="product-image-queue__global-banner-actions">
-            <button
-              type="button"
-              className="product-image-queue__start product-image-queue__start--danger"
-              disabled={busy}
-              onClick={handleStopGlobalGeneration}
-            >
-              <i className="ri-stop-circle-line" />
-              {isRussian ? "Остановить процесс" : "Stop process"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {globalHalted && (
-        <div className="product-image-queue__global-banner product-image-queue__global-banner--halted">
-          <div className="product-image-queue__global-banner-info">
-            <i
-              className="ri-pause-circle-line product-image-queue__global-banner-icon"
-              aria-hidden="true"
-            />
-            <div>
-              <strong>
-                {isRussian
-                  ? runs.length > 0
-                    ? "Глобальный процесс генерации останавливается"
-                    : "Глобальный процесс генерации остановлен"
-                  : runs.length > 0
-                    ? "Global generation process stopping"
-                    : "Global generation process stopped"}
-              </strong>
-              <p>
-                {isRussian
-                  ? runs.length > 0
-                    ? `Отправлен сигнал остановки (${runs.length} задач в GitHub Actions завершают сохранение). Автоматические запуски по расписанию приостановлены.`
-                    : "Автоматические запуски по расписанию (cron раз в 30 минут) приостановлены. Нажмите «Возобновить генерацию», чтобы вернуть штатный режим."
-                  : runs.length > 0
-                    ? `Stop signal sent (${runs.length} GitHub Actions tasks finishing up). Scheduled runs are paused.`
-                    : "Automatic scheduled runs (every 30 minutes) are paused. Click 'Resume generation' to return to normal schedule."}
-              </p>
-            </div>
-          </div>
-          <div className="product-image-queue__global-banner-actions">
-            <button
-              type="button"
-              className="product-image-queue__start product-image-queue__start--resume"
-              disabled={busy}
-              onClick={handleResumeGlobalGeneration}
-            >
-              <i className="ri-play-circle-line" />
-              {isRussian ? "Возобновить генерацию" : "Resume generation"}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* GPU Hardware Generation Hub (Local Intel Iris Xe / Vulkan) */}
       <section className="product-image-queue__gpu-hub">
@@ -1629,84 +1519,6 @@ export default function ProductImageQueue({
         )}
       </section>
 
-      <div className="product-image-queue__controls">
-        <label>
-          {isRussian ? "Количество фото" : "Number of photos"}
-          <input
-            type="number"
-            min="1"
-            max="100000"
-            step="1"
-            value={count}
-            onChange={(e) => setCount(e.target.value)}
-          />
-        </label>
-        <label className="product-image-queue__regenerate">
-          <input
-            type="checkbox"
-            checked={regenerateCompleted}
-            onChange={(e) => setRegenerateCompleted(e.target.checked)}
-          />
-          {isRussian
-            ? "Пересоздать готовые фото старой модели"
-            : "Regenerate completed images from older models"}
-        </label>
-        <div className="product-image-queue__pipeline-badge">
-          <i className="ri-cpu-line" />
-          <span>
-            {isRussian
-              ? "Локальный ИИ (U2Net ONNX + Студийная фотометрия, $0.00 API)"
-              : "Local AI Pipeline (U2Net ONNX + Studio Photometry, $0.00 API)"}
-          </span>
-        </div>
-        <button
-          type="button"
-          className="product-image-queue__start"
-          disabled={
-            busy ||
-            deleting ||
-            !runsLoaded ||
-            runs.length > 0 ||
-            !Number.isInteger(Number(count)) ||
-            Number(count) < 1 ||
-            Number(count) > 100000
-          }
-          onClick={() => runAction("start")}
-        >
-          <i className="ri-play-line" />
-          {isRussian ? "Запустить" : "Start"}
-        </button>
-        <button
-          type="button"
-          className="product-image-queue__start product-image-queue__start--danger"
-          disabled={busy || deleting}
-          onClick={handleStopGlobalGeneration}
-          title={
-            isRussian
-              ? "Остановить активную или запланированную глобальную генерацию"
-              : "Stop active or scheduled global image generation"
-          }
-        >
-          <i className="ri-stop-circle-line" />
-          {isRussian ? "Остановить генерацию" : "Stop generation"}
-        </button>
-        {globalHalted && (
-          <button
-            type="button"
-            className="product-image-queue__start product-image-queue__start--resume"
-            disabled={busy || deleting}
-            onClick={handleResumeGlobalGeneration}
-            title={
-              isRussian
-                ? "Возобновить автоматическую генерацию по расписанию"
-                : "Resume scheduled global generation"
-            }
-          >
-            <i className="ri-play-circle-line" />
-            {isRussian ? "Возобновить генерацию" : "Resume generation"}
-          </button>
-        )}
-      </div>
       {actionError && (
         <div
           className="product-image-queue__message product-image-queue__message--error"
@@ -1772,16 +1584,6 @@ export default function ProductImageQueue({
           </span>
         </div>
       )}
-      {runs.map((run) => (
-        <a
-          key={run.id}
-          href={run.url}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          GitHub Actions: {run.status}
-        </a>
-      ))}
       {deletions.slice(0, 1).map((run) => (
         <a
           key={run.id}
