@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { useConfirm } from "../../context/ConfirmContext";
+import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import ProductImageCompareModal from "./ProductImageCompareModal";
@@ -409,6 +409,7 @@ export default function ProductImageQueue({
   const [manualConfigItem, setManualConfigItem] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const confirm = useConfirm();
+  const alert = useAlert();
 
   const [activeBatch, setActiveBatch] = useState(() => {
     try {
@@ -693,10 +694,16 @@ export default function ProductImageQueue({
   }, [refreshing, loadRuns, loadStatus]);
 
   const deleteFailedFromDb = async (explicitIds = null) => {
-    const ids =
+    let ids =
       explicitIds ||
       Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
-    if (!ids.length) return;
+    if (!ids.length) {
+      if (failedItems.length > 0) {
+        ids = failedItems.map((item) => String(item.id));
+      } else {
+        return;
+      }
+    }
     const approved = await confirm({
       title: isRussian
         ? "Удалить товары с ошибками из БД"
@@ -749,10 +756,16 @@ export default function ProductImageQueue({
   };
 
   const requeueFailed = async (explicitIds = null) => {
-    const ids =
+    let ids =
       explicitIds ||
       Object.keys(selectedFailed).filter((id) => selectedFailed[id]);
-    if (!ids.length) return;
+    if (!ids.length) {
+      if (failedItems.length > 0) {
+        ids = failedItems.map((item) => String(item.id));
+      } else {
+        return;
+      }
+    }
     setDeletingFailed(true);
     setBusy(true);
     setActionError("");
@@ -1765,15 +1778,26 @@ export default function ProductImageQueue({
                   <button
                     type="button"
                     className="product-image-queue__start"
-                    disabled={
-                      busy || deletingFailed || selectedFailedIds.length === 0
-                    }
+                    disabled={busy || deletingFailed}
                     onClick={() => requeueFailed()}
+                    title={
+                      selectedFailedIds.length === 0
+                        ? isRussian
+                          ? `Вернуть ВСЕ ${failedItems.length} поз. с ошибками в ожидание`
+                          : `Return ALL ${failedItems.length} failed items to pending`
+                        : isRussian
+                          ? `Вернуть ${selectedFailedIds.length} выбранных поз. в ожидание`
+                          : `Return ${selectedFailedIds.length} selected items to pending`
+                    }
                   >
                     <i className="ri-refresh-line" />
-                    {isRussian
-                      ? `Вернуть в ожидание (${selectedFailedIds.length})`
-                      : `Return to pending (${selectedFailedIds.length})`}
+                    {selectedFailedIds.length > 0
+                      ? isRussian
+                        ? `Вернуть в ожидание (${selectedFailedIds.length})`
+                        : `Return to pending (${selectedFailedIds.length})`
+                      : isRussian
+                        ? `Вернуть все в ожидание (${failedItems.length})`
+                        : `Return all to pending (${failedItems.length})`}
                   </button>
                   {selectedFailedIds.length === 1 && (
                     <button
@@ -1799,15 +1823,26 @@ export default function ProductImageQueue({
                   <button
                     type="button"
                     className="product-image-queue__start product-image-queue__start--danger"
-                    disabled={
-                      busy || deletingFailed || selectedFailedIds.length === 0
-                    }
+                    disabled={busy || deletingFailed}
                     onClick={() => deleteFailedFromDb()}
+                    title={
+                      selectedFailedIds.length === 0
+                        ? isRussian
+                          ? `Удалить ВСЕ ${failedItems.length} поз. с ошибками из БД (или выберите нужные галочками)`
+                          : `Delete ALL ${failedItems.length} failed items from DB`
+                        : isRussian
+                          ? `Удалить ${selectedFailedIds.length} выбранных поз. из БД`
+                          : `Delete ${selectedFailedIds.length} selected items from DB`
+                    }
                   >
                     <i className="ri-delete-bin-line" />
-                    {isRussian
-                      ? `Удалить выбранные из БД (${selectedFailedIds.length})`
-                      : `Delete selected from DB (${selectedFailedIds.length})`}
+                    {selectedFailedIds.length > 0
+                      ? isRussian
+                        ? `Удалить выбранные из БД (${selectedFailedIds.length})`
+                        : `Delete selected from DB (${selectedFailedIds.length})`
+                      : isRussian
+                        ? `Удалить все ошибки из БД (${failedItems.length})`
+                        : `Delete all failed from DB (${failedItems.length})`}
                   </button>
                 </div>
               )}
@@ -2015,16 +2050,31 @@ export default function ProductImageQueue({
                   </button>
                   <button
                     type="button"
-                    className="product-image-queue__start"
-                    disabled={
-                      busy ||
-                      deleting ||
-                      !runsLoaded ||
-                      runs.length > 0 ||
+                    className="product-image-queue__start product-image-queue__start--danger"
+                    disabled={busy || deleting}
+                    onClick={() => {
+                      if (Object.keys(selectedImages).length === 0) {
+                        alert({
+                          title: isRussian ? "Ничего не выбрано" : "No images selected",
+                          message: isRussian
+                            ? "Пожалуйста, выберите нужные фотографии галочками на карточках ниже или нажмите «Выбрать все фото»."
+                            : "Please select images with checkboxes on the cards below or click 'Select all images'.",
+                        });
+                      } else {
+                        deleteImages();
+                      }
+                    }}
+                    title={
                       Object.keys(selectedImages).length === 0
+                        ? isRussian
+                          ? "Выберите фото галочками ниже, чтобы удалить их"
+                          : "Select images below to delete them"
+                        : isRussian
+                          ? `Удалить ${Object.keys(selectedImages).length} выбранных фото`
+                          : `Delete ${Object.keys(selectedImages).length} selected images`
                     }
-                    onClick={deleteImages}
                   >
+                    <i className="ri-delete-bin-line" />
                     {isRussian ? "Удалить выбранные" : "Delete selected"} (
                     {Object.keys(selectedImages).length})
                   </button>
@@ -2034,12 +2084,16 @@ export default function ProductImageQueue({
                     disabled={
                       busy ||
                       deleting ||
-                      !runsLoaded ||
-                      runs.length > 0 ||
                       !selectableImages.length
                     }
                     onClick={deleteAllImages}
+                    title={
+                      isRussian
+                        ? `Удалить ВСЕ ${selectableImages.length} готовых фото и вернуть товары в очередь`
+                        : `Delete ALL ${selectableImages.length} images`
+                    }
                   >
+                    <i className="ri-delete-bin-2-line" />
                     {isRussian ? "Удалить ВСЕ фото разом" : "Delete ALL images"} (
                     {selectableImages.length})
                   </button>

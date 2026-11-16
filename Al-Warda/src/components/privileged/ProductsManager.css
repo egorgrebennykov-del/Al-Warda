@@ -50,6 +50,61 @@
   border: 1px solid rgba(212, 175, 55, 0.35);
 }
 
+.products-manager__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.products-manager__select-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(26, 22, 18, 0.85);
+  color: #e5ca72;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.products-manager__select-all-btn:hover {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: #d4af37;
+  color: #fff;
+}
+
+.products-manager__delete-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(230, 80, 70, 0.4);
+  background: #b5473c;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(181, 71, 60, 0.3);
+}
+
+.products-manager__delete-bulk-btn:hover:not(:disabled) {
+  background: #c94034;
+  border-color: #ff6050;
+  box-shadow: 0 4px 14px rgba(181, 71, 60, 0.45);
+}
+
+.products-manager__delete-bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .products-manager__add-btn {
   display: inline-flex;
   align-items: center;
@@ -202,6 +257,41 @@
   transform: translateY(-3px);
   border-color: rgba(212, 175, 55, 0.55);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.products-manager__card--selected {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+.products-manager__card-select {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 6;
+  background: rgba(18, 15, 12, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.products-manager__card-select:hover {
+  border-color: #d4af37;
+  background: rgba(26, 22, 18, 0.95);
+}
+
+.products-manager__card-select input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  cursor: pointer;
+  accent-color: #d4af37;
+  margin: 0;
 }
 
 .products-manager__card-thumb {

@@ -24,6 +24,8 @@ export default function ProductsManager({ language = "ru" }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState({});
+  const [deletingBulk, setDeletingBulk] = useState(false);
 
   // Filters & Search
   const [search, setSearch] = useState("");
@@ -210,6 +212,60 @@ export default function ProductsManager({ language = "ru" }) {
     }
   };
 
+  const handleDeleteBulk = async () => {
+    const ids = Object.keys(selectedIds);
+    if (!ids.length) {
+      alert({
+        title: isRussian ? "Ничего не выбрано" : "No products selected",
+        message: isRussian
+          ? "Пожалуйста, выберите нужные товары галочками на карточках или нажмите «Выбрать все»."
+          : "Please select products using checkboxes on cards or click 'Select all'.",
+      });
+      return;
+    }
+    const approved = await confirm({
+      title: isRussian ? "Удаление товаров" : "Delete Products",
+      message: isRussian
+        ? `Вы действительно хотите удалить ${ids.length} выбранных товаров из базы данных? Это действие нельзя отменить.`
+        : `Are you sure you want to delete ${ids.length} selected products from the database? This action cannot be undone.`,
+      variant: "danger",
+    });
+    if (!approved) return;
+
+    setDeletingBulk(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const res = await fetch("/api/admin/products/delete", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      const idSet = new Set(ids.map(String));
+      setProducts((prev) => prev.filter((p) => !idSet.has(String(p.id))));
+      setSelectedIds({});
+      setMessage(
+        isRussian
+          ? `Успешно удалено товаров: ${data.deletedCount ?? ids.length}.`
+          : `Successfully deleted ${data.deletedCount ?? ids.length} products.`,
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          (isRussian ? "Не удалось удалить товары" : "Failed to delete products"),
+      );
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
   const handleSaved = (result) => {
     setEditingProduct(null);
     setMessage(
@@ -252,14 +308,78 @@ export default function ProductsManager({ language = "ru" }) {
           </span>
         </div>
 
-        <button
-          type="button"
-          className="products-manager__add-btn"
-          onClick={() => setEditingProduct({ id: "new", isNew: true })}
-        >
-          <i className="ri-add-circle-line" />
-          {isRussian ? "Добавить новый товар" : "Add New Product"}
-        </button>
+        <div className="products-manager__header-actions">
+          {displayedProducts.length > 0 && (
+            <>
+              <button
+                type="button"
+                className="products-manager__select-all-btn"
+                onClick={() => {
+                  const displayedIds = displayedProducts.map((p) => String(p.id));
+                  const allDisplayedSelected =
+                    displayedIds.length > 0 &&
+                    displayedIds.every((id) => Boolean(selectedIds[id]));
+                  if (allDisplayedSelected) {
+                    setSelectedIds((prev) => {
+                      const next = { ...prev };
+                      for (const id of displayedIds) delete next[id];
+                      return next;
+                    });
+                  } else {
+                    setSelectedIds((prev) => {
+                      const next = { ...prev };
+                      for (const id of displayedIds) next[id] = true;
+                      return next;
+                    });
+                  }
+                }}
+              >
+                <i className="ri-checkbox-multiple-line" />
+                {displayedProducts.length > 0 &&
+                displayedProducts.every((p) => Boolean(selectedIds[String(p.id)]))
+                  ? isRussian
+                    ? "Снять выделение"
+                    : "Deselect all"
+                  : isRussian
+                    ? `Выбрать все (${displayedProducts.length})`
+                    : `Select all (${displayedProducts.length})`}
+              </button>
+              <button
+                type="button"
+                className="products-manager__delete-bulk-btn"
+                disabled={deletingBulk}
+                onClick={handleDeleteBulk}
+                title={
+                  Object.keys(selectedIds).length > 0
+                    ? isRussian
+                      ? `Удалить ${Object.keys(selectedIds).length} выбранных товаров из БД`
+                      : `Delete ${Object.keys(selectedIds).length} selected products`
+                    : isRussian
+                      ? "Выберите товары галочками на карточках, чтобы удалить их из БД"
+                      : "Select products with checkboxes to delete them"
+                }
+              >
+                <i className="ri-delete-bin-line" />
+                {Object.keys(selectedIds).length > 0
+                  ? isRussian
+                    ? `Удалить выбранные (${Object.keys(selectedIds).length})`
+                    : `Delete selected (${Object.keys(selectedIds).length})`
+                  : isRussian
+                    ? "Удалить выбранные товары"
+                    : "Delete selected products"}
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            className="products-manager__add-btn"
+            onClick={() => setEditingProduct({ id: "new", isNew: true })}
+          >
+            <i className="ri-add-circle-line" />
+            {isRussian ? "Добавить новый товар" : "Add New Product"}
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -461,7 +581,29 @@ export default function ProductsManager({ language = "ru" }) {
               const productUrl = p.url || getPerfumeUrl(p);
               const isDeleting = deletingId === p.id;
               return (
-                <article key={p.id} className="products-manager__card">
+                <article
+                  key={p.id}
+                  className={`products-manager__card ${selectedIds[String(p.id)] ? "products-manager__card--selected" : ""}`}
+                >
+                  <label
+                    className="products-manager__card-select"
+                    onClick={(e) => e.stopPropagation()}
+                    title={isRussian ? "Выбрать товар" : "Select product"}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={Boolean(selectedIds[String(p.id)])}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setSelectedIds((prev) => {
+                          const next = { ...prev };
+                          if (checked) next[String(p.id)] = true;
+                          else delete next[String(p.id)];
+                          return next;
+                        });
+                      }}
+                    />
+                  </label>
                   <Link
                     to={productUrl}
                     target="_blank"
