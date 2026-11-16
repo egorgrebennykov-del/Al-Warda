@@ -4,6 +4,8 @@ import "./BookImage.css";
 
 export default function BookImage({
   src,
+  rawSrc = null,
+  fallbackSrc = null,
   alt = "",
   className = "",
   loading = "lazy",
@@ -98,6 +100,16 @@ export default function BookImage({
           setOverrideSrc(
             `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${currentSrc}`
           );
+        } else if (
+          currentSrc.includes("raw.githubusercontent.com") &&
+          (rawSrc || fallbackSrc)
+        ) {
+          // 5b. GitHub raw failed -> fallback to original supplier photo
+          setOverrideSrc(rawSrc || fallbackSrc);
+        } else if (rawSrc && currentSrc !== rawSrc && !currentSrc.startsWith("/api/enhance-image")) {
+          setOverrideSrc(rawSrc);
+        } else if (fallbackSrc && currentSrc !== fallbackSrc && !currentSrc.startsWith("/api/enhance-image")) {
+          setOverrideSrc(fallbackSrc);
         } else if (src || currentSrc) {
           // 6. Try backend proxy cache which bypasses browser certificate/CORS/hotlink issues
           const target = src || currentSrc;

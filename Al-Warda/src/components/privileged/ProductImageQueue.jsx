@@ -25,6 +25,22 @@ async function callGpuApi(endpoint, options = {}) {
   } catch {}
 
   try {
+    const res = await fetch(`http://127.0.0.1:3001/api/admin/gpu-generation/${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (res.ok) return await res.json();
+  } catch {}
+
+  try {
+    const res = await fetch(`http://localhost:3001/api/admin/gpu-generation/${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (res.ok) return await res.json();
+  } catch {}
+
+  try {
     const res = await fetch(`http://localhost:5000/api/admin/gpu-generation/${endpoint}`, {
       headers: { "Content-Type": "application/json" },
       ...options,
@@ -761,8 +777,8 @@ export default function ProductImageQueue({
           res?.error ||
           res?.message ||
           (isRussian
-            ? "Локальный сервис GPU не запущен на порту 5000. Запустите «Запустить_Генерацию_ИИ_GPU.bat» на компьютере или команду npm run dev."
-            : "Local GPU service is not running on port 5000. Run 'Запустить_Генерацию_ИИ_GPU.bat' on your PC or npm run dev.");
+            ? "Локальный сервис GPU не отвечает на порту 3001. Обновите страницу (F5) или перезапустите «Запустить_Генерацию_ИИ_GPU.bat»."
+            : "Local GPU service is not responding on port 3001. Refresh the page (F5) or start 'Запустить_Генерацию_ИИ_GPU.bat'.");
         setGpuError(msg);
       }
     } catch (err) {

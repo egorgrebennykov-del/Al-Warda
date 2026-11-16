@@ -47,6 +47,7 @@ export default function BookDetails() {
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
+  const [activeImageSrc, setActiveImageSrc] = useState(null);
   const [indexLookup, setIndexLookup] = useState({
     key: "",
     status: "idle",
@@ -59,7 +60,31 @@ export default function BookDetails() {
 
   useEffect(() => {
     setSelectedVolume("full");
+    if (perfume) {
+      const primary = perfume.image || perfume.imageUrl;
+      const fallback =
+        perfume.rawImage ||
+        perfume.info?.rawImage ||
+        perfume.raw_image_url ||
+        perfume.source_image_url;
+      setActiveImageSrc(primary || fallback || "");
+    } else {
+      setActiveImageSrc(null);
+    }
   }, [perfume]);
+
+  const handleFlaconImgError = (e) => {
+    const fallback =
+      perfume?.rawImage ||
+      perfume?.info?.rawImage ||
+      perfume?.raw_image_url ||
+      perfume?.source_image_url;
+    if (fallback && activeImageSrc !== fallback) {
+      setActiveImageSrc(fallback);
+    } else {
+      e.currentTarget.hidden = true;
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -448,7 +473,7 @@ export default function BookDetails() {
                 <div className="warda-details-aura" />
                 <div className="warda-details-photo">
                   <img
-                    src={perfume?.image}
+                    src={activeImageSrc || perfume?.image}
                     alt={perfume.name}
                     className="warda-details-img"
                     style={{
@@ -456,9 +481,7 @@ export default function BookDetails() {
                     }}
                     loading="eager"
                     decoding="async"
-                    onError={(e) => {
-                      e.currentTarget.hidden = true;
-                    }}
+                    onError={handleFlaconImgError}
                   />
                 </div>
               </div>
@@ -841,12 +864,13 @@ export default function BookDetails() {
             <div className="warda-lightbox-viewport">
               <div className="warda-lightbox-stage">
                 <img
-                  src={perfume?.image}
+                  src={activeImageSrc || perfume?.image}
                   alt={perfume.name}
                   className="warda-lightbox-img"
                   style={{
                     transform: `scale(${lightboxScale})`,
                   }}
+                  onError={handleFlaconImgError}
                 />
               </div>
             </div>

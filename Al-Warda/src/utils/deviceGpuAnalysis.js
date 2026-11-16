@@ -124,6 +124,9 @@ export async function analyzeDeviceGpu() {
   // 3. Проверка доступности локального сервиса генерации
   const endpoints = [
     "/api/admin/gpu-generation/status",
+    "http://127.0.0.1:3001/api/admin/gpu-generation/status",
+    "http://localhost:3001/api/admin/gpu-generation/status",
+    "http://127.0.0.1:5000/api/admin/gpu-generation/status",
     "http://localhost:5000/api/admin/gpu-generation/status",
   ];
 
