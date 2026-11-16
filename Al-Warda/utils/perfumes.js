@@ -1654,13 +1654,22 @@ function formatVolumeNumber(num) {
   return String(Math.round(num * 100) / 100);
 }
 
-// Fixes the awkward legacy phrase stored in older descriptions.
+const METADATA_LABELS_PATTERN =
+  /(?:^[ \t]*|[ \t]*\n[ \t]*|[ \t]+)(?:Происхождение|Origin|Бренд|Brand|Категория|Category|Семейство|Family|Пол|Gender|Концентрация|Concentration|Объем|Объём|Volume|Стойкость|Longevity|Шлейф|Sillage|Страна(?:\s+производства)?|Country(?:\s+of\s+origin)?|Производитель|Manufacturer|Верхние\s+ноты|Top\s+notes|Ноты\s+сердца|Heart\s+notes|Базовые\s+ноты|Base\s+notes|Пирамида(?:\s+аромата)?|Olfactory\s+pyramid)\s*:\s*[^.\n]+(?:\.|\n|$)/gi;
+
+// Fixes awkward phrases and strips technical metadata tags stored in descriptions.
 export function fixDescriptionWording(text) {
   if (!text || typeof text !== "string") return text;
-  return text.replace(
+  let cleaned = text.replace(METADATA_LABELS_PATTERN, "");
+  cleaned = cleaned.replace(
     /аромат\s+с\s+Ближнего\s+Востока/gi,
     "аромат Ближнего Востока",
   );
+  cleaned = cleaned.replace(
+    /парфюм\s+с\s+Ближнего\s+Востока/gi,
+    "парфюм Ближнего Востока",
+  );
+  return cleaned.replace(/\n{3,}/g, "\n\n").trim();
 }
 
 /**
@@ -2027,7 +2036,7 @@ export function ensurePerfumeEnrichment(p) {
     notesLookup: info.notesLookup || p.notesLookup || null,
     description: fixDescriptionWording(descRu),
     descriptionRu: fixDescriptionWording(descRu),
-    descriptionEn: descEn,
+    descriptionEn: fixDescriptionWording(descEn),
   };
 }
 
@@ -2310,7 +2319,7 @@ function mapStockRowRich(r) {
     baseNotesEn,
     description: fixDescriptionWording(descRu),
     descriptionRu: fixDescriptionWording(descRu),
-    descriptionEn: descEn,
+    descriptionEn: fixDescriptionWording(descEn),
     info,
     minOrderQuantity: Number(info.minOrderQuantity || info.unit || 1) || 1,
     unit: Number(info.minOrderQuantity || info.unit || 1) || 1,

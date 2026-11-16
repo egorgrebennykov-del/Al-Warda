@@ -101,6 +101,7 @@ Strict rules:
 - Never use excessive marketing language.
 - Never change the product name or brand; if information is missing, omit it.
 - Keep the opening consistent with the top/heart/base note pyramid; no contradictions.
+- CRITICAL: Write pure, fluid literary prose. NEVER insert robotic metadata tags, field labels, or technical bullet attributes anywhere in the text (such as "Происхождение: ...", "Origin: ...", "Бренд: ...", "Brand: ...", "Категория: ...", "Category: ...", "Пол: ...", "Gender: ...", "Стойкость: ...", "Longevity: ...", "Шлейф: ...", "Sillage: ...", "Страна производства: ...", "Country of origin: ...", "Ноты: ..."). Tell the olfactory story seamlessly through natural evocative sentences without any colon-separated metadata labels.
 
 Output: write the description in Russian and in English, each entirely in its own language (never mixed). Return strict JSON only, without markdown or extra text.`;
 
@@ -222,8 +223,15 @@ function extractJsonObject(content) {
   return lastDescriptionObject(text);
 }
 
+const METADATA_LABELS_PATTERN =
+  /(?:^[ \t]*|[ \t]*\n[ \t]*|[ \t]+)(?:Происхождение|Origin|Бренд|Brand|Категория|Category|Семейство|Family|Пол|Gender|Концентрация|Concentration|Объем|Объём|Volume|Стойкость|Longevity|Шлейф|Sillage|Страна(?:\s+производства)?|Country(?:\s+of\s+origin)?|Производитель|Manufacturer|Верхние\s+ноты|Top\s+notes|Ноты\s+сердца|Heart\s+notes|Базовые\s+ноты|Base\s+notes|Пирамида(?:\s+аромата)?|Olfactory\s+pyramid)\s*:\s*[^.\n]+(?:\.|\n|$)/gi;
+
 function clean(value) {
-  return String(value || "")
+  let val = String(value || "");
+  val = val.replace(METADATA_LABELS_PATTERN, "");
+  val = val.replace(/аромат\s+с\s+Ближнего\s+Востока/gi, "аромат Ближнего Востока");
+  val = val.replace(/парфюм\s+с\s+Ближнего\s+Востока/gi, "парфюм Ближнего Востока");
+  return val
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 1200);

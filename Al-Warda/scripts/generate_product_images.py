@@ -854,9 +854,27 @@ DESCRIPTION_RULES_PROMPT = (
     "world of luxury'); never repeat the full notes list inside the narrative; never "
     "use excessive marketing language; never change the product name or brand; if "
     "information is missing, omit it.\n"
-    "State the origin as 'Ближний Восток' in Russian and 'the Middle East' in English "
-    "(never mention UAE, Dubai, or Saudi Arabia)."
+    "CRITICAL: The description must be PURE, fluid literary prose. NEVER insert robotic "
+    "metadata tags, field labels, or technical bullet attributes anywhere in the text (such as "
+    "'Происхождение: ...', 'Origin: ...', 'Бренд: ...', 'Brand: ...', 'Категория: ...', 'Category: ...', "
+    "'Пол: ...', 'Gender: ...', 'Стойкость: ...', 'Longevity: ...', 'Шлейф: ...', 'Sillage: ...', "
+    "'Страна производства: ...', 'Country of origin: ...', 'Ноты: ...'). Tell the olfactory story "
+    "seamlessly through natural evocative sentences without any colon-separated metadata labels."
 )
+
+METADATA_LABELS_PATTERN = re.compile(
+    r'(?:^[ \t]*|[ \t]*\n[ \t]*|[ \t]+)(?:Происхождение|Origin|Бренд|Brand|Категория|Category|Семейство|Family|Пол|Gender|Концентрация|Concentration|Объем|Объём|Volume|Стойкость|Longevity|Шлейф|Sillage|Страна(?:\s+производства)?|Country(?:\s+of\s+origin)?|Производитель|Manufacturer|Верхние\s+ноты|Top\s+notes|Ноты\s+сердца|Heart\s+notes|Базовые\s+ноты|Base\s+notes|Пирамида(?:\s+аромата)?|Olfactory\s+pyramid)\s*:\s*[^.\n]+(?:\.|\n|$)',
+    re.IGNORECASE
+)
+
+def clean_perfume_description(text):
+    if not text or not isinstance(text, str):
+        return text
+    cleaned = METADATA_LABELS_PATTERN.sub('', text)
+    cleaned = re.sub(r'аромат\s+с\s+Ближнего\s+Востока', 'аромат Ближнего Востока', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'парфюм\s+с\s+Ближнего\s+Востока', 'парфюм Ближнего Востока', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
+    return cleaned
 
 
 def generate_ai_perfume_description(
@@ -913,8 +931,8 @@ def generate_ai_perfume_description(
                         if parts:
                             raw_json = parts[0].get("text", "")
                             parsed = json.loads(raw_json)
-                            desc_ru = (parsed.get("descriptionRu") or "").strip()
-                            desc_en = (parsed.get("descriptionEn") or "").strip()
+                            desc_ru = clean_perfume_description((parsed.get("descriptionRu") or "").strip())
+                            desc_en = clean_perfume_description((parsed.get("descriptionEn") or "").strip())
                             if desc_ru and desc_en and len(desc_ru) > 80:
                                 return {
                                     "descriptionRu": desc_ru,
@@ -976,8 +994,8 @@ def generate_ai_perfume_description(
                     json_match = re.search(r"\{[\s\S]*\}", result_text)
                     if json_match:
                         parsed = json.loads(json_match.group(0))
-                        desc_ru = (parsed.get("descriptionRu") or "").strip()
-                        desc_en = (parsed.get("descriptionEn") or "").strip()
+                        desc_ru = clean_perfume_description((parsed.get("descriptionRu") or "").strip())
+                        desc_en = clean_perfume_description((parsed.get("descriptionEn") or "").strip())
                         if desc_ru and desc_en and len(desc_ru) > 80:
                             return {
                                 "descriptionRu": desc_ru,
