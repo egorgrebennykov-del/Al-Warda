@@ -201,25 +201,45 @@ function GalleryImageItem({
   }
 
   const rawUrl = getRawGithubUrl(image.imageUrl);
-  let currentSrc = image.imageUrl;
-  if (sourceIndex === 1 && rawUrl) {
-    currentSrc = rawUrl;
-  }
-  if (cacheBuster && currentSrc) {
+  const webpUrl =
+    typeof image.imageUrl === "string" && image.imageUrl.endsWith(".png")
+      ? image.imageUrl.replace(/\.png$/, ".webp")
+      : null;
+  const rawWebpUrl =
+    typeof rawUrl === "string" && rawUrl.endsWith(".png")
+      ? rawUrl.replace(/\.png$/, ".webp")
+      : null;
+  const supplierRawImage =
+    image.rawImage ||
+    image.info?.rawImage ||
+    image.source_image_url ||
+    image.raw_image_url ||
+    null;
+
+  const sources = [
+    image.imageUrl,
+    webpUrl,
+    rawUrl,
+    rawWebpUrl,
+    supplierRawImage,
+  ].filter(Boolean);
+
+  let currentSrc = sources[sourceIndex] || image.imageUrl;
+  if (cacheBuster && currentSrc && !currentSrc.startsWith("data:")) {
     currentSrc = `${currentSrc}${currentSrc.includes("?") ? "&" : "?"}${cacheBuster.replace(/^\?/, "")}`;
   }
 
   const productUrl = image.url || getPerfumeUrl(image);
 
   const handleImageError = () => {
-    // If primary relative URL failed and raw GitHub fallback is available, try it first
-    if (sourceIndex === 0 && rawUrl) {
-      setSourceIndex(1);
+    // If next fallback source is available, switch to it immediately
+    if (sourceIndex + 1 < sources.length) {
+      setSourceIndex((prev) => prev + 1);
       return;
     }
 
-    // Both primary and raw GitHub failed on this attempt
-    if (retryCount < 3) {
+    // All source fallbacks failed on this attempt
+    if (retryCount < 2) {
       setImgStatus("syncing");
       const nextRetry = retryCount + 1;
       setTimeout(() => {
@@ -227,7 +247,7 @@ function GalleryImageItem({
         setSourceIndex(0);
         setCacheBuster(`?retry=${nextRetry}_${Date.now()}`);
         setImgStatus("initial");
-      }, 2500);
+      }, 2000);
       return;
     }
 

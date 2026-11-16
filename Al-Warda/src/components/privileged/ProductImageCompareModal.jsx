@@ -23,13 +23,27 @@ export default function ProductImageCompareModal({
 
   const originalSrc = item.rawImage || item.image || item.info?.rawImage;
   const studioSrc = item.imageUrl;
-  const [studioFailed, setStudioFailed] = useState(false);
-  const currentStudioSrc =
-    studioFailed &&
+  const [studioSourceIndex, setStudioSourceIndex] = useState(0);
+
+  const rawUrl =
     typeof studioSrc === "string" &&
     /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(studioSrc)
       ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${studioSrc}`
-      : studioSrc;
+      : null;
+  const webpUrl =
+    typeof studioSrc === "string" && studioSrc.endsWith(".png")
+      ? studioSrc.replace(/\.png$/, ".webp")
+      : null;
+  const rawWebpUrl = rawUrl ? rawUrl.replace(/\.png$/, ".webp") : null;
+
+  const studioSources = [
+    studioSrc,
+    webpUrl,
+    rawUrl,
+    rawWebpUrl,
+  ].filter(Boolean);
+
+  const currentStudioSrc = studioSources[studioSourceIndex] || studioSrc;
 
   return (
     <div
@@ -156,7 +170,9 @@ export default function ProductImageCompareModal({
                     alt={isRussian ? "Студийное фото" : "Studio photo"}
                     loading="lazy"
                     onError={() => {
-                      if (!studioFailed) setStudioFailed(true);
+                      if (studioSourceIndex + 1 < studioSources.length) {
+                        setStudioSourceIndex((prev) => prev + 1);
+                      }
                     }}
                   />
                 ) : (
