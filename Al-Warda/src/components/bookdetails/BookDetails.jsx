@@ -25,6 +25,40 @@ import {
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
 
+function getPerfumeImageSources(perfume) {
+  if (!perfume) return [];
+  const primary = perfume.image || perfume.imageUrl;
+  const rawGhUrl =
+    typeof primary === "string" &&
+    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.(png|webp)$/.test(primary)
+      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${primary.replace(/\.webp$/, ".png")}`
+      : null;
+  const webpUrl =
+    typeof primary === "string" && primary.endsWith(".png")
+      ? primary.replace(/\.png$/, ".webp")
+      : null;
+  const pngUrl =
+    typeof primary === "string" && primary.endsWith(".webp")
+      ? primary.replace(/\.webp$/, ".png")
+      : null;
+  const rawGhWebpUrl = rawGhUrl ? rawGhUrl.replace(/\.png$/, ".webp") : null;
+  const fallback =
+    perfume.rawImage ||
+    perfume.info?.rawImage ||
+    perfume.raw_image_url ||
+    perfume.source_image_url ||
+    null;
+
+  return [
+    primary,
+    webpUrl,
+    pngUrl,
+    rawGhUrl,
+    rawGhWebpUrl,
+    fallback,
+  ].filter(Boolean);
+}
+
 export default function BookDetails() {
   const { bookId } = useParams();
   const [searchParams] = useSearchParams();
@@ -47,7 +81,36 @@ export default function BookDetails() {
   const [lightboxScale, setLightboxScale] = useState(1.5);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
-  const [activeImageSrc, setActiveImageSrc] = useState(null);
+  const [imgSourceIndex, setImgSourceIndex] = useState(0);
+  const imageSources = useMemo(
+    () => getPerfumeImageSources(perfume),
+    [perfume],
+  );
+
+  useEffect(() => {
+    setSelectedVolume("full");
+    setImgSourceIndex(0);
+  }, [perfume]);
+
+  const activeImageSrc =
+    imageSources[imgSourceIndex] ||
+    perfume?.image ||
+    perfume?.imageUrl ||
+    perfume?.rawImage ||
+    "";
+
+  const isGeneratedCutout =
+    typeof activeImageSrc === "string" &&
+    activeImageSrc.includes("/generated-products/");
+
+  const handleFlaconImgError = (e) => {
+    if (imgSourceIndex + 1 < imageSources.length) {
+      setImgSourceIndex((prev) => prev + 1);
+    } else {
+      e.currentTarget.hidden = true;
+    }
+  };
+
   const [indexLookup, setIndexLookup] = useState({
     key: "",
     status: "idle",
@@ -57,34 +120,6 @@ export default function BookDetails() {
   // The Qogita slug->id map (~350 KB) is only needed for the privileged admin link,
   // so it is loaded on demand instead of shipping on every product page.
   const [qogitaUrl, setQogitaUrl] = useState(null);
-
-  useEffect(() => {
-    setSelectedVolume("full");
-    if (perfume) {
-      const primary = perfume.image || perfume.imageUrl;
-      const fallback =
-        perfume.rawImage ||
-        perfume.info?.rawImage ||
-        perfume.raw_image_url ||
-        perfume.source_image_url;
-      setActiveImageSrc(primary || fallback || "");
-    } else {
-      setActiveImageSrc(null);
-    }
-  }, [perfume]);
-
-  const handleFlaconImgError = (e) => {
-    const fallback =
-      perfume?.rawImage ||
-      perfume?.info?.rawImage ||
-      perfume?.raw_image_url ||
-      perfume?.source_image_url;
-    if (fallback && activeImageSrc !== fallback) {
-      setActiveImageSrc(fallback);
-    } else {
-      e.currentTarget.hidden = true;
-    }
-  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -471,11 +506,17 @@ export default function BookDetails() {
                 title={t("details.clickToView")}
               >
                 <div className="warda-details-aura" />
-                <div className="warda-details-photo">
+                <div
+                  className={`warda-details-photo ${
+                    !isGeneratedCutout ? "warda-details-photo--supplier-frame" : ""
+                  }`}
+                >
                   <img
                     src={activeImageSrc || perfume?.image}
                     alt={perfume.name}
-                    className="warda-details-img"
+                    className={`warda-details-img ${
+                      !isGeneratedCutout ? "warda-details-img--raw" : ""
+                    }`}
                     style={{
                       transformOrigin: "center center",
                     }}

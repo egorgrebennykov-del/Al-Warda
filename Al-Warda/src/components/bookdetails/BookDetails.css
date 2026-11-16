@@ -244,6 +244,23 @@
   filter: drop-shadow(0 22px 42px rgba(0, 0, 0, 0.88));
 }
 
+.warda-details-photo--supplier-frame {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 40%, rgba(226, 232, 240, 0.9) 100%);
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.warda-details-photo--supplier-frame .warda-details-img--raw {
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 90%;
+}
+
 @media (hover: none) {
   .warda-details-img-wrap:hover .warda-details-img { transform: none; }
 }
