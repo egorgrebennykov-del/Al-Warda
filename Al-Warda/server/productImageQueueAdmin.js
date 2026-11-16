@@ -534,10 +534,22 @@ export async function getProductImageQueueStatus(request, env) {
             /^https:\/\//i.test(imageUrl))
         ) {
           const completedAt =
-            typeof job.completedAt === "string" &&
-            Number.isFinite(Date.parse(job.completedAt))
-              ? job.completedAt
-              : null;
+            (typeof job.completedAt === "string" &&
+              Number.isFinite(Date.parse(job.completedAt)) &&
+              job.completedAt) ||
+            (typeof job.startedAt === "string" &&
+              Number.isFinite(Date.parse(job.startedAt)) &&
+              job.startedAt) ||
+            (typeof info.descriptionGeneratedAt === "string" &&
+              Number.isFinite(Date.parse(info.descriptionGeneratedAt)) &&
+              info.descriptionGeneratedAt) ||
+            (typeof job.updatedAt === "string" &&
+              Number.isFinite(Date.parse(job.updatedAt)) &&
+              job.updatedAt) ||
+            (typeof row.created_at === "string" &&
+              Number.isFinite(Date.parse(row.created_at)) &&
+              row.created_at) ||
+            null;
           images.push({
             id: row.id,
             name: row.name,
@@ -1523,7 +1535,12 @@ export async function getAllAdminProducts(request, env) {
           notesSummary: info.notesSummary || "",
           notesSummaryEn: info.notesSummaryEn || "",
           status: gen.status || "pending",
-          completedAt: gen.completedAt || null,
+          completedAt:
+            gen.completedAt ||
+            gen.startedAt ||
+            info.descriptionGeneratedAt ||
+            gen.updatedAt ||
+            null,
           info,
         };
       });

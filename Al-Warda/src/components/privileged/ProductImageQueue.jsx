@@ -377,19 +377,28 @@ function GalleryImageItem({
         </Link>
       </strong>
       {image.brand && <span>{image.brand}</span>}
-      {image.completedAt ? (
-        <time dateTime={image.completedAt}>
-          {new Date(image.completedAt).toLocaleString(
-            isRussian ? "ru-RU" : "en-US",
-            {
-              dateStyle: "medium",
-              timeStyle: "medium",
-            },
-          )}
-        </time>
-      ) : (
-        <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>
-      )}
+      {(() => {
+        const timestamp =
+          image.completedAt ||
+          image.info?.imageGeneration?.completedAt ||
+          image.info?.imageGeneration?.startedAt ||
+          image.info?.descriptionGeneratedAt ||
+          image.info?.imageGeneration?.updatedAt ||
+          image.created_at;
+        return timestamp && Number.isFinite(Date.parse(timestamp)) ? (
+          <time dateTime={timestamp}>
+            {new Date(timestamp).toLocaleString(
+              isRussian ? "ru-RU" : "en-US",
+              {
+                dateStyle: "medium",
+                timeStyle: "medium",
+              },
+            )}
+          </time>
+        ) : (
+          <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>
+        );
+      })()}
 
       {imgStatus === "failed" ? (
         <div className="product-image-queue__gallery-item-actions">

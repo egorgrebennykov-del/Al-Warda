@@ -2293,6 +2293,7 @@ def process_product(
         new_status = "completed" if publish_immediate else "publishing"
         job.update({
             "status": new_status,
+            "completedAt": utc_now().isoformat() if publish_immediate else job.get("completedAt"),
             "imageUrl": image_url,
             "aiModel": "upscayl_vulkan_gpu" if local_gpu else ("rmbg_1.4_local" if not has_active_account else MODEL_ID),
             "apiCost": "$0.00" if (local_gpu or not has_active_account) else "unknown",
