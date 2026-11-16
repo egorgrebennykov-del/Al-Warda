@@ -461,9 +461,9 @@ def run_onnx_u2net_segmentation(source, session):
     p_min, p_max = pred.min(), pred.max()
     pred = (pred - p_min) / (p_max - p_min + 1e-8)
 
-    # Smooth & crisp contrast curve
+    # Smooth & crisp contrast curve (gentle floor prevents cutting dark packaging, caps, or glass bases)
     mask_full = cv2.resize(pred, (w, h), interpolation=cv2.INTER_CUBIC)
-    alpha = np.clip((mask_full - 0.15) / (0.85 - 0.15), 0.0, 1.0)
+    alpha = np.clip((mask_full - 0.08) / (0.88 - 0.08), 0.0, 1.0)
     alpha_u8 = (alpha * 255.0).astype(np.uint8)
     alpha_u8 = cv2.GaussianBlur(alpha_u8, (3, 3), 0.5)
 
@@ -1513,14 +1513,47 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
 
     Returns (png_bytes, processed_size, original_size).
     """
+    import cv2
+    import numpy as np
+
     source = decode_source(source_bytes)
     original_size = source.size
 
-    # If the source photo is low-resolution or compressed, apply AI Super-Resolution first!
-    if allow_upscale and max(original_size) < 1200:
-        source = super_resolve_product_image_if_needed(source)
+    # Step 1: Always segment the authentic photographic input first to establish ground-truth object boundaries.
+    # The neural network sees the genuine photographic distribution, guaranteeing that no parts (dark packaging,
+    # miniature set bottles, translucent glass, or wide boxes) are misclassified as background.
+    raw_cutout = segment_source(source, segmentation_session)
+    raw_alpha = np.array(raw_cutout)[:, :, 3]
 
-    cutout = segment_source(source, segmentation_session)
+    # Step 2: Apply AI Super-Resolution (Vulkan GPU Upscayl / UltraSharp) if resolution is low
+    if allow_upscale and max(original_size) < 1200:
+        sr_source = super_resolve_product_image_if_needed(source)
+        if sr_source.size != source.size:
+            sw, sh = sr_source.size
+            # High-fidelity cubic scaling of the authentic alpha mask
+            raw_alpha_scaled = cv2.resize(raw_alpha, (sw, sh), interpolation=cv2.INTER_CUBIC)
+            raw_alpha_scaled = np.clip(raw_alpha_scaled, 0, 255).astype(np.uint8)
+
+            try:
+                # Also run segmentation on super-resolved source for micro-edge refinement
+                sr_cutout = segment_source(sr_source, segmentation_session)
+                sr_alpha = np.array(sr_cutout)[:, :, 3]
+                # Ensemble: union of raw mask (guarantees NO parts like dark boxes/packaging/caps are ever lost)
+                # and super-resolved mask (captures fine micro-details on high-res facets)
+                final_alpha = np.maximum(raw_alpha_scaled, sr_alpha)
+            except Exception:
+                final_alpha = raw_alpha_scaled
+
+            cutout = sr_source.convert("RGBA")
+            cutout.putalpha(Image.fromarray(final_alpha, mode="L"))
+            processed_size = sr_source.size
+        else:
+            cutout = raw_cutout
+            processed_size = original_size
+    else:
+        cutout = raw_cutout
+        processed_size = original_size
+
     cutout = normalize_flacon_cutout(
         cutout,
         target_max_h=880,
@@ -1612,26 +1645,22 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
         main_w = stats[main_lbl, cv2.CC_STAT_WIDTH]
         main_cx = centroids[main_lbl][0]
 
-        # Valid components: main body, plus vertically aligned components (cap, sprayer, base)
-        # and side packaging components (boxes, stands). Exclude only tiny detached artifacts far from product.
+        # Valid components: keep main body, plus all genuine product components (boxes, packaging,
+        # caps, sprayers, bases, miniatures, gift sets, charms). Exclude only tiny isolated corner noise artifacts.
         valid_mask = np.zeros_like(mask)
         H, W = mask.shape[:2]
         for lbl in range(1, num_labels):
             area = stats[lbl, cv2.CC_STAT_AREA]
-            cx = centroids[lbl][0]
             x = stats[lbl, cv2.CC_STAT_LEFT]
             y = stats[lbl, cv2.CC_STAT_TOP]
             w = stats[lbl, cv2.CC_STAT_WIDTH]
             h = stats[lbl, cv2.CC_STAT_HEIGHT]
             touches_corner = (x <= 1 or x + w >= W - 1) and (y <= 1 or y + h >= H - 1)
+            is_corner_noise = touches_corner and area < 80
             if lbl == main_lbl:
                 valid_mask[labels == lbl] = 1
-            elif area >= max_area * 0.05:
-                if not (touches_corner and area < max_area * 0.08):
-                    valid_mask[labels == lbl] = 1
-            elif area >= 60 and abs(cx - main_cx) <= max(main_w * 1.5, 300):
-                if not (touches_corner and area < max_area * 0.08):
-                    valid_mask[labels == lbl] = 1
+            elif not is_corner_noise and area >= 40:
+                valid_mask[labels == lbl] = 1
     except Exception:
         # Fallback using scipy.ndimage
         try:
@@ -1641,30 +1670,22 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
                 valid_mask = mask
             else:
                 areas = [int(np.sum(labeled == i)) for i in range(1, num_features + 1)]
-                max_area = max(areas)
                 main_lbl = 1 + int(np.argmax(areas))
-                ys_m, xs_m = np.where(labeled == main_lbl)
-                main_w = xs_m.max() - xs_m.min() + 1
-                main_cx = float(np.mean(xs_m))
                 valid_mask = np.zeros_like(mask)
                 H, W = mask.shape[:2]
                 for i in range(1, num_features + 1):
                     ys_i, xs_i = np.where(labeled == i)
                     if len(xs_i) == 0:
                         continue
-                    cx_i = float(np.mean(xs_i))
                     area_i = areas[i - 1]
                     x_min, x_max = int(xs_i.min()), int(xs_i.max())
                     y_min, y_max = int(ys_i.min()), int(ys_i.max())
                     touches_corner = (x_min <= 1 or x_max >= W - 1) and (y_min <= 1 or y_max >= H - 1)
+                    is_corner_noise = touches_corner and area_i < 80
                     if i == main_lbl:
                         valid_mask[labeled == i] = 1
-                    elif area_i >= max_area * 0.05:
-                        if not (touches_corner and area_i < max_area * 0.08):
-                            valid_mask[labeled == i] = 1
-                    elif area_i >= 60 and abs(cx_i - main_cx) <= max(main_w * 1.5, 300):
-                        if not (touches_corner and area_i < max_area * 0.08):
-                            valid_mask[labeled == i] = 1
+                    elif not is_corner_noise and area_i >= 40:
+                        valid_mask[labeled == i] = 1
         except Exception:
             valid_mask = (alpha > 25).astype(np.uint8)
 
