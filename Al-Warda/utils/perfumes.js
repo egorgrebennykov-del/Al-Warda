@@ -21,6 +21,7 @@ const PRODUCT_IMAGE_VERSION = "cutout-clean-v10";
 
 function resolveCardImage(img, gtin, rawImage) {
   if (img && /^https:\/\//i.test(img)) return img;
+  if (img && isGeneratedProductImage(img)) return img;
   if (img && img.startsWith("/assets/img/")) {
     return `${img.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`;
   }
