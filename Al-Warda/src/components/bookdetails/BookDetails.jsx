@@ -64,6 +64,7 @@ export default function BookDetails() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { language, t } = useLanguage();
+  const isRussian = language === "ru";
   const { formatPrice } = useCurrency();
   const { isInCart, toggleCart } = useCartState();
   const { user, isPrivileged: isPrivContext } = useAuth();
