@@ -106,7 +106,7 @@ export default function BookDetails() {
 
   const stageImageSrc = useMemo(() => {
     if (!perfume?.gtin || stageImgFailed) return null;
-    return `/assets/img/stages/${perfume.gtin}.webp?v=studio-template-v1`;
+    return `/assets/img/stages/${perfume.gtin}.webp?v=studio-template-v3`;
   }, [perfume?.gtin, stageImgFailed]);
 
   const activeImageSrc =

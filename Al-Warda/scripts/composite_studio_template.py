@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Composite Studio Template for Al-Warda Fragrances.
-Places product flacons onto the master gold studio tray template,
-with realistic mirror reflection, contact shadow, directional spotlight illumination,
-and seamless feathering into the site background (#080605).
+Places product flacons firmly ON the master gold studio tray template,
+with realistic mirror reflection on the gold surface, contact shadow,
+directional spotlight illumination, and seamless feathering into the site background (#080605).
 """
 
 import os
@@ -32,9 +32,9 @@ def composite_on_studio_template(
         if not os.path.exists(template_path):
             template_path = "studio_template.jpg"
 
-    # 1. Load Template
+    # 1. Load Template (1024 x 439)
     tpl_raw = Image.open(template_path).convert("RGB")
-    tw, th = tpl_raw.size # 1024 x 439
+    tw, th = tpl_raw.size
     tpl = tpl_raw.copy()
 
     # 2. Load & prep product cutout
@@ -44,25 +44,27 @@ def composite_on_studio_template(
         prod = prod.crop(bbox)
     pw, ph = prod.size
 
-    # Appetizing color grading on product
-    # Enhance vibrance / saturation and contrast slightly
+    # Color grading: enhance vibrance, contrast & warmth slightly for appetizing presentation
     rgb_part = prod.convert("RGB")
     alpha_part = prod.split()[3]
-    enh_color = ImageEnhance.Color(rgb_part).enhance(1.10)
+    enh_color = ImageEnhance.Color(rgb_part).enhance(1.12)
     enh_contrast = ImageEnhance.Contrast(enh_color).enhance(1.06)
     prod = Image.merge("RGBA", (*enh_contrast.split(), alpha_part))
 
-    # 3. Position and scaling on Gold Tray
-    # Tray center X=618, top surface Y=347
+    # 3. Position and scaling ON the Gold Tray
+    # Tray center X=618
+    # Tray top surface extends from Y=344 to Y=368.
+    # Setting prod_bottom = 365 places the product firmly ON the tray surface,
+    # leaving gold tray visible behind it and the front rim and reflection in front!
     podium_cx = 618
-    podium_cy = 347
+    prod_bottom = 365
 
-    # Target height: ~71% of canvas (~312px)
-    target_ph = int(th * 0.71)
+    # Target height: ~310px (top point around Y=55, perfectly aligned with title)
+    target_ph = int(th * 0.70) # ~307px
     scale = target_ph / ph
     target_pw = int(pw * scale)
 
-    # Restrain max width if flacon is very wide
+    # Restrain max width if flacon + box is wide
     if target_pw > 380:
         scale = 380 / pw
         target_pw = int(pw * scale)
@@ -70,34 +72,33 @@ def composite_on_studio_template(
 
     prod_scaled = prod.resize((target_pw, target_ph), Image.Resampling.LANCZOS)
     prod_x = podium_cx - (target_pw // 2)
-    prod_bottom = podium_cy + 2
     prod_y = prod_bottom - target_ph
 
-    # 4. Realistic Mirror Reflection on Gold Tray
-    # Invert bottom 38% of flacon
-    refl_crop_h = int(target_ph * 0.38)
+    # 4. Realistic Mirror Reflection on the Gold Tray Surface
+    # Take bottom 45% of product
+    refl_crop_h = int(target_ph * 0.45)
     refl_crop = prod_scaled.crop((0, target_ph - refl_crop_h, target_pw, target_ph))
     refl_flipped = ImageOps.flip(refl_crop)
 
-    # Foreshorten vertically to match camera perspective on tray top
-    refl_h = int(refl_crop_h * 0.32)
+    # Perspective vertical foreshortening for angled tray view
+    refl_h = int(refl_crop_h * 0.38) # ~52px tall reflection
     refl_scaled = refl_flipped.resize((target_pw, refl_h), Image.Resampling.LANCZOS)
 
     r_arr = np.array(refl_scaled, dtype=np.float32)
-    # Vertical gradient fade
-    fade = np.linspace(0.65, 0.03, refl_h, dtype=np.float32)[:, np.newaxis, np.newaxis]
+    # Vertical gradient fade (bright near contact line 0.88, softly fading out to 0.05)
+    fade = np.linspace(0.88, 0.05, refl_h, dtype=np.float32)[:, np.newaxis, np.newaxis]
     r_arr[:, :, 3] = r_arr[:, :, 3] * fade[:, :, 0]
 
     # Metallic 24K gold tint matching the tray surface
-    gold_tint = np.array([225.0, 185.0, 85.0], dtype=np.float32)
-    r_arr[:, :, :3] = r_arr[:, :, :3] * 0.60 + gold_tint[np.newaxis, np.newaxis, :] * 0.40
+    gold_tint = np.array([230.0, 190.0, 85.0], dtype=np.float32)
+    r_arr[:, :, :3] = r_arr[:, :, :3] * 0.65 + gold_tint[np.newaxis, np.newaxis, :] * 0.35
     refl_final = Image.fromarray(np.clip(r_arr, 0, 255).astype(np.uint8), mode="RGBA")
 
-    # Tray surface ellipse mask (keeps reflection inside tray)
+    # Tray surface reflection mask
     tray_mask = Image.new("L", (tw, th), 0)
     tm_draw = ImageDraw.Draw(tray_mask)
-    tm_draw.ellipse([podium_cx - 245, podium_cy - 28, podium_cx + 245, podium_cy + 34], fill=255)
-    tray_mask = tray_mask.filter(ImageFilter.GaussianBlur(2))
+    tm_draw.ellipse([podium_cx - 290, 335, podium_cx + 290, 422], fill=255)
+    tray_mask = tray_mask.filter(ImageFilter.GaussianBlur(3))
 
     refl_canvas = Image.new("RGBA", (tw, th), (0, 0, 0, 0))
     refl_canvas.paste(refl_final, (prod_x, prod_bottom), mask=refl_final.split()[3])
@@ -109,17 +110,17 @@ def composite_on_studio_template(
     # Paste reflection onto template
     tpl.paste(refl_canvas, (0, 0), mask=refl_clipped)
 
-    # 5. Soft Contact Shadow under bottle base
+    # 5. Soft Contact Shadow under bottle base where it presses against the tray
     contact_sh = Image.new("RGBA", (tw, th), (0, 0, 0, 0))
     csh_draw = ImageDraw.Draw(contact_sh)
-    csh_draw.ellipse([prod_x + 8, prod_bottom - 3, prod_x + target_pw - 8, prod_bottom + 6], fill=(10, 6, 2, 230))
-    contact_sh = contact_sh.filter(ImageFilter.GaussianBlur(3))
+    csh_draw.ellipse([prod_x + 6, prod_bottom - 4, prod_x + target_pw - 6, prod_bottom + 5], fill=(6, 3, 1, 240))
+    contact_sh = contact_sh.filter(ImageFilter.GaussianBlur(2.5))
     tpl.paste(contact_sh, (0, 0), mask=contact_sh.split()[3])
 
-    # 6. Paste Product Flacon
+    # 6. Paste Product Flacon firmly on top of the tray
     tpl.paste(prod_scaled, (prod_x, prod_y), mask=prod_scaled.split()[3])
 
-    # 7. Directional warm sheen matching the spotlight angle
+    # 7. Directional warm sheen matching the spotlight angle from top-left
     sheen = Image.new("RGBA", (tw, th), (0, 0, 0, 0))
     sh_draw = ImageDraw.Draw(sheen)
     sh_draw.polygon(
