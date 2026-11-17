@@ -29,7 +29,7 @@ function bustImageCache(url) {
   if (!url || typeof url !== "string") return url;
   if (!url.startsWith("/assets/img/")) return url;
   const clean = url.split("?")[0];
-  return `${clean}?v=luxury-stage-v6`;
+  return `${clean}?v=luxury-stage-v7`;
 }
 
 function getPerfumeImageSources(perfume) {
@@ -44,11 +44,11 @@ function getPerfumeImageSources(perfume) {
       : null;
   const webpUrl =
     typeof cleanPrimary === "string" && cleanPrimary.endsWith(".png")
-      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=luxury-stage-v6`
+      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=luxury-stage-v7`
       : null;
   const pngUrl =
     typeof cleanPrimary === "string" && cleanPrimary.endsWith(".webp")
-      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=luxury-stage-v6`
+      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=luxury-stage-v7`
       : null;
   const rawGhWebpUrl = rawGhUrl ? rawGhUrl.replace(/\.png$/, ".webp") : null;
   const fallback =
