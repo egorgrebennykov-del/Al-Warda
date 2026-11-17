@@ -102,6 +102,7 @@ export default function BookDetails() {
   const [flaconLoaded, setFlaconLoaded] = useState(false);
   const [allSourcesExhausted, setAllSourcesExhausted] = useState(false);
   const [flaconBottomPadPct, setFlaconBottomPadPct] = useState(7.4);
+  const [flaconScale, setFlaconScale] = useState(1);
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume, imgRetryTick),
     [perfume, imgRetryTick],
@@ -114,6 +115,7 @@ export default function BookDetails() {
     setFlaconLoaded(false);
     setAllSourcesExhausted(false);
     setFlaconBottomPadPct(7.4);
+    setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
   }, [perfume]);
 
   useEffect(() => {
@@ -130,6 +132,7 @@ export default function BookDetails() {
   const handleFlaconImgLoad = (e) => {
     const img = e.currentTarget;
     let bottomPadPct = 7.4;
+    let computedScale = perfume && isPerfumeSet(perfume) ? 1.38 : 1;
     try {
       const sampleSize = 256;
       const canvas = document.createElement("canvas");
@@ -149,24 +152,51 @@ export default function BookDetails() {
           setAllSourcesExhausted(true);
           return;
         }
+        let firstRow = 0;
         let lastRow = sampleSize - 1;
-        outer: for (let y = sampleSize - 1; y >= 0; y--) {
+        let firstCol = sampleSize - 1;
+        let lastCol = 0;
+        let foundAny = false;
+        for (let y = 0; y < sampleSize; y++) {
           for (let x = 0; x < sampleSize; x++) {
             if (data[(y * sampleSize + x) * 4 + 3] > 25) {
+              if (!foundAny) {
+                firstRow = y;
+                foundAny = true;
+              }
               lastRow = y;
-              break outer;
+              if (x < firstCol) firstCol = x;
+              if (x > lastCol) lastCol = x;
             }
           }
         }
-        bottomPadPct = Math.max(
-          0,
-          Math.min(35, ((sampleSize - 1 - lastRow) / sampleSize) * 100),
-        );
+        if (foundAny) {
+          bottomPadPct = Math.max(
+            0,
+            Math.min(35, ((sampleSize - 1 - lastRow) / sampleSize) * 100),
+          );
+          const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
+          const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
+          const aspect = fgW / fgH;
+          if (fgH < 0.78 || aspect > 1.05 || (perfume && isPerfumeSet(perfume))) {
+            const containerW = img.parentElement?.clientWidth || 586;
+            const renderedW = img.offsetWidth || 420;
+            const maxScaleW = (containerW * 0.92) / Math.max(1, renderedW * fgW);
+            const maxScaleH = 0.88 / fgH;
+            computedScale = Math.max(
+              1,
+              Math.min(1.48, maxScaleW, maxScaleH),
+            );
+          } else {
+            computedScale = 1;
+          }
+        }
       }
     } catch {
-      // Keep default percentage if canvas read is blocked
+      // Keep default percentage and scale if canvas read is blocked
     }
     setFlaconBottomPadPct(Number(bottomPadPct.toFixed(2)));
+    setFlaconScale(Number(computedScale.toFixed(3)));
     setFlaconLoaded(true);
     setAllSourcesExhausted(false);
   };
@@ -584,6 +614,7 @@ export default function BookDetails() {
                   className="warda-stage-assembly"
                   style={{
                     "--flacon-pad-pct": `${flaconBottomPadPct}%`,
+                    "--flacon-scale": flaconScale,
                   }}
                 >
                   {/* Large Warm Glow & Reflective Horizon Stage */}

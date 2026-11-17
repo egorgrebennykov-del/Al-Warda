@@ -2032,7 +2032,8 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
     if cw <= 0 or ch <= 0:
         return cutout
 
-    scale = min(target_max_w / float(cw), target_max_h / float(ch))
+    eff_max_w = max(target_max_w, min(int(canvas_size[0] * 0.94), 960)) if cw > ch * 1.15 else target_max_w
+    scale = min(eff_max_w / float(cw), target_max_h / float(ch))
     if not allow_upscale:
         # Never enlarge the product beyond its original pixel resolution; a
         # small original stays small and is flagged as low quality instead of
