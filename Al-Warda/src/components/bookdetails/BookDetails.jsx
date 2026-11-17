@@ -92,6 +92,7 @@ export default function BookDetails() {
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
   const [imgSourceIndex, setImgSourceIndex] = useState(0);
+  const [flaconBottomPadPx, setFlaconBottomPadPx] = useState(36);
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume),
     [perfume],
@@ -100,7 +101,41 @@ export default function BookDetails() {
   useEffect(() => {
     setSelectedVolume("full");
     setImgSourceIndex(0);
+    setFlaconBottomPadPx(36);
   }, [perfume]);
+
+  const handleFlaconImgLoad = (e) => {
+    const img = e.currentTarget;
+    const renderedH = img.offsetHeight || 420;
+    let bottomPadRatio = 0.085;
+    try {
+      const sampleSize = 128;
+      const canvas = document.createElement("canvas");
+      canvas.width = sampleSize;
+      canvas.height = sampleSize;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+        const { data } = ctx.getImageData(0, 0, sampleSize, sampleSize);
+        let lastRow = sampleSize - 1;
+        outer: for (let y = sampleSize - 1; y >= 0; y--) {
+          for (let x = 0; x < sampleSize; x++) {
+            if (data[(y * sampleSize + x) * 4 + 3] > 20) {
+              lastRow = y;
+              break outer;
+            }
+          }
+        }
+        bottomPadRatio = Math.max(
+          0,
+          Math.min(0.35, (sampleSize - 1 - lastRow) / sampleSize),
+        );
+      }
+    } catch {
+      // Keep default ratio if canvas read is blocked
+    }
+    setFlaconBottomPadPx(Math.round(renderedH * bottomPadRatio));
+  };
 
   const activeImageSrc =
     imageSources[imgSourceIndex] ||
@@ -516,8 +551,14 @@ export default function BookDetails() {
                 title={t("details.clickToView")}
               >
                 <div className="warda-stage-assembly">
-                  {/* Subtle Warm Glow at the Bottom */}
-                  <div className="warda-details-bottom-glow" aria-hidden="true" />
+                  {/* Large Warm Glow at the Bottom */}
+                  <div
+                    className="warda-details-bottom-glow"
+                    style={{
+                      top: `${340 - flaconBottomPadPx}px`,
+                    }}
+                    aria-hidden="true"
+                  />
 
                   {/* Flacon Image */}
                   <div className="warda-details-photo">
@@ -530,12 +571,19 @@ export default function BookDetails() {
                       }}
                       loading="eager"
                       decoding="async"
+                      onLoad={handleFlaconImgLoad}
                       onError={handleFlaconImgError}
                     />
                   </div>
 
                   {/* Contact Shadow at the Flacon Base */}
-                  <div className="warda-stage-contact-shadow" aria-hidden="true" />
+                  <div
+                    className="warda-stage-contact-shadow"
+                    style={{
+                      marginTop: `${-flaconBottomPadPx - 5}px`,
+                    }}
+                    aria-hidden="true"
+                  />
 
                   {/* Optical Mirror Reflection at the Bottom */}
                   <div className="warda-stage-reflection-container" aria-hidden="true">
@@ -543,6 +591,9 @@ export default function BookDetails() {
                       src={activeImageSrc || perfume?.image}
                       alt=""
                       className="warda-stage-reflection-img"
+                      style={{
+                        marginTop: `${-flaconBottomPadPx}px`,
+                      }}
                     />
                   </div>
                 </div>
