@@ -17,11 +17,10 @@ let catalogRefresh = null;
 // catalog once; explicit refresh:true bypasses the TTL. Configurable here.
 let catalogCacheTime = 0;
 const CATALOG_TTL_MS = 10 * 60 * 1000; // 10 minutes
-const PRODUCT_IMAGE_VERSION = "qogita-gemini-image-v4";
+const PRODUCT_IMAGE_VERSION = "cutout-clean-v10";
 
 function resolveCardImage(img, gtin, rawImage) {
   if (img && /^https:\/\//i.test(img)) return img;
-  if (img && isGeneratedProductImage(img)) return img;
   if (img && img.startsWith("/assets/img/")) {
     return `${img.split("?")[0]}?v=${PRODUCT_IMAGE_VERSION}`;
   }
@@ -1983,7 +1982,8 @@ export function ensurePerfumeEnrichment(p) {
   const gtin = p.gtin || p.info?.gtin;
   let resolvedImg = "";
   if (hasCompletedGeneratedImage(p)) {
-    resolvedImg = p.info?.imageGeneration?.imageUrl || p.image || "";
+    const rawGen = p.info?.imageGeneration?.imageUrl || p.image || "";
+    resolvedImg = resolveCardImage(rawGen, gtin, rawImage);
   } else {
     resolvedImg = resolveCardImage(p.image, gtin, rawImage);
   }
@@ -2137,8 +2137,8 @@ function mapStockRowLight(r) {
     inStock: r.in_stock !== false,
     deliveryTime: "4–7 дней (прямая поставка)",
     deliveryTimeEn: "4–7 days (direct dispatch)",
-    image: r.image || "",
-    fullCardImage: r.image || "",
+    image: resolveCardImage(r.image || "", r.gtin, null),
+    fullCardImage: resolveCardImage(r.image || "", r.gtin, null),
     rawImage: null,
     topNotes: [],
     heartNotes: [],

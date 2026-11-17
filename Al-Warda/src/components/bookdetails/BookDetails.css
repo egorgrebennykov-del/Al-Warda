@@ -149,9 +149,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  min-height: 500px;
-  height: auto;
-  max-height: 590px;
+  min-height: 600px;
+  height: 600px;
   position: relative;
   padding: 0;
   background: transparent !important;
@@ -160,19 +159,17 @@
   overflow: visible;
   cursor: pointer;
   user-select: none;
-  /* Seamless edge feathering: zero sharp borders, dissolves 100% into the dark page background */
+  /* Soft outer boundary roll-off into the dark background */
   -webkit-mask-image: radial-gradient(
-    ellipse 94% 92% at 50% 50%,
-    #000 62%,
-    rgba(0, 0, 0, 0.85) 76%,
-    rgba(0, 0, 0, 0.4) 89%,
+    ellipse 96% 96% at 50% 50%,
+    #000 82%,
+    rgba(0, 0, 0, 0.7) 92%,
     transparent 100%
   );
   mask-image: radial-gradient(
-    ellipse 94% 92% at 50% 50%,
-    #000 62%,
-    rgba(0, 0, 0, 0.85) 76%,
-    rgba(0, 0, 0, 0.4) 89%,
+    ellipse 96% 96% at 50% 50%,
+    #000 82%,
+    rgba(0, 0, 0, 0.7) 92%,
     transparent 100%
   );
 }
@@ -207,17 +204,69 @@
   color: #d4af37;
 }
 
+/* -------------------------------------------------------------
+   LUXURY STUDIO STAGE: SPOTLIGHT, AURA, PODIUM TRAY, REFLECTION
+   ------------------------------------------------------------- */
+.warda-stage-spotlight {
+  position: absolute;
+  top: -60px;
+  left: -80px;
+  width: 580px;
+  height: 640px;
+  background: radial-gradient(
+    ellipse 85% 70% at 20% 15%,
+    rgba(255, 230, 160, 0.28) 0%,
+    rgba(240, 195, 105, 0.16) 35%,
+    rgba(215, 165, 65, 0.05) 65%,
+    transparent 85%
+  );
+  clip-path: polygon(0 0, 60% 0, 100% 100%, 0 100%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.warda-stage-aura {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(
+    circle,
+    rgba(225, 175, 55, 0.18) 0%,
+    rgba(210, 150, 40, 0.08) 45%,
+    rgba(160, 100, 20, 0.02) 70%,
+    transparent 85%
+  );
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.warda-stage-assembly {
+  position: relative;
+  width: 100%;
+  max-width: 586px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 40.8px; /* aligns topmost point of flacon flush with title heading */
+  z-index: 2;
+}
+
 /* Flacon Container & Photo Presentation */
 .warda-details-photo {
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   width: 100%;
-  height: auto;
-  max-width: 600px;
-  max-height: 590px;
-  z-index: 2;
+  max-width: 586px;
+  height: 415px;
+  z-index: 4;
 }
 
 .warda-details-img {
@@ -227,23 +276,109 @@
   width: auto;
   height: auto;
   object-fit: contain;
+  object-position: bottom center;
   position: relative;
-  z-index: 2;
+  z-index: 4;
   image-rendering: auto;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
-  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.75));
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
 }
 
 .warda-details-img-wrap:hover .warda-details-img {
-  transform: scale(1.03);
-  filter: drop-shadow(0 26px 52px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 35px rgba(212, 175, 55, 0.25));
+  transform: scale(1.025);
+  filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.3));
 }
 
 @media (hover: none) {
   .warda-details-img-wrap:hover .warda-details-img { transform: none; }
+}
+
+/* Contact Shadow right under the bottle base */
+.warda-stage-contact-shadow {
+  position: absolute;
+  top: 432px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: 16px;
+  background: radial-gradient(
+    ellipse 60% 60% at 50% 50%,
+    rgba(10, 6, 2, 0.95) 0%,
+    rgba(10, 6, 2, 0.6) 45%,
+    transparent 85%
+  );
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 3D Golden Metallic Podium Tray */
+.warda-stage-podium-tray-wrap {
+  position: absolute;
+  top: 398px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 510px;
+  height: 140px;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.warda-stage-podium-tray-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85));
+}
+
+/* Optical Mirror Reflection on the Golden Tray */
+.warda-stage-reflection-container {
+  position: absolute;
+  top: 434px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 586px;
+  height: 90px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+  /* Mask to top ellipse of the tray with smooth vertical fade */
+  mask-image: radial-gradient(ellipse 65% 75% at 50% 15%, #000 35%, transparent 75%),
+              linear-gradient(to bottom, #000 0%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 65% 75% at 50% 15%, #000 35%, transparent 75%),
+                      linear-gradient(to bottom, #000 0%, transparent 85%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+
+.warda-stage-reflection-img {
+  width: 100%;
+  height: 415px;
+  object-fit: contain;
+  object-position: bottom center;
+  transform: scaleY(-1);
+  opacity: 0.55;
+  filter: blur(1.5px) brightness(1.15) sepia(0.4) hue-rotate(5deg);
+}
+
+.warda-stage-reflection-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(235, 195, 85, 0.35) 0%,
+    rgba(195, 150, 50, 0.15) 55%,
+    transparent 100%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
 .warda-details-info {

@@ -29,7 +29,7 @@ function bustImageCache(url) {
   if (!url || typeof url !== "string") return url;
   if (!url.startsWith("/assets/img/")) return url;
   const clean = url.split("?")[0];
-  return `${clean}?v=luxury-stage-v9`;
+  return `${clean}?v=cutout-clean-v10`;
 }
 
 function getPerfumeImageSources(perfume) {
@@ -44,11 +44,11 @@ function getPerfumeImageSources(perfume) {
       : null;
   const webpUrl =
     typeof cleanPrimary === "string" && cleanPrimary.endsWith(".png")
-      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=luxury-stage-v9`
+      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=cutout-clean-v10`
       : null;
   const pngUrl =
     typeof cleanPrimary === "string" && cleanPrimary.endsWith(".webp")
-      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=luxury-stage-v9`
+      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=cutout-clean-v10`
       : null;
   const rawGhWebpUrl = rawGhUrl ? rawGhUrl.replace(/\.png$/, ".webp") : null;
   const fallback =
@@ -515,19 +515,50 @@ export default function BookDetails() {
                 aria-label="Inspect perfume flacon details"
                 title={t("details.clickToView")}
               >
-                {/* Flacon Image */}
-                <div className="warda-details-photo">
-                  <img
-                    src={activeImageSrc || perfume?.image}
-                    alt={perfume.name}
-                    className="warda-details-img"
-                    style={{
-                      transformOrigin: "center center",
-                    }}
-                    loading="eager"
-                    decoding="async"
-                    onError={handleFlaconImgError}
-                  />
+                {/* Volumetric Studio Spotlight Beam */}
+                <div className="warda-stage-spotlight" />
+
+                {/* Warm Golden Ambient Backlight Aura */}
+                <div className="warda-stage-aura" />
+
+                {/* Studio Stage Assembly: Flacon + Reflection + Contact Shadow + 3D Golden Podium Tray */}
+                <div className="warda-stage-assembly">
+                  {/* Flacon Image */}
+                  <div className="warda-details-photo">
+                    <img
+                      src={activeImageSrc || perfume?.image}
+                      alt={perfume.name}
+                      className="warda-details-img"
+                      style={{
+                        transformOrigin: "center center",
+                      }}
+                      loading="eager"
+                      decoding="async"
+                      onError={handleFlaconImgError}
+                    />
+                  </div>
+
+                  {/* Optical Mirror Reflection on Golden Tray */}
+                  <div className="warda-stage-reflection-container" aria-hidden="true">
+                    <img
+                      src={activeImageSrc || perfume?.image}
+                      alt=""
+                      className="warda-stage-reflection-img"
+                    />
+                    <div className="warda-stage-reflection-tint" />
+                  </div>
+
+                  {/* Contact Shadow at the Flacon Base */}
+                  <div className="warda-stage-contact-shadow" />
+
+                  {/* 3D Luxury Metallic Podium Tray */}
+                  <div className="warda-stage-podium-tray-wrap" aria-hidden="true">
+                    <img
+                      src="/assets/img/stage/luxury_podium_tray.png"
+                      alt=""
+                      className="warda-stage-podium-tray-img"
+                    />
+                  </div>
                 </div>
               </div>
 
