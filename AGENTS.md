@@ -103,13 +103,14 @@ Al-Warda/
 When processing a product row from `stocks`:
 1. **Official Brand Studio Lookup (`search_official_studio_image`)**:
    - Queries official brand Shopify storefronts mapped in `BRAND_DOMAINS` (`afnan.com`, `lattafa-usa.com`, `armaf.com`, `sterlingparfums.com`, `swissarabian.com`, `ajmalperfume.com`, `alharamainperfumes.com`, `orientica.com`, `rasasistore.com`, `pariscornerperfumes.com`, `fragranceworld.ae`) via `/search/suggest.json?q=...&resources[type]=product`.
-   - Enforces strict set vs. single-bottle matching (`is_perfume_set`) and >= 70% non-stopword token overlap.
+   - Enforces strict set vs. single-bottle matching (`is_perfume_set`), excludes deodorant/body-spray/mist/lotion matches when searching for an EDP/EDT bottle, prefers front-view studio `.png` assets over lifestyle JPEGs, and requires >= 70% non-stopword token overlap.
 2. **Wholesale Catalog Fallback (`product_source`)**:
    - Falls back to `info.rawImage` (`*.qogita.com`), rejecting placeholder hashes.
-3. **Segmentation, Super-Resolution & Photometry (`preserve_original_product`)**:
+3. **Segmentation, Super-Resolution & Stage-Aware Lighting Harmonization (`preserve_original_product` & `harmonize_cutout_for_stage`)**:
    - Segments the authentic photo first using `RMBG-1.4` (`1024 × 1024` ONNX) or `U2Net`.
    - Applies AI Super-Resolution (`ultrasharp-4x` / edge-preserving upscale) when resolution is below `1200 px`, combining raw and super-resolved alpha masks so boxes, caps, and miniatures are never clipped.
-   - Centers and normalizes the cutout on a `1024 × 1024` transparent canvas (`normalize_flacon_cutout`, `target_max_h=880`, `target_max_w=880`), stretches foreground LAB luminance contrast (CLAHE), and performs white-matte edge defringing.
+   - Centers and normalizes the cutout on a `1024 × 1024` transparent canvas (`normalize_flacon_cutout`, `target_max_h=880`, `target_max_w=880`).
+   - Runs `harmonize_cutout_for_stage(cutout)`, which samples `/assets/img/stage/bottom_glow_stage.webp` and adapts the flacon's lighting to the dark golden stage: compresses harsh white-lightbox flash hotspots (`tanh` filmic shoulder), anchors lifted white-studio shadows, applies 3D cylindrical curvature shading across each scanline, warms cold specular highlights toward champagne gold, projects upward golden horizon bounce light + warm rim light onto the lower bottle, and decontaminates white-matte edge halos.
 
 ---
 

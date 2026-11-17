@@ -581,6 +581,12 @@ def search_official_studio_image(name, brand="", is_set=False):
     }
 
     clean_tokens = set(re.findall(r"[a-z0-9]+", cleaned.lower())) - GENERIC_STOPWORDS
+    query_is_deo_or_body = bool(
+        re.search(
+            r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+            (name or "").lower(),
+        )
+    )
 
     for domain in domains:
         for q in queries:
@@ -591,16 +597,32 @@ def search_official_studio_image(name, brand="", is_set=False):
                     continue
                 data = resp.json()
                 products = data.get("resources", {}).get("results", {}).get("products", [])
+                matches = []
                 for p in products:
                     title = p.get("title", "")
                     title_lower = title.lower()
-                    p_is_set = bool(re.search(r"\b(set|gift|coffret|collection|travel)\b", title_lower))
+                    page_url_raw = str(p.get("url") or "").lower()
+                    p_is_set = bool(
+                        re.search(
+                            r"\b(set|gift|coffret|discovery|travel\s+set|pack\s+of)\b",
+                            title_lower,
+                        )
+                    )
+                    p_is_deo_or_body = bool(
+                        re.search(
+                            r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+                            f"{title_lower} {page_url_raw}",
+                        )
+                    )
 
                     # If searching for set, only accept set results!
                     if is_set and not p_is_set:
                         continue
                     # If searching for individual bottle, reject sets
                     if not is_set and p_is_set:
+                        continue
+                    # Do not match deodorant cans or body sprays when looking for an EDP/EDT bottle
+                    if not query_is_deo_or_body and p_is_deo_or_body:
                         continue
 
                     title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
@@ -615,13 +637,22 @@ def search_official_studio_image(name, brand="", is_set=False):
                         if page_url and page_url.startswith("/"):
                             page_url = f"https://{domain}{page_url}"
 
-                        return {
-                            "imageUrl": img_url,
-                            "sourceUrl": page_url or img_url,
-                            "sourceName": f"{brand or 'Official'} ({domain})",
-                            "sourceType": "official_studio",
-                            "title": title,
-                        }
+                        # Score studio front-view PNGs higher than lifestyle JPEGs
+                        img_lower = img_url.lower()
+                        score = (2 if ".png" in img_lower else 0) + (1 if "front" in img_lower else 0)
+                        matches.append((
+                            score,
+                            {
+                                "imageUrl": img_url,
+                                "sourceUrl": page_url or img_url,
+                                "sourceName": f"{brand or 'Official'} ({domain})",
+                                "sourceType": "official_studio",
+                                "title": title,
+                            },
+                        ))
+                if matches:
+                    matches.sort(key=lambda item: item[0], reverse=True)
+                    return matches[0][1]
             except Exception:
                 pass
     return None
@@ -1734,62 +1765,188 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         allow_upscale=allow_upscale,
     )
 
-    # Studio photometry & clarity enhancement
-    try:
-        import cv2
-        import numpy as np
-        arr = np.array(cutout)
-        if "A" in cutout.getbands() and arr.ndim == 3 and arr.shape[2] == 4:
-            rgb = arr[:, :, :3]
-            alpha = arr[:, :, 3]
-            fg_mask = alpha > 25
-
-            if np.any(fg_mask):
-                bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-                lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-                l, a, b = cv2.split(lab)
-
-                # Percentile contrast stretch on foreground L
-                fg_l = l[fg_mask]
-                p_low = np.percentile(fg_l, 1.0)
-                p_high = np.percentile(fg_l, 99.2)
-                if p_high > p_low:
-                    l_stretched = np.clip(
-                        (l.astype(np.float32) - p_low) * (235.0 / (p_high - p_low)) + 10.0,
-                        0,
-                        255,
-                    ).astype(np.uint8)
-                else:
-                    l_stretched = l
-
-                clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
-                l_clahe = clahe.apply(l_stretched)
-
-                # Gentle edge clarity that preserves micro-typography and fine metallic textures
-                blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.0)
-                l_sharp = cv2.addWeighted(l_clahe, 1.18, blur_l, -0.18, 0)
-                l_enhanced = np.where(fg_mask, l_sharp, l)
-
-                enhanced_lab = cv2.merge([l_enhanced, a, b])
-                enhanced_bgr = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
-                final_bgr = np.where(fg_mask[:, :, np.newaxis], enhanced_bgr, bgr)
-                final_rgb = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
-
-                # White-matte defringing / color decontamination (eliminates halos against dark background)
-                a_f = (alpha.astype(np.float32) / 255.0)[:, :, np.newaxis]
-                unpremult = (final_rgb.astype(np.float32) - (1.0 - a_f) * 255.0) / np.maximum(a_f, 0.02)
-                clean_rgb = np.clip(unpremult, 0.0, 255.0).astype(np.uint8)
-                edge_zone = (alpha > 0) & (alpha < 252)
-                final_rgb[edge_zone] = clean_rgb[edge_zone]
-
-                out_arr = np.dstack((final_rgb, alpha))
-                cutout = Image.fromarray(out_arr, mode="RGBA")
-    except Exception:
-        pass
+    # Stage-aware studio photometry & lighting harmonization for bottom_glow_stage.webp
+    cutout = harmonize_cutout_for_stage(cutout)
 
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True, compress_level=9)
     return output.getvalue(), canvas_size, original_size
+
+
+def harmonize_cutout_for_stage(cutout, stage_path=None):
+    """Adapt the segmented product cutout's lighting, tone curve, 3D cylindrical
+    shading, color temperature, and upward floor bounce to match the warm golden
+    horizon stage (`bottom_glow_stage.webp` on `#080605`)."""
+    if "A" not in cutout.getbands():
+        return cutout
+    try:
+        import cv2
+        import numpy as np
+
+        arr = np.array(cutout.convert("RGBA"), dtype=np.float32)
+        if arr.ndim != 3 or arr.shape[2] != 4:
+            return cutout
+        rgb = arr[:, :, :3]
+        alpha = arr[:, :, 3]
+        fg_mask = alpha > 25
+        if not np.any(fg_mask):
+            return cutout
+
+        # 1. Sample target stage template (bottom_glow_stage.webp) for authentic light color & profile
+        stage_horizon_rgb = np.array([248.0, 202.0, 96.0], dtype=np.float32)
+        stage_aura_rgb = np.array([218.0, 162.0, 58.0], dtype=np.float32)
+        if stage_path is None:
+            cand = (
+                Path(__file__).resolve().parents[1]
+                / "public"
+                / "assets"
+                / "img"
+                / "stage"
+                / "bottom_glow_stage.webp"
+            )
+            if cand.is_file():
+                stage_path = str(cand)
+        if stage_path and os.path.isfile(stage_path):
+            try:
+                with Image.open(stage_path) as st_im:
+                    st_arr = np.array(st_im.convert("RGB"), dtype=np.float32)
+                sh, sw = st_arr.shape[:2]
+                row_means = st_arr.mean(axis=(1, 2))
+                hy = int(np.argmax(row_means))
+                cx0, cx1 = int(sw * 0.35), int(sw * 0.65)
+                h_patch = st_arr[max(0, hy - 3) : min(sh, hy + 4), cx0:cx1, :]
+                a_patch = st_arr[max(0, int(hy * 0.60)) : max(1, int(hy * 0.85)), cx0:cx1, :]
+                if h_patch.size > 0:
+                    stage_horizon_rgb = np.clip(
+                        np.percentile(h_patch.reshape(-1, 3), 85, axis=0), 160.0, 255.0
+                    )
+                if a_patch.size > 0:
+                    stage_aura_rgb = np.clip(
+                        np.percentile(a_patch.reshape(-1, 3), 80, axis=0) * 1.35, 140.0, 245.0
+                    )
+            except Exception:
+                pass
+
+        ys, xs = np.where(fg_mask)
+        y_min, y_max = int(ys.min()), int(ys.max())
+        h_fg = max(1, y_max - y_min)
+
+        H, W = alpha.shape
+        y_grid, x_grid = np.indices((H, W), dtype=np.float32)
+        v_norm = np.clip((y_grid - y_min) / float(h_fg), 0.0, 1.0)
+
+        # Per-scanline horizontal coordinate u_abs in [0, 1] (0 = center axis, 1 = outer silhouette)
+        u_abs = np.zeros((H, W), dtype=np.float32)
+        for y in range(y_min, y_max + 1):
+            row_xs = np.where(fg_mask[y])[0]
+            if len(row_xs) > 4:
+                rx0, rx1 = float(row_xs[0]), float(row_xs[-1])
+                rw = max(1.0, rx1 - rx0)
+                rc = 0.5 * (rx0 + rx1)
+                u_abs[y] = np.clip(np.abs((x_grid[y] - rc) / (0.5 * rw)), 0.0, 1.0)
+
+        rgb_u8 = np.clip(rgb, 0, 255).astype(np.uint8)
+        lab = cv2.cvtColor(rgb_u8, cv2.COLOR_RGB2LAB).astype(np.float32)
+        L = lab[:, :, 0]
+        A = lab[:, :, 1]
+        B = lab[:, :, 2]
+
+        fg_l = L[fg_mask]
+        p5_l = float(np.percentile(fg_l, 5.0))
+        p50_l = float(np.percentile(fg_l, 50.0))
+        p90_l = float(np.percentile(fg_l, 90.0))
+
+        # 2. Adaptive Tone Mapping for Dark Golden Stage:
+        # Compress harsh white-box flash hotspots & anchor lifted white-studio shadows
+        L_norm = L / 255.0
+        if p50_l > 92.0 or p90_l > 198.0:
+            shadow_floor = max(0.0, min(0.14, (p5_l - 18.0) / 255.0 * 0.55))
+            L_anchored = np.clip((L_norm - shadow_floor) / max(0.2, 1.0 - shadow_floor), 0.0, 1.0)
+            knee = 0.64
+            over = np.maximum(0.0, L_anchored - knee)
+            L_comp = np.where(L_anchored > knee, knee + 0.25 * np.tanh(over / 0.26), L_anchored)
+            excess = max(0.0, min(1.0, (p50_l - 80.0) / 95.0))
+            gamma = 1.0 + 0.34 * excess
+            L_toned = np.power(np.clip(L_comp, 0.0, 1.0), gamma) * (1.0 - 0.08 * excess)
+        else:
+            p_low = float(np.percentile(fg_l, 1.5))
+            p_high = float(np.percentile(fg_l, 99.2))
+            if p_high > p_low + 20.0:
+                L_toned = np.clip((L - p_low) / (p_high - p_low) * 0.92 + 0.03, 0.0, 1.0)
+            else:
+                L_toned = L_norm
+
+        # 3. 3D Cylindrical Curvature Falloff (eliminates flat white-lightbox side glare)
+        bright_factor = max(0.35, min(1.0, (p50_l - 40.0) / 110.0))
+        cyl_shade = 1.0 - (0.20 * bright_factor) * np.power(u_abs, 2.2)
+        vert_shade = (1.0 - 0.10 * bright_factor) + (0.10 * bright_factor) * np.power(v_norm, 0.85)
+        L_3d = np.clip(L_toned * cyl_shade * vert_shade * 255.0, 0, 255).astype(np.uint8)
+
+        clahe = cv2.createCLAHE(clipLimit=1.15, tileGridSize=(8, 8))
+        L_clahe = clahe.apply(L_3d)
+        L_mix = 0.55 * L_3d.astype(np.float32) + 0.45 * L_clahe.astype(np.float32)
+        blur_l = cv2.GaussianBlur(L_mix, (0, 0), 1.0)
+        L_sharp = np.clip(L_mix * 1.18 - blur_l * 0.18, 0, 255)
+
+        # 4. Color Temperature Harmonization (warm champagne-gold speculars)
+        chroma = np.sqrt((A - 128.0) ** 2 + (B - 128.0) ** 2)
+        neutral_mask = np.clip(1.0 - chroma / 30.0, 0.0, 1.0)
+        hl_mask = np.clip((L_sharp / 255.0 - 0.30) / 0.55, 0.0, 1.0)
+        warm_weight = (
+            neutral_mask
+            * (0.35 + 0.65 * hl_mask)
+            * (0.45 + 0.55 * np.power(v_norm, 1.2))
+            * bright_factor
+        )
+        B_warm = np.clip(B + warm_weight * 13.0, 0, 255)
+        A_warm = np.clip(A + warm_weight * 2.5, 0, 255)
+
+        lab_enhanced = np.dstack([
+            np.where(fg_mask, L_sharp, L),
+            np.where(fg_mask, A_warm, A),
+            np.where(fg_mask, B_warm, B),
+        ]).astype(np.uint8)
+        rgb_enhanced = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB).astype(np.float32)
+
+        # 5. Stage Radiosity: Upward Golden Horizon Bounce + Warm Backlight Rim
+        bounce_zone = np.power(np.clip((v_norm - 0.75) / 0.25, 0.0, 1.0), 2.1)
+        rim_zone = (np.power(u_abs, 3.2) * (1.0 - np.power(u_abs, 14.0))) * np.clip(
+            (v_norm - 0.22) / 0.78, 0.0, 1.0
+        )
+
+        bounce_str = (bounce_zone * (0.14 + 0.12 * bright_factor))[:, :, np.newaxis]
+        rim_str = (rim_zone * (0.12 + 0.14 * bright_factor))[:, :, np.newaxis]
+
+        h_col = stage_horizon_rgb[np.newaxis, np.newaxis, :]
+        a_col = stage_aura_rgb[np.newaxis, np.newaxis, :]
+
+        rgb_stage = rgb_enhanced * (1.0 - 0.5 * (bounce_str + rim_str)) + (
+            (1.0 - (1.0 - rgb_enhanced / 255.0) * (1.0 - h_col / 255.0))
+            * 255.0
+            * (0.5 * bounce_str)
+            + (1.0 - (1.0 - rgb_enhanced / 255.0) * (1.0 - a_col / 255.0))
+            * 255.0
+            * (0.5 * rim_str)
+        )
+        rgb_stage = rgb_stage + h_col * (bounce_str * 0.22)
+
+        # Subtle 3px ground-contact AO at very bottom edge
+        ao_zone = np.clip((v_norm - 0.985) / 0.015, 0.0, 1.0)[:, :, np.newaxis]
+        rgb_stage = rgb_stage * (1.0 - 0.22 * ao_zone)
+
+        # 6. White-matte edge decontamination against dark background
+        a_f = (alpha / 255.0)[:, :, np.newaxis]
+        unpremult = (rgb_stage - (1.0 - a_f) * 245.0) / np.maximum(a_f, 0.04)
+        clean_rgb = np.clip(unpremult, 0.0, 255.0)
+        edge_zone = (alpha > 0) & (alpha < 252)
+        final_rgb = np.where(
+            edge_zone[:, :, np.newaxis], clean_rgb, np.clip(rgb_stage, 0.0, 255.0)
+        ).astype(np.uint8)
+
+        out_arr = np.dstack((final_rgb, alpha.astype(np.uint8)))
+        return Image.fromarray(out_arr, mode="RGBA")
+    except Exception:
+        return cutout
 
 
 def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True):
