@@ -28,6 +28,13 @@ function resolveCardImage(img, gtin, rawImage) {
   return img || "";
 }
 
+export function bustProductImageCache(url, version = "cutout-clean-v12") {
+  if (!url || typeof url !== "string") return url;
+  if (!url.startsWith("/assets/img/")) return url;
+  const clean = url.split("?")[0];
+  return `${clean}?v=${version}`;
+}
+
 export function hasCompletedGeneratedImage(product) {
   return hasCompletedGeneratedImageImpl(product);
 }

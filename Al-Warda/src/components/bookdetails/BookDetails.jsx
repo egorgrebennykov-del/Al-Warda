@@ -29,7 +29,7 @@ function bustImageCache(url) {
   if (!url || typeof url !== "string") return url;
   if (!url.startsWith("/assets/img/")) return url;
   const clean = url.split("?")[0];
-  return `${clean}?v=cutout-clean-v10`;
+  return `${clean}?v=cutout-clean-v12`;
 }
 
 function getPerfumeImageSources(perfume) {
@@ -106,7 +106,7 @@ export default function BookDetails() {
 
   const stageImageSrc = useMemo(() => {
     if (!perfume?.gtin || stageImgFailed) return null;
-    return `/assets/img/stages/${perfume.gtin}.webp?v=studio-template-v3`;
+    return `/assets/img/stages/${perfume.gtin}.webp?v=studio-template-v5`;
   }, [perfume?.gtin, stageImgFailed]);
 
   const activeImageSrc =

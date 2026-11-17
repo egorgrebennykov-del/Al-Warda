@@ -10,6 +10,7 @@ import {
   getDefaultCatalogPrice,
   parseVolumeMl,
   hasCompletedGeneratedImage,
+  bustProductImageCache,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -1763,7 +1764,7 @@ export default function Featured() {
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
                     <img
-                      src={perfume.image}
+                      src={bustProductImageCache(perfume.image)}
                       alt={perfume.name}
                       className="warda-perfume-card__img"
                       loading="lazy"

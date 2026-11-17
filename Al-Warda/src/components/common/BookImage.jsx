@@ -25,7 +25,15 @@ export default function BookImage({
     setFailed(false);
   }
 
-  const currentSrc = overrideSrc ?? enhancedImageUrl(src);
+  let resolvedSrc = overrideSrc ?? enhancedImageUrl(src);
+  if (
+    typeof resolvedSrc === "string" &&
+    resolvedSrc.startsWith("/assets/img/generated-products/") &&
+    !resolvedSrc.includes("?v=")
+  ) {
+    resolvedSrc = `${resolvedSrc}?v=cutout-clean-v11`;
+  }
+  const currentSrc = resolvedSrc;
 
   if (!currentSrc || failed) {
     return (
