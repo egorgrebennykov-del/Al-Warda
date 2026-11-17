@@ -251,32 +251,26 @@
   z-index: 2;
 }
 
-/* Large Bright Warm Golden Glow at the Bottom */
+/* User's Golden Horizon & Rising Glow Stage (bottom_glow_stage.webp) */
 .warda-details-bottom-glow {
   position: absolute;
-  top: 304px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 560px;
-  height: 240px;
-  background:
-    radial-gradient(
-      ellipse 48% 22% at 50% 54%,
-      rgba(255, 232, 145, 0.85) 0%,
-      rgba(235, 185, 70, 0.58) 42%,
-      rgba(205, 145, 35, 0.24) 72%,
-      transparent 95%
-    ),
-    radial-gradient(
-      ellipse 72% 62% at 50% 50%,
-      rgba(225, 175, 55, 0.52) 0%,
-      rgba(195, 140, 35, 0.26) 50%,
-      rgba(160, 105, 20, 0.09) 75%,
-      transparent 96%
-    );
-  filter: blur(22px);
+  width: 100%;
+  max-width: 586px;
+  height: 600px;
   pointer-events: none;
   z-index: 1;
+}
+
+.warda-details-bottom-glow-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
+  mix-blend-mode: screen;
+  filter: brightness(1.12) contrast(1.04);
 }
 
 /* Flacon Container & Photo Presentation */
@@ -304,18 +298,21 @@
   image-rendering: auto;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
-  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.65));
+  transform-origin: bottom center;
+  transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.7));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
 }
 
 .warda-details-img-wrap:hover .warda-details-img {
-  transform: scale(1.025);
-  filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.3));
+  transform: translateY(var(--flacon-pad-pct, 7.4%)) scale(1.02) translateZ(0);
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.32));
 }
 
 @media (hover: none) {
-  .warda-details-img-wrap:hover .warda-details-img { transform: none; }
+  .warda-details-img-wrap:hover .warda-details-img {
+    transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+  }
 }
 
 /* Luxury Processing / Loading Animation when Photo Cutout is Still Processing */
@@ -404,19 +401,21 @@
   50% { opacity: 1; transform: scale(1.08); }
 }
 
-/* Contact Shadow right under the bottle base */
+/* Contact Shadow right on the Horizon Line */
 .warda-stage-contact-shadow {
-  position: relative;
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 240px;
   height: 10px;
-  margin-top: -5px;
   background: radial-gradient(
     ellipse 60% 60% at 50% 50%,
     rgba(5, 3, 1, 0.92) 0%,
     rgba(8, 5, 2, 0.5) 50%,
     transparent 85%
   );
-  filter: blur(3px);
+  filter: blur(2.5px);
   pointer-events: none;
   z-index: 5;
 }
@@ -427,7 +426,7 @@
   width: 100%;
   max-width: 586px;
   height: 135px;
-  margin-top: -5px;
+  margin-top: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 3;
@@ -436,16 +435,16 @@
   justify-content: center;
   -webkit-mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.94) 0%,
-    rgba(0, 0, 0, 0.58) 42%,
-    rgba(0, 0, 0, 0.22) 72%,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(0, 0, 0, 0.68) 45%,
+    rgba(0, 0, 0, 0.25) 78%,
     transparent 98%
   );
   mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.94) 0%,
-    rgba(0, 0, 0, 0.58) 42%,
-    rgba(0, 0, 0, 0.22) 72%,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(0, 0, 0, 0.68) 45%,
+    rgba(0, 0, 0, 0.25) 78%,
     transparent 98%
   );
 }
@@ -457,9 +456,9 @@
   height: 420px;
   object-fit: contain;
   object-position: bottom center;
-  transform: scaleY(-1);
-  opacity: 0.72;
-  filter: blur(1px) brightness(1.08);
+  transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+  opacity: 0.78;
+  filter: blur(0.9px) brightness(1.15);
 }
 
 .warda-details-info {
@@ -741,9 +740,10 @@
   }
 
   .warda-details-bottom-glow {
-    top: 295px;
-    width: 320px;
-    height: 100px;
+    bottom: 0;
+    width: 100%;
+    max-width: 340px;
+    height: 422px;
   }
 
   .warda-details-photo {
@@ -761,11 +761,17 @@
     height: 330px;
     object-fit: contain;
     object-position: bottom center;
-    transform: translateZ(0);
+    transform-origin: bottom center;
+    transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+  }
+
+  .warda-stage-contact-shadow {
+    bottom: 90px;
+    width: 190px;
   }
 
   .warda-stage-reflection-container {
@@ -779,6 +785,7 @@
     height: 330px;
     object-fit: contain;
     object-position: bottom center;
+    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
   }
 
   .warda-details-zoom-pill {
@@ -801,9 +808,10 @@
   }
 
   .warda-details-bottom-glow {
-    top: 265px;
-    width: 280px;
-    height: 90px;
+    bottom: 0;
+    width: 100%;
+    max-width: 300px;
+    height: 378px;
   }
 
   .warda-details-photo {
@@ -819,11 +827,17 @@
     height: 295px;
     object-fit: contain;
     object-position: bottom center;
-    transform: translateZ(0);
+    transform-origin: bottom center;
+    transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+  }
+
+  .warda-stage-contact-shadow {
+    bottom: 80px;
+    width: 170px;
   }
 
   .warda-stage-reflection-container {
@@ -837,6 +851,7 @@
     height: 295px;
     object-fit: contain;
     object-position: bottom center;
+    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
   }
 }
 
