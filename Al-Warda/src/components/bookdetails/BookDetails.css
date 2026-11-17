@@ -237,46 +237,8 @@
 }
 
 /* -------------------------------------------------------------
-   LUXURY STUDIO STAGE: SPOTLIGHT, AURA, PODIUM TRAY, REFLECTION
+   CLEAN PERFUME SHOWCASE: BOTTOM GLOW, CONTACT SHADOW, REFLECTION
    ------------------------------------------------------------- */
-.warda-stage-spotlight {
-  position: absolute;
-  top: -60px;
-  left: -80px;
-  width: 580px;
-  height: 640px;
-  background: radial-gradient(
-    ellipse 85% 70% at 20% 15%,
-    rgba(255, 230, 160, 0.28) 0%,
-    rgba(240, 195, 105, 0.16) 35%,
-    rgba(215, 165, 65, 0.05) 65%,
-    transparent 85%
-  );
-  clip-path: polygon(0 0, 60% 0, 100% 100%, 0 100%);
-  filter: blur(40px);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.warda-stage-aura {
-  position: absolute;
-  top: 42%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 440px;
-  height: 440px;
-  background: radial-gradient(
-    circle,
-    rgba(225, 175, 55, 0.18) 0%,
-    rgba(210, 150, 40, 0.08) 45%,
-    rgba(160, 100, 20, 0.02) 70%,
-    transparent 85%
-  );
-  filter: blur(48px);
-  pointer-events: none;
-  z-index: 1;
-}
-
 .warda-stage-assembly {
   position: relative;
   width: 100%;
@@ -289,6 +251,32 @@
   z-index: 2;
 }
 
+/* Subtle Warm Golden Glow at the Bottom */
+.warda-details-bottom-glow {
+  position: absolute;
+  top: 395px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  height: 130px;
+  background:
+    radial-gradient(
+      ellipse 45% 28% at 50% 52%,
+      rgba(245, 205, 110, 0.36) 0%,
+      rgba(212, 175, 55, 0.18) 45%,
+      transparent 80%
+    ),
+    radial-gradient(
+      ellipse 65% 55% at 50% 50%,
+      rgba(212, 175, 55, 0.22) 0%,
+      rgba(175, 125, 35, 0.08) 55%,
+      transparent 85%
+    );
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* Flacon Container & Photo Presentation */
 .warda-details-photo {
   position: relative;
@@ -297,7 +285,7 @@
   justify-content: center;
   width: 100%;
   max-width: 586px;
-  height: 415px;
+  height: 420px;
   z-index: 4;
 }
 
@@ -306,7 +294,7 @@
   max-width: 100%;
   max-height: 100%;
   width: auto;
-  height: auto;
+  height: 420px;
   object-fit: contain;
   object-position: bottom center;
   position: relative;
@@ -315,7 +303,7 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.65));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
 }
 
@@ -330,87 +318,60 @@
 
 /* Contact Shadow right under the bottle base */
 .warda-stage-contact-shadow {
-  position: absolute;
-  top: 432px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 250px;
-  height: 16px;
+  position: relative;
+  width: 240px;
+  height: 10px;
+  margin-top: -5px;
   background: radial-gradient(
     ellipse 60% 60% at 50% 50%,
-    rgba(10, 6, 2, 0.95) 0%,
-    rgba(10, 6, 2, 0.6) 45%,
+    rgba(5, 3, 1, 0.92) 0%,
+    rgba(8, 5, 2, 0.5) 50%,
     transparent 85%
   );
-  filter: blur(4px);
+  filter: blur(3px);
   pointer-events: none;
   z-index: 5;
 }
 
-/* 3D Golden Metallic Podium Tray */
-.warda-stage-podium-tray-wrap {
-  position: absolute;
-  top: 398px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 510px;
-  height: 140px;
-  pointer-events: none;
-  z-index: 2;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.warda-stage-podium-tray-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85));
-}
-
-/* Optical Mirror Reflection on the Golden Tray */
+/* Optical Mirror Reflection at the Bottom */
 .warda-stage-reflection-container {
-  position: absolute;
-  top: 434px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   width: 100%;
   max-width: 586px;
-  height: 90px;
+  height: 125px;
+  margin-top: -4px;
   overflow: hidden;
   pointer-events: none;
   z-index: 3;
-  /* Mask to top ellipse of the tray with smooth vertical fade */
-  mask-image: radial-gradient(ellipse 65% 75% at 50% 15%, #000 35%, transparent 75%),
-              linear-gradient(to bottom, #000 0%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 65% 75% at 50% 15%, #000 35%, transparent 75%),
-                      linear-gradient(to bottom, #000 0%, transparent 85%);
-  mask-composite: intersect;
-  -webkit-mask-composite: source-in;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.32) 38%,
+    rgba(0, 0, 0, 0.08) 70%,
+    transparent 95%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.32) 38%,
+    rgba(0, 0, 0, 0.08) 70%,
+    transparent 95%
+  );
 }
 
 .warda-stage-reflection-img {
-  width: 100%;
-  height: 415px;
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: 420px;
   object-fit: contain;
   object-position: bottom center;
   transform: scaleY(-1);
-  opacity: 0.55;
-  filter: blur(1.5px) brightness(1.15) sepia(0.4) hue-rotate(5deg);
-}
-
-.warda-stage-reflection-tint {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(235, 195, 85, 0.35) 0%,
-    rgba(195, 150, 50, 0.15) 55%,
-    transparent 100%
-  );
-  mix-blend-mode: overlay;
-  pointer-events: none;
+  opacity: 0.48;
+  filter: blur(1.4px) brightness(0.95);
 }
 
 .warda-details-info {
@@ -684,82 +645,52 @@
   .warda-details-img-wrap {
     min-height: unset !important;
     height: auto !important;
-    max-height: 400px;
     padding: 0.25rem 0 !important;
   }
 
+  .warda-stage-assembly {
+    padding-top: 12px;
+  }
+
+  .warda-details-bottom-glow {
+    top: 295px;
+    width: 320px;
+    height: 100px;
+  }
+
   .warda-details-photo {
     width: 100%;
     max-width: 340px;
-    max-height: 380px;
-    height: auto;
+    height: 330px;
     margin: 0 auto;
+    padding-bottom: 0;
   }
 
   .warda-details-img {
-    width: 100%;
-    max-width: 340px;
-    max-height: 360px;
-    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: 330px;
     object-fit: contain;
-    transform: scale(1.15) translateZ(0);
+    object-position: bottom center;
+    transform: translateZ(0);
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: scale(1.15) translateZ(0);
+    transform: translateZ(0);
   }
 
-  .warda-details-aura {
-    width: 280px;
-    height: 300px;
-    filter: blur(35px);
+  .warda-stage-reflection-container {
+    max-width: 340px;
+    height: 95px;
   }
 
-  .warda-stage-spotlight {
-    width: 380px;
-    height: 480px;
-    top: -50px;
-    left: -40px;
-    filter: blur(28px);
-  }
-
-  .warda-stage-aura {
-    width: 320px;
-    height: 320px;
-    filter: blur(36px);
-  }
-
-  .warda-stage-podium-wrap {
-    width: 320px;
-    bottom: 18px;
-  }
-
-  .warda-stage-floor-shadow {
-    width: 360px;
-    height: 38px;
-  }
-
-  .warda-stage-floor-reflection {
-    width: 320px;
-    height: 30px;
-  }
-
-  .warda-stage-podium {
-    width: 290px;
-    height: 32px;
-  }
-
-  .warda-stage-podium__rim {
-    top: 10px;
-    height: 14px;
-  }
-
-  .warda-stage-podium__top {
-    height: 22px;
-  }
-
-  .warda-details-photo {
-    padding-bottom: 28px;
+  .warda-stage-reflection-img {
+    max-width: 100%;
+    width: auto;
+    height: 330px;
+    object-fit: contain;
+    object-position: bottom center;
   }
 
   .warda-details-zoom-pill {
@@ -774,75 +705,50 @@
   .warda-details-img-wrap {
     min-height: unset !important;
     height: auto !important;
-    max-height: 360px;
     padding: 0 !important;
   }
 
+  .warda-stage-assembly {
+    padding-top: 8px;
+  }
+
+  .warda-details-bottom-glow {
+    top: 265px;
+    width: 280px;
+    height: 90px;
+  }
+
   .warda-details-photo {
     max-width: 300px;
-    max-height: 340px;
+    height: 295px;
+    padding-bottom: 0;
   }
 
   .warda-details-img {
-    max-width: 300px;
-    max-height: 320px;
-    transform: scale(1.18) translateZ(0);
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: 295px;
+    object-fit: contain;
+    object-position: bottom center;
+    transform: translateZ(0);
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: scale(1.18) translateZ(0);
+    transform: translateZ(0);
   }
 
-  .warda-details-aura {
-    width: 240px;
-    height: 260px;
+  .warda-stage-reflection-container {
+    max-width: 300px;
+    height: 85px;
   }
 
-  .warda-stage-spotlight {
-    width: 300px;
-    height: 400px;
-    top: -40px;
-    left: -30px;
-    filter: blur(24px);
-  }
-
-  .warda-stage-aura {
-    width: 260px;
-    height: 260px;
-    filter: blur(30px);
-  }
-
-  .warda-stage-podium-wrap {
-    width: 280px;
-    bottom: 12px;
-  }
-
-  .warda-stage-floor-shadow {
-    width: 300px;
-    height: 32px;
-  }
-
-  .warda-stage-floor-reflection {
-    width: 260px;
-    height: 26px;
-  }
-
-  .warda-stage-podium {
-    width: 250px;
-    height: 28px;
-  }
-
-  .warda-stage-podium__rim {
-    top: 8px;
-    height: 12px;
-  }
-
-  .warda-stage-podium__top {
-    height: 18px;
-  }
-
-  .warda-details-photo {
-    padding-bottom: 20px;
+  .warda-stage-reflection-img {
+    max-width: 100%;
+    width: auto;
+    height: 295px;
+    object-fit: contain;
+    object-position: bottom center;
   }
 }
 
