@@ -72,21 +72,21 @@ def compose_luxury_studio_stage(product_rgba, width=1024, height=1024):
     prod_bottom = int(height * 0.78)
     prod_y = prod_bottom - target_ph
 
-    # 4. Golden Metallic Podium Tray
+    # 4. Golden Metallic Podium Tray (Sleek luxury metallic disc)
     tray_cx = width // 2
-    tray_cy = prod_bottom + 12
-    tray_rx = int(max(target_pw * 0.75, width * 0.36))
-    tray_ry = int(tray_rx * 0.22)
-    rim_h = int(tray_ry * 0.45)
+    tray_cy = prod_bottom + 8
+    tray_rx = int(max(target_pw * 0.72, width * 0.35))
+    tray_ry = int(tray_rx * 0.16)
+    rim_h = 14
 
     # Under-podium floor shadow
     shadow_img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     sh_draw = ImageDraw.Draw(shadow_img)
     sh_draw.ellipse(
-        [tray_cx - tray_rx - 50, tray_cy + rim_h - 10, tray_cx + tray_rx + 50, tray_cy + rim_h + tray_ry + 25],
-        fill=(0, 0, 0, 235)
+        [tray_cx - tray_rx - 40, tray_cy + rim_h - 6, tray_cx + tray_rx + 40, tray_cy + rim_h + tray_ry + 18],
+        fill=(0, 0, 0, 240)
     )
-    shadow_img = shadow_img.filter(ImageFilter.GaussianBlur(25))
+    shadow_img = shadow_img.filter(ImageFilter.GaussianBlur(18))
     canvas.paste(Image.new("RGB", (width, height), (0, 0, 0)), (0, 0), mask=shadow_img.split()[3])
 
     # Golden podium rim (cylinder)
@@ -98,11 +98,11 @@ def compose_luxury_studio_stage(product_rgba, width=1024, height=1024):
         dx = (x - tray_cx) / tray_rx
         if abs(dx) <= 1.0:
             dy = np.sqrt(max(0.0, 1.0 - dx * dx)) * tray_ry
-            top_y = int(tray_cy + dy * 0.1)
+            top_y = int(tray_cy + dy * 0.05)
             bot_y = int(tray_cy + dy + rim_h)
 
             if norm_x < 0.2:
-                r, g, b = int(90 + norm_x * 300), int(65 + norm_x * 220), int(20 + norm_x * 70)
+                r, g, b = int(100 + norm_x * 250), int(75 + norm_x * 180), int(25 + norm_x * 60)
             elif norm_x < 0.45:
                 t = (norm_x - 0.2) / 0.25
                 r = int(150 + t * 95)
@@ -123,7 +123,7 @@ def compose_luxury_studio_stage(product_rgba, width=1024, height=1024):
 
     rim_draw.arc(
         [tray_cx - tray_rx, tray_cy + rim_h - tray_ry, tray_cx + tray_rx, tray_cy + rim_h + tray_ry],
-        0, 180, fill=(130, 95, 28, 255), width=2
+        0, 180, fill=(140, 105, 35, 255), width=2
     )
     canvas.paste(rim_img, (0, 0), mask=rim_img.split()[3])
 
@@ -131,20 +131,20 @@ def compose_luxury_studio_stage(product_rgba, width=1024, height=1024):
     top_surf = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     top_draw = ImageDraw.Draw(top_surf)
     top_box = [tray_cx - tray_rx, tray_cy - tray_ry, tray_cx + tray_rx, tray_cy + tray_ry]
-    top_draw.ellipse(top_box, fill=(185, 145, 55, 255))
+    top_draw.ellipse(top_box, fill=(195, 155, 65, 255))
 
     for step in range(32):
         factor = step / 32.0
-        erx = int(tray_rx * (1.0 - factor * 0.4))
-        ery = int(tray_ry * (1.0 - factor * 0.4))
-        ecx = int(tray_cx - tray_rx * 0.15 * factor)
-        ecy = int(tray_cy - tray_ry * 0.15 * factor)
-        alpha = int(12 + factor * 24)
-        top_draw.ellipse([ecx - erx, ecy - ery, ecx + erx, ecy + ery], fill=(245, 220, 130, alpha))
+        erx = int(tray_rx * (1.0 - factor * 0.35))
+        ery = int(tray_ry * (1.0 - factor * 0.35))
+        ecx = int(tray_cx - tray_rx * 0.12 * factor)
+        ecy = int(tray_cy - tray_ry * 0.12 * factor)
+        alpha = int(15 + factor * 30)
+        top_draw.ellipse([ecx - erx, ecy - ery, ecx + erx, ecy + ery], fill=(250, 225, 140, alpha))
 
     # Top rim bevel highlight
-    top_draw.arc(top_box, 0, 180, fill=(255, 242, 185, 245), width=2)
-    top_draw.arc(top_box, 180, 360, fill=(110, 80, 22, 180), width=1)
+    top_draw.arc(top_box, 0, 180, fill=(255, 245, 195, 255), width=2)
+    top_draw.arc(top_box, 180, 360, fill=(120, 90, 28, 200), width=1)
     canvas.paste(top_surf, (0, 0), mask=top_surf.split()[3])
 
     # 6. Mirror Reflection of Product on Golden Tray

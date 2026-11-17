@@ -25,21 +25,30 @@ import {
 import "../common/ProductCardImages.css";
 import "./BookDetails.css";
 
+function bustImageCache(url) {
+  if (!url || typeof url !== "string") return url;
+  if (!url.startsWith("/assets/img/")) return url;
+  const clean = url.split("?")[0];
+  return `${clean}?v=luxury-stage-v6`;
+}
+
 function getPerfumeImageSources(perfume) {
   if (!perfume) return [];
-  const primary = perfume.image || perfume.imageUrl;
+  const rawPrimary = perfume.image || perfume.imageUrl;
+  const primary = bustImageCache(rawPrimary);
+  const cleanPrimary = typeof primary === "string" ? primary.split("?")[0] : "";
   const rawGhUrl =
-    typeof primary === "string" &&
-    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.(png|webp)$/.test(primary)
-      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${primary.replace(/\.webp$/, ".png")}`
+    typeof cleanPrimary === "string" &&
+    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.(png|webp)$/.test(cleanPrimary)
+      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPrimary.replace(/\.webp$/, ".png")}`
       : null;
   const webpUrl =
-    typeof primary === "string" && primary.endsWith(".png")
-      ? primary.replace(/\.png$/, ".webp")
+    typeof cleanPrimary === "string" && cleanPrimary.endsWith(".png")
+      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=luxury-stage-v6`
       : null;
   const pngUrl =
-    typeof primary === "string" && primary.endsWith(".webp")
-      ? primary.replace(/\.webp$/, ".png")
+    typeof cleanPrimary === "string" && cleanPrimary.endsWith(".webp")
+      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=luxury-stage-v6`
       : null;
   const rawGhWebpUrl = rawGhUrl ? rawGhUrl.replace(/\.png$/, ".webp") : null;
   const fallback =
