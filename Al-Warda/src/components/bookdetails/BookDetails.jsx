@@ -506,37 +506,12 @@ export default function BookDetails() {
                 aria-label="Inspect perfume flacon details"
                 title={t("details.clickToView")}
               >
-                {/* Volumetric Studio Spotlight Beam */}
-                <div className="warda-stage-spotlight" />
-
-                {/* Warm Golden Ambient Backlight Aura */}
-                <div className="warda-stage-aura" />
-
-                {/* Luxury 3D Studio Podium Platform */}
-                <div className="warda-stage-podium-wrap">
-                  <div className="warda-stage-floor-shadow" />
-                  <div className="warda-stage-floor-reflection" />
-                  <div className="warda-stage-podium">
-                    <div className="warda-stage-podium__rim" />
-                    <div className="warda-stage-podium__top">
-                      <div className="warda-stage-podium__contact-shadow" />
-                      <div className="warda-stage-podium__reflection" />
-                    </div>
-                  </div>
-                </div>
-
                 {/* Flacon Image */}
-                <div
-                  className={`warda-details-photo ${
-                    !isGeneratedCutout ? "warda-details-photo--supplier-frame" : ""
-                  }`}
-                >
+                <div className="warda-details-photo">
                   <img
                     src={activeImageSrc || perfume?.image}
                     alt={perfume.name}
-                    className={`warda-details-img ${
-                      !isGeneratedCutout ? "warda-details-img--raw" : ""
-                    }`}
+                    className="warda-details-img"
                     style={{
                       transformOrigin: "center center",
                     }}
