@@ -360,23 +360,24 @@ function GalleryImageItem({
         )}
       </div>
 
-      <strong>
+      <strong className="product-image-queue__gallery-item-title">
         <Link
           to={productUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="product-image-queue__product-link"
           title={
-            isRussian
-              ? "Открыть страницу товара"
-              : "Open product page"
+            image.name ||
+            (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)
           }
         >
           {image.name ||
             (isRussian ? `Товар ${image.id}` : `Product ${image.id}`)}
         </Link>
       </strong>
-      {image.brand && <span>{image.brand}</span>}
+      <span className="product-image-queue__gallery-item-brand" title={image.brand || ""}>
+        {image.brand || "\u00A0"}
+      </span>
       {(() => {
         const sourceUrl =
           image.sourceUrl ||
@@ -385,13 +386,12 @@ function GalleryImageItem({
           image.rawImage ||
           image.info?.rawImage ||
           null;
-        if (!sourceUrl) return null;
         let sourceLabel =
           image.sourceName ||
           image.info?.imageGeneration?.sourceName ||
           image.info?.imageSourceName ||
           null;
-        if (!sourceLabel) {
+        if (!sourceLabel && sourceUrl) {
           if (sourceUrl.includes("qogita")) {
             sourceLabel = "Qogita";
           } else if (sourceUrl.includes("afnan")) {
@@ -403,26 +403,35 @@ function GalleryImageItem({
               const u = new URL(sourceUrl);
               sourceLabel = u.hostname.replace(/^www\./, "");
             } catch {
-              sourceLabel = isRussian ? "Источник фото" : "Photo source";
+              sourceLabel = isRussian ? "Источник" : "Source";
             }
           }
         }
         return (
-          <div className="product-image-queue__source-badge">
+          <div
+            className="product-image-queue__source-badge"
+            title={sourceUrl ? (isRussian ? `Источник: ${sourceLabel} (${sourceUrl})` : `Source: ${sourceLabel} (${sourceUrl})`) : ""}
+          >
+            <i className="ri-link-m" />
             <span className="product-image-queue__source-label">
               {isRussian ? "Источник:" : "Source:"}
-            </span>{" "}
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="product-image-queue__source-link"
-              title={isRussian ? `Перейти к источнику фото (${sourceUrl})` : `Open photo source (${sourceUrl})`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <i className="ri-external-link-line" />
-              <span>{sourceLabel}</span>
-            </a>
+            </span>
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="product-image-queue__source-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span>{sourceLabel}</span>
+                <i className="ri-external-link-line" />
+              </a>
+            ) : (
+              <span className="product-image-queue__source-link product-image-queue__source-link--empty">
+                {isRussian ? "Каталог" : "Catalog"}
+              </span>
+            )}
           </div>
         );
       })()}
@@ -434,18 +443,22 @@ function GalleryImageItem({
           image.info?.descriptionGeneratedAt ||
           image.info?.imageGeneration?.updatedAt ||
           image.created_at;
-        return timestamp && Number.isFinite(Date.parse(timestamp)) ? (
-          <time dateTime={timestamp}>
-            {new Date(timestamp).toLocaleString(
-              isRussian ? "ru-RU" : "en-US",
-              {
-                dateStyle: "medium",
-                timeStyle: "medium",
-              },
-            )}
-          </time>
+        const timeFormatted = timestamp && Number.isFinite(Date.parse(timestamp)) ? (
+          new Date(timestamp).toLocaleString(
+            isRussian ? "ru-RU" : "en-US",
+            {
+              dateStyle: "short",
+              timeStyle: "short",
+            },
+          )
         ) : (
-          <span>{isRussian ? "Время неизвестно" : "Time unavailable"}</span>
+          isRussian ? "Время неизвестно" : "Time unavailable"
+        );
+        return (
+          <div className="product-image-queue__gallery-item-time" title={timeFormatted}>
+            <i className="ri-time-line" />
+            <time dateTime={timestamp || ""}>{timeFormatted}</time>
+          </div>
         );
       })()}
 
