@@ -355,6 +355,49 @@
   color: #d4af37;
 }
 
+.product-compare-card__source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #e5b25d;
+  font-size: 0.775rem;
+  font-weight: 500;
+  text-decoration: none;
+  background: rgba(229, 178, 93, 0.1);
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(229, 178, 93, 0.25);
+  transition: all 0.15s ease;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-compare-card__source-link:hover {
+  background: rgba(229, 178, 93, 0.2);
+  color: #ffd978;
+  border-color: rgba(229, 178, 93, 0.5);
+  text-decoration: none;
+}
+
+.product-compare-card__footer-source {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #8c8273;
+  word-break: break-all;
+}
+
+.product-compare-card__footer-source a {
+  color: #c9933b;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.product-compare-card__footer-source a:hover {
+  color: #f0c75e;
+}
+
 .product-compare-modal__action-btn {
   padding: 0.55rem 1.25rem;
   border-radius: 0.5rem;

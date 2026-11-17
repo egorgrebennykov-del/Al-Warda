@@ -23,6 +23,27 @@ export default function ProductImageCompareModal({
 
   const originalSrc = item.rawImage || item.image || item.info?.rawImage;
   const studioSrc = item.imageUrl || item.image || item.info?.imageGeneration?.imageUrl || item.info?.image;
+  const studioSourceUrl =
+    item.sourceUrl ||
+    item.info?.imageGeneration?.sourceUrl ||
+    item.info?.imageSourceUrl ||
+    (typeof originalSrc === "string" && !originalSrc.startsWith("/assets/") ? originalSrc : null);
+  const studioSourceName =
+    item.sourceName ||
+    item.info?.imageGeneration?.sourceName ||
+    item.info?.imageSourceName ||
+    (studioSourceUrl?.includes("afnan")
+      ? "Afnan Official (afnan.com)"
+      : studioSourceUrl?.includes("lattafa")
+        ? "Lattafa Official"
+        : studioSourceUrl?.includes("qogita")
+          ? "Qogita Wholesale Catalog"
+          : (isRussian ? "Официальный источник" : "Official source"));
+  const isOfficialStudio = Boolean(
+    item.sourceType === "official_studio" ||
+    item.info?.imageGeneration?.sourceType === "official_studio" ||
+    (studioSourceUrl && !studioSourceUrl.includes("qogita"))
+  );
   const [studioSourceIndex, setStudioSourceIndex] = useState(0);
   const [studioFailed, setStudioFailed] = useState(false);
 
@@ -46,11 +67,16 @@ export default function ProductImageCompareModal({
       ? studioSrc.replace(/\.png$/, ".webp")
       : null;
   const rawWebpUrl = rawUrl ? rawUrl.replace(/\.png$/, ".webp") : null;
+  const cdnWorkerUrl =
+    typeof studioSrc === "string" && studioSrc.startsWith("/assets/")
+      ? `https://al-warda.egor-grebennykov.workers.dev${studioSrc}`
+      : null;
 
   const studioSources = [
     studioSrc,
     webpUrl,
     localApiUrl,
+    cdnWorkerUrl,
     rawUrl,
     rawWebpUrl,
   ].filter(Boolean);
@@ -134,9 +160,18 @@ export default function ProductImageCompareModal({
                   <i className="ri-camera-line" />
                   {isRussian ? "Исходное фото Qogita (Оригинал)" : "Original Qogita Photo"}
                 </span>
-                <span className="product-compare-card__status">
-                  {isRussian ? "Источник истины" : "Source of truth"}
-                </span>
+                {originalSrc && (
+                  <a
+                    href={originalSrc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="product-compare-card__source-link"
+                    title={isRussian ? "Открыть фото каталога в полном размере" : "Open catalog photo in full size"}
+                  >
+                    <i className="ri-external-link-line" />
+                    <span>{isRussian ? "Источник Qogita" : "Qogita Source"}</span>
+                  </a>
+                )}
               </div>
               <div className="product-compare-card__preview product-compare-card__preview--white">
                 {originalSrc ? (
@@ -158,6 +193,14 @@ export default function ProductImageCompareModal({
                     ? "Оригинальное изображение из оптового каталога Qogita с непрозрачным фоном и заводским освещением."
                     : "Raw catalog photograph from Qogita with opaque background and warehouse lighting."}
                 </p>
+                {originalSrc && (
+                  <div className="product-compare-card__footer-source">
+                    <span>{isRussian ? "Прямая ссылка:" : "Direct link:"} </span>
+                    <a href={originalSrc} target="_blank" rel="noopener noreferrer">
+                      {originalSrc}
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -168,16 +211,30 @@ export default function ProductImageCompareModal({
                   <i className="ri-sparkling-fill" />
                   {isRussian ? "Студийное фото Al-Warda (1024×1024 RGBA)" : "Al-Warda Studio Photography"}
                 </span>
-                <span className="product-compare-card__status product-compare-card__status--success">
-                  <i className="ri-check-line" />
-                  {isRussian ? "100% сохранность надписей" : "100% authentic typography"}
-                </span>
+                {studioSourceUrl ? (
+                  <a
+                    href={studioSourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="product-compare-card__source-link"
+                    title={isRussian ? `Перейти к источнику: ${studioSourceUrl}` : `Open source: ${studioSourceUrl}`}
+                  >
+                    <i className="ri-external-link-line" />
+                    <span>{studioSourceName}</span>
+                  </a>
+                ) : (
+                  <span className="product-compare-card__status product-compare-card__status--success">
+                    <i className="ri-check-line" />
+                    {isRussian ? "100% сохранность надписей" : "100% authentic typography"}
+                  </span>
+                )}
               </div>
               <div
                 className={`product-compare-card__preview product-compare-card__preview--${backgroundMode}`}
               >
                 {!studioFailed && currentStudioSrc ? (
                   <img
+                    key={currentStudioSrc}
                     src={currentStudioSrc}
                     alt={isRussian ? "Студийное фото" : "Studio photo"}
                     loading="lazy"
@@ -202,10 +259,22 @@ export default function ProductImageCompareModal({
               </div>
               <div className="product-compare-card__footer">
                 <p>
-                  {isRussian
-                    ? "U2Net ONNX сегментация + Студийная фотометрия (CLAHE + Unsharp mask). Истинный прозрачный фон, аутентичный флакон без галлюцинаций."
-                    : "U2Net ONNX segmentation + Studio Photometry (CLAHE + Unsharp mask). Genuine transparent background, zero bottle hallucinations."}
+                  {isOfficialStudio
+                    ? (isRussian
+                        ? `Официальное студийное изображение (${studioSourceName}) + U2Net ONNX сегментация фона + Фотометрия (1024×1024 RGBA).`
+                        : `Official studio photography (${studioSourceName}) + U2Net ONNX background segmentation + Photometry (1024×1024 RGBA).`)
+                    : (isRussian
+                        ? "U2Net ONNX сегментация + Студийная фотометрия (CLAHE + Unsharp mask). Истинный прозрачный фон, аутентичный флакон без галлюцинаций."
+                        : "U2Net ONNX segmentation + Studio Photometry (CLAHE + Unsharp mask). Genuine transparent background, zero bottle hallucinations.")}
                 </p>
+                {studioSourceUrl && (
+                  <div className="product-compare-card__footer-source">
+                    <span>{isRussian ? "Прямая ссылка:" : "Direct link:"} </span>
+                    <a href={studioSourceUrl} target="_blank" rel="noopener noreferrer">
+                      {studioSourceUrl}
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

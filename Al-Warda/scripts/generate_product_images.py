@@ -495,6 +495,138 @@ def product_source(row):
     return source
 
 
+BRAND_DOMAINS = {
+    "afnan": ["afnan.com"],
+    "lattafa": ["lattafa-usa.com"],
+    "maison alhambra": ["lattafa-usa.com"],
+    "asdaaf": ["lattafa-usa.com"],
+    "armaf": ["armaf.com", "sterlingparfums.com"],
+    "sterling": ["sterlingparfums.com", "armaf.com"],
+    "flavia": ["sterlingparfums.com"],
+    "just jack": ["sterlingparfums.com"],
+    "swiss arabian": ["swissarabian.com"],
+    "ajmal": ["ajmalperfume.com"],
+    "al haramain": ["alharamainperfumes.com"],
+    "orientica": ["orientica.com", "alharamainperfumes.com"],
+    "rasasi": ["rasasistore.com"],
+    "paris corner": ["pariscornerperfumes.com"],
+    "fragrance world": ["fragranceworld.ae"],
+    "french avenue": ["fragranceworld.ae"],
+}
+
+GENERIC_STOPWORDS = {
+    "fragrance", "perfume", "perfumes", "spray", "eau", "de", "parfum",
+    "toilette", "edp", "edt", "vaporisateur", "unisex", "for", "men", "women",
+    "pour", "homme", "femme", "set", "gift", "coffret", "natural"
+}
+
+
+def is_perfume_set(name, info=None):
+    if not name and not info:
+        return False
+    info = info or {}
+    if info.get("isSet") or info.get("category") == "sets" or info.get("categorySlug") == "sets":
+        return True
+    text = f"{name or ''} {info.get('title') or ''} {info.get('volume') or ''} {info.get('category') or ''}".lower()
+    return bool(
+        re.search(
+            r"\b(set|gift\s*set|fragrance\s*set|perfume\s*set|discovery\s*set|travel\s*set|coffret|pack\s+of\s+\d+|\d+\s*pcs?|\d+\s*pieces?|\d+\s*in\s*1|набор|сет)\b",
+            text,
+            re.IGNORECASE,
+        )
+        or re.search(r"\+\s*\d+(\.\d+)?\s*ml\b", text, re.IGNORECASE)
+        or re.search(r"\b\d+\s*[x×]\s*\d+(\.\d+)?\s*ml\b", text, re.IGNORECASE)
+        or re.search(r"\b\d+\s*ml\s+(shower\s*gel|body\s*lotion|body\s*milk|after\s*shave|deo|deodorant)\b", text, re.IGNORECASE)
+    )
+
+
+def clean_product_name_for_search(name, brand=""):
+    clean = name or ""
+    if brand:
+        clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
+    clean = re.sub(
+        r"\b(eau de parfum|eau de toilette|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|natural spray)\b",
+        "",
+        clean,
+        flags=re.IGNORECASE,
+    )
+    clean = re.sub(r"\b(\d+\s*ml|\d+(\.\d+)?\s*fl\.?\s*oz)\b", "", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"[^\w\s-]", " ", clean)
+    clean = re.sub(r"\s+", " ", clean).strip()
+    return clean
+
+
+def search_official_studio_image(name, brand="", is_set=False):
+    brand_key = (brand or "").lower().strip()
+    domains = []
+    for k, d_list in BRAND_DOMAINS.items():
+        if k in brand_key or brand_key in k:
+            domains.extend(d_list)
+            break
+    if not domains:
+        return None
+
+    cleaned = clean_product_name_for_search(name, brand)
+    queries = []
+    if is_set:
+        base_no_set = re.sub(r"\b(set|gift set|coffret|набор)\b", "", cleaned, flags=re.IGNORECASE).strip()
+        queries.append(f"{base_no_set} Gift Set")
+        queries.append(f"{base_no_set} Set")
+        queries.append(base_no_set)
+    else:
+        queries.append(cleaned)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    clean_tokens = set(re.findall(r"[a-z0-9]+", cleaned.lower())) - GENERIC_STOPWORDS
+
+    for domain in domains:
+        for q in queries:
+            try:
+                url = f"https://{domain}/search/suggest.json?q={urllib.parse.quote(q)}&resources[type]=product"
+                resp = requests.get(url, headers=headers, timeout=6)
+                if not resp.ok:
+                    continue
+                data = resp.json()
+                products = data.get("resources", {}).get("results", {}).get("products", [])
+                for p in products:
+                    title = p.get("title", "")
+                    title_lower = title.lower()
+                    p_is_set = bool(re.search(r"\b(set|gift|coffret|collection|travel)\b", title_lower))
+
+                    # If searching for set, only accept set results!
+                    if is_set and not p_is_set:
+                        continue
+                    # If searching for individual bottle, reject sets
+                    if not is_set and p_is_set:
+                        continue
+
+                    title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
+                    if clean_tokens and (clean_tokens.issubset(title_tokens) or len(clean_tokens & title_tokens) >= max(1, len(clean_tokens) * 0.7)):
+                        img_url = p.get("image") or p.get("featured_image", {}).get("url")
+                        if not img_url:
+                            continue
+                        if img_url.startswith("//"):
+                            img_url = "https:" + img_url
+
+                        page_url = p.get("url", "")
+                        if page_url and page_url.startswith("/"):
+                            page_url = f"https://{domain}{page_url}"
+
+                        return {
+                            "imageUrl": img_url,
+                            "sourceUrl": page_url or img_url,
+                            "sourceName": f"{brand or 'Official'} ({domain})",
+                            "sourceType": "official_studio",
+                            "title": title,
+                        }
+            except Exception:
+                pass
+    return None
+
+
 def make_session():
     session = requests.Session()
     session.headers.update({
@@ -2188,16 +2320,60 @@ def process_product(
         if re.search(r"\b(bracelet|necklace|ring|earring|jewelry|watch|handbag|wallet|belt|shoes|dress|sunglasses|браслет|колье|ожерелье|кольцо|серьги|бижутерия|часы|сумка|кошелек|ремень)\b", item_title, re.IGNORECASE):
             raise ValueError(f"Товар не является парфюмерией (обнаружен непарфюмерный товар / аксессуар): {row.get('name')}")
 
-        source_response = requests.get(
-            product_source(row),
-            headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
-            timeout=(15, 60),
-            stream=True,
+        # Detect whether product is a fragrance set / gift set
+        is_set = is_perfume_set(row.get("name") or "", info)
+
+        # Requirement: Search for high-res official studio photo FIRST (even for sets!)
+        studio_asset = search_official_studio_image(
+            row.get("name") or "",
+            row.get("brand") or "",
+            is_set=is_set,
         )
-        if not source_response.ok:
-            raise RuntimeError(
-                f"Qogita image fetch failed ({source_response.status_code})"
+
+        source_response = None
+        source_url = None
+        source_name = None
+        source_type = None
+
+        if studio_asset and studio_asset.get("imageUrl"):
+            fetch_url = studio_asset["imageUrl"]
+            print(f"[{row['id']}] Found official studio image ({studio_asset.get('title')}): {fetch_url}", flush=True)
+            try:
+                resp = requests.get(
+                    fetch_url,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    },
+                    timeout=(15, 60),
+                    stream=True,
+                )
+                if resp.ok:
+                    source_response = resp
+                    source_url = studio_asset["sourceUrl"]
+                    source_name = studio_asset["sourceName"]
+                    source_type = "official_studio"
+                else:
+                    print(f"[{row['id']}] Studio fetch HTTP {resp.status_code}, falling back to catalog...", flush=True)
+            except Exception as e:
+                print(f"[{row['id']}] Studio fetch error ({e}), falling back to catalog...", flush=True)
+
+        if not source_response:
+            raw_url = product_source(row)
+            if not raw_url:
+                raise ValueError("No valid catalog photo found and no official studio photo found")
+            source_response = requests.get(
+                raw_url,
+                headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
+                timeout=(15, 60),
+                stream=True,
             )
+            if not source_response.ok:
+                raise RuntimeError(
+                    f"Qogita image fetch failed ({source_response.status_code})"
+                )
+            source_url = raw_url
+            source_name = "Qogita Wholesale Catalog"
+            source_type = "qogita_set" if is_set else "qogita_catalog"
         source_buffer = io.BytesIO()
         for chunk in source_response.iter_content(chunk_size=64 * 1024):
             source_buffer.write(chunk)
@@ -2316,6 +2492,10 @@ def process_product(
             "status": new_status,
             "completedAt": utc_now().isoformat() if publish_immediate else job.get("completedAt"),
             "imageUrl": image_url,
+            "sourceUrl": source_url,
+            "sourceName": source_name,
+            "sourceType": source_type,
+            "isSet": is_set,
             "aiModel": "upscayl_vulkan_gpu" if local_gpu else ("rmbg_1.4_local" if not has_active_account else MODEL_ID),
             "apiCost": "$0.00" if (local_gpu or not has_active_account) else "unknown",
             "width": original_size[0] if has_active_account and original_size else 1024,
@@ -2336,10 +2516,13 @@ def process_product(
             "sharpness": sharpness_val if sharpness_val is not None else source_quality.get("sharpness"),
             "qualityStatus": source_quality.get("qualityStatus", "ok"),
             "sourceImageId": hashlib.sha256(
-                (product_source(row) or "").encode("utf-8")
+                (source_url or product_source(row) or "").encode("utf-8")
             ).hexdigest()[:16],
         })
         info[job_key] = job
+        info["imageSourceUrl"] = source_url
+        info["imageSourceName"] = source_name
+        info["imageSourceType"] = source_type
         if publish_immediate:
             info["image"] = image_url
         if account_pool and getattr(account_pool, "persist_quotas", False):

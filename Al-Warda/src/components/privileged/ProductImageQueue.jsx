@@ -378,6 +378,55 @@ function GalleryImageItem({
       </strong>
       {image.brand && <span>{image.brand}</span>}
       {(() => {
+        const sourceUrl =
+          image.sourceUrl ||
+          image.info?.imageGeneration?.sourceUrl ||
+          image.info?.imageSourceUrl ||
+          image.rawImage ||
+          image.info?.rawImage ||
+          null;
+        if (!sourceUrl) return null;
+        let sourceLabel =
+          image.sourceName ||
+          image.info?.imageGeneration?.sourceName ||
+          image.info?.imageSourceName ||
+          null;
+        if (!sourceLabel) {
+          if (sourceUrl.includes("qogita")) {
+            sourceLabel = "Qogita";
+          } else if (sourceUrl.includes("afnan")) {
+            sourceLabel = "Afnan Official";
+          } else if (sourceUrl.includes("lattafa")) {
+            sourceLabel = "Lattafa Official";
+          } else {
+            try {
+              const u = new URL(sourceUrl);
+              sourceLabel = u.hostname.replace(/^www\./, "");
+            } catch {
+              sourceLabel = isRussian ? "Источник фото" : "Photo source";
+            }
+          }
+        }
+        return (
+          <div className="product-image-queue__source-badge">
+            <span className="product-image-queue__source-label">
+              {isRussian ? "Источник:" : "Source:"}
+            </span>{" "}
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="product-image-queue__source-link"
+              title={isRussian ? `Перейти к источнику фото (${sourceUrl})` : `Open photo source (${sourceUrl})`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <i className="ri-external-link-line" />
+              <span>{sourceLabel}</span>
+            </a>
+          </div>
+        );
+      })()}
+      {(() => {
         const timestamp =
           image.completedAt ||
           image.info?.imageGeneration?.completedAt ||

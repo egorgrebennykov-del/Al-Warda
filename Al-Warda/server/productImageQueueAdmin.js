@@ -577,6 +577,27 @@ export async function getProductImageQueueStatus(request, env) {
                 : typeof row.image === "string"
                   ? row.image
                   : null,
+            sourceUrl:
+              job.sourceUrl ||
+              info.imageSourceUrl ||
+              info.sourceUrl ||
+              (typeof info.rawImage === "string" ? info.rawImage : null) ||
+              row.image ||
+              null,
+            sourceName:
+              job.sourceName ||
+              info.imageSourceName ||
+              (info.rawImage?.includes("qogita")
+                ? "Qogita Wholesale Catalog"
+                : row.brand
+                  ? `${row.brand} Official`
+                  : "Каталог поставщика"),
+            sourceType:
+              job.sourceType ||
+              info.imageSourceType ||
+              (job.sourceUrl?.includes("qogita") || info.rawImage?.includes("qogita")
+                ? "qogita"
+                : "official_studio"),
             info,
             completedAt,
           });

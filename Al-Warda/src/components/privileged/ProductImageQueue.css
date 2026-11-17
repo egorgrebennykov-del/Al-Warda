@@ -932,6 +932,42 @@
   font-size: 0.875rem;
 }
 
+.product-image-queue__source-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.25;
+}
+
+.product-image-queue__source-label {
+  color: #8c8273 !important;
+  font-size: 0.775rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.product-image-queue__source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #c9933b;
+  text-decoration: none;
+  font-weight: 500;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.product-image-queue__source-link:hover {
+  color: #e5b25d;
+  text-decoration: underline;
+}
+
 .product-image-queue__quota {
   flex-wrap: wrap;
 }

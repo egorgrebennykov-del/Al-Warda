@@ -526,6 +526,46 @@ export default function BookDetails() {
                   />
                 </div>
               </div>
+
+              {/* Photo Source Link */}
+              {(() => {
+                const sourceUrl =
+                  perfume?.sourceUrl ||
+                  perfume?.info?.imageGeneration?.sourceUrl ||
+                  perfume?.info?.imageSourceUrl ||
+                  perfume?.info?.rawImage ||
+                  perfume?.rawImage ||
+                  (perfume?.image && !perfume.image.startsWith("/assets/") ? perfume.image : null);
+                if (!sourceUrl) return null;
+                const sourceLabel =
+                  perfume?.sourceName ||
+                  perfume?.info?.imageGeneration?.sourceName ||
+                  perfume?.info?.imageSourceName ||
+                  (sourceUrl.includes("qogita")
+                    ? "Qogita"
+                    : sourceUrl.includes("afnan")
+                      ? "Afnan Official"
+                      : sourceUrl.includes("lattafa")
+                        ? "Lattafa Official"
+                        : (isRussian ? "Источник фото" : "Photo source"));
+                return (
+                  <div className="warda-details-photo-source">
+                    <span className="warda-details-photo-source__label">
+                      {isRussian ? "Источник фото:" : "Photo source:"}
+                    </span>{" "}
+                    <a
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="warda-details-photo-source__link"
+                      title={isRussian ? "Перейти к источнику фотографии" : "Open photo source"}
+                    >
+                      <span>{sourceLabel}</span>
+                      <i className="ri-external-link-line" />
+                    </a>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

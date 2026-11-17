@@ -1213,3 +1213,41 @@
   }
 }
 
+.warda-details-photo-source {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+
+.warda-details-photo-source__label {
+  color: #8c8273;
+  font-size: 0.775rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.warda-details-photo-source__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #d4af37;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.warda-details-photo-source__link:hover {
+  color: #f7ede2;
+  background: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.4);
+  text-decoration: none;
+}
+
