@@ -1763,17 +1763,38 @@ export default function Featured() {
                     )}
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
+                    <div className="warda-perfume-card__processing" aria-hidden="true">
+                      <span className="warda-perfume-card__processing-ring" />
+                    </div>
                     <img
                       src={bustProductImageCache(perfume.image)}
                       alt={perfume.name}
                       className="warda-perfume-card__img"
                       loading="lazy"
                       decoding="async"
-                      onError={(e) => {
-                        const card = e.currentTarget.closest(
-                          ".warda-perfume-card",
+                      onLoad={(e) => {
+                        const media = e.currentTarget.closest(
+                          ".warda-perfume-card__media",
                         );
-                        if (card) card.style.display = "none";
+                        if (media) media.classList.remove("is-processing-photo");
+                        e.currentTarget.style.opacity = "1";
+                      }}
+                      onError={(e) => {
+                        const imgEl = e.currentTarget;
+                        const cleanPath = String(perfume.image || "").split("?")[0];
+                        if (
+                          !imgEl.dataset.triedGh &&
+                          cleanPath.startsWith("/assets/img/generated-products/")
+                        ) {
+                          imgEl.dataset.triedGh = "1";
+                          imgEl.src = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPath.replace(/\.webp$/, ".png")}`;
+                          return;
+                        }
+                        imgEl.style.opacity = "0";
+                        const media = imgEl.closest(
+                          ".warda-perfume-card__media",
+                        );
+                        if (media) media.classList.add("is-processing-photo");
                       }}
                     />
                   </div>

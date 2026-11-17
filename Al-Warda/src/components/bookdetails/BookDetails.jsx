@@ -32,39 +32,45 @@ function bustImageCache(url) {
   return `${clean}?v=cutout-clean-v12`;
 }
 
-function getPerfumeImageSources(perfume) {
+function getPerfumeImageSources(perfume, retryTick = 0) {
   if (!perfume) return [];
-  const rawPrimary = perfume.image || perfume.imageUrl;
+  const rawPrimary =
+    perfume.image ||
+    perfume.imageUrl ||
+    perfume.info?.imageGeneration?.imageUrl ||
+    "";
+  // Never fall back to unprocessed raw supplier photos with white backgrounds
+  if (
+    !rawPrimary ||
+    typeof rawPrimary !== "string" ||
+    !rawPrimary.includes("/generated-products/")
+  ) {
+    return [];
+  }
   const primary = bustImageCache(rawPrimary);
-  const cleanPrimary = typeof primary === "string" ? primary.split("?")[0] : "";
+  const cleanPrimary = primary.split("?")[0];
+  const retryParam = retryTick > 0 ? `&r=${retryTick}` : "";
+  const ghRetryParam = retryTick > 0 ? `?r=${retryTick}` : "";
   const rawGhUrl =
-    typeof cleanPrimary === "string" &&
     /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.(png|webp)$/.test(cleanPrimary)
-      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPrimary.replace(/\.webp$/, ".png")}`
+      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPrimary.replace(/\.webp$/, ".png")}${ghRetryParam}`
       : null;
-  const webpUrl =
-    typeof cleanPrimary === "string" && cleanPrimary.endsWith(".png")
-      ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=cutout-clean-v10`
-      : null;
-  const pngUrl =
-    typeof cleanPrimary === "string" && cleanPrimary.endsWith(".webp")
-      ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=cutout-clean-v10`
-      : null;
-  const rawGhWebpUrl = rawGhUrl ? rawGhUrl.replace(/\.png$/, ".webp") : null;
-  const fallback =
-    perfume.rawImage ||
-    perfume.info?.rawImage ||
-    perfume.raw_image_url ||
-    perfume.source_image_url ||
-    null;
+  const webpUrl = cleanPrimary.endsWith(".png")
+    ? `${cleanPrimary.replace(/\.png$/, ".webp")}?v=cutout-clean-v12${retryParam}`
+    : null;
+  const pngUrl = cleanPrimary.endsWith(".webp")
+    ? `${cleanPrimary.replace(/\.webp$/, ".png")}?v=cutout-clean-v12${retryParam}`
+    : null;
+  const rawGhWebpUrl = rawGhUrl
+    ? rawGhUrl.replace(/\.png(\?.*)?$/, `.webp${ghRetryParam}`)
+    : null;
 
   return [
-    primary,
+    `${primary}${retryParam}`,
     webpUrl,
     pngUrl,
     rawGhUrl,
     rawGhWebpUrl,
-    fallback,
   ].filter(Boolean);
 }
 
@@ -92,17 +98,34 @@ export default function BookDetails() {
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
   const [imgSourceIndex, setImgSourceIndex] = useState(0);
+  const [imgRetryTick, setImgRetryTick] = useState(0);
+  const [flaconLoaded, setFlaconLoaded] = useState(false);
+  const [allSourcesExhausted, setAllSourcesExhausted] = useState(false);
   const [flaconBottomPadPx, setFlaconBottomPadPx] = useState(36);
   const imageSources = useMemo(
-    () => getPerfumeImageSources(perfume),
-    [perfume],
+    () => getPerfumeImageSources(perfume, imgRetryTick),
+    [perfume, imgRetryTick],
   );
 
   useEffect(() => {
     setSelectedVolume("full");
     setImgSourceIndex(0);
+    setImgRetryTick(0);
+    setFlaconLoaded(false);
+    setAllSourcesExhausted(false);
     setFlaconBottomPadPx(36);
   }, [perfume]);
+
+  useEffect(() => {
+    if (!perfume) return undefined;
+    if (!allSourcesExhausted && imageSources.length > 0) return undefined;
+    const timer = setTimeout(() => {
+      setImgSourceIndex(0);
+      setAllSourcesExhausted(false);
+      setImgRetryTick((prev) => prev + 1);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [perfume, allSourcesExhausted, imageSources.length]);
 
   const handleFlaconImgLoad = (e) => {
     const img = e.currentTarget;
@@ -117,6 +140,16 @@ export default function BookDetails() {
       if (ctx) {
         ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
         const { data } = ctx.getImageData(0, 0, sampleSize, sampleSize);
+        // Reject images that still have an opaque rectangular background at all 4 corners
+        const c1 = data[3];
+        const c2 = data[(sampleSize - 1) * 4 + 3];
+        const c3 = data[(sampleSize - 1) * sampleSize * 4 + 3];
+        const c4 = data[((sampleSize - 1) * sampleSize + (sampleSize - 1)) * 4 + 3];
+        if (c1 > 240 && c2 > 240 && c3 > 240 && c4 > 240) {
+          setFlaconLoaded(false);
+          setAllSourcesExhausted(true);
+          return;
+        }
         let lastRow = sampleSize - 1;
         outer: for (let y = sampleSize - 1; y >= 0; y--) {
           for (let x = 0; x < sampleSize; x++) {
@@ -135,24 +168,22 @@ export default function BookDetails() {
       // Keep default ratio if canvas read is blocked
     }
     setFlaconBottomPadPx(Math.round(renderedH * bottomPadRatio));
+    setFlaconLoaded(true);
+    setAllSourcesExhausted(false);
   };
 
-  const activeImageSrc =
-    imageSources[imgSourceIndex] ||
-    perfume?.image ||
-    perfume?.imageUrl ||
-    perfume?.rawImage ||
-    "";
+  const activeImageSrc = imageSources[imgSourceIndex] || "";
 
   const isGeneratedCutout =
     typeof activeImageSrc === "string" &&
     activeImageSrc.includes("/generated-products/");
 
-  const handleFlaconImgError = (e) => {
+  const handleFlaconImgError = () => {
     if (imgSourceIndex + 1 < imageSources.length) {
       setImgSourceIndex((prev) => prev + 1);
     } else {
-      e.currentTarget.hidden = true;
+      setFlaconLoaded(false);
+      setAllSourcesExhausted(true);
     }
   };
 
@@ -560,42 +591,72 @@ export default function BookDetails() {
                     aria-hidden="true"
                   />
 
-                  {/* Flacon Image */}
+                  {/* Flacon Image or Processing Loader */}
                   <div className="warda-details-photo">
-                    <img
-                      src={activeImageSrc || perfume?.image}
-                      alt={perfume.name}
-                      className="warda-details-img"
-                      style={{
-                        transformOrigin: "center center",
-                      }}
-                      loading="eager"
-                      decoding="async"
-                      onLoad={handleFlaconImgLoad}
-                      onError={handleFlaconImgError}
-                    />
+                    {(!flaconLoaded || allSourcesExhausted || !activeImageSrc) && (
+                      <div
+                        className="warda-flacon-processing-loader"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <div className="warda-flacon-processing-spinner">
+                          <span className="warda-flacon-processing-ring warda-flacon-processing-ring--outer" />
+                          <span className="warda-flacon-processing-ring warda-flacon-processing-ring--inner" />
+                          <i className="ri-sparkling-2-line warda-flacon-processing-icon" />
+                        </div>
+                        <span className="warda-flacon-processing-title">
+                          {isRussian
+                            ? "Обработка студийного фото..."
+                            : "Processing studio photo..."}
+                        </span>
+                        <span className="warda-flacon-processing-subtitle">
+                          {isRussian
+                            ? "Удаление фона и цветокоррекция"
+                            : "Removing background & color grading"}
+                        </span>
+                      </div>
+                    )}
+                    {activeImageSrc && !allSourcesExhausted && (
+                      <img
+                        src={activeImageSrc}
+                        alt={perfume.name}
+                        className="warda-details-img"
+                        style={{
+                          transformOrigin: "center center",
+                          opacity: flaconLoaded ? 1 : 0,
+                        }}
+                        loading="eager"
+                        decoding="async"
+                        onLoad={handleFlaconImgLoad}
+                        onError={handleFlaconImgError}
+                      />
+                    )}
                   </div>
 
                   {/* Contact Shadow at the Flacon Base */}
-                  <div
-                    className="warda-stage-contact-shadow"
-                    style={{
-                      marginTop: `${-flaconBottomPadPx - 5}px`,
-                    }}
-                    aria-hidden="true"
-                  />
+                  {flaconLoaded && !allSourcesExhausted && activeImageSrc && (
+                    <div
+                      className="warda-stage-contact-shadow"
+                      style={{
+                        marginTop: `${-flaconBottomPadPx - 5}px`,
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
 
                   {/* Optical Mirror Reflection at the Bottom */}
-                  <div className="warda-stage-reflection-container" aria-hidden="true">
-                    <img
-                      src={activeImageSrc || perfume?.image}
-                      alt=""
-                      className="warda-stage-reflection-img"
-                      style={{
-                        marginTop: `${-flaconBottomPadPx}px`,
-                      }}
-                    />
-                  </div>
+                  {flaconLoaded && !allSourcesExhausted && activeImageSrc && (
+                    <div className="warda-stage-reflection-container" aria-hidden="true">
+                      <img
+                        src={activeImageSrc}
+                        alt=""
+                        className="warda-stage-reflection-img"
+                        style={{
+                          marginTop: `${-flaconBottomPadPx}px`,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
