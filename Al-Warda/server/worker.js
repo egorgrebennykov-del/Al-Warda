@@ -13,6 +13,7 @@ import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
   requeueFailedProductItems,
+  markProductItemsFailed,
   saveManualProductItem,
   getAllAdminProducts,
   deleteAdminProducts,
@@ -379,6 +380,12 @@ export default {
         pathname === "/api/admin/product-images/requeue"
       ) {
         return requeueFailedProductItems(request, env);
+      }
+      if (
+        method === "POST" &&
+        pathname === "/api/admin/product-images/mark-failed"
+      ) {
+        return markProductItemsFailed(request, env);
       }
       if (
         method === "POST" &&

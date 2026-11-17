@@ -602,7 +602,9 @@ export async function getProductImageQueueStatus(request, env) {
             completedAt,
           });
         }
-        if (!hasRawImage(info)) continue;
+        const isExplicitFailed =
+          job.status === "failed" || replacementJob.status === "failed";
+        if (!hasRawImage(info) && !isExplicitFailed) continue;
         eligible++;
         const status =
           job.status === "publishing"
@@ -624,7 +626,12 @@ export async function getProductImageQueueStatus(request, env) {
               Number(row.price) || (info.price ? Number(info.price) : 29.99),
             currency: row.currency || info.currency || "EUR",
             image: row.image || null,
-            rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+            rawImage:
+              (typeof info.rawImage === "string" && info.rawImage) ||
+              (typeof activeFail.previousImageUrl === "string" &&
+                activeFail.previousImageUrl) ||
+              (typeof row.image === "string" && row.image) ||
+              null,
             info,
             error:
               typeof activeFail.error === "string" && activeFail.error.trim()
@@ -799,6 +806,103 @@ export async function requeueFailedProductItems(request, env) {
     }
     return json(
       { error: error.message || "Could not requeue failed items" },
+      500,
+    );
+  }
+}
+
+export async function markProductItemsFailed(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+    const rawIds = Array.isArray(body?.ids)
+      ? body.ids
+      : body?.id !== undefined && body?.id !== null
+        ? [body.id]
+        : null;
+    const parsed = parseIds({ ids: rawIds });
+    if (!parsed)
+      return json({ error: "Select at least one product ID" }, 400);
+    if (parsed.error) return json({ error: parsed.error }, 400);
+
+    const customReason =
+      typeof body?.reason === "string" && body.reason.trim()
+        ? body.reason.trim()
+        : "Перенесено в ошибки вручную администратором";
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    };
+    const nowIso = new Date().toISOString();
+    let failedCount = 0;
+
+    for (let i = 0; i < parsed.ids.length; i += 200) {
+      const chunk = parsed.ids.slice(i, i + 200);
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("select", "id,image,info");
+      url.searchParams.set("id", `in.(${chunk.join(",")})`);
+      const result = await supabaseFetch(env, url, { headers });
+      if (!result.ok) {
+        throw new Error(`Could not load items (${result.status})`);
+      }
+      const rows = await result.json();
+      for (const row of rows) {
+        const info =
+          row.info && typeof row.info === "object" ? { ...row.info } : {};
+        const prevJob =
+          info.imageGeneration && typeof info.imageGeneration === "object"
+            ? { ...info.imageGeneration }
+            : {};
+        const prevImg = row.image || prevJob.imageUrl || null;
+        info.imageGeneration = {
+          ...prevJob,
+          status: "failed",
+          failed: true,
+          manualFailed: true,
+          previousImageUrl: prevImg || prevJob.previousImageUrl || null,
+          error: customReason,
+          failedAt: nowIso,
+          updatedAt: nowIso,
+        };
+        delete info.imageGenerationReplacement;
+
+        const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+        patchUrl.searchParams.set("id", `eq.${row.id}`);
+        const patch = await supabaseFetch(env, patchUrl, {
+          method: "PATCH",
+          headers: { ...headers, Prefer: "return=minimal" },
+          body: JSON.stringify({ image: "", info }),
+        });
+        if (!patch.ok) {
+          const details = (await patch.text()).slice(0, 300);
+          throw new Error(
+            `Could not mark item ${row.id} as failed (${patch.status}): ${details}`,
+          );
+        }
+        failedCount++;
+      }
+    }
+    invalidateProductImageQueueCache();
+    return json({ ok: true, failedCount, ids: parsed.ids });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
+    }
+    return json(
+      { error: error.message || "Could not mark items as failed" },
       500,
     );
   }

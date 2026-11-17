@@ -266,6 +266,110 @@ export default function ProductsManager({ language = "ru" }) {
     }
   };
 
+  const handleMarkFailed = async (product) => {
+    const approved = await confirm({
+      title: isRussian ? "Перенести товар в ошибки" : "Move Product to Errors",
+      message: isRussian
+        ? `Перенести товар «${product.name || `ID #${product.id}`}» в список ошибок генерации? Он скроется с витрины и появится во вкладке «Генерация фото → Список ошибок генерации».`
+        : `Move "${product.name || `ID #${product.id}`}" to the failed generation list?`,
+    });
+    if (!approved) return;
+
+    setDeletingId(product.id);
+    setMessage("");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/product-images/mark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [String(product.id)] }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      setProducts((prev) =>
+        prev.map((p) =>
+          String(p.id) === String(product.id)
+            ? { ...p, status: "failed", image: null }
+            : p,
+        ),
+      );
+      setMessage(
+        isRussian
+          ? `Товар «${product.name}» (ID #${product.id}) перенесён в список ошибок.`
+          : `Product "${product.name}" (ID #${product.id}) moved to failed list.`,
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          (isRussian
+            ? "Не удалось перенести товар в ошибки"
+            : "Failed to move product to errors"),
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleMarkFailedBulk = async () => {
+    const ids = Object.keys(selectedIds);
+    if (!ids.length) {
+      alert({
+        title: isRussian ? "Ничего не выбрано" : "No products selected",
+        message: isRussian
+          ? "Пожалуйста, выберите нужные товары галочками на карточках."
+          : "Please select products using checkboxes on cards.",
+      });
+      return;
+    }
+    const approved = await confirm({
+      title: isRussian ? "Перенести товары в ошибки" : "Move Products to Errors",
+      message: isRussian
+        ? `Перенести ${ids.length} выбранных товаров в список ошибок генерации?`
+        : `Move ${ids.length} selected products to the failed generation list?`,
+    });
+    if (!approved) return;
+
+    setDeletingBulk(true);
+    setMessage("");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/product-images/mark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      const idSet = new Set(ids.map(String));
+      setProducts((prev) =>
+        prev.map((p) =>
+          idSet.has(String(p.id)) ? { ...p, status: "failed", image: null } : p,
+        ),
+      );
+      setSelectedIds({});
+      setMessage(
+        isRussian
+          ? `Перенесено товаров в список ошибок: ${data.failedCount ?? ids.length}.`
+          : `Moved ${data.failedCount ?? ids.length} products to failed list.`,
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          (isRussian
+            ? "Не удалось перенести товары в ошибки"
+            : "Failed to move products to errors"),
+      );
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
   const handleSaved = (result) => {
     setEditingProduct(null);
     setMessage(
@@ -367,6 +471,26 @@ export default function ProductsManager({ language = "ru" }) {
                   : isRussian
                     ? "Удалить выбранные товары"
                     : "Delete selected products"}
+              </button>
+              <button
+                type="button"
+                className="products-manager__fail-bulk-btn"
+                disabled={deletingBulk}
+                onClick={handleMarkFailedBulk}
+                title={
+                  isRussian
+                    ? "Перенести выбранные товары в список ошибок генерации"
+                    : "Move selected products to failed list"
+                }
+              >
+                <i className="ri-error-warning-line" />
+                {Object.keys(selectedIds).length > 0
+                  ? isRussian
+                    ? `В ошибки (${Object.keys(selectedIds).length})`
+                    : `To errors (${Object.keys(selectedIds).length})`
+                  : isRussian
+                    ? "В ошибки выбранные"
+                    : "Move selected to errors"}
               </button>
             </>
           )}
@@ -690,6 +814,23 @@ export default function ProductsManager({ language = "ru" }) {
                     >
                       <i className="ri-edit-2-line" />
                       {isRussian ? "Редактировать" : "Edit"}
+                    </button>
+                    <button
+                      type="button"
+                      className="products-manager__fail-btn"
+                      onClick={() => handleMarkFailed(p)}
+                      disabled={isDeleting || p.status === "failed"}
+                      title={
+                        p.status === "failed"
+                          ? isRussian
+                            ? "Товар уже в списке ошибок"
+                            : "Already in failed list"
+                          : isRussian
+                            ? "Перенести товар в список ошибок"
+                            : "Move product to failed list"
+                      }
+                    >
+                      <i className="ri-error-warning-line" />
                     </button>
                     <button
                       type="button"

@@ -4,6 +4,7 @@ import {
   getProductImageQueueStatus,
   deleteFailedProductItems,
   requeueFailedProductItems,
+  markProductItemsFailed,
   saveManualProductItem,
   getAllAdminProducts,
   deleteAdminProducts,
@@ -318,6 +319,54 @@ describe("product image queue admin API", () => {
     assert.equal(res.status, 200);
     assert.equal((await res.json()).requeuedCount, 1);
     assert.deepEqual(patched, [{ status: "pending" }]);
+  });
+
+  it("allows privileged users to manually move products to failed list", async () => {
+    const patchedBodies = [];
+    globalThis.fetch = async (input, init = {}) => {
+      const url = new URL(input);
+      if (url.pathname.endsWith("/rest/v1/user"))
+        return Response.json([{ id: "admin-1", status: "privileged" }]);
+      if (init.method === "PATCH") {
+        patchedBodies.push(JSON.parse(init.body));
+        return new Response(null, { status: 204 });
+      }
+      return Response.json([
+        {
+          id: 4987,
+          image: "/assets/img/generated-products/abcd.png",
+          info: {
+            rawImage: "https://img.qogita.com/4987.jpg",
+            imageGeneration: {
+              status: "completed",
+              imageUrl: "/assets/img/generated-products/abcd.png",
+            },
+          },
+        },
+      ]);
+    };
+    const res = await markProductItemsFailed(
+      request("/api/admin/product-images/mark-failed", userCookie(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: ["4987"] }),
+      }),
+      {
+        SUPABASE_URL: "https://supabase.example",
+        SUPABASE_SERVICE_ROLE_KEY: "k",
+      },
+    );
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.failedCount, 1);
+    assert.equal(patchedBodies.length, 1);
+    assert.equal(patchedBodies[0].image, "");
+    assert.equal(patchedBodies[0].info.imageGeneration.status, "failed");
+    assert.equal(patchedBodies[0].info.imageGeneration.manualFailed, true);
+    assert.equal(
+      patchedBodies[0].info.imageGeneration.previousImageUrl,
+      "/assets/img/generated-products/abcd.png",
+    );
   });
 
   it("allows privileged users to manually configure a failed product, save it to DB, and mark completed", async () => {

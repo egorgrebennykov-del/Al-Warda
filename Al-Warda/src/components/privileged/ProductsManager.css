@@ -105,6 +105,33 @@
   cursor: not-allowed;
 }
 
+.products-manager__fail-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.05rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.products-manager__fail-bulk-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.26);
+  border-color: #f59e0b;
+  color: #fde68a;
+  transform: translateY(-1px);
+}
+
+.products-manager__fail-bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .products-manager__add-btn {
   display: inline-flex;
   align-items: center;
@@ -451,11 +478,37 @@
 
 .products-manager__card-actions {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
   padding: 0.75rem 1.05rem;
   border-top: 1px solid rgba(212, 175, 55, 0.12);
   background: rgba(14, 12, 10, 0.5);
+}
+
+.products-manager__fail-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.products-manager__fail-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: #f59e0b;
+  color: #fff;
+}
+
+.products-manager__fail-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .products-manager__edit-btn {

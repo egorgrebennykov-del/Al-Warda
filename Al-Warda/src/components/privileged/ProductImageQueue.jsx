@@ -171,6 +171,7 @@ function GalleryImageItem({
   refreshKey,
   onToggleSelect,
   onRequeue,
+  onMarkFailed,
   onManualConfig,
   onCompare,
 }) {
@@ -505,6 +506,19 @@ function GalleryImageItem({
           >
             <i className="ri-split-cells-horizontal" />
             {isRussian ? "Сравнить с оригиналом" : "Compare with original"}
+          </button>
+          <button
+            type="button"
+            className="product-image-queue__gallery-btn product-image-queue__gallery-btn--fail"
+            onClick={() => onMarkFailed?.(image.id)}
+            title={
+              isRussian
+                ? "Перенести этот товар в список ошибок"
+                : "Move this product to failed list"
+            }
+          >
+            <i className="ri-error-warning-line" />
+            {isRussian ? "В ошибки" : "To errors"}
           </button>
         </div>
       )}
@@ -1033,6 +1047,60 @@ export default function ProductImageQueue({
       setActionError(err.message);
     } finally {
       setDeletingFailed(false);
+      setBusy(false);
+    }
+  };
+
+  const markItemsAsFailed = async (explicitIds = null) => {
+    const ids = explicitIds
+      ? explicitIds.map(String)
+      : Object.keys(selectedImages);
+    if (!ids.length) return;
+    const approved = await confirm({
+      title: isRussian
+        ? "Перенести товары в список ошибок"
+        : "Move products to failed list",
+      message: isRussian
+        ? ids.length === 1
+          ? `Перенести товар #${ids[0]} в список ошибок генерации? Он скроется с витрины и появится в блоке «Список ошибок генерации» для ручной настройки, повторной генерации или удаления.`
+          : `Перенести выбранные товары (${ids.length} шт.) в список ошибок генерации? Они скроются с витрины и появятся в блоке «Список ошибок генерации».`
+        : `Move ${ids.length} selected product(s) to the failed generation list?`,
+    });
+    if (!approved) return;
+
+    setBusy(true);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch("/api/admin/product-images/mark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(
+          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+        );
+      }
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || `HTTP ${response.status}`);
+      }
+      setSelectedImages((current) => {
+        const next = { ...current };
+        for (const id of ids) delete next[String(id)];
+        return next;
+      });
+      setActionMessage(
+        isRussian
+          ? `Перенесено в список ошибок: ${payload.failedCount ?? ids.length}.`
+          : `Moved to failed list: ${payload.failedCount ?? ids.length}.`,
+      );
+      await loadStatus({ force: true });
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
       setBusy(false);
     }
   };
@@ -2244,6 +2312,33 @@ export default function ProductImageQueue({
                     {isRussian ? "Удалить выбранные" : "Delete selected"} (
                     {Object.keys(selectedImages).length})
                   </button>
+                  <button
+                    type="button"
+                    className="product-image-queue__start product-image-queue__start--warning"
+                    disabled={busy || deleting}
+                    onClick={() => {
+                      const ids = Object.keys(selectedImages);
+                      if (ids.length === 0) {
+                        alert({
+                          title: isRussian ? "Ничего не выбрано" : "No images selected",
+                          message: isRussian
+                            ? "Пожалуйста, выберите нужные товары галочками на карточках ниже."
+                            : "Please select products with checkboxes on the cards below.",
+                        });
+                      } else {
+                        markItemsAsFailed(ids);
+                      }
+                    }}
+                    title={
+                      isRussian
+                        ? "Перенести выбранные товары в список ошибок генерации"
+                        : "Move selected products to failed generation list"
+                    }
+                  >
+                    <i className="ri-error-warning-line" />
+                    {isRussian ? "В ошибки выбранные" : "Move selected to errors"} (
+                    {Object.keys(selectedImages).length})
+                  </button>
                   <div className="product-image-queue__danger-zone-wrapper">
                     <span className="product-image-queue__danger-zone-badge">
                       <i className="ri-alarm-warning-fill" />
@@ -2306,6 +2401,7 @@ export default function ProductImageQueue({
                         });
                       }}
                       onRequeue={(id) => requeueFailed([id])}
+                      onMarkFailed={(id) => markItemsAsFailed([id])}
                       onManualConfig={(item) => setManualConfigItem(item)}
                       onCompare={(item) => setCompareItem(item)}
                     />

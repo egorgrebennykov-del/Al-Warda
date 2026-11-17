@@ -103,6 +103,8 @@ export default function BookDetails() {
   const [allSourcesExhausted, setAllSourcesExhausted] = useState(false);
   const [flaconBottomPadPct, setFlaconBottomPadPct] = useState(7.4);
   const [flaconScale, setFlaconScale] = useState(1);
+  const [markingFailed, setMarkingFailed] = useState(false);
+  const [markedFailedMsg, setMarkedFailedMsg] = useState("");
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume, imgRetryTick),
     [perfume, imgRetryTick],
@@ -116,7 +118,38 @@ export default function BookDetails() {
     setAllSourcesExhausted(false);
     setFlaconBottomPadPct(7.4);
     setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
+    setMarkedFailedMsg("");
   }, [perfume]);
+
+  const handleMoveProductToFailed = async () => {
+    if (!perfume?.id || markingFailed) return;
+    setMarkingFailed(true);
+    setMarkedFailedMsg("");
+    try {
+      const res = await fetch("/api/admin/product-images/mark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [String(perfume.id)] }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      setMarkedFailedMsg(
+        isRussian
+          ? "Товар перенесён в список ошибок"
+          : "Product moved to failed list",
+      );
+    } catch (err) {
+      setMarkedFailedMsg(
+        err.message ||
+          (isRussian ? "Ошибка переноса" : "Failed to move product"),
+      );
+    } finally {
+      setMarkingFailed(false);
+    }
+  };
 
   const reflectionCanvasRef = useRef(null);
 
@@ -871,8 +904,8 @@ export default function BookDetails() {
               </span>
             </div>
 
-            {/* PRIVILEGED ACCESS: DIRECT QOGITA WHOLESALE PRODUCT LINK */}
-            {isPriv && qogitaUrl && (
+            {/* PRIVILEGED ACCESS: DIRECT QOGITA WHOLESALE PRODUCT LINK & ADMIN CONTROLS */}
+            {isPriv && (
               <div className="warda-privileged-product-bar">
                 <div className="warda-privileged-product-info">
                   <span className="warda-privileged-icon-wrap">
@@ -890,22 +923,24 @@ export default function BookDetails() {
                       )}
                     </div>
                     <span className="warda-privileged-desc">
-                      {t("details.qogitaDirect")}
+                      {markedFailedMsg || t("details.qogitaDirect")}
                     </span>
                   </div>
                 </div>
 
                 <div className="warda-privileged-actions">
-                  <a
-                    href={qogitaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="warda-privileged-qogita-btn"
-                    title={t("details.qogitaView")}
-                  >
-                    <i className="ri-external-link-line" />
-                    <span>{t("details.qogitaView")}</span>
-                  </a>
+                  {qogitaUrl && (
+                    <a
+                      href={qogitaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="warda-privileged-qogita-btn"
+                      title={t("details.qogitaView")}
+                    >
+                      <i className="ri-external-link-line" />
+                      <span>{t("details.qogitaView")}</span>
+                    </a>
+                  )}
                   {perfumeGtin && (
                     <a
                       href={`https://www.qogita.com/account/catalog/?search=${encodeURIComponent(perfumeGtin)}`}
@@ -926,6 +961,36 @@ export default function BookDetails() {
                     <i className="ri-dashboard-3-line" />
                     <span>{t("details.qogitaWholesalePanel")}</span>
                   </Link>
+                  { /^\d+$/.test(String(perfume?.id || "")) && (
+                    <button
+                      type="button"
+                      className="warda-privileged-panel-btn warda-privileged-fail-btn"
+                      disabled={markingFailed}
+                      onClick={handleMoveProductToFailed}
+                      title={
+                        isRussian
+                          ? "Перенести этот товар в список ошибок генерации"
+                          : "Move this product to the failed generation list"
+                      }
+                    >
+                      <i
+                        className={
+                          markingFailed
+                            ? "ri-loader-4-line ri-spin"
+                            : "ri-error-warning-line"
+                        }
+                      />
+                      <span>
+                        {markingFailed
+                          ? isRussian
+                            ? "Перенос..."
+                            : "Moving..."
+                          : isRussian
+                            ? "В ошибки"
+                            : "Move to Errors"}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

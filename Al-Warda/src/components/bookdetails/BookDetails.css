@@ -1454,6 +1454,24 @@
   transform: translateY(-2px);
 }
 
+.warda-privileged-fail-btn {
+  cursor: pointer;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #fbbf24 !important;
+}
+
+.warda-privileged-fail-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.25) !important;
+  border-color: #f59e0b !important;
+  color: #fff !important;
+}
+
+.warda-privileged-fail-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .warda-privileged-top-badge {
     margin-left: 0;
