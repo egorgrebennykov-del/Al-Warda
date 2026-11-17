@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
 import {
   getPerfumeById,
@@ -118,6 +118,8 @@ export default function BookDetails() {
     setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
   }, [perfume]);
 
+  const reflectionCanvasRef = useRef(null);
+
   useEffect(() => {
     if (!perfume) return undefined;
     if (!allSourcesExhausted && imageSources.length > 0) return undefined;
@@ -131,10 +133,13 @@ export default function BookDetails() {
 
   const handleFlaconImgLoad = (e) => {
     const img = e.currentTarget;
+    const isSet = Boolean(perfume && isPerfumeSet(perfume));
     let bottomPadPct = 7.4;
-    let computedScale = perfume && isPerfumeSet(perfume) ? 1.38 : 1;
+    let computedScale = isSet ? 1.38 : 1;
     try {
-      const sampleSize = 256;
+      const sampleSize = 512;
+      const maxReflRows = 164;
+      const totalH = sampleSize + maxReflRows;
       const canvas = document.createElement("canvas");
       canvas.width = sampleSize;
       canvas.height = sampleSize;
@@ -157,9 +162,12 @@ export default function BookDetails() {
         let firstCol = sampleSize - 1;
         let lastCol = 0;
         let foundAny = false;
+        const yRaw = new Int32Array(sampleSize).fill(-1);
         for (let y = 0; y < sampleSize; y++) {
+          const rowOff = y * sampleSize * 4;
           for (let x = 0; x < sampleSize; x++) {
-            if (data[(y * sampleSize + x) * 4 + 3] > 25) {
+            const a = data[rowOff + x * 4 + 3];
+            if (a > 25) {
               if (!foundAny) {
                 firstRow = y;
                 foundAny = true;
@@ -167,19 +175,19 @@ export default function BookDetails() {
               lastRow = y;
               if (x < firstCol) firstCol = x;
               if (x > lastCol) lastCol = x;
+              if (a > 90) {
+                yRaw[x] = y;
+              }
             }
           }
         }
         if (foundAny) {
-          bottomPadPct = Math.max(
-            0,
-            Math.min(35, ((sampleSize - 1 - lastRow) / sampleSize) * 100),
-          );
           const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
           const aspect = fgW / fgH;
-          if (fgH < 0.78 || aspect > 1.05 || (perfume && isPerfumeSet(perfume))) {
-            const containerW = img.parentElement?.clientWidth || 586;
+          if (fgH < 0.78 || aspect > 1.05 || isSet) {
+            const photoEl = img.closest(".warda-details-photo");
+            const containerW = photoEl?.clientWidth || 586;
             const renderedW = img.offsetWidth || 420;
             const maxScaleW = (containerW * 0.92) / Math.max(1, renderedW * fgW);
             const maxScaleH = 0.88 / fgH;
@@ -189,6 +197,122 @@ export default function BookDetails() {
             );
           } else {
             computedScale = 1;
+          }
+
+          // Detect true floor-standing base contour vs. steep side walls / upper overhangs
+          const maxBaseRise = Math.round(sampleSize * (isSet ? 0.115 : 0.068));
+          const yPlane = new Float32Array(sampleSize).fill(lastRow);
+          const isBase = new Uint8Array(sampleSize);
+          for (let x = firstCol; x <= lastCol; x++) {
+            if (yRaw[x] < lastRow - maxBaseRise) continue;
+            const x1 = Math.max(firstCol, x - 4);
+            const x2 = Math.min(lastCol, x + 4);
+            if (yRaw[x1] >= 0 && yRaw[x2] >= 0 && x2 > x1) {
+              const slope = Math.abs(yRaw[x2] - yRaw[x1]) / (x2 - x1);
+              if (slope <= 0.42) {
+                isBase[x] = 1;
+                yPlane[x] = yRaw[x];
+              }
+            }
+          }
+          let lVal = lastRow;
+          for (let x = firstCol; x <= lastCol; x++) {
+            if (isBase[x]) lVal = yPlane[x];
+            else yPlane[x] = lVal;
+          }
+          let rVal = lastRow;
+          for (let x = lastCol; x >= firstCol; x--) {
+            if (isBase[x]) rVal = yPlane[x];
+            else if (rVal > yPlane[x]) yPlane[x] = rVal;
+          }
+          const yPlaneSmooth = new Int32Array(sampleSize).fill(lastRow);
+          const baseSamples = [];
+          for (let x = firstCol; x <= lastCol; x++) {
+            let sum = 0;
+            let cnt = 0;
+            for (let k = -3; k <= 3; k++) {
+              const xx = Math.min(lastCol, Math.max(firstCol, x + k));
+              sum += yPlane[xx];
+              cnt++;
+            }
+            const avg = sum / cnt;
+            yPlaneSmooth[x] = Math.round(
+              isBase[x] ? Math.min(yRaw[x], avg + 1.5) : avg,
+            );
+            if (isBase[x]) baseSamples.push(yPlaneSmooth[x]);
+          }
+          baseSamples.sort((a, b) => a - b);
+          const groundRow =
+            baseSamples.length > 0
+              ? baseSamples[Math.floor(baseSamples.length * 0.2)]
+              : lastRow;
+          // Sink 1.8% below the back horizon line so 3D perspective bases sit on the golden floor
+          const effectiveGroundRow = Math.max(0, groundRow - sampleSize * 0.018);
+          bottomPadPct = Math.max(
+            0,
+            Math.min(38, ((sampleSize - 1 - effectiveGroundRow) / sampleSize) * 100),
+          );
+
+          // Render contour-locked reflection & contact shadow onto reflectionCanvasRef
+          const rCanvas = reflectionCanvasRef.current;
+          if (rCanvas) {
+            rCanvas.width = sampleSize;
+            rCanvas.height = totalH;
+            const rCtx = rCanvas.getContext("2d");
+            if (rCtx) {
+              const outImg = rCtx.createImageData(sampleSize, totalH);
+              const out = outImg.data;
+              const stageBottomRow =
+                sampleSize +
+                (135 * sampleSize) / (420 * computedScale) -
+                (bottomPadPct / 100) * sampleSize;
+
+              for (let x = firstCol; x <= lastCol; x++) {
+                if (yRaw[x] < 0) continue;
+                const yp = yPlaneSmooth[x];
+                // 1. Per-column mirror reflection starting directly at yp + 1 (zero gap)
+                for (let d = 1; d < maxReflRows; d++) {
+                  const srcY = yp - d;
+                  const dstY = yp + d;
+                  if (srcY < 0 || dstY >= totalH || dstY >= stageBottomRow) break;
+                  const sIdx = (srcY * sampleSize + x) * 4;
+                  const sa = data[sIdx + 3];
+                  if (sa > 5) {
+                    const distFade = Math.pow(1 - d / maxReflRows, 1.65) * 0.78;
+                    const stageFade =
+                      dstY < stageBottomRow - 36
+                        ? 1
+                        : Math.max(0, (stageBottomRow - 2 - dstY) / 34);
+                    const dIdx = (dstY * sampleSize + x) * 4;
+                    out[dIdx] = Math.min(255, Math.round(data[sIdx] * 1.12));
+                    out[dIdx + 1] = Math.min(255, Math.round(data[sIdx + 1] * 1.12));
+                    out[dIdx + 2] = Math.min(255, Math.round(data[sIdx + 2] * 1.12));
+                    out[dIdx + 3] = Math.min(255, Math.round(sa * distFade * stageFade));
+                  }
+                }
+                // 2. Contour-following contact shadow (ambient occlusion) right under base
+                if (isBase[x]) {
+                  for (let dy = -2; dy <= 10; dy++) {
+                    const yy = yp + dy;
+                    if (yy < 0 || yy >= totalH || yy >= stageBottomRow) continue;
+                    const dist = (dy - 2.0) / 5.5;
+                    const shA = Math.max(0, 1 - dist * dist) * 0.85;
+                    if (shA <= 0.01) continue;
+                    const dIdx = (yy * sampleSize + x) * 4;
+                    const curA = out[dIdx + 3] / 255;
+                    const outA = shA + curA * (1 - shA);
+                    if (outA > 0) {
+                      const keep = (curA * (1 - shA)) / outA;
+                      out[dIdx] = Math.round(out[dIdx] * keep);
+                      out[dIdx + 1] = Math.round(out[dIdx + 1] * keep);
+                      out[dIdx + 2] = Math.round(out[dIdx + 2] * keep);
+                      out[dIdx + 3] = Math.min(255, Math.round(outA * 255));
+                    }
+                  }
+                }
+              }
+              rCtx.putImageData(outImg, 0, 0);
+            }
           }
         }
       }
@@ -652,39 +776,32 @@ export default function BookDetails() {
                       </div>
                     )}
                     {activeImageSrc && !allSourcesExhausted && (
-                      <img
-                        src={activeImageSrc}
-                        alt={perfume.name}
-                        className="warda-details-img"
+                      <div
+                        className="warda-flacon-transform-box"
                         style={{
                           opacity: flaconLoaded ? 1 : 0,
                         }}
-                        loading="eager"
-                        decoding="async"
-                        onLoad={handleFlaconImgLoad}
-                        onError={handleFlaconImgError}
-                      />
+                      >
+                        <canvas
+                          ref={reflectionCanvasRef}
+                          className="warda-stage-reflection-canvas"
+                          aria-hidden="true"
+                        />
+                        <img
+                          src={activeImageSrc}
+                          alt={perfume.name}
+                          className="warda-details-img"
+                          loading="eager"
+                          decoding="async"
+                          onLoad={handleFlaconImgLoad}
+                          onError={handleFlaconImgError}
+                        />
+                      </div>
                     )}
                   </div>
 
-                  {/* Contact Shadow at the Flacon Base */}
-                  {flaconLoaded && !allSourcesExhausted && activeImageSrc && (
-                    <div
-                      className="warda-stage-contact-shadow"
-                      aria-hidden="true"
-                    />
-                  )}
-
-                  {/* Optical Mirror Reflection at the Bottom */}
-                  <div className="warda-stage-reflection-container" aria-hidden="true">
-                    {flaconLoaded && !allSourcesExhausted && activeImageSrc && (
-                      <img
-                        src={activeImageSrc}
-                        alt=""
-                        className="warda-stage-reflection-img"
-                      />
-                    )}
-                  </div>
+                  {/* Floor Reflection Spacer */}
+                  <div className="warda-stage-reflection-container" aria-hidden="true" />
                 </div>
               </div>
 
