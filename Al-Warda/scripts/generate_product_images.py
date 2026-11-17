@@ -1471,14 +1471,22 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
     if max(w, h) >= min_dim:
         return image
 
-    # Pre-deblock: remove blocky JPEG compression boundaries before feeding into AI models.
-    # This prevents GAN super-resolution from amplifying compression blocks into barcode/ladder lines on small text.
+    # Micro-contrast and edge enhancement in LAB space:
+    # Brings out subtle embossing, tone-on-tone lettering (e.g. gold-on-gold, red-on-red)
+    # and packaging facets before feeding into neural super-resolution models.
     try:
         import cv2
         import numpy as np
         arr_pre = np.array(image.convert("RGB"))
-        deblocked = cv2.bilateralFilter(arr_pre, d=5, sigmaColor=30, sigmaSpace=30)
-        image = Image.fromarray(deblocked)
+        lab_pre = cv2.cvtColor(arr_pre, cv2.COLOR_RGB2LAB)
+        l_pre, a_pre, b_pre = cv2.split(lab_pre)
+        clahe_pre = cv2.createCLAHE(clipLimit=1.8, tileGridSize=(6, 6))
+        l_clahe = clahe_pre.apply(l_pre)
+        blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 0.8)
+        l_sharp = cv2.addWeighted(l_clahe, 1.30, blur_l, -0.30, 0)
+        lab_enhanced = cv2.merge([l_sharp, a_pre, b_pre])
+        arr_enhanced = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
+        image = Image.fromarray(arr_enhanced)
     except Exception:
         pass
 
@@ -1493,13 +1501,13 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
                 image.convert("RGB").save(in_path, format="PNG")
                 cmd = [bin_path, "-i", in_path, "-o", out_path, "-s", str(scale), "-c", "0", "-j", "1:1:1"]
                 if models_dir and os.path.isdir(models_dir):
-                    # For realistic photography, remacri-4x and high-fidelity-4x prevent GAN hallucinatory artifacts on tiny fonts
-                    if os.path.isfile(os.path.join(models_dir, "remacri-4x.bin")):
-                        cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
+                    # ultrasharp-4x is the gold standard for packaging, fonts, and embossed typography
+                    if os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
                     elif os.path.isfile(os.path.join(models_dir, "high-fidelity-4x.bin")):
                         cmd.extend(["-m", models_dir, "-n", "high-fidelity-4x"])
-                    elif os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
-                        cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "remacri-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
                     elif os.path.isfile(os.path.join(models_dir, "realesrgan-x4plus.bin")):
                         cmd.extend(["-m", models_dir, "-n", "realesrgan-x4plus"])
                     else:
@@ -1747,17 +1755,16 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
     crop = cleaned_cutout.crop((x1, y1, x2, y2))
     resized = crop.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # For upscaled cutouts from lower-resolution photos, apply bilateral texture smoothing
-    # and unsharp masking to prevent blur, muddy glass, and pixelated packaging contours.
+    # For upscaled cutouts from lower-resolution photos, apply subtle unsharp masking
+    # to maintain crisp packaging contours, glass highlights and logo lettering.
     if scale > 1.2:
         try:
             import cv2
             arr_res = np.array(resized)
             rgb_res = arr_res[:, :, :3]
             alpha_res = arr_res[:, :, 3]
-            denoised_rgb = cv2.bilateralFilter(rgb_res, d=5, sigmaColor=15, sigmaSpace=15)
-            gaussian = cv2.GaussianBlur(denoised_rgb, (0, 0), 1.2)
-            sharp_rgb = cv2.addWeighted(denoised_rgb, 1.2, gaussian, -0.2, 0)
+            gaussian = cv2.GaussianBlur(rgb_res, (0, 0), 0.8)
+            sharp_rgb = cv2.addWeighted(rgb_res, 1.22, gaussian, -0.22, 0)
             arr_res[:, :, :3] = sharp_rgb
             arr_res[:, :, 3] = alpha_res
             resized = Image.fromarray(arr_res)
