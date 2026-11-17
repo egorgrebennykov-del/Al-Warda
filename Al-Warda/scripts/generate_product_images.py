@@ -88,6 +88,7 @@ IMAGE_ENDPOINT = (
     "{account_id}/ai/run/@cf/black-forest-labs/flux-2-klein-4b"
 )
 GENERATED_DIR = Path(__file__).resolve().parents[1] / "public" / "assets" / "img" / "generated-products"
+DIST_GENERATED_DIR = Path(__file__).resolve().parents[1] / "dist" / "assets" / "img" / "generated-products"
 GENERATED_URL = "/assets/img/generated-products/"
 MAX_STATIC_IMAGE_BYTES = 25 * 1024 * 1024
 DEFAULT_BATCH_SIZE = 160
@@ -1176,10 +1177,23 @@ def save_generated_image(image_bytes):
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     path = GENERATED_DIR / f"{digest}.png"
     path.write_bytes(image_bytes)
+
+    if DIST_GENERATED_DIR.parent.parent.is_dir():
+        try:
+            DIST_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+            (DIST_GENERATED_DIR / f"{digest}.png").write_bytes(image_bytes)
+        except Exception:
+            pass
+
     try:
         webp_path = GENERATED_DIR / f"{digest}.webp"
         with Image.open(io.BytesIO(image_bytes)) as im:
             im.save(webp_path, format="WEBP", quality=85, method=6)
+        if DIST_GENERATED_DIR.parent.parent.is_dir():
+            try:
+                (DIST_GENERATED_DIR / f"{digest}.webp").write_bytes(webp_path.read_bytes())
+            except Exception:
+                pass
     except Exception as e:
         print(f"Warning: could not create WebP variant for {digest}: {e}", file=sys.stderr)
     return f"{GENERATED_URL}{digest}.png"

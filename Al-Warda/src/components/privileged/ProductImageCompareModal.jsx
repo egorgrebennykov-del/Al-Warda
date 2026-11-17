@@ -22,8 +22,19 @@ export default function ProductImageCompareModal({
   if (!item) return null;
 
   const originalSrc = item.rawImage || item.image || item.info?.rawImage;
-  const studioSrc = item.imageUrl;
+  const studioSrc = item.imageUrl || item.image || item.info?.imageGeneration?.imageUrl || item.info?.image;
   const [studioSourceIndex, setStudioSourceIndex] = useState(0);
+  const [studioFailed, setStudioFailed] = useState(false);
+
+  const isLocalHost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
+
+  const localApiUrl =
+    isLocalHost && typeof studioSrc === "string" && studioSrc.startsWith("/assets/")
+      ? `http://${window.location.hostname}:3001${studioSrc}`
+      : null;
 
   const rawUrl =
     typeof studioSrc === "string" &&
@@ -39,6 +50,7 @@ export default function ProductImageCompareModal({
   const studioSources = [
     studioSrc,
     webpUrl,
+    localApiUrl,
     rawUrl,
     rawWebpUrl,
   ].filter(Boolean);
@@ -164,7 +176,7 @@ export default function ProductImageCompareModal({
               <div
                 className={`product-compare-card__preview product-compare-card__preview--${backgroundMode}`}
               >
-                {currentStudioSrc ? (
+                {!studioFailed && currentStudioSrc ? (
                   <img
                     src={currentStudioSrc}
                     alt={isRussian ? "Студийное фото" : "Studio photo"}
@@ -172,13 +184,19 @@ export default function ProductImageCompareModal({
                     onError={() => {
                       if (studioSourceIndex + 1 < studioSources.length) {
                         setStudioSourceIndex((prev) => prev + 1);
+                      } else {
+                        setStudioFailed(true);
                       }
                     }}
                   />
                 ) : (
                   <div className="product-compare-card__empty">
                     <i className="ri-image-line" />
-                    <span>{isRussian ? "Студийное фото не сгенерировано" : "Studio photo not generated"}</span>
+                    <span>
+                      {isRussian
+                        ? "Студийное фото загружается или ещё не синхронизировано"
+                        : "Studio photo is syncing or not yet generated"}
+                    </span>
                   </div>
                 )}
               </div>
