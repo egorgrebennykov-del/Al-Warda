@@ -11,6 +11,7 @@ import {
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
+import { usePrompt } from "../../context/ConfirmContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
@@ -83,6 +84,7 @@ export default function BookDetails() {
   const { formatPrice } = useCurrency();
   const { isInCart, toggleCart } = useCartState();
   const { user, isPrivileged: isPrivContext } = useAuth();
+  const prompt = usePrompt();
   const isPriv = Boolean(isPrivContext || checkIsPrivileged(user));
 
   const idFromQuery =
@@ -126,14 +128,35 @@ export default function BookDetails() {
 
   const handleMoveProductToFailed = async () => {
     if (!perfume?.id || markingFailed) return;
+    const { confirmed, value: reason } = await prompt({
+      title: isRussian ? "Перенести товар в ошибки" : "Move Product to Errors",
+      message: isRussian
+        ? `Перенести «${perfume.name || `#${perfume.id}`}» в список ошибок генерации?`
+        : `Move "${perfume.name || `#${perfume.id}`}" to the failed generation list?`,
+      inputLabel: isRussian
+        ? "Причина (необязательно)"
+        : "Reason (optional)",
+      inputPlaceholder: isRussian
+        ? "Например: кривое фото, обрезана крышка, не тот товар..."
+        : "e.g. tilted bottle, cropped cap, wrong product...",
+      confirmText: isRussian ? "Перенести в ошибки" : "Move to Errors",
+      type: "warning",
+      icon: "ri-error-warning-line",
+    });
+    if (!confirmed) return;
+
     setMarkingFailed(true);
     setMarkedFailedMsg("");
     try {
+      const payload = { ids: [String(perfume.id)] };
+      if (reason && reason.trim()) {
+        payload.reason = reason.trim();
+      }
       const res = await fetch("/api/admin/product-images/mark-failed", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [String(perfume.id)] }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

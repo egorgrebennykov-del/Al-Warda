@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { useConfirm, useAlert } from "../../context/ConfirmContext";
+import { useConfirm, useAlert, usePrompt } from "../../context/ConfirmContext";
 import { getPerfumeUrl } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import ProductImageCompareModal from "./ProductImageCompareModal";
@@ -573,6 +573,7 @@ export default function ProductImageQueue({
   const [filterGenerated, setFilterGenerated] = useState(false);
   const [filterProcessing, setFilterProcessing] = useState(false);
   const confirm = useConfirm();
+  const prompt = usePrompt();
   const alert = useAlert();
 
   const [activeBatch, setActiveBatch] = useState(() => {
@@ -1058,7 +1059,7 @@ export default function ProductImageQueue({
       ? explicitIds.map(String)
       : Object.keys(selectedImages);
     if (!ids.length) return;
-    const approved = await confirm({
+    const { confirmed, value: reason } = await prompt({
       title: isRussian
         ? "Перенести товары в список ошибок"
         : "Move products to failed list",
@@ -1067,18 +1068,27 @@ export default function ProductImageQueue({
           ? `Перенести товар #${ids[0]} в список ошибок генерации? Он скроется с витрины и появится в блоке «Список ошибок генерации» для ручной настройки, повторной генерации или удаления.`
           : `Перенести выбранные товары (${ids.length} шт.) в список ошибок генерации? Они скроются с витрины и появятся в блоке «Список ошибок генерации».`
         : `Move ${ids.length} selected product(s) to the failed generation list?`,
+      inputLabel: isRussian ? "Причина (необязательно)" : "Reason (optional)",
+      inputPlaceholder: isRussian
+        ? "Например: кривое фото, обрезана крышка, не тот товар..."
+        : "e.g. tilted bottle, cropped cap, wrong product...",
+      confirmText: isRussian ? "Перенести в ошибки" : "Move to Errors",
+      type: "warning",
+      icon: "ri-error-warning-line",
     });
-    if (!approved) return;
+    if (!confirmed) return;
 
     setBusy(true);
     setActionError("");
     setActionMessage("");
     try {
+      const bodyPayload = { ids };
+      if (reason && reason.trim()) bodyPayload.reason = reason.trim();
       const response = await fetch("/api/admin/product-images/mark-failed", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+        body: JSON.stringify(bodyPayload),
       });
       if (!response.headers.get("content-type")?.includes("application/json")) {
         throw new Error(

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { useConfirm, useAlert } from "../../context/ConfirmContext";
+import { useConfirm, useAlert, usePrompt } from "../../context/ConfirmContext";
 import { getPerfumeUrl, isGeneratedProductImage } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductsManager.css";
@@ -17,6 +17,7 @@ function formatPrice(price, currency = "EUR", language = "ru") {
 export default function ProductsManager({ language = "ru" }) {
   const isRussian = language === "ru";
   const confirm = useConfirm();
+  const prompt = usePrompt();
   const alert = useAlert();
 
   const [products, setProducts] = useState([]);
@@ -267,23 +268,32 @@ export default function ProductsManager({ language = "ru" }) {
   };
 
   const handleMarkFailed = async (product) => {
-    const approved = await confirm({
+    const { confirmed, value: reason } = await prompt({
       title: isRussian ? "Перенести товар в ошибки" : "Move Product to Errors",
       message: isRussian
         ? `Перенести товар «${product.name || `ID #${product.id}`}» в список ошибок генерации? Он скроется с витрины и появится во вкладке «Генерация фото → Список ошибок генерации».`
         : `Move "${product.name || `ID #${product.id}`}" to the failed generation list?`,
+      inputLabel: isRussian ? "Причина (необязательно)" : "Reason (optional)",
+      inputPlaceholder: isRussian
+        ? "Например: кривое фото, обрезана крышка, не тот товар..."
+        : "e.g. tilted bottle, cropped cap, wrong product...",
+      confirmText: isRussian ? "Перенести в ошибки" : "Move to Errors",
+      type: "warning",
+      icon: "ri-error-warning-line",
     });
-    if (!approved) return;
+    if (!confirmed) return;
 
     setDeletingId(product.id);
     setMessage("");
     setError("");
     try {
+      const payload = { ids: [String(product.id)] };
+      if (reason && reason.trim()) payload.reason = reason.trim();
       const res = await fetch("/api/admin/product-images/mark-failed", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [String(product.id)] }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -324,23 +334,32 @@ export default function ProductsManager({ language = "ru" }) {
       });
       return;
     }
-    const approved = await confirm({
+    const { confirmed, value: reason } = await prompt({
       title: isRussian ? "Перенести товары в ошибки" : "Move Products to Errors",
       message: isRussian
         ? `Перенести ${ids.length} выбранных товаров в список ошибок генерации?`
         : `Move ${ids.length} selected products to the failed generation list?`,
+      inputLabel: isRussian ? "Причина (необязательно)" : "Reason (optional)",
+      inputPlaceholder: isRussian
+        ? "Например: кривое фото, обрезана крышка, не тот товар..."
+        : "e.g. tilted bottle, cropped cap, wrong product...",
+      confirmText: isRussian ? "Перенести в ошибки" : "Move to Errors",
+      type: "warning",
+      icon: "ri-error-warning-line",
     });
-    if (!approved) return;
+    if (!confirmed) return;
 
     setDeletingBulk(true);
     setMessage("");
     setError("");
     try {
+      const payload = { ids };
+      if (reason && reason.trim()) payload.reason = reason.trim();
       const res = await fetch("/api/admin/product-images/mark-failed", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {

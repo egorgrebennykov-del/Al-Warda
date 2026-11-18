@@ -226,6 +226,47 @@
   box-shadow: 0 6px 18px hsla(38, 95%, 48%, 0.45);
 }
 
+/* Prompt Input */
+.warda-confirm-input-wrap {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 1.25rem;
+}
+
+.warda-confirm-input-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--title-color);
+  margin-bottom: 0.4rem;
+}
+
+.warda-confirm-input {
+  width: 100%;
+  min-height: 64px;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(10, 8, 6, 0.85);
+  color: #f7ede2;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.warda-confirm-input::placeholder {
+  color: rgba(247, 237, 226, 0.45);
+}
+
+.warda-confirm-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.22);
+}
+
 @media screen and (max-width: 420px) {
   .warda-confirm-actions {
     flex-direction: column-reverse;
