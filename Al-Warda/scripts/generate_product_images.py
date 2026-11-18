@@ -2157,7 +2157,7 @@ def align_multi_object_floor(canvas):
                 continue
             s_plateau_y = int(np.percentile(core, 85))
             delta = target_bottom - s_plateau_y
-            if not (15 <= delta <= 165 and s_plateau_y >= h * 0.55):
+            if not (15 <= delta <= 195 and s_plateau_y >= h * 0.55):
                 continue
             sy = np.where(alpha[:, sx:ex + 1] > 35)[0]
             if len(sy) == 0:
@@ -2196,10 +2196,40 @@ def align_multi_object_floor(canvas):
     changed = False
     for sx, ex, s_min_y, s_max_y, s_solid_max_y, sw, sh in seg_info:
         delta = target_bottom - s_solid_max_y
-        if 3 <= delta <= 150 and sw >= 60 and sh >= 200 and s_solid_max_y >= h * 0.60:
+        if 3 <= delta <= 195 and sw >= 60 and sh >= 200 and s_solid_max_y >= h * 0.60:
             slice_rgba = arr[s_min_y:s_max_y + 1, sx:ex + 1].copy()
+            # Straighten rolled box/bottle segment via pure rigid rotation if both vertical edges lean together
+            if sw >= 120:
+                try:
+                    import cv2
+                    s_alpha = slice_rgba[:, :, 3]
+                    y_lo, y_hi = int(sh * 0.25), int(sh * 0.75)
+                    l_pts, r_pts = [], []
+                    for yy in range(y_lo, y_hi):
+                        row_x = np.where(s_alpha[yy, :] > 120)[0]
+                        if len(row_x) > 0:
+                            l_pts.append((float(yy), float(row_x.min())))
+                            r_pts.append((float(yy), float(row_x.max())))
+                    if len(l_pts) >= 20:
+                        l_deg = float(np.degrees(np.arctan(np.polyfit([p[0] for p in l_pts], [p[1] for p in l_pts], 1)[0])))
+                        r_deg = float(np.degrees(np.arctan(np.polyfit([p[0] for p in r_pts], [p[1] for p in r_pts], 1)[0])))
+                        if l_deg * r_deg > 0 and abs(l_deg - r_deg) <= 2.5:
+                            v_deg = (l_deg + r_deg) / 2.0
+                            if 2.0 <= abs(v_deg) <= 8.0:
+                                M_rot = cv2.getRotationMatrix2D((sw / 2.0, sh / 2.0), -v_deg, 1.0)
+                                slice_rgba = cv2.warpAffine(
+                                    slice_rgba, M_rot, (sw, sh),
+                                    flags=cv2.INTER_LANCZOS4,
+                                    borderMode=cv2.BORDER_CONSTANT,
+                                    borderValue=(0, 0, 0, 0),
+                                )
+                                r_sy = np.where(slice_rgba[:, :, 3] > 140)[0]
+                                if len(r_sy) > 0:
+                                    delta = target_bottom - (s_min_y + int(r_sy.max()))
+                except Exception:
+                    pass
             out[s_min_y:s_max_y + 1, sx:ex + 1] = 0
-            dst_y1 = min(h, s_min_y + delta)
+            dst_y1 = max(0, min(h, s_min_y + delta))
             dst_y2 = min(h, s_max_y + 1 + delta)
             copy_h = dst_y2 - dst_y1
             if copy_h > 0:
