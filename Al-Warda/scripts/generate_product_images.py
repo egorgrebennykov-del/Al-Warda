@@ -2285,14 +2285,17 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
         resid = np.abs(pts[:, 1] - (m * pts[:, 0] + b))
         inlier_ratio = float(np.mean(resid < 4.5))
         med_err = float(np.median(resid))
-        if 4.0 <= deg * expect_sign <= 20.0 and inlier_ratio >= 0.92 and med_err <= 1.2:
+        span_ratio = len(sub_xs) / float(w_obj)
+        is_strong_tilt = 4.0 <= deg * expect_sign <= 20.0 and inlier_ratio >= 0.92 and med_err <= 1.2
+        is_residual_tilt = span_ratio >= 0.55 and 1.1 <= deg * expect_sign < 4.0 and inlier_ratio >= 0.94 and med_err <= 0.8
+        if is_strong_tilt or is_residual_tilt:
             chosen_m = m
             break
 
     if chosen_m is None:
         return canvas
 
-    k = float(np.clip(0.85 * chosen_m, -0.30, 0.30))
+    k = float(np.clip(chosen_m, -0.32, 0.32))
     # Compute padded canvas so vertical shear never clips top/bottom corners
     pad = int(abs(k) * w_obj) + 32
     padded = cv2.copyMakeBorder(arr, pad, pad, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0, 0))
