@@ -281,7 +281,7 @@
   justify-content: center;
   width: 100%;
   max-width: 586px;
-  height: 420px;
+  height: 438px;
   z-index: 4;
 }
 
@@ -401,10 +401,10 @@
   50% { opacity: 1; transform: scale(1.08); }
 }
 
-/* Contact Shadow right on the Horizon Line */
+/* Contact Shadow right on the Floor Plane */
 .warda-stage-contact-shadow {
   position: absolute;
-  bottom: 130px;
+  bottom: 112px;
   left: 50%;
   transform: translateX(-50%);
   width: 240px;
@@ -425,7 +425,7 @@
   position: relative;
   width: 100%;
   max-width: 586px;
-  height: 135px;
+  height: 117px;
   margin-top: 0;
   overflow: hidden;
   pointer-events: none;
@@ -750,7 +750,7 @@
   .warda-details-photo {
     width: 100%;
     max-width: 340px;
-    height: 330px;
+    height: 342px;
     margin: 0 auto;
     padding-bottom: 0;
   }
@@ -771,13 +771,13 @@
   }
 
   .warda-stage-contact-shadow {
-    bottom: 90px;
+    bottom: 78px;
     width: 190px;
   }
 
   .warda-stage-reflection-container {
     max-width: 340px;
-    height: 95px;
+    height: 83px;
   }
 
   .warda-stage-reflection-img {
@@ -818,7 +818,7 @@
 
   .warda-details-photo {
     max-width: 300px;
-    height: 295px;
+    height: 305px;
     padding-bottom: 0;
   }
 
@@ -838,13 +838,13 @@
   }
 
   .warda-stage-contact-shadow {
-    bottom: 80px;
+    bottom: 70px;
     width: 170px;
   }
 
   .warda-stage-reflection-container {
     max-width: 300px;
-    height: 85px;
+    height: 75px;
   }
 
   .warda-stage-reflection-img {

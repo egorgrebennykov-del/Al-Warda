@@ -225,11 +225,9 @@ export default function BookDetails() {
           if (baseCols.length > 4) {
             baseCols.sort((a, b) => a - b);
             const p25 = baseCols[Math.floor(baseCols.length * 0.25)];
-            const maxSink = Math.round(sampleSize * 0.025);
+            const maxSink = Math.round(sampleSize * 0.035);
             groundRow = Math.max(refLast - maxSink, Math.min(refLast, p25));
           }
-          // Subtle 0.5% grounding into the glowing floor plane so no angled edge floats
-          groundRow = Math.max(0, groundRow - sampleSize * 0.005);
           bottomPadPct = Math.max(
             0,
             Math.min(35, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
