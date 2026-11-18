@@ -193,6 +193,7 @@ export default function BookDetails() {
         let firstCol = sampleSize - 1;
         let lastCol = 0;
         let foundAny = false;
+        const colMaxSolidY = new Int16Array(sampleSize).fill(-1);
         for (let y = 0; y < sampleSize; y++) {
           for (let x = 0; x < sampleSize; x++) {
             const a = data[(y * sampleSize + x) * 4 + 3];
@@ -202,14 +203,33 @@ export default function BookDetails() {
                 foundAny = true;
               }
               lastRow = y;
-              if (a > 120) lastSolidRow = y;
+              if (a > 120) {
+                lastSolidRow = y;
+                colMaxSolidY[x] = y;
+              }
               if (x < firstCol) firstCol = x;
               if (x > lastCol) lastCol = x;
             }
           }
         }
         if (foundAny) {
-          const groundRow = lastSolidRow >= 0 ? lastSolidRow : lastRow;
+          const refLast = lastSolidRow >= 0 ? lastSolidRow : lastRow;
+          const baseZoneLimit = refLast - Math.round(sampleSize * 0.06);
+          const baseCols = [];
+          for (let x = firstCol; x <= lastCol; x++) {
+            if (colMaxSolidY[x] >= baseZoneLimit) {
+              baseCols.push(colMaxSolidY[x]);
+            }
+          }
+          let groundRow = refLast;
+          if (baseCols.length > 4) {
+            baseCols.sort((a, b) => a - b);
+            const p25 = baseCols[Math.floor(baseCols.length * 0.25)];
+            const maxSink = Math.round(sampleSize * 0.025);
+            groundRow = Math.max(refLast - maxSink, Math.min(refLast, p25));
+          }
+          // Subtle 0.5% grounding into the glowing floor plane so no angled edge floats
+          groundRow = Math.max(0, groundRow - sampleSize * 0.005);
           bottomPadPct = Math.max(
             0,
             Math.min(35, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
