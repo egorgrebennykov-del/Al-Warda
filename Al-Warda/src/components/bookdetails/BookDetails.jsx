@@ -353,19 +353,18 @@ export default function BookDetails() {
           );
           const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
-          const aspect = fgW / fgH;
-          if (fgH < 0.78 || aspect > 1.05 || (perfume && isPerfumeSet(perfume))) {
-            const containerW = img.parentElement?.clientWidth || 586;
-            const renderedW = img.offsetWidth || 420;
-            const maxScaleW = (containerW * 0.92) / Math.max(1, renderedW * fgW);
-            const maxScaleH = 0.88 / fgH;
-            computedScale = Math.max(
-              1,
-              Math.min(1.48, maxScaleW, maxScaleH),
-            );
-          } else {
-            computedScale = 1;
-          }
+          const visibleGroundH = Math.max(0.15, (groundRow - firstRow + 1) / sampleSize);
+          const containerW = img.parentElement?.clientWidth || 586;
+          const photoH = img.parentElement?.clientHeight || 438;
+          const renderedH = img.offsetHeight || 420;
+          const renderedW = img.offsetWidth || 420;
+          const visiblePxH = visibleGroundH * renderedH;
+          const targetScaleH = (photoH - 4) / Math.max(1, visiblePxH);
+          const maxScaleW = (containerW * 0.94) / Math.max(1, renderedW * fgW);
+          computedScale = Math.max(
+            1,
+            Math.min(1.85, targetScaleH, maxScaleW),
+          );
         }
       }
     } catch {
