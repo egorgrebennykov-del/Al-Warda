@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router";
 import {
   getPerfumeById,
@@ -105,11 +105,13 @@ export default function BookDetails() {
   const [flaconScale, setFlaconScale] = useState(1);
   const [markingFailed, setMarkingFailed] = useState(false);
   const [markedFailedMsg, setMarkedFailedMsg] = useState("");
+  const flaconImgRef = useRef(null);
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume, imgRetryTick),
     [perfume, imgRetryTick],
   );
 
+  const perfumeKey = perfume?.id ?? "";
   useEffect(() => {
     setSelectedVolume("full");
     setImgSourceIndex(0);
@@ -119,7 +121,8 @@ export default function BookDetails() {
     setFlaconBottomPadPct(7.4);
     setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
     setMarkedFailedMsg("");
-  }, [perfume]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [perfumeKey]);
 
   const handleMoveProductToFailed = async () => {
     if (!perfume?.id || markingFailed) return;
@@ -234,6 +237,21 @@ export default function BookDetails() {
   };
 
   const activeImageSrc = imageSources[imgSourceIndex] || "";
+
+  useEffect(() => {
+    const imgEl = flaconImgRef.current;
+    if (
+      activeImageSrc &&
+      !flaconLoaded &&
+      !allSourcesExhausted &&
+      imgEl &&
+      imgEl.complete &&
+      imgEl.naturalWidth > 0
+    ) {
+      handleFlaconImgLoad({ currentTarget: imgEl });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeImageSrc, flaconLoaded, allSourcesExhausted]);
 
   const isGeneratedCutout =
     typeof activeImageSrc === "string" &&
@@ -685,6 +703,7 @@ export default function BookDetails() {
                     )}
                     {activeImageSrc && !allSourcesExhausted && (
                       <img
+                        ref={flaconImgRef}
                         src={activeImageSrc}
                         alt={perfume.name}
                         className="warda-details-img"
