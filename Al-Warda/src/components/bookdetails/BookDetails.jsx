@@ -302,31 +302,14 @@ export default function BookDetails() {
 
           let groundRow = refLast;
           const totalSolid = allSolidCols.length;
-          const maxPlateauLift = Math.round(sampleSize * 0.16);
-          const bandHeight = Math.max(4, Math.round(sampleSize * 0.02));
-          let plateauRow = -1;
+          const wideBaseLimit = refLast - Math.round(sampleSize * 0.12);
+          const wideBaseCols = allSolidCols.filter((cy) => cy >= wideBaseLimit);
 
-          // Prefer the highest wide flat baseline (e.g. main box/bottle above a small foreground cap)
-          if (totalSolid >= 20) {
-            const minSearchY = Math.max(firstRow, refLast - maxPlateauLift);
-            for (let y0 = minSearchY; y0 <= refLast - bandHeight; y0++) {
-              const inBand = [];
-              for (let i = 0; i < totalSolid; i++) {
-                const cy = allSolidCols[i];
-                if (cy >= y0 && cy <= y0 + bandHeight) {
-                  inBand.push(cy);
-                }
-              }
-              if (inBand.length >= totalSolid * 0.35) {
-                inBand.sort((a, b) => a - b);
-                plateauRow = inBand[Math.floor(inBand.length * 0.5)];
-                break;
-              }
-            }
-          }
-
-          if (plateauRow >= 0) {
-            groundRow = plateauRow;
+          if (totalSolid >= 20 && wideBaseCols.length >= totalSolid * 0.65) {
+            // For flat/3-4/multi-object bases covering >=65% of width within 12% of the bottom,
+            // ground to the highest point (5th percentile) of that base so no corner floats.
+            wideBaseCols.sort((a, b) => a - b);
+            groundRow = wideBaseCols[Math.floor(wideBaseCols.length * 0.05)];
           } else {
             const baseZoneLimit = refLast - Math.round(sampleSize * 0.06);
             const baseCols = allSolidCols.filter((cy) => cy >= baseZoneLimit);
