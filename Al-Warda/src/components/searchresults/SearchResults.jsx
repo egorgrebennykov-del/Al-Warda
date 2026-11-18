@@ -329,11 +329,6 @@ export default function SearchResults() {
                   }}
                 >
                   <div className="warda-perfume-card__media">
-                    {isPerfumeSet(perfume) && (
-                      <span className="warda-perfume-card__set-tag">
-                        🎁 {t("featured.giftSet")}
-                      </span>
-                    )}
                     <div className="warda-perfume-card__aura" />
                     <img
                       src={perfume.image}

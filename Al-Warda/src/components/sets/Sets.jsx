@@ -525,17 +525,6 @@ export default function Sets() {
                   }
                 >
                   <div className="warda-perfume-card__media">
-                    <span className="warda-set-card__badge">
-                      <i
-                        className={
-                          isDiscoveryOrMiniSet(perfume)
-                            ? "ri-sparkling-fill"
-                            : "ri-gift-2-fill"
-                        }
-                      />
-                      {getSetBadgeLabel(perfume, language, t)}
-                    </span>
-
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
                     {perfume.image && (

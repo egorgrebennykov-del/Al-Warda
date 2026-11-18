@@ -1743,11 +1743,6 @@ export default function Featured() {
                   }}
                 >
                   <div className="warda-perfume-card__media">
-                    {isPerfumeSet(perfume) && (
-                      <span className="warda-perfume-card__set-tag">
-                        🎁 {t("featured.giftSet")}
-                      </span>
-                    )}
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
                     <div className="warda-perfume-card__processing" aria-hidden="true">
