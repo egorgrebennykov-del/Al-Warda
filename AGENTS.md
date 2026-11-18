@@ -103,11 +103,11 @@ Al-Warda/
 ## 5. Product Image Generation & Official Photo Lookup (`generate_product_images.py`)
 
 When processing a product row from `stocks`:
-1. **Official Brand Studio Lookup (`search_official_studio_image`)**:
-   - Queries official brand Shopify storefronts mapped in `BRAND_DOMAINS` (`afnan.com`, `lattafa-usa.com`, `armaf.com`, `sterlingparfums.com`, `swissarabian.com`, `ajmalperfume.com`, `alharamainperfumes.com`, `orientica.com`, `rasasistore.com`, `pariscornerperfumes.com`, `fragranceworld.ae`) via `/search/suggest.json?q=...&resources[type]=product`.
-   - Enforces strict set vs. single-bottle matching (`is_perfume_set`), excludes deodorant/body-spray/mist/lotion matches when searching for an EDP/EDT bottle, prefers front-view studio `.png` assets over lifestyle JPEGs, and requires >= 70% non-stopword token overlap.
-2. **Wholesale Catalog Fallback (`product_source`)**:
-   - Falls back to `info.rawImage` (`*.qogita.com`), rejecting placeholder hashes.
+1. **Official Brand Studio Lookup (`search_official_studio_candidates` / `search_official_studio_image`)**:
+   - Queries official brand Shopify storefronts mapped in `BRAND_DOMAINS` (`afnan.com`, `lattafa-usa.com`, `armaf.com`, `sterlingparfums.com`, `swissarabian.com`, `in.ajmal.com`, `ajmalperfume.com`, `alharamainperfumes.co.uk`, `alharamainperfumes.com`, `alwataniah.com`, `orientica.com`, `rasasistore.com`, `pariscornerperfumes.com`, `fragranceworld.ae`) via `/search/suggest.json?q=...&resources[type]=product` with progressive query fallbacks.
+   - Strips Shopify thumbnail suffixes/params via `upgrade_shopify_image_url` to fetch full-resolution originals, enforces strict set vs. single-bottle matching (`is_perfume_set`), excludes deodorant/body-spray/mist/lotion matches when searching for an EDP/EDT bottle, prefers front-view studio `.png` assets over lifestyle JPEGs, and requires >= 70% non-stopword token overlap.
+2. **Quality-First Source Selection & Wholesale Catalog Fallback (`process_product` & `product_source`)**:
+   - Always prioritizes high-resolution (`>= 500px`, sharp) official studio photos first; if an official candidate is `< 500px`, compares pixel area against `info.rawImage` (`*.qogita.com`) and picks the higher-resolution source.
 3. **Segmentation, Super-Resolution & Stage-Aware Lighting Harmonization (`preserve_original_product` & `harmonize_cutout_for_stage`)**:
    - Segments the authentic photo first using `RMBG-1.4` (`1024 × 1024` ONNX) or `U2Net`.
    - Applies AI Super-Resolution (`high-fidelity-4x` / edge-preserving upscale) when resolution is below `1200 px`, combining raw and super-resolved alpha masks so boxes, caps, and miniatures are never clipped.

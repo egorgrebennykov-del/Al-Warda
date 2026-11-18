@@ -506,9 +506,10 @@ BRAND_DOMAINS = {
     "flavia": ["sterlingparfums.com"],
     "just jack": ["sterlingparfums.com"],
     "swiss arabian": ["swissarabian.com"],
-    "ajmal": ["ajmalperfume.com"],
-    "al haramain": ["alharamainperfumes.com"],
-    "orientica": ["orientica.com", "alharamainperfumes.com"],
+    "ajmal": ["in.ajmal.com", "ajmalperfume.com"],
+    "al haramain": ["alharamainperfumes.co.uk", "alharamainperfumes.com"],
+    "orientica": ["orientica.com", "alharamainperfumes.co.uk", "alharamainperfumes.com"],
+    "al wataniah": ["alwataniah.com"],
     "rasasi": ["rasasistore.com"],
     "paris corner": ["pariscornerperfumes.com"],
     "fragrance world": ["fragranceworld.ae"],
@@ -518,7 +519,9 @@ BRAND_DOMAINS = {
 GENERIC_STOPWORDS = {
     "fragrance", "perfume", "perfumes", "spray", "eau", "de", "parfum",
     "toilette", "edp", "edt", "vaporisateur", "unisex", "for", "men", "women",
-    "pour", "homme", "femme", "set", "gift", "coffret", "natural"
+    "him", "her", "pour", "homme", "femme", "set", "gift", "coffret", "natural",
+    "oil", "perfumed", "concentrated", "alcoholfree", "roll", "on", "rollon",
+    "attar", "ittar", "extrait", "cologne", "puro", "with"
 }
 
 
@@ -546,7 +549,7 @@ def clean_product_name_for_search(name, brand=""):
     if brand:
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|natural spray)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|natural spray|concentrated|attar|ittar)\b",
         "",
         clean,
         flags=re.IGNORECASE,
@@ -557,15 +560,43 @@ def clean_product_name_for_search(name, brand=""):
     return clean
 
 
+def upgrade_shopify_image_url(img_url):
+    """Strip Shopify thumbnail size suffixes and width/height query params to fetch full-res originals."""
+    if not isinstance(img_url, str) or not img_url:
+        return img_url
+    if img_url.startswith("//"):
+        img_url = "https:" + img_url
+    if "cdn.shopify.com" in img_url or "/cdn/shop/" in img_url:
+        parsed = urlparse(img_url)
+        clean_path = re.sub(
+            r"_(?:\d+x\d*|pico|icon|thumb|small|compact|medium|large|grande|1024x1024|2048x2048)(?=\.(?:png|jpe?g|webp)$)",
+            "",
+            parsed.path,
+            flags=re.IGNORECASE,
+        )
+        qs = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
+        qs.pop("width", None)
+        qs.pop("height", None)
+        new_query = urllib.parse.urlencode(qs, doseq=True)
+        return urllib.parse.urlunparse((parsed.scheme, parsed.netloc, clean_path, parsed.params, new_query, parsed.fragment))
+    return img_url
+
+
 def search_official_studio_image(name, brand="", is_set=False):
+    candidates = search_official_studio_candidates(name, brand=brand, is_set=is_set)
+    return candidates[0] if candidates else None
+
+
+def search_official_studio_candidates(name, brand="", is_set=False):
     brand_key = (brand or "").lower().strip()
     domains = []
     for k, d_list in BRAND_DOMAINS.items():
         if k in brand_key or brand_key in k:
-            domains.extend(d_list)
-            break
+            for d in d_list:
+                if d not in domains:
+                    domains.append(d)
     if not domains:
-        return None
+        return []
 
     cleaned = clean_product_name_for_search(name, brand)
     queries = []
@@ -575,7 +606,13 @@ def search_official_studio_image(name, brand="", is_set=False):
         queries.append(f"{base_no_set} Set")
         queries.append(base_no_set)
     else:
-        queries.append(cleaned)
+        if cleaned:
+            queries.append(cleaned)
+        words = cleaned.split()
+        if len(words) > 3:
+            queries.append(" ".join(words[:3]))
+        if len(words) > 2:
+            queries.append(" ".join(words[:2]))
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -589,16 +626,20 @@ def search_official_studio_image(name, brand="", is_set=False):
         )
     )
 
+    all_matches = []
+    seen_urls = set()
+
     for domain in domains:
         for q in queries:
+            if not q:
+                continue
             try:
                 url = f"https://{domain}/search/suggest.json?q={urllib.parse.quote(q)}&resources[type]=product"
                 resp = requests.get(url, headers=headers, timeout=6)
-                if not resp.ok:
+                if not resp.ok or "json" not in (resp.headers.get("content-type") or "").lower():
                     continue
                 data = resp.json()
                 products = data.get("resources", {}).get("results", {}).get("products", [])
-                matches = []
                 for p in products:
                     title = p.get("title", "")
                     title_lower = title.lower()
@@ -616,32 +657,31 @@ def search_official_studio_image(name, brand="", is_set=False):
                         )
                     )
 
-                    # If searching for set, only accept set results!
                     if is_set and not p_is_set:
                         continue
-                    # If searching for individual bottle, reject sets
                     if not is_set and p_is_set:
                         continue
-                    # Do not match deodorant cans or body sprays when looking for an EDP/EDT bottle
                     if not query_is_deo_or_body and p_is_deo_or_body:
                         continue
 
                     title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
                     if clean_tokens and (clean_tokens.issubset(title_tokens) or len(clean_tokens & title_tokens) >= max(1, len(clean_tokens) * 0.7)):
-                        img_url = p.get("image") or p.get("featured_image", {}).get("url")
+                        img_url = p.get("image") or (p.get("featured_image") or {}).get("url")
                         if not img_url:
                             continue
-                        if img_url.startswith("//"):
-                            img_url = "https:" + img_url
+                        img_url = upgrade_shopify_image_url(img_url)
+                        if img_url in seen_urls:
+                            continue
+                        seen_urls.add(img_url)
 
                         page_url = p.get("url", "")
                         if page_url and page_url.startswith("/"):
                             page_url = f"https://{domain}{page_url}"
 
-                        # Score studio front-view PNGs higher than lifestyle JPEGs
+                        overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
                         img_lower = img_url.lower()
-                        score = (2 if ".png" in img_lower else 0) + (1 if "front" in img_lower else 0)
-                        matches.append((
+                        score = overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                        all_matches.append((
                             score,
                             {
                                 "imageUrl": img_url,
@@ -651,12 +691,14 @@ def search_official_studio_image(name, brand="", is_set=False):
                                 "title": title,
                             },
                         ))
-                if matches:
-                    matches.sort(key=lambda item: item[0], reverse=True)
-                    return matches[0][1]
+                if all_matches:
+                    break
             except Exception:
                 pass
-    return None
+        if all_matches:
+            break
+    all_matches.sort(key=lambda item: item[0], reverse=True)
+    return [item[1] for item in all_matches[:3]]
 
 
 def make_session():
@@ -3000,20 +3042,24 @@ def process_product(
         is_set = is_perfume_set(row.get("name") or "", info)
 
         # Requirement: Search for high-res official studio photo FIRST (even for sets!)
-        studio_asset = search_official_studio_image(
+        studio_candidates = search_official_studio_candidates(
             row.get("name") or "",
             row.get("brand") or "",
             is_set=is_set,
         )
 
-        source_response = None
+        source_bytes = None
+        source_quality = None
         source_url = None
         source_name = None
         source_type = None
 
-        if studio_asset and studio_asset.get("imageUrl"):
-            fetch_url = studio_asset["imageUrl"]
-            print(f"[{row['id']}] Found official studio image ({studio_asset.get('title')}): {fetch_url}", flush=True)
+        best_small_studio = None
+        for studio_asset in studio_candidates:
+            fetch_url = studio_asset.get("imageUrl")
+            if not fetch_url:
+                continue
+            print(f"[{row['id']}] Trying official studio image ({studio_asset.get('title')}): {fetch_url}", flush=True)
             try:
                 resp = requests.get(
                     fetch_url,
@@ -3023,40 +3069,75 @@ def process_product(
                     timeout=(15, 60),
                     stream=True,
                 )
-                if resp.ok:
-                    source_response = resp
+                if not resp.ok:
+                    print(f"[{row['id']}] Studio fetch HTTP {resp.status_code}, trying next...", flush=True)
+                    continue
+                buf = io.BytesIO()
+                for chunk in resp.iter_content(chunk_size=64 * 1024):
+                    buf.write(chunk)
+                    if buf.tell() > MAX_SOURCE_BYTES:
+                        raise ValueError("Original product photo exceeds the 20 MB processing limit")
+                cand_bytes = buf.getvalue()
+                cand_q = measure_source_quality(cand_bytes)
+                cand_min = min(cand_q.get("width", 0), cand_q.get("height", 0))
+                if cand_min >= 500 and not cand_q.get("low_sharpness"):
+                    source_bytes = cand_bytes
+                    source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
                     source_name = studio_asset["sourceName"]
                     source_type = "official_studio"
-                else:
-                    print(f"[{row['id']}] Studio fetch HTTP {resp.status_code}, falling back to catalog...", flush=True)
+                    break
+                if cand_min >= 300 and (best_small_studio is None or cand_min > best_small_studio[0]):
+                    best_small_studio = (cand_min, cand_bytes, cand_q, studio_asset)
             except Exception as e:
-                print(f"[{row['id']}] Studio fetch error ({e}), falling back to catalog...", flush=True)
+                print(f"[{row['id']}] Studio fetch error ({e}), trying next...", flush=True)
 
-        if not source_response:
+        if source_bytes is None:
             raw_url = product_source(row)
-            if not raw_url:
-                raise ValueError("No valid catalog photo found and no official studio photo found")
-            source_response = requests.get(
-                raw_url,
-                headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
-                timeout=(15, 60),
-                stream=True,
-            )
-            if not source_response.ok:
-                raise RuntimeError(
-                    f"Qogita image fetch failed ({source_response.status_code})"
+            if raw_url:
+                raw_resp = requests.get(
+                    raw_url,
+                    headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
+                    timeout=(15, 60),
+                    stream=True,
                 )
-            source_url = raw_url
-            source_name = "Qogita Wholesale Catalog"
-            source_type = "qogita_set" if is_set else "qogita_catalog"
-        source_buffer = io.BytesIO()
-        for chunk in source_response.iter_content(chunk_size=64 * 1024):
-            source_buffer.write(chunk)
-            if source_buffer.tell() > MAX_SOURCE_BYTES:
-                raise ValueError("Original product photo exceeds the 20 MB processing limit")
-        source_bytes = source_buffer.getvalue()
-        source_quality = measure_source_quality(source_bytes)
+                if raw_resp.ok:
+                    raw_buf = io.BytesIO()
+                    for chunk in raw_resp.iter_content(chunk_size=64 * 1024):
+                        raw_buf.write(chunk)
+                        if raw_buf.tell() > MAX_SOURCE_BYTES:
+                            raise ValueError("Original product photo exceeds the 20 MB processing limit")
+                    raw_bytes = raw_buf.getvalue()
+                    raw_q = measure_source_quality(raw_bytes)
+                    raw_area = raw_q.get("width", 0) * raw_q.get("height", 0)
+                    if best_small_studio is not None:
+                        st_q = best_small_studio[2]
+                        st_area = st_q.get("width", 0) * st_q.get("height", 0)
+                        if st_area >= raw_area:
+                            source_bytes, source_quality = best_small_studio[1], st_q
+                            source_url = best_small_studio[3]["sourceUrl"]
+                            source_name = best_small_studio[3]["sourceName"]
+                            source_type = "official_studio"
+                    if source_bytes is None:
+                        source_bytes = raw_bytes
+                        source_quality = raw_q
+                        source_url = raw_url
+                        source_name = "Qogita Wholesale Catalog"
+                        source_type = "qogita_set" if is_set else "qogita_catalog"
+                elif best_small_studio is not None:
+                    source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
+                    source_url = best_small_studio[3]["sourceUrl"]
+                    source_name = best_small_studio[3]["sourceName"]
+                    source_type = "official_studio"
+                else:
+                    raise RuntimeError(f"Qogita image fetch failed ({raw_resp.status_code})")
+            elif best_small_studio is not None:
+                source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
+                source_url = best_small_studio[3]["sourceUrl"]
+                source_name = best_small_studio[3]["sourceName"]
+                source_type = "official_studio"
+            else:
+                raise ValueError("No valid catalog photo found and no official studio photo found")
 
         output = None
         original_size = None
