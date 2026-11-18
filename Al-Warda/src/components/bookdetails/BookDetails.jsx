@@ -8,6 +8,7 @@ import {
   inferSetItems,
   getPerfumeGtin,
   getPerfumeVolumeOptions,
+  markPerfumesEvictedAsFailed,
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
@@ -162,10 +163,11 @@ export default function BookDetails() {
       if (!res.ok) {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
+      markPerfumesEvictedAsFailed([String(perfume.id)]);
       setMarkedFailedMsg(
         isRussian
-          ? "Товар перенесён в список ошибок"
-          : "Product moved to failed list",
+          ? "Товар перенесён в список ошибок и скрыт с сайта"
+          : "Product moved to failed list and hidden from the store",
       );
     } catch (err) {
       setMarkedFailedMsg(

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useConfirm, useAlert, usePrompt } from "../../context/ConfirmContext";
-import { getPerfumeUrl } from "../../../utils/perfumes";
+import {
+  getPerfumeUrl,
+  markPerfumesEvictedAsFailed,
+} from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import ProductImageCompareModal from "./ProductImageCompareModal";
 import GpuDeviceAnalysisModal from "./GpuDeviceAnalysisModal";
@@ -984,6 +987,7 @@ export default function ProductImageQueue({
       if (!response.ok) {
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
+      markPerfumesEvictedAsFailed(ids);
       setSelectedFailed((current) => {
         const next = { ...current };
         for (const id of ids) {
@@ -1099,6 +1103,7 @@ export default function ProductImageQueue({
       if (!response.ok) {
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
+      markPerfumesEvictedAsFailed(ids);
       setSelectedImages((current) => {
         const next = { ...current };
         for (const id of ids) delete next[String(id)];

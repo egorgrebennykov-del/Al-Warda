@@ -2341,7 +2341,38 @@ function mapStockRowRich(r) {
 // Per-product details cache: keyed by id, short TTL, in-flight dedup.
 let detailsCache = new Map();
 let detailsInflight = new Map();
+let evictedFailedIds = new Set();
 const DETAILS_TTL_MS = 15 * 60 * 1000;
+
+export function isFailedImageProduct(p) {
+  if (!p) return false;
+  if (evictedFailedIds.has(String(p.id))) return true;
+  const ig = p.info?.imageGeneration;
+  return Boolean(
+    ig &&
+      (ig.status === "failed" || ig.failed === true || ig.manualFailed === true),
+  );
+}
+
+export function markPerfumesEvictedAsFailed(ids = []) {
+  const idSet = new Set(ids.map((x) => String(x)));
+  if (!idSet.size) return;
+  for (const id of idSet) {
+    evictedFailedIds.add(id);
+    detailsCache.delete(id);
+  }
+  if (Array.isArray(memoryPerfumesCache)) {
+    memoryPerfumesCache = memoryPerfumesCache.filter(
+      (p) => !idSet.has(String(p.id)),
+    );
+  }
+  if (Array.isArray(memoryDropshipCache)) {
+    memoryDropshipCache = memoryDropshipCache.filter(
+      (p) => !idSet.has(String(p.id)),
+    );
+  }
+  catalogCacheTime = 0;
+}
 
 export function invalidatePerfumeDetailsCache(id = null) {
   if (id) {
@@ -2363,6 +2394,7 @@ export function invalidateCatalogCache() {
 }
 
 async function fetchPerfumeDetailsById(id) {
+  if (evictedFailedIds.has(String(id))) return null;
   const res = await fetch(
     `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description,info&id=eq.${encodeURIComponent(id)}&limit=1`,
     {
@@ -2377,6 +2409,13 @@ async function fetchPerfumeDetailsById(id) {
   const rows = await res.json();
   const r = Array.isArray(rows) ? rows[0] : null;
   if (!r) return null;
+  const ig = r.info?.imageGeneration;
+  if (
+    ig &&
+    (ig.status === "failed" || ig.failed === true || ig.manualFailed === true)
+  ) {
+    return null;
+  }
   return mapStockRowRich(r);
 }
 
@@ -2703,14 +2742,16 @@ export async function getPerfumes(options = {}) {
     getPerfumesUnfiltered(options),
     fetchMinOrderSettings(Boolean(options.refresh)),
   ]);
-  return applyMinOrderFilter(list, settings);
+  return applyMinOrderFilter(list, settings).filter(
+    (p) => !isFailedImageProduct(p),
+  );
 }
 
 export function getCachedPerfumes() {
   return applyMinOrderFilter([
     ...(memoryPerfumesCache || []),
     ...(memoryDropshipCache || []),
-  ]);
+  ]).filter((p) => !isFailedImageProduct(p));
 }
 
 export async function getPerfumeById(id, options = {}) {

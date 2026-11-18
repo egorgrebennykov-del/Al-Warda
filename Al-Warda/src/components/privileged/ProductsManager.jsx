@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useConfirm, useAlert, usePrompt } from "../../context/ConfirmContext";
-import { getPerfumeUrl, isGeneratedProductImage } from "../../../utils/perfumes";
+import {
+  getPerfumeUrl,
+  isGeneratedProductImage,
+  markPerfumesEvictedAsFailed,
+} from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductsManager.css";
 
@@ -299,6 +303,7 @@ export default function ProductsManager({ language = "ru" }) {
       if (!res.ok) {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
+      markPerfumesEvictedAsFailed([String(product.id)]);
       setProducts((prev) =>
         prev.map((p) =>
           String(p.id) === String(product.id)
@@ -365,6 +370,7 @@ export default function ProductsManager({ language = "ru" }) {
       if (!res.ok) {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
+      markPerfumesEvictedAsFailed(ids);
       const idSet = new Set(ids.map(String));
       setProducts((prev) =>
         prev.map((p) =>
