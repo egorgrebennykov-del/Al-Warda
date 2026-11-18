@@ -2035,3 +2035,108 @@
   background: rgba(217, 119, 6, 0.08);
   border-color: rgba(217, 119, 6, 0.35);
 }
+
+@media (max-width: 640px) {
+  .product-image-queue {
+    gap: 1rem;
+  }
+
+  .product-image-queue__header-actions,
+  .product-image-queue__header-actions button {
+    width: 100%;
+  }
+
+  .product-image-queue__gpu-hub {
+    padding: 1rem;
+    border-radius: 0.85rem;
+  }
+
+  .product-image-queue__gpu-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .product-image-queue__gpu-body {
+    padding: 0.9rem;
+    gap: 1rem;
+  }
+
+  .product-image-queue__gpu-actions,
+  .product-image-queue__gpu-btn-launch,
+  .product-image-queue__gpu-btn-stop {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .product-image-queue__filter-bar {
+    gap: 0.45rem;
+  }
+
+  .product-image-queue__filter-pill {
+    flex: 1 1 calc(50% - 0.25rem);
+    justify-content: center;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+
+  .product-image-queue__filter-reset {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .product-image-queue__gallery-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .product-image-queue__gallery-actions .product-image-queue__start,
+  .product-image-queue__danger-zone-wrapper,
+  .product-image-queue__danger-zone-wrapper .product-image-queue__start {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .product-image-queue__gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .product-image-queue__gallery-item {
+    padding: 0.6rem;
+  }
+
+  .product-image-queue__gallery-thumb-wrap {
+    height: 125px;
+    min-height: 125px;
+  }
+
+  .product-image-queue__failed-body {
+    flex-direction: column;
+  }
+
+  .product-image-queue__failed-thumb {
+    width: 100%;
+    height: 130px;
+  }
+
+  .product-image-queue__failed-top {
+    gap: 0.4rem;
+  }
+
+  .product-image-queue__failed-requeue-one {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .product-image-queue__gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-image-queue__filter-pill {
+    flex: 1 1 100%;
+  }
+}
