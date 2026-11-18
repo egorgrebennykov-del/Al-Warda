@@ -65,8 +65,8 @@
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
-  padding: 0 !important;
-  transform: scale(1.13) !important;
+  padding: 0.25rem !important;
+  transform: none !important;
 }
 
 .warda-perfume-card .warda-perfume-card__info,
