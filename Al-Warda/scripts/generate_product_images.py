@@ -1583,6 +1583,18 @@ def validate_cutout_quality(source_quality, out_bytes):
     if max(top_clip, left_clip, right_clip) > 0.60:
         return False, final_sharpness, "Фотография товара сильно обрезана по краям"
 
+    ys_fg, xs_fg = np.where(alpha > 120)
+    if len(xs_fg) > 0:
+        y1, y2 = int(ys_fg.min()), int(ys_fg.max())
+        x1, x2 = int(xs_fg.min()), int(xs_fg.max())
+        bbox_fill = float(np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120))
+        if bbox_fill > 0.84 and fg_ratio > 0.62:
+            return False, final_sharpness, "Фон или студийная сцена не вырезаны"
+        top_band = alpha[y1:min(y2 + 1, y1 + max(2, int((y2 - y1) * 0.03))), x1:x2 + 1]
+        top_cov = float(np.mean(top_band > 120)) if top_band.size > 0 else 0.0
+        if 0.78 <= bbox_fill < 0.93 and fg_ratio > 0.50 and top_cov > 0.55:
+            return False, final_sharpness, "Фон или студийная сцена не вырезаны"
+
     return True, final_sharpness, None
 
 
@@ -2050,10 +2062,134 @@ def enhance_luxury_color(cutout):
         return cutout
 
 
+def strip_baked_reflection(cutout):
+    """Remove baked-in studio reflections or narrow reflection tails at the bottom
+    of segmented cutouts (e.g. a narrow curved reflection tail under a crystal base,
+    or a full-width mirrored table-reflection slab under box+bottle)."""
+    if "A" not in cutout.getbands():
+        return cutout
+    try:
+        import numpy as np
+        arr = np.array(cutout.convert("RGBA"))
+        alpha = arr[:, :, 3]
+        ys, xs = np.where(alpha > 40)
+        if len(ys) < 200:
+            return cutout
+        min_y, max_y = int(ys.min()), int(ys.max())
+        min_x, max_x = int(xs.min()), int(xs.max())
+        h_obj = max_y - min_y + 1
+        w_obj = max_x - min_x + 1
+        if h_obj < 120 or w_obj < 80:
+            return cutout
+
+        # Row widths of solid foreground (alpha > 80)
+        row_widths = np.array([int(np.sum(alpha[y, min_x:max_x + 1] > 80)) for y in range(min_y, max_y + 1)])
+        main_w = float(np.percentile(row_widths[int(h_obj * 0.35):int(h_obj * 0.78)], 70))
+        if main_w < 60:
+            return cutout
+
+        # Case A: Narrow hanging reflection tail at bottom (e.g. Al Haramain Sheikh)
+        search_top = max(min_y + int(h_obj * 0.65), max_y - int(h_obj * 0.22))
+        for y in range(max_y - 4, search_top, -1):
+            w_below = float(np.median(row_widths[y - min_y:min(len(row_widths), y - min_y + 6)]))
+            w_above = float(np.median(row_widths[max(0, y - min_y - 10):y - min_y]))
+            if w_below < main_w * 0.38 and w_above >= main_w * 0.55 and w_above >= w_below * 2.0:
+                # Confirm bottom tail is genuinely narrow all the way to max_y
+                if float(np.max(row_widths[y - min_y + 2:])) < main_w * 0.45:
+                    out = arr.copy()
+                    out[y + 1:, :, 3] = 0
+                    return Image.fromarray(out, "RGBA")
+
+        # Case B: Full-width baked-in mirror reflection slab (e.g. Al Absar Hiyam)
+        bot_cov = float(np.mean(alpha[max_y - 3:max_y + 1, min_x:max_x + 1] > 80))
+        rgb = arr[:, :, :3].astype(np.float32)
+        lum = 0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]
+        if bot_cov >= 0.88:
+            best_seam = None
+            best_score = 0.0
+            lo_seam = max(min_y + int(h_obj * 0.72), max_y - int(h_obj * 0.16))
+            hi_seam = max_y - 12
+            for y_seam in range(lo_seam, hi_seam):
+                d = min(35, max_y - y_seam, y_seam - min_y)
+                if d < 12:
+                    continue
+                above = lum[y_seam - d:y_seam, min_x:max_x + 1]
+                below = lum[y_seam:y_seam + d, min_x:max_x + 1][::-1, :]
+                m_above = float(np.mean(above))
+                m_below = float(np.mean(below))
+                if m_above < 20.0:
+                    continue
+                a_c = above - m_above
+                b_c = below - m_below
+                denom = float(np.sqrt(np.sum(a_c * a_c) * np.sum(b_c * b_c)))
+                corr = float(np.sum(a_c * b_c) / denom) if denom > 1e-5 else 0.0
+
+                mask = (alpha[y_seam, min_x:max_x + 1] > 80) & (alpha[y_seam + 2, min_x:max_x + 1] > 80)
+                grad = 0.0
+                if np.sum(mask) >= 50:
+                    grad = float(np.mean(np.abs(
+                        lum[y_seam - 1:y_seam + 1, min_x:max_x + 1].mean(axis=0)[mask]
+                        - lum[y_seam + 1:y_seam + 3, min_x:max_x + 1].mean(axis=0)[mask]
+                    )))
+
+                if corr > 0.55 and m_below < m_above * 0.90:
+                    score = corr * 100.0
+                    if score > best_score:
+                        best_score = score
+                        best_seam = y_seam
+                elif grad >= 28.0 and m_below < m_above * 0.85 and float(np.min(row_widths[y_seam - min_y:])) >= w_obj * 0.88:
+                    if grad > best_score:
+                        best_score = grad
+                        best_seam = y_seam
+            if best_seam is not None:
+                out = arr.copy()
+                out[best_seam + 1:, :, 3] = 0
+                return Image.fromarray(out, "RGBA")
+
+        # Case C: Crystal/bottle base reflection with sharp horizontal seam & mirror correlation (e.g. Sheikh)
+        lo_c = max(min_y + int(h_obj * 0.82), max_y - int(h_obj * 0.10))
+        hi_c = max_y - 22
+        best_c_seam = None
+        best_c_grad = 0.0
+        for y_seam in range(lo_c, hi_c):
+            d = min(35, max_y - y_seam, y_seam - min_y)
+            if d < 14:
+                continue
+            mask = (alpha[y_seam, min_x:max_x + 1] > 80) & (alpha[y_seam + 2, min_x:max_x + 1] > 80)
+            if np.sum(mask) < 40:
+                continue
+            grad = float(np.mean(np.abs(
+                lum[y_seam - 1:y_seam + 1, min_x:max_x + 1].mean(axis=0)[mask]
+                - lum[y_seam + 1:y_seam + 3, min_x:max_x + 1].mean(axis=0)[mask]
+            )))
+            if grad < 45.0:
+                continue
+            above = lum[y_seam - d:y_seam, min_x:max_x + 1]
+            below = lum[y_seam:y_seam + d, min_x:max_x + 1][::-1, :]
+            a_c = above - float(np.mean(above))
+            b_c = below - float(np.mean(below))
+            denom = float(np.sqrt(np.sum(a_c * a_c) * np.sum(b_c * b_c)))
+            corr = float(np.sum(a_c * b_c) / denom) if denom > 1e-5 else 0.0
+            if corr >= 0.48 and float(np.max(row_widths[y_seam + 2 - min_y:])) < main_w * 0.92:
+                if grad > best_c_grad:
+                    best_c_grad = grad
+                    best_c_seam = y_seam
+        if best_c_seam is not None:
+            out = arr.copy()
+            out[best_c_seam + 1:, :, 3] = 0
+            return Image.fromarray(out, "RGBA")
+
+        return cutout
+    except Exception:
+        return cutout
+
+
 def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True):
     if "A" not in cutout.getbands():
         return cutout
     import numpy as np
+
+    cutout = strip_baked_reflection(cutout)
 
     # 1. Clean invisible/faint ghost residue (alpha < 18)
     arr = np.array(cutout)
