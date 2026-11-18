@@ -2078,6 +2078,7 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
             canvas.paste(resized, (pos_x + err, pos_y), resized)
 
     canvas = align_multi_object_floor(canvas)
+    canvas = level_tilted_bottle(canvas, target_max_h=target_max_h, target_max_w=target_max_w)
     return canvas
 
 
@@ -2149,6 +2150,126 @@ def align_multi_object_floor(canvas):
                 changed = True
 
     return Image.fromarray(out, "RGBA") if changed else canvas
+
+
+def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
+    """For single-bottle cutouts photographed at a 3/4 or tilted angle with a crisp,
+    straight angled front-bottom edge (4..20 deg), apply a gentle vertical shear so the
+    dominant front face sits flat on the stage while keeping vertical edges upright."""
+    try:
+        import cv2
+        import numpy as np
+    except Exception:
+        return canvas
+
+    arr = np.array(canvas.convert("RGBA"))
+    h, w = arr.shape[:2]
+    alpha = arr[:, :, 3]
+    ys, xs = np.where(alpha > 120)
+    if len(xs) < 200:
+        return canvas
+
+    min_x, max_x = int(xs.min()), int(xs.max())
+    min_y, max_y = int(ys.min()), int(ys.max())
+    w_obj = max_x - min_x + 1
+    if w_obj < 60:
+        return canvas
+
+    # Skip multi-object cutouts (box + bottle, sets)
+    col_has = np.any(alpha[min_y:max_y + 1, :] > 35, axis=0)
+    gaps = 0
+    in_seg = False
+    seg_count = 0
+    gap_len = 0
+    for x in range(min_x, max_x + 1):
+        if col_has[x]:
+            if not in_seg:
+                if seg_count > 0 and gap_len >= 6:
+                    gaps += 1
+                in_seg = True
+                seg_count += 1
+            gap_len = 0
+        else:
+            in_seg = False
+            gap_len += 1
+    if gaps > 0:
+        return canvas
+
+    bottom_y = {}
+    for x in range(min_x, max_x + 1):
+        col = np.where(alpha[:, x] > 120)[0]
+        if len(col) > 0:
+            bottom_y[x] = int(col.max())
+    if len(bottom_y) < 40:
+        return canvas
+
+    pts_x = sorted(bottom_y.keys())
+    x_mid = pts_x[int(np.argmax([bottom_y[x] for x in pts_x]))]
+
+    chosen_m = None
+    for sub_xs, expect_sign in [
+        ([x for x in pts_x if x < x_mid - 15], 1),
+        ([x for x in pts_x if x > x_mid + 15], -1),
+    ]:
+        if len(sub_xs) < w_obj * 0.48:
+            continue
+        n = len(sub_xs)
+        trim = max(2, int(n * 0.12))
+        core_xs = sub_xs[trim:-trim] if n > 20 else sub_xs
+        if len(core_xs) < 15:
+            continue
+        pts = np.array([[float(x), float(bottom_y[x])] for x in core_xs], dtype=np.float32)
+        vx, vy, x0, y0 = cv2.fitLine(pts, cv2.DIST_HUBER, 0, 0.01, 0.01).flatten()
+        if abs(vx) < 1e-6:
+            continue
+        m = float(vy / vx)
+        deg = float(np.degrees(np.arctan(m)))
+        b = float(y0 - m * x0)
+        resid = np.abs(pts[:, 1] - (m * pts[:, 0] + b))
+        inlier_ratio = float(np.mean(resid < 4.5))
+        med_err = float(np.median(resid))
+        if 4.0 <= deg * expect_sign <= 20.0 and inlier_ratio >= 0.92 and med_err <= 1.2:
+            chosen_m = m
+            break
+
+    if chosen_m is None:
+        return canvas
+
+    k = float(np.clip(0.85 * chosen_m, -0.30, 0.30))
+    # Compute padded canvas so vertical shear never clips top/bottom corners
+    pad = int(abs(k) * w_obj) + 32
+    padded = cv2.copyMakeBorder(arr, pad, pad, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0, 0))
+    ph, pw = padded.shape[:2]
+    M = np.float32([[1, 0, 0], [-k, 1, k * x_mid]])
+    warped = cv2.warpAffine(
+        padded, M, (pw, ph),
+        flags=cv2.INTER_LANCZOS4,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(0, 0, 0, 0),
+    )
+
+    w_ys, w_xs = np.where(warped[:, :, 3] > 25)
+    if len(w_xs) == 0:
+        return canvas
+    wx1, wy1 = max(0, int(w_xs.min()) - 4), max(0, int(w_ys.min()) - 4)
+    wx2, wy2 = min(pw, int(w_xs.max()) + 5), min(ph, int(w_ys.max()) + 5)
+    cw, ch = wx2 - wx1, wy2 - wy1
+    if cw <= 0 or ch <= 0:
+        return canvas
+
+    crop = Image.fromarray(warped[wy1:wy2, wx1:wx2], "RGBA")
+    eff_max_w = max(target_max_w, min(int(w * 0.94), 960)) if cw > ch * 1.15 else target_max_w
+    scale = min(eff_max_w / float(cw), target_max_h / float(ch), 1.0)
+    new_w = max(1, int(round(cw * scale)))
+    new_h = max(1, int(round(ch * scale)))
+    if new_w != cw or new_h != ch:
+        crop = crop.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    out_canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    pos_x = (w - new_w) // 2
+    pos_y = (h - new_h) // 2
+    out_canvas.paste(crop, (pos_x, pos_y), crop)
+    return out_canvas
 
 
 

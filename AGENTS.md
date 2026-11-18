@@ -111,7 +111,7 @@ When processing a product row from `stocks`:
 3. **Segmentation, Super-Resolution & Stage-Aware Lighting Harmonization (`preserve_original_product` & `harmonize_cutout_for_stage`)**:
    - Segments the authentic photo first using `RMBG-1.4` (`1024 × 1024` ONNX) or `U2Net`.
    - Applies AI Super-Resolution (`ultrasharp-4x` / edge-preserving upscale) when resolution is below `1200 px`, combining raw and super-resolved alpha masks so boxes, caps, and miniatures are never clipped.
-   - Centers and normalizes the cutout on a `1024 × 1024` transparent canvas (`normalize_flacon_cutout`, `target_max_h=880`, `target_max_w=880`).
+   - Centers and normalizes the cutout on a `1024 × 1024` transparent canvas (`normalize_flacon_cutout`, `target_max_h=880`, `target_max_w=880`), aligns multi-object baselines via `align_multi_object_floor`, and levels tilted 3/4 single-bottle cutouts (`4°–20°` straight bottom edge) via `level_tilted_bottle` so bottles stand flat on the stage.
    - Runs `harmonize_cutout_for_stage(cutout)`, which samples `/assets/img/stage/bottom_glow_stage.webp` and adapts the flacon's lighting to the dark golden stage: compresses harsh white-lightbox flash hotspots (`tanh` filmic shoulder), anchors lifted white-studio shadows, applies 3D cylindrical curvature shading across each scanline, warms cold specular highlights toward champagne gold, projects upward golden horizon bounce light + warm rim light onto the lower bottle, and decontaminates white-matte edge halos.
 
 ---
