@@ -506,6 +506,18 @@
   color: #fff;
 }
 
+.products-manager__fail-btn--active {
+  border-color: rgba(239, 68, 68, 0.7);
+  background: rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+}
+
+.products-manager__fail-btn--active:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.38);
+  border-color: #ef4444;
+  color: #fff;
+}
+
 .products-manager__fail-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;

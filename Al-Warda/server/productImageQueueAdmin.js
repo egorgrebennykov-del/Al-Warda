@@ -935,6 +935,111 @@ export async function markProductItemsFailed(request, env) {
   }
 }
 
+export async function unmarkProductItemsFailed(request, env) {
+  try {
+    const auth = await requirePrivilegedUser(request, env);
+    if (auth.response) return auth.response;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid JSON request" }, 400);
+    }
+    const rawIds = Array.isArray(body?.ids)
+      ? body.ids
+      : body?.id !== undefined && body?.id !== null
+        ? [body.id]
+        : null;
+    const parsed = parseIds({ ids: rawIds });
+    if (!parsed)
+      return json({ error: "Select at least one product ID" }, 400);
+    if (parsed.error) return json({ error: parsed.error }, 400);
+
+    const key = getServiceKey(env);
+    const baseUrl = getSupabaseUrl(env);
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    };
+    const nowIso = new Date().toISOString();
+    let restoredCount = 0;
+
+    for (let i = 0; i < parsed.ids.length; i += 200) {
+      const chunk = parsed.ids.slice(i, i + 200);
+      const url = new URL(`${baseUrl}/rest/v1/stocks`);
+      url.searchParams.set("select", "id,image,info");
+      url.searchParams.set("id", `in.(${chunk.join(",")})`);
+      const result = await supabaseFetch(env, url, { headers });
+      if (!result.ok) {
+        throw new Error(`Could not load items (${result.status})`);
+      }
+      const rows = await result.json();
+      for (const row of rows) {
+        const info =
+          row.info && typeof row.info === "object" ? { ...row.info } : {};
+        const prevJob =
+          info.imageGeneration && typeof info.imageGeneration === "object"
+            ? { ...info.imageGeneration }
+            : {};
+        const prevImageCandidate =
+          (typeof prevJob.previousImageUrl === "string" &&
+            prevJob.previousImageUrl) ||
+          (typeof prevJob.imageUrl === "string" && prevJob.imageUrl) ||
+          (typeof row.image === "string" && row.image) ||
+          "";
+        const hasGeneratedCutout =
+          /^\/assets\/img\/generated-products\//.test(prevImageCandidate) ||
+          /^https:\/\//i.test(prevImageCandidate);
+        const restoredImage = hasGeneratedCutout ? prevImageCandidate : "";
+        const nextJob = {
+          ...prevJob,
+          status: hasGeneratedCutout ? "completed" : "pending",
+          failed: false,
+          manualFailed: false,
+          updatedAt: nowIso,
+        };
+        if (hasGeneratedCutout) {
+          nextJob.imageUrl = restoredImage;
+        }
+        delete nextJob.error;
+        delete nextJob.failedAt;
+        delete nextJob.previousImageUrl;
+        info.imageGeneration = nextJob;
+        delete info.imageGenerationReplacement;
+
+        const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+        patchUrl.searchParams.set("id", `eq.${row.id}`);
+        const patch = await supabaseFetch(env, patchUrl, {
+          method: "PATCH",
+          headers: { ...headers, Prefer: "return=minimal" },
+          body: JSON.stringify({ image: restoredImage, info }),
+        });
+        if (!patch.ok) {
+          const details = (await patch.text()).slice(0, 300);
+          throw new Error(
+            `Could not restore item ${row.id} (${patch.status}): ${details}`,
+          );
+        }
+        restoredCount++;
+      }
+    }
+    invalidateProductImageQueueCache();
+    return json({ ok: true, restoredCount, ids: parsed.ids });
+  } catch (error) {
+    if (error instanceof MissingServiceKeyError) {
+      return json(
+        { error: error.message, code: "SUPABASE_SERVICE_KEY_MISSING" },
+        503,
+      );
+    }
+    return json(
+      { error: error.message || "Could not restore items from errors" },
+      500,
+    );
+  }
+}
+
 export const SETTINGS_SLUG = "site-settings";
 
 export async function loadSettingsRow(env, key) {

@@ -5,6 +5,7 @@ import {
   getPerfumeUrl,
   isGeneratedProductImage,
   markPerfumesEvictedAsFailed,
+  unmarkPerfumesEvictedAsFailed,
 } from "../../../utils/perfumes";
 import ProductManualConfigModal from "./ProductManualConfigModal";
 import "./ProductsManager.css";
@@ -322,6 +323,57 @@ export default function ProductsManager({ language = "ru" }) {
           (isRussian
             ? "Не удалось перенести товар в ошибки"
             : "Failed to move product to errors"),
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleUnmarkFailed = async (product) => {
+    const approved = await confirm({
+      title: isRussian ? "Убрать товар из ошибок" : "Remove from Errors",
+      message: isRussian
+        ? `Убрать товар «${product.name || `ID #${product.id}`}» из списка ошибок и вернуть его?`
+        : `Remove "${product.name || `ID #${product.id}`}" from the failed list?`,
+      confirmText: isRussian ? "Убрать из ошибок" : "Remove from Errors",
+      type: "warning",
+      icon: "ri-refresh-line",
+    });
+    if (!approved) return;
+
+    setDeletingId(product.id);
+    setMessage("");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/product-images/unmark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [String(product.id)] }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      unmarkPerfumesEvictedAsFailed([String(product.id)]);
+      setProducts((prev) =>
+        prev.map((p) =>
+          String(p.id) === String(product.id)
+            ? { ...p, status: p.image ? "completed" : "pending" }
+            : p,
+        ),
+      );
+      setMessage(
+        isRussian
+          ? `Товар «${product.name}» (ID #${product.id}) убран из списка ошибок.`
+          : `Product "${product.name}" (ID #${product.id}) removed from failed list.`,
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          (isRussian
+            ? "Не удалось убрать товар из ошибок"
+            : "Failed to remove product from errors"),
       );
     } finally {
       setDeletingId(null);
@@ -842,20 +894,30 @@ export default function ProductsManager({ language = "ru" }) {
                     </button>
                     <button
                       type="button"
-                      className="products-manager__fail-btn"
-                      onClick={() => handleMarkFailed(p)}
-                      disabled={isDeleting || p.status === "failed"}
+                      className={`products-manager__fail-btn ${p.status === "failed" ? "products-manager__fail-btn--active" : ""}`}
+                      onClick={() =>
+                        p.status === "failed"
+                          ? handleUnmarkFailed(p)
+                          : handleMarkFailed(p)
+                      }
+                      disabled={isDeleting}
                       title={
                         p.status === "failed"
                           ? isRussian
-                            ? "Товар уже в списке ошибок"
-                            : "Already in failed list"
+                            ? "В ошибках — нажмите, чтобы убрать из ошибок"
+                            : "In errors — click to remove from errors"
                           : isRussian
                             ? "Перенести товар в список ошибок"
                             : "Move product to failed list"
                       }
                     >
-                      <i className="ri-error-warning-line" />
+                      <i
+                        className={
+                          p.status === "failed"
+                            ? "ri-error-warning-fill"
+                            : "ri-error-warning-line"
+                        }
+                      />
                     </button>
                     <button
                       type="button"

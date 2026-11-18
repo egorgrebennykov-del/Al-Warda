@@ -9,10 +9,11 @@ import {
   getPerfumeGtin,
   getPerfumeVolumeOptions,
   markPerfumesEvictedAsFailed,
+  unmarkPerfumesEvictedAsFailed,
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
-import { usePrompt } from "../../context/ConfirmContext";
+import { useConfirm, usePrompt } from "../../context/ConfirmContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
@@ -85,6 +86,7 @@ export default function BookDetails() {
   const { formatPrice } = useCurrency();
   const { isInCart, toggleCart } = useCartState();
   const { user, isPrivileged: isPrivContext } = useAuth();
+  const confirm = useConfirm();
   const prompt = usePrompt();
   const isPriv = Boolean(isPrivContext || checkIsPrivileged(user));
 
@@ -108,6 +110,7 @@ export default function BookDetails() {
   const [flaconScale, setFlaconScale] = useState(1);
   const [markingFailed, setMarkingFailed] = useState(false);
   const [markedFailedMsg, setMarkedFailedMsg] = useState("");
+  const [isInErrors, setIsInErrors] = useState(false);
   const flaconImgRef = useRef(null);
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume, imgRetryTick),
@@ -124,6 +127,13 @@ export default function BookDetails() {
     setFlaconBottomPadPct(7.4);
     setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
     setMarkedFailedMsg("");
+    setIsInErrors(
+      Boolean(
+        perfume?.info?.imageGeneration?.status === "failed" ||
+          perfume?.info?.imageGeneration?.failed === true ||
+          perfume?.info?.imageGeneration?.manualFailed === true,
+      ),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perfumeKey]);
 
@@ -164,6 +174,7 @@ export default function BookDetails() {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
       markPerfumesEvictedAsFailed([String(perfume.id)]);
+      setIsInErrors(true);
       setMarkedFailedMsg(
         isRussian
           ? "Товар перенесён в список ошибок и скрыт с сайта"
@@ -173,6 +184,49 @@ export default function BookDetails() {
       setMarkedFailedMsg(
         err.message ||
           (isRussian ? "Ошибка переноса" : "Failed to move product"),
+      );
+    } finally {
+      setMarkingFailed(false);
+    }
+  };
+
+  const handleRemoveProductFromErrors = async () => {
+    if (!perfume?.id || markingFailed) return;
+    const approved = await confirm({
+      title: isRussian ? "Убрать товар из ошибок" : "Remove from Errors",
+      message: isRussian
+        ? `Убрать «${perfume.name || `#${perfume.id}`}» из списка ошибок и вернуть его на сайт?`
+        : `Remove "${perfume.name || `#${perfume.id}`}" from the failed list and restore it to the store?`,
+      confirmText: isRussian ? "Убрать из ошибок" : "Remove from Errors",
+      type: "warning",
+      icon: "ri-refresh-line",
+    });
+    if (!approved) return;
+
+    setMarkingFailed(true);
+    setMarkedFailedMsg("");
+    try {
+      const res = await fetch("/api/admin/product-images/unmark-failed", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [String(perfume.id)] }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      unmarkPerfumesEvictedAsFailed([String(perfume.id)]);
+      setIsInErrors(false);
+      setMarkedFailedMsg(
+        isRussian
+          ? "Товар убран из списка ошибок"
+          : "Product removed from failed list",
+      );
+    } catch (err) {
+      setMarkedFailedMsg(
+        err.message ||
+          (isRussian ? "Ошибка восстановления" : "Failed to restore product"),
       );
     } finally {
       setMarkingFailed(false);
@@ -912,30 +966,48 @@ export default function BookDetails() {
                   { /^\d+$/.test(String(perfume?.id || "")) && (
                     <button
                       type="button"
-                      className="warda-privileged-panel-btn warda-privileged-fail-btn"
+                      className={`warda-privileged-panel-btn warda-privileged-fail-btn ${isInErrors ? "warda-privileged-fail-btn--active" : ""}`}
                       disabled={markingFailed}
-                      onClick={handleMoveProductToFailed}
+                      onClick={
+                        isInErrors
+                          ? handleRemoveProductFromErrors
+                          : handleMoveProductToFailed
+                      }
                       title={
-                        isRussian
-                          ? "Перенести этот товар в список ошибок генерации"
-                          : "Move this product to the failed generation list"
+                        isInErrors
+                          ? isRussian
+                            ? "Нажмите, чтобы убрать товар из списка ошибок"
+                            : "Click to remove this product from the failed list"
+                          : isRussian
+                            ? "Перенести этот товар в список ошибок генерации"
+                            : "Move this product to the failed generation list"
                       }
                     >
                       <i
                         className={
                           markingFailed
                             ? "ri-loader-4-line ri-spin"
-                            : "ri-error-warning-line"
+                            : isInErrors
+                              ? "ri-error-warning-fill"
+                              : "ri-error-warning-line"
                         }
                       />
                       <span>
                         {markingFailed
                           ? isRussian
-                            ? "Перенос..."
-                            : "Moving..."
-                          : isRussian
-                            ? "В ошибки"
-                            : "Move to Errors"}
+                            ? isInErrors
+                              ? "Убираем..."
+                              : "Перенос..."
+                            : isInErrors
+                              ? "Removing..."
+                              : "Moving..."
+                          : isInErrors
+                            ? isRussian
+                              ? "В ошибках"
+                              : "In Errors"
+                            : isRussian
+                              ? "В ошибки"
+                              : "Move to Errors"}
                       </span>
                     </button>
                   )}

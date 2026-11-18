@@ -45,6 +45,7 @@ import {
   deleteFailedProductItems,
   requeueFailedProductItems,
   markProductItemsFailed,
+  unmarkProductItemsFailed,
   saveManualProductItem,
   getAllAdminProducts,
   deleteAdminProducts,
@@ -314,6 +315,20 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await markProductItemsFailed(request, process.env);
+      respond(res, response.status, await response.json(), req);
+    } catch (error) {
+      respond(res, 400, { error: error.message }, req);
+    }
+    return;
+  }
+
+  if (
+    pathname === "/api/admin/product-images/unmark-failed" &&
+    req.method === "POST"
+  ) {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const response = await unmarkProductItemsFailed(request, process.env);
       respond(res, response.status, await response.json(), req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);

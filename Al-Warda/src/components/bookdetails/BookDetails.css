@@ -1498,6 +1498,18 @@
   color: #fff !important;
 }
 
+.warda-privileged-fail-btn--active {
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+.warda-privileged-fail-btn--active:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.34) !important;
+  border-color: #ef4444 !important;
+  color: #fff !important;
+}
+
 .warda-privileged-fail-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;

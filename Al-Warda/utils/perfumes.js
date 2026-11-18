@@ -2374,6 +2374,16 @@ export function markPerfumesEvictedAsFailed(ids = []) {
   catalogCacheTime = 0;
 }
 
+export function unmarkPerfumesEvictedAsFailed(ids = []) {
+  const idSet = new Set(ids.map((x) => String(x)));
+  if (!idSet.size) return;
+  for (const id of idSet) {
+    evictedFailedIds.delete(id);
+    detailsCache.delete(id);
+  }
+  catalogCacheTime = 0;
+}
+
 export function invalidatePerfumeDetailsCache(id = null) {
   if (id) {
     detailsCache.delete(String(id));

@@ -14,6 +14,7 @@ import {
   deleteFailedProductItems,
   requeueFailedProductItems,
   markProductItemsFailed,
+  unmarkProductItemsFailed,
   saveManualProductItem,
   getAllAdminProducts,
   deleteAdminProducts,
@@ -386,6 +387,12 @@ export default {
         pathname === "/api/admin/product-images/mark-failed"
       ) {
         return markProductItemsFailed(request, env);
+      }
+      if (
+        method === "POST" &&
+        pathname === "/api/admin/product-images/unmark-failed"
+      ) {
+        return unmarkProductItemsFailed(request, env);
       }
       if (
         method === "POST" &&
