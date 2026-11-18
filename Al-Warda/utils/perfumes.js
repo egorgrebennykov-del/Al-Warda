@@ -2468,9 +2468,13 @@ export async function fetchPerfumesFromSupabase() {
     }
 
     if (allRows.length > 0) {
-      // Filter out items with no actual product visual (dummy Qogita "No image available" placeholders).
-      // The server query already restricted rows to completed generated images.
+      // Filter out items with no actual generated cutout visual.
+      // The server query already restricted rows to completed generated images,
+      // and here we also verify the image path is a real generated cutout.
       const validRows = allRows.filter((r) => {
+        if (!isGeneratedProductImage(r.image) || !String(r.image).startsWith("/")) {
+          return false;
+        }
         const img = String(r.image || "").toLowerCase();
         if (
           img.includes("46e86f1d826c199f04588f35f1fd8afe") ||
@@ -2480,7 +2484,7 @@ export async function fetchPerfumesFromSupabase() {
         ) {
           return false;
         }
-        return Boolean(r.image);
+        return true;
       });
 
       // Map database fields to standard schema (light — no full `info`)

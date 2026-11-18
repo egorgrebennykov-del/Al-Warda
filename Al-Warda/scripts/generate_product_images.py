@@ -102,7 +102,8 @@ MAX_SOURCE_PIXELS = 24_000_000
 # mismatches (a different bottle / wrong colour) trip this, so faithful results
 # pass untouched.
 MAX_PRODUCT_COLOR_DISTANCE = 100
-STALE_PROCESSING_MINUTES = 30
+STALE_PROCESSING_MINUTES = 15
+STALE_PUBLISHING_MINUTES = 60
 SCHEDULE_WAIT_WINDOW_SECONDS = 900
 UNPUBLISHED_ERROR = "Generated image was not published; generation must be retried"
 U2NET_SHA256 = "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491"
@@ -2081,16 +2082,22 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
 
 
 def is_stale_processing(job, now):
-    if job.get("status") != "processing":
+    status = job.get("status")
+    if status not in ("processing", "publishing"):
         return False
-    started_at = job.get("startedAt")
-    if not started_at:
+    ts_str = (
+        job.get("startedAt")
+        if status == "processing"
+        else (job.get("updatedAt") or job.get("completedAt") or job.get("startedAt"))
+    )
+    if not ts_str:
         return True
     try:
-        started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
     except ValueError:
         return True
-    return (now - started).total_seconds() >= STALE_PROCESSING_MINUTES * 60
+    limit_min = STALE_PROCESSING_MINUTES if status == "processing" else STALE_PUBLISHING_MINUTES
+    return (now - ts).total_seconds() >= limit_min * 60
 
 
 def select_candidates(rows, now, regenerate_completed=False):
@@ -2108,17 +2115,13 @@ def select_candidates(rows, now, regenerate_completed=False):
             if job.get("status") != "completed" or job.get("model") == MODEL_ID:
                 continue
             replacement = info.get("imageGenerationReplacement") or {}
-            if replacement.get("status") == "publishing":
-                continue
-            if replacement.get("status") == "processing" and not is_stale_processing(replacement, now):
+            if replacement.get("status") in ("processing", "publishing") and not is_stale_processing(replacement, now):
                 continue
             eligible.append(row)
             continue
         if job.get("status") == "completed":
             continue
-        if job.get("status") == "publishing":
-            continue
-        if job.get("status") == "processing" and not is_stale_processing(job, now):
+        if job.get("status") in ("processing", "publishing") and not is_stale_processing(job, now):
             continue
         eligible.append(row)
     return eligible, attempts_today

@@ -1929,6 +1929,26 @@ export default function ProductImageQueue({
                 <i className={icon} />
                 <span>{label}</span>
                 <strong>{status[key].toLocaleString()}</strong>
+                {key === "processing" &&
+                  Array.isArray(status.staleProcessingIds) &&
+                  status.staleProcessingIds.length > 0 && (
+                    <button
+                      type="button"
+                      className="product-image-queue__retry-btn"
+                      disabled={busy || deletingFailed}
+                      onClick={() => requeueFailed(status.staleProcessingIds)}
+                      title={
+                        isRussian
+                          ? "Вернуть зависшие (>15 мин) товары обратно в ожидание"
+                          : "Return stale (>15 min) items back to pending"
+                      }
+                    >
+                      <i className="ri-refresh-line" />
+                      {isRussian
+                        ? `Сбросить зависшие (${status.staleProcessingIds.length})`
+                        : `Reset stale (${status.staleProcessingIds.length})`}
+                    </button>
+                  )}
               </div>
             ))}
           </div>

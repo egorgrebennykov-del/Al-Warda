@@ -1790,11 +1790,11 @@ export default function Featured() {
                           imgEl.src = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPath.replace(/\.webp$/, ".png")}`;
                           return;
                         }
-                        imgEl.style.opacity = "0";
-                        const media = imgEl.closest(
-                          ".warda-perfume-card__media",
+                        setPerfumes((prev) =>
+                          prev.filter(
+                            (item) => String(item.id) !== String(perfume.id),
+                          ),
                         );
-                        if (media) media.classList.add("is-processing-photo");
                       }}
                     />
                   </div>

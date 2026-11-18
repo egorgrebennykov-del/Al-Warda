@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
-import { getPerfumes, getPerfumeUrl } from "../../../utils/perfumes";
+import {
+  getPerfumes,
+  getPerfumeUrl,
+  hasCompletedGeneratedImage,
+} from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import "./Search.css";
 import "../common/ProductCardImages.css";
@@ -45,7 +49,9 @@ export default function Search({ show, onClose }) {
     // Убран рефетч каждые 30 с с refresh: true — он был причиной повторных ~12-с ожиданий.
     getPerfumes()
       .then((data) => {
-        if (active && Array.isArray(data)) setAllPerfumes(data);
+        if (active && Array.isArray(data)) {
+          setAllPerfumes(data.filter(hasCompletedGeneratedImage));
+        }
       })
       .catch((err) => console.warn("Could not refresh perfumes for search:", err));
     return () => {
@@ -227,7 +233,19 @@ export default function Search({ show, onClose }) {
                         className="search__card-img"
                         loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.hidden = true;
+                          const imgEl = e.currentTarget;
+                          const cleanPath = String(p.image || "").split("?")[0];
+                          if (
+                            !imgEl.dataset.triedGh &&
+                            cleanPath.startsWith("/assets/img/generated-products/")
+                          ) {
+                            imgEl.dataset.triedGh = "1";
+                            imgEl.src = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPath.replace(/\.webp$/, ".png")}`;
+                            return;
+                          }
+                          setAllPerfumes((prev) =>
+                            prev.filter((item) => String(item.id) !== String(p.id)),
+                          );
                         }}
                       />
                       <div className="search__card-sheen" />
