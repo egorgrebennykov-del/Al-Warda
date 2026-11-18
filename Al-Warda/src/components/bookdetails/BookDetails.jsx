@@ -293,19 +293,49 @@ export default function BookDetails() {
         }
         if (foundAny) {
           const refLast = lastSolidRow >= 0 ? lastSolidRow : lastRow;
-          const baseZoneLimit = refLast - Math.round(sampleSize * 0.06);
-          const baseCols = [];
+          const allSolidCols = [];
           for (let x = firstCol; x <= lastCol; x++) {
-            if (colMaxSolidY[x] >= baseZoneLimit) {
-              baseCols.push(colMaxSolidY[x]);
+            if (colMaxSolidY[x] >= 0) {
+              allSolidCols.push(colMaxSolidY[x]);
             }
           }
+
           let groundRow = refLast;
-          if (baseCols.length > 4) {
-            baseCols.sort((a, b) => a - b);
-            const p25 = baseCols[Math.floor(baseCols.length * 0.25)];
-            const maxSink = Math.round(sampleSize * 0.035);
-            groundRow = Math.max(refLast - maxSink, Math.min(refLast, p25));
+          const totalSolid = allSolidCols.length;
+          const maxPlateauLift = Math.round(sampleSize * 0.16);
+          const bandHeight = Math.max(4, Math.round(sampleSize * 0.02));
+          let plateauRow = -1;
+
+          // Prefer the highest wide flat baseline (e.g. main box/bottle above a small foreground cap)
+          if (totalSolid >= 20) {
+            const minSearchY = Math.max(firstRow, refLast - maxPlateauLift);
+            for (let y0 = minSearchY; y0 <= refLast - bandHeight; y0++) {
+              const inBand = [];
+              for (let i = 0; i < totalSolid; i++) {
+                const cy = allSolidCols[i];
+                if (cy >= y0 && cy <= y0 + bandHeight) {
+                  inBand.push(cy);
+                }
+              }
+              if (inBand.length >= totalSolid * 0.35) {
+                inBand.sort((a, b) => a - b);
+                plateauRow = inBand[Math.floor(inBand.length * 0.5)];
+                break;
+              }
+            }
+          }
+
+          if (plateauRow >= 0) {
+            groundRow = plateauRow;
+          } else {
+            const baseZoneLimit = refLast - Math.round(sampleSize * 0.06);
+            const baseCols = allSolidCols.filter((cy) => cy >= baseZoneLimit);
+            if (baseCols.length > 4) {
+              baseCols.sort((a, b) => a - b);
+              const p25 = baseCols[Math.floor(baseCols.length * 0.25)];
+              const maxSink = Math.round(sampleSize * 0.035);
+              groundRow = Math.max(refLast - maxSink, Math.min(refLast, p25));
+            }
           }
           bottomPadPct = Math.max(
             0,
