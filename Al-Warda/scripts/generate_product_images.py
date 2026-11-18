@@ -2124,18 +2124,21 @@ def align_multi_object_floor(canvas):
         sy = np.where(alpha[:, sx:ex + 1] > 35)[0]
         if len(sy) == 0:
             continue
-        s_min_y, s_max_y = int(sy.min()), int(sy.max())
-        seg_info.append((sx, ex, s_min_y, s_max_y, ex - sx + 1, s_max_y - s_min_y + 1))
+        sy_solid = np.where(alpha[:, sx:ex + 1] > 140)[0]
+        s_min_y = int(sy.min())
+        s_max_y = int(sy.max())
+        s_solid_max_y = int(sy_solid.max()) if len(sy_solid) > 0 else s_max_y
+        seg_info.append((sx, ex, s_min_y, s_max_y, s_solid_max_y, ex - sx + 1, s_max_y - s_min_y + 1))
 
     if len(seg_info) < 2:
         return canvas
 
-    target_bottom = max(s[3] for s in seg_info)
+    target_bottom = max(s[4] for s in seg_info)
     out = arr.copy()
     changed = False
-    for sx, ex, s_min_y, s_max_y, sw, sh in seg_info:
-        delta = target_bottom - s_max_y
-        if 10 <= delta <= 150 and sw >= 60 and sh >= 200 and s_max_y >= h * 0.60:
+    for sx, ex, s_min_y, s_max_y, s_solid_max_y, sw, sh in seg_info:
+        delta = target_bottom - s_solid_max_y
+        if 10 <= delta <= 150 and sw >= 60 and sh >= 200 and s_solid_max_y >= h * 0.60:
             slice_rgba = arr[s_min_y:s_max_y + 1, sx:ex + 1].copy()
             out[s_min_y:s_max_y + 1, sx:ex + 1] = 0
             dst_y1 = min(h, s_min_y + delta)

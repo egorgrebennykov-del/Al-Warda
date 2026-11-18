@@ -189,26 +189,30 @@ export default function BookDetails() {
         }
         let firstRow = 0;
         let lastRow = sampleSize - 1;
+        let lastSolidRow = -1;
         let firstCol = sampleSize - 1;
         let lastCol = 0;
         let foundAny = false;
         for (let y = 0; y < sampleSize; y++) {
           for (let x = 0; x < sampleSize; x++) {
-            if (data[(y * sampleSize + x) * 4 + 3] > 25) {
+            const a = data[(y * sampleSize + x) * 4 + 3];
+            if (a > 25) {
               if (!foundAny) {
                 firstRow = y;
                 foundAny = true;
               }
               lastRow = y;
+              if (a > 120) lastSolidRow = y;
               if (x < firstCol) firstCol = x;
               if (x > lastCol) lastCol = x;
             }
           }
         }
         if (foundAny) {
+          const groundRow = lastSolidRow >= 0 ? lastSolidRow : lastRow;
           bottomPadPct = Math.max(
             0,
-            Math.min(35, ((sampleSize - 1 - lastRow) / sampleSize) * 100),
+            Math.min(35, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
           );
           const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
