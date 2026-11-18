@@ -43,7 +43,21 @@
   pointer-events: none;
 }
 
-.warda-perfume-card .warda-perfume-card__media::before,
+.warda-perfume-card .warda-perfume-card__media::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 4%;
+  background: radial-gradient(
+    ellipse 64% 62% at 50% 50%,
+    rgba(245, 215, 145, 0.16) 0%,
+    rgba(212, 175, 55, 0.08) 44%,
+    rgba(8, 6, 5, 0) 76%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 .warda-perfume-card .warda-perfume-card__media::after,
 .warda-perfume-card .warda-perfume-card__aura {
   display: none;
@@ -59,14 +73,18 @@
   max-height: none !important;
   object-fit: contain !important;
   box-sizing: border-box !important;
-  padding: 0;
-  transform: scale(1.06) !important;
-  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
+  padding: 2% !important;
+  transform: none !important;
+  image-rendering: auto;
+  filter:
+    drop-shadow(0 0 2px rgba(255, 226, 165, 0.38))
+    drop-shadow(0 0 16px rgba(212, 175, 55, 0.22))
+    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72));
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
-  padding: 0.1rem !important;
-  transform: scale(1.03) !important;
+  padding: 2% !important;
+  transform: none !important;
 }
 
 .warda-perfume-card .warda-perfume-card__info,
@@ -107,13 +125,22 @@
   max-width: none;
   max-height: none;
   object-fit: contain;
-  transform: scale(1.06);
-  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
+  box-sizing: border-box;
+  padding: 2%;
+  transform: none;
+  image-rendering: auto;
+  filter:
+    drop-shadow(0 0 2px rgba(255, 226, 165, 0.38))
+    drop-shadow(0 0 16px rgba(212, 175, 55, 0.22))
+    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72));
 }
 
 .search__card:hover .search__card-img {
   animation: none;
-  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
+  filter:
+    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.45))
+    drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.75));
 }
 
 .search__card .search__card-body {
