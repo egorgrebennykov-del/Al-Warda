@@ -152,7 +152,7 @@
   min-height: 440px;
   height: auto;
   position: relative;
-  padding: 0;
+  padding: 0 0 18px 0;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -161,16 +161,16 @@
   user-select: none;
   /* Soft outer boundary roll-off into the dark background */
   -webkit-mask-image: radial-gradient(
-    ellipse 96% 96% at 50% 50%,
-    #000 82%,
-    rgba(0, 0, 0, 0.7) 92%,
-    transparent 100%
+    ellipse 88% 88% at 50% 48%,
+    #000 64%,
+    rgba(0, 0, 0, 0.5) 84%,
+    transparent 98%
   );
   mask-image: radial-gradient(
-    ellipse 96% 96% at 50% 50%,
-    #000 82%,
-    rgba(0, 0, 0, 0.7) 92%,
-    transparent 100%
+    ellipse 88% 88% at 50% 48%,
+    #000 64%,
+    rgba(0, 0, 0, 0.5) 84%,
+    transparent 98%
   );
 }
 
@@ -286,6 +286,14 @@
   object-fit: fill;
   mix-blend-mode: screen;
   filter: brightness(1.25) contrast(1.06);
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 18%, #000 68%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 18%, #000 68%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-composite: intersect;
 }
 
 /* Flacon Container & Photo Presentation */
@@ -455,16 +463,16 @@
   -webkit-mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.68) 45%,
-    rgba(0, 0, 0, 0.25) 78%,
-    transparent 98%
+    rgba(0, 0, 0, 0.62) 40%,
+    rgba(0, 0, 0, 0.2) 68%,
+    transparent 92%
   );
   mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.68) 45%,
-    rgba(0, 0, 0, 0.25) 78%,
-    transparent 98%
+    rgba(0, 0, 0, 0.62) 40%,
+    rgba(0, 0, 0, 0.2) 68%,
+    transparent 92%
   );
 }
 
