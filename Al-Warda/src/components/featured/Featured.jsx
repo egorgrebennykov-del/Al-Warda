@@ -1704,15 +1704,6 @@ export default function Featured() {
         </div>
       ) : (
         <>
-          {/* CATALOG COUNT (LINE & PERCENT REMOVED) */}
-          <div className="warda-catalog-progress-bar">
-            <div className="warda-progress-meta">
-              <span className="warda-catalog-count-text">
-                {`${t("featured.showing")} ${filteredPerfumes.length} / ${perfumes.length} ${t("featured.fragrancesCount")}`}
-              </span>
-            </div>
-          </div>
-
           {/* PERFUME GRID - ALWAYS 4 ITEMS PER ROW ON DESKTOP */}
           <div className="warda-shop-grid">
             {visiblePerfumes.map((perfume) => {
