@@ -1252,10 +1252,6 @@ export default function Featured() {
                   </option>
                 </select>
               </div>
-
-              <div className="warda-filter-summary-text">
-                {`${t("featured.showing")}: ${filteredPerfumes.length} ${t("featured.fragrancesCount")}`}
-              </div>
             </div>
           </div>
 
