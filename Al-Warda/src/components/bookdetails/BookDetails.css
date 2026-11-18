@@ -257,10 +257,10 @@
   position: absolute;
   inset: -6% -8% 12% -8%;
   background: radial-gradient(
-    ellipse 66% 62% at 50% 48%,
-    rgba(212, 175, 55, 0.16) 0%,
-    rgba(168, 124, 32, 0.08) 44%,
-    rgba(8, 6, 5, 0) 76%
+    ellipse 70% 66% at 50% 48%,
+    rgba(245, 215, 145, 0.22) 0%,
+    rgba(212, 175, 55, 0.12) 44%,
+    rgba(8, 6, 5, 0) 78%
   );
   pointer-events: none;
   z-index: 1;
@@ -314,8 +314,8 @@
   transform-origin: bottom center;
   transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%));
   filter:
-    drop-shadow(0 0 2px rgba(245, 215, 145, 0.34))
-    drop-shadow(0 0 18px rgba(212, 175, 55, 0.24))
+    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.42))
+    drop-shadow(0 0 20px rgba(212, 175, 55, 0.28))
     drop-shadow(0 12px 26px rgba(0, 0, 0, 0.72));
   transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
 }
