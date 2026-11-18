@@ -302,11 +302,11 @@ export default function BookDetails() {
 
           let groundRow = refLast;
           const totalSolid = allSolidCols.length;
-          const wideBaseLimit = refLast - Math.round(sampleSize * 0.12);
+          const wideBaseLimit = refLast - Math.round(sampleSize * 0.22);
           const wideBaseCols = allSolidCols.filter((cy) => cy >= wideBaseLimit);
 
           if (totalSolid >= 20 && wideBaseCols.length >= totalSolid * 0.65) {
-            // For flat/3-4/multi-object bases covering >=65% of width within 12% of the bottom,
+            // For flat/3-4/multi-object bases covering >=65% of width within 22% of the bottom,
             // ground to the highest point (5th percentile) of that base so no corner floats.
             wideBaseCols.sort((a, b) => a - b);
             groundRow = wideBaseCols[Math.floor(wideBaseCols.length * 0.05)];
@@ -322,7 +322,7 @@ export default function BookDetails() {
           }
           bottomPadPct = Math.max(
             0,
-            Math.min(35, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
+            Math.min(42, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
           );
           const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
