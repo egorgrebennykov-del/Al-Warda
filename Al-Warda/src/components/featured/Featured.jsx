@@ -1712,7 +1712,7 @@ export default function Featured() {
           <div className="warda-catalog-progress-bar">
             <div className="warda-progress-meta">
               <span className="warda-catalog-count-text">
-                {`${t("featured.showing")} ${visiblePerfumes.length} / ${filteredPerfumes.length} ${t("featured.fragrancesCount")}`}
+                {`${t("featured.showing")} ${filteredPerfumes.length} / ${perfumes.length} ${t("featured.fragrancesCount")}`}
               </span>
             </div>
           </div>
