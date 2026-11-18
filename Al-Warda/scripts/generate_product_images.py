@@ -1902,26 +1902,26 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
         # Compress harsh white-box flash hotspots & anchor lifted white-studio shadows
         L_norm = L / 255.0
         if p50_l > 92.0 or p90_l > 198.0:
-            shadow_floor = max(0.0, min(0.14, (p5_l - 18.0) / 255.0 * 0.55))
+            shadow_floor = max(0.0, min(0.10, (p5_l - 20.0) / 255.0 * 0.45))
             L_anchored = np.clip((L_norm - shadow_floor) / max(0.2, 1.0 - shadow_floor), 0.0, 1.0)
-            knee = 0.64
+            knee = 0.70
             over = np.maximum(0.0, L_anchored - knee)
-            L_comp = np.where(L_anchored > knee, knee + 0.25 * np.tanh(over / 0.26), L_anchored)
-            excess = max(0.0, min(1.0, (p50_l - 80.0) / 95.0))
-            gamma = 1.0 + 0.34 * excess
-            L_toned = np.power(np.clip(L_comp, 0.0, 1.0), gamma) * (1.0 - 0.08 * excess)
+            L_comp = np.where(L_anchored > knee, knee + 0.28 * np.tanh(over / 0.28), L_anchored)
+            excess = max(0.0, min(1.0, (p50_l - 85.0) / 100.0))
+            gamma = 1.0 + 0.14 * excess
+            L_toned = np.power(np.clip(L_comp, 0.0, 1.0), gamma)
         else:
             p_low = float(np.percentile(fg_l, 1.5))
             p_high = float(np.percentile(fg_l, 99.2))
             if p_high > p_low + 20.0:
-                L_toned = np.clip((L - p_low) / (p_high - p_low) * 0.92 + 0.03, 0.0, 1.0)
+                L_toned = np.clip((L - p_low) / (p_high - p_low) * 0.94 + 0.03, 0.0, 1.0)
             else:
                 L_toned = L_norm
 
-        # 3. 3D Cylindrical Curvature Falloff (eliminates flat white-lightbox side glare)
+        # 3. Subtle 3D Cylindrical Curvature Falloff
         bright_factor = max(0.35, min(1.0, (p50_l - 40.0) / 110.0))
-        cyl_shade = 1.0 - (0.20 * bright_factor) * np.power(u_abs, 2.2)
-        vert_shade = (1.0 - 0.10 * bright_factor) + (0.10 * bright_factor) * np.power(v_norm, 0.85)
+        cyl_shade = 1.0 - (0.12 * bright_factor) * np.power(u_abs, 2.2)
+        vert_shade = (1.0 - 0.06 * bright_factor) + (0.06 * bright_factor) * np.power(v_norm, 0.85)
         L_3d = np.clip(L_toned * cyl_shade * vert_shade * 255.0, 0, 255).astype(np.uint8)
 
         clahe = cv2.createCLAHE(clipLimit=1.15, tileGridSize=(8, 8))
@@ -1930,18 +1930,22 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
         blur_l = cv2.GaussianBlur(L_mix, (0, 0), 1.0)
         L_sharp = np.clip(L_mix * 1.18 - blur_l * 0.18, 0, 255)
 
-        # 4. Color Temperature Harmonization (warm champagne-gold speculars)
+        # 4. Natural Vibrance + Subtle Champagne Specular Polish
         chroma = np.sqrt((A - 128.0) ** 2 + (B - 128.0) ** 2)
-        neutral_mask = np.clip(1.0 - chroma / 30.0, 0.0, 1.0)
-        hl_mask = np.clip((L_sharp / 255.0 - 0.30) / 0.55, 0.0, 1.0)
+        vibrance_boost = 1.0 + 0.22 * (1.0 - np.clip(chroma / 85.0, 0.0, 1.0)) * np.clip(chroma / 8.0, 0.0, 1.0)
+        A_vib = 128.0 + (A - 128.0) * vibrance_boost
+        B_vib = 128.0 + (B - 128.0) * vibrance_boost
+
+        neutral_mask = np.clip(1.0 - chroma / 28.0, 0.0, 1.0)
+        hl_mask = np.clip((L_sharp / 255.0 - 0.35) / 0.55, 0.0, 1.0)
         warm_weight = (
             neutral_mask
-            * (0.35 + 0.65 * hl_mask)
+            * (0.30 + 0.70 * hl_mask)
             * (0.45 + 0.55 * np.power(v_norm, 1.2))
             * bright_factor
         )
-        B_warm = np.clip(B + warm_weight * 13.0, 0, 255)
-        A_warm = np.clip(A + warm_weight * 2.5, 0, 255)
+        B_warm = np.clip(B_vib + warm_weight * 7.5, 0, 255)
+        A_warm = np.clip(A_vib + warm_weight * 1.5, 0, 255)
 
         lab_enhanced = np.dstack([
             np.where(fg_mask, L_sharp, L),
@@ -1987,6 +1991,61 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
 
         out_arr = np.dstack((final_rgb, alpha.astype(np.uint8)))
         return Image.fromarray(out_arr, mode="RGBA")
+    except Exception:
+        return cutout
+
+
+def enhance_luxury_color(cutout):
+    """Apply natural, vibrant luxury color grading (perceptual LAB vibrance,
+    gentle midtone clarity, and subtle highlight/shadow balance) without
+    over-darkening or shifting neutral whites/silvers."""
+    if "A" not in cutout.getbands():
+        return cutout
+    try:
+        import cv2
+        import numpy as np
+
+        arr = np.array(cutout.convert("RGBA"))
+        alpha = arr[:, :, 3]
+        fg_mask = alpha > 25
+        if not np.any(fg_mask):
+            return cutout
+
+        lab = cv2.cvtColor(arr[:, :, :3], cv2.COLOR_RGB2LAB).astype(np.float32)
+        L = lab[:, :, 0]
+        A = lab[:, :, 1]
+        B = lab[:, :, 2]
+
+        fg_l = L[fg_mask]
+        p50 = float(np.percentile(fg_l, 50.0))
+        p95 = float(np.percentile(fg_l, 95.0))
+
+        # Gently lift dim midtones if the cutout was previously over-darkened
+        L_adj = L.copy()
+        if p50 < 95.0 and p95 < 225.0:
+            lift = min(1.14, 102.0 / max(45.0, p50))
+            L_adj = np.clip(L * (0.35 + 0.65 * lift), 0.0, 255.0)
+
+        # Gentle micro-contrast in L
+        clahe = cv2.createCLAHE(clipLimit=1.08, tileGridSize=(8, 8))
+        L_clahe = clahe.apply(L_adj.astype(np.uint8)).astype(np.float32)
+        L_final = np.clip(0.72 * L_adj + 0.28 * L_clahe, 0.0, 255.0)
+
+        # Natural perceptual vibrance in LAB (protects pure neutrals & neon extremes)
+        chroma = np.sqrt((A - 128.0) ** 2 + (B - 128.0) ** 2)
+        vibrance = 1.0 + 0.18 * (1.0 - np.clip(chroma / 85.0, 0.0, 1.0)) * np.clip(chroma / 8.0, 0.0, 1.0)
+        A_final = np.clip(128.0 + (A - 128.0) * vibrance, 0.0, 255.0)
+        B_final = np.clip(128.0 + (B - 128.0) * vibrance, 0.0, 255.0)
+
+        lab_out = np.dstack([
+            np.where(fg_mask, L_final, L),
+            np.where(fg_mask, A_final, A),
+            np.where(fg_mask, B_final, B),
+        ]).astype(np.uint8)
+        rgb_out = cv2.cvtColor(lab_out, cv2.COLOR_LAB2RGB)
+        out = arr.copy()
+        out[:, :, :3] = rgb_out
+        return Image.fromarray(out, "RGBA")
     except Exception:
         return cutout
 
