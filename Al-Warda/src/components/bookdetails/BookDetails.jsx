@@ -334,9 +334,11 @@ export default function BookDetails() {
 
           if (totalSolid >= 20 && wideBaseCols.length >= totalSolid * 0.65) {
             // For flat/3-4/multi-object bases covering >=65% of width within 22% of the bottom,
-            // ground to the highest point (5th percentile) of that base so no corner floats.
+            // ground to the highest point (5th percentile) capped at 8% sink so deep 3D chests never submerge.
             wideBaseCols.sort((a, b) => a - b);
-            groundRow = wideBaseCols[Math.floor(wideBaseCols.length * 0.05)];
+            const p5 = wideBaseCols[Math.floor(wideBaseCols.length * 0.05)];
+            const maxWideSink = Math.round(sampleSize * 0.08);
+            groundRow = Math.max(refLast - maxWideSink, Math.min(refLast, p5));
           } else {
             const baseZoneLimit = refLast - Math.round(sampleSize * 0.06);
             const baseCols = allSolidCols.filter((cy) => cy >= baseZoneLimit);
