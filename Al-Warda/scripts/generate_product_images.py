@@ -2118,7 +2118,64 @@ def align_multi_object_floor(canvas):
             merged.append(s)
 
     if len(merged) < 2:
-        return canvas
+        # Touching objects (e.g. bottle touching box with 0px gap):
+        # detect a sharp vertical step in bottom_y paired with a wide flat plateau
+        w_obj = max_x - min_x + 1
+        if w_obj < 250:
+            return canvas
+        bottom_y = {}
+        for x in range(min_x, max_x + 1):
+            col = np.where(alpha[:, x] > 140)[0]
+            if len(col) > 0:
+                bottom_y[x] = int(col.max())
+        if len(bottom_y) < 200:
+            return canvas
+        target_bottom = max(bottom_y.values())
+        lo_x = min_x + int(w_obj * 0.18)
+        hi_x = max_x - int(w_obj * 0.18)
+        best_step = None
+        for x in range(lo_x, hi_x):
+            if x - 2 in bottom_y and x + 2 in bottom_y:
+                diff = abs(bottom_y[x + 2] - bottom_y[x - 2])
+                if diff >= 16 and (best_step is None or diff > best_step[0]):
+                    best_step = (diff, x)
+        if not best_step:
+            return canvas
+        _, x_seam = best_step
+        out = arr.copy()
+        changed = False
+        for side, sx, ex in [('left', min_x, max(min_x, x_seam - 2)), ('right', min(max_x, x_seam + 2), max_x)]:
+            sw = ex - sx + 1
+            if sw < 120:
+                continue
+            sub_ys = [bottom_y[x] for x in range(sx, ex + 1) if x in bottom_y]
+            if len(sub_ys) < sw * 0.8:
+                continue
+            trim = max(4, int(len(sub_ys) * 0.15))
+            core = np.array(sub_ys[trim:-trim], dtype=float)
+            if len(core) < 40 or float(np.std(core)) > 5.0:
+                continue
+            s_plateau_y = int(np.percentile(core, 85))
+            delta = target_bottom - s_plateau_y
+            if not (15 <= delta <= 165 and s_plateau_y >= h * 0.55):
+                continue
+            sy = np.where(alpha[:, sx:ex + 1] > 35)[0]
+            if len(sy) == 0:
+                continue
+            s_min_y = int(sy.min())
+            s_max_y = min(int(sy.max()), s_plateau_y + 4)
+            if s_max_y - s_min_y + 1 < 200:
+                continue
+            slice_rgba = arr[s_min_y:s_max_y + 1, sx:ex + 1].copy()
+            out[s_min_y:s_max_y + 1, sx:ex + 1] = 0
+            dst_y1 = min(h, s_min_y + delta)
+            dst_y2 = min(h, s_max_y + 1 + delta)
+            copy_h = dst_y2 - dst_y1
+            if copy_h > 0:
+                out[dst_y1:dst_y2, sx:ex + 1] = slice_rgba[:copy_h, :]
+                changed = True
+                break
+        return Image.fromarray(out, "RGBA") if changed else canvas
 
     seg_info = []
     for sx, ex in merged:
