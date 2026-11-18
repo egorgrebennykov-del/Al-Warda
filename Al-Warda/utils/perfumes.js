@@ -2348,10 +2348,22 @@ export function isFailedImageProduct(p) {
   if (!p) return false;
   if (evictedFailedIds.has(String(p.id))) return true;
   const ig = p.info?.imageGeneration;
-  return Boolean(
-    ig &&
-      (ig.status === "failed" || ig.failed === true || ig.manualFailed === true),
-  );
+  if (!ig) return false;
+  if (ig.status === "failed" || ig.failed === true || ig.manualFailed === true) {
+    return true;
+  }
+  if (ig.qualityRejected === true) return true;
+  if (
+    ig.qualityStatus === "low_source_quality" &&
+    ((ig.originalWidth && ig.originalWidth < 300) ||
+      (ig.originalHeight && ig.originalHeight < 300))
+  ) {
+    return true;
+  }
+  if (typeof ig.sharpness === "number" && ig.sharpness < 25) {
+    return true;
+  }
+  return false;
 }
 
 export function markPerfumesEvictedAsFailed(ids = []) {
