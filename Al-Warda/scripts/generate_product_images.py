@@ -1691,25 +1691,8 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
     if max(w, h) >= min_dim:
         return image
 
-    # Micro-contrast and edge enhancement in LAB space:
-    # Brings out subtle embossing, tone-on-tone lettering (e.g. gold-on-gold, red-on-red)
-    # and packaging facets before feeding into neural super-resolution models.
-    try:
-        import cv2
-        import numpy as np
-        arr_pre = np.array(image.convert("RGB"))
-        lab_pre = cv2.cvtColor(arr_pre, cv2.COLOR_RGB2LAB)
-        l_pre, a_pre, b_pre = cv2.split(lab_pre)
-        clahe_pre = cv2.createCLAHE(clipLimit=1.8, tileGridSize=(6, 6))
-        l_clahe = clahe_pre.apply(l_pre)
-        blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 0.8)
-        l_sharp = cv2.addWeighted(l_clahe, 1.30, blur_l, -0.30, 0)
-        lab_enhanced = cv2.merge([l_sharp, a_pre, b_pre])
-        arr_enhanced = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
-        image = Image.fromarray(arr_enhanced)
-    except Exception:
-        pass
-
+    # Feed the clean original RGB directly into neural super-resolution without
+    # pre-CLAHE/pre-sharpening so JPEG ringing around small text is never amplified.
     bin_path, models_dir = find_superres_binary()
     if bin_path:
         try:
@@ -1721,15 +1704,17 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
                 image.convert("RGB").save(in_path, format="PNG")
                 cmd = [bin_path, "-i", in_path, "-o", out_path, "-s", str(scale), "-c", "0", "-j", "1:1:1"]
                 if models_dir and os.path.isdir(models_dir):
-                    # ultrasharp-4x is the gold standard for packaging, fonts, and embossed typography
-                    if os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
-                        cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
-                    elif os.path.isfile(os.path.join(models_dir, "high-fidelity-4x.bin")):
+                    # high-fidelity-4x preserves natural photo texture and fine typography without painterly smearing
+                    if os.path.isfile(os.path.join(models_dir, "high-fidelity-4x.bin")):
                         cmd.extend(["-m", models_dir, "-n", "high-fidelity-4x"])
-                    elif os.path.isfile(os.path.join(models_dir, "remacri-4x.bin")):
-                        cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
                     elif os.path.isfile(os.path.join(models_dir, "realesrgan-x4plus.bin")):
                         cmd.extend(["-m", models_dir, "-n", "realesrgan-x4plus"])
+                    elif os.path.isfile(os.path.join(models_dir, "ultramix-balanced-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "ultramix-balanced-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "ultrasharp-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "ultrasharp-4x"])
+                    elif os.path.isfile(os.path.join(models_dir, "remacri-4x.bin")):
+                        cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
                     else:
                         cmd.extend(["-m", models_dir])
                 res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=120)
