@@ -2196,7 +2196,7 @@ def align_multi_object_floor(canvas):
     changed = False
     for sx, ex, s_min_y, s_max_y, s_solid_max_y, sw, sh in seg_info:
         delta = target_bottom - s_solid_max_y
-        if 10 <= delta <= 150 and sw >= 60 and sh >= 200 and s_solid_max_y >= h * 0.60:
+        if 3 <= delta <= 150 and sw >= 60 and sh >= 200 and s_solid_max_y >= h * 0.60:
             slice_rgba = arr[s_min_y:s_max_y + 1, sx:ex + 1].copy()
             out[s_min_y:s_max_y + 1, sx:ex + 1] = 0
             dst_y1 = min(h, s_min_y + delta)
