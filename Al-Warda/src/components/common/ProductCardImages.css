@@ -18,7 +18,7 @@
   max-height: none;
   aspect-ratio: 1;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 12px 12px 0 0;
   background: transparent !important;
   -webkit-mask-image: none;

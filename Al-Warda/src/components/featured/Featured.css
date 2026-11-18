@@ -731,18 +731,19 @@
   .warda-perfume-card__media {
     width: 100% !important;
     max-width: 100% !important;
-    height: 150px !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     position: relative !important;
   }
   .warda-perfume-card__img {
-    height: 130px !important;
-    max-height: 130px !important;
+    height: 100% !important;
+    max-height: none !important;
     width: 100% !important;
     max-width: 100% !important;
     object-fit: contain !important;
-    transform: translateY(-6px) !important;
+    transform: none !important;
     box-sizing: border-box !important;
   }
   .warda-perfume-card__title {
