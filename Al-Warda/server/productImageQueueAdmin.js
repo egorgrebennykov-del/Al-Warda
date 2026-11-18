@@ -858,10 +858,13 @@ export async function markProductItemsFailed(request, env) {
       return json({ error: "Select at least one product ID" }, 400);
     if (parsed.error) return json({ error: parsed.error }, 400);
 
+    const chooseNewPhoto = Boolean(body?.chooseNewPhoto);
     const customReason =
       typeof body?.reason === "string" && body.reason.trim()
         ? body.reason.trim()
-        : "Перенесено в ошибки вручную администратором";
+        : chooseNewPhoto
+          ? "Выбрать новое фото"
+          : "Перенесено в ошибки вручную администратором";
 
     const key = getServiceKey(env);
     const baseUrl = getSupabaseUrl(env);
@@ -896,6 +899,7 @@ export async function markProductItemsFailed(request, env) {
           status: "failed",
           failed: true,
           manualFailed: true,
+          needsNewPhoto: chooseNewPhoto,
           previousImageUrl: prevImg || prevJob.previousImageUrl || null,
           error: customReason,
           failedAt: nowIso,

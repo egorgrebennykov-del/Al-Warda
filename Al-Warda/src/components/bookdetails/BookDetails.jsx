@@ -139,17 +139,44 @@ export default function BookDetails() {
 
   const handleMoveProductToFailed = async () => {
     if (!perfume?.id || markingFailed) return;
-    const { confirmed, value: reason } = await prompt({
+    const {
+      confirmed,
+      value: reason,
+      checked: chooseNewPhoto,
+    } = await prompt({
       title: isRussian ? "Перенести товар в ошибки" : "Move Product to Errors",
       message: isRussian
         ? `Перенести «${perfume.name || `#${perfume.id}`}» в список ошибок генерации?`
         : `Move "${perfume.name || `#${perfume.id}`}" to the failed generation list?`,
+      presets: isRussian
+        ? [
+            "Плохое качество",
+            "Неправильный наклон",
+            "Не стоит ровно",
+            "Не вырезан фон",
+            "Неправильное отражение",
+            "Лишние предметы",
+            "Отсутствуют части",
+            "Не тот товар",
+          ]
+        : [
+            "Low quality",
+            "Wrong tilt",
+            "Not standing flat",
+            "Background not removed",
+            "Wrong reflection",
+            "Extra objects",
+            "Missing parts",
+            "Wrong product",
+          ],
       inputLabel: isRussian
         ? "Причина (необязательно)"
         : "Reason (optional)",
       inputPlaceholder: isRussian
-        ? "Например: кривое фото, обрезана крышка, не тот товар..."
-        : "e.g. tilted bottle, cropped cap, wrong product...",
+        ? "Выберите из списка выше или напишите свою причину..."
+        : "Pick from presets above or type your own reason...",
+      checkboxLabel: isRussian ? "Выбрать новое фото" : "Choose new photo",
+      defaultChecked: false,
       confirmText: isRussian ? "Перенести в ошибки" : "Move to Errors",
       type: "warning",
       icon: "ri-error-warning-line",
@@ -159,7 +186,7 @@ export default function BookDetails() {
     setMarkingFailed(true);
     setMarkedFailedMsg("");
     try {
-      const payload = { ids: [String(perfume.id)] };
+      const payload = { ids: [String(perfume.id)], chooseNewPhoto };
       if (reason && reason.trim()) {
         payload.reason = reason.trim();
       }

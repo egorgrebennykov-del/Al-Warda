@@ -54,22 +54,30 @@ export function ConfirmProvider({ children }) {
           showInput: false,
           inputLabel: "",
           inputPlaceholder: "",
+          presets: [],
+          checkboxLabel: "",
         });
       });
     },
     [],
   );
 
+  const [checkboxValue, setCheckboxValue] = useState(false);
+  const checkboxValueRef = useRef(false);
+
   const prompt = useCallback(
     (opts) => {
       const options =
         typeof opts === "string" ? { message: opts } : opts || {};
       const initialVal = typeof options.defaultValue === "string" ? options.defaultValue : "";
+      const initialChecked = Boolean(options.defaultChecked);
 
       return new Promise((resolve) => {
         isPromptRef.current = true;
         inputValueRef.current = initialVal;
         setInputValue(initialVal);
+        checkboxValueRef.current = initialChecked;
+        setCheckboxValue(initialChecked);
         resolverRef.current = resolve;
         setModalState({
           isOpen: true,
@@ -83,6 +91,8 @@ export function ConfirmProvider({ children }) {
           showInput: true,
           inputLabel: options.inputLabel || "",
           inputPlaceholder: options.inputPlaceholder || "",
+          presets: Array.isArray(options.presets) ? options.presets : [],
+          checkboxLabel: options.checkboxLabel || "",
         });
       });
     },
@@ -121,7 +131,11 @@ export function ConfirmProvider({ children }) {
     if (resolverRef.current) {
       resolverRef.current(
         isPromptRef.current
-          ? { confirmed: true, value: inputValueRef.current }
+          ? {
+              confirmed: true,
+              value: inputValueRef.current,
+              checked: checkboxValueRef.current,
+            }
           : true,
       );
       resolverRef.current = null;
@@ -132,7 +146,7 @@ export function ConfirmProvider({ children }) {
   const handleCancel = useCallback(() => {
     if (resolverRef.current) {
       resolverRef.current(
-        isPromptRef.current ? { confirmed: false, value: "" } : false,
+        isPromptRef.current ? { confirmed: false, value: "", checked: false } : false,
       );
       resolverRef.current = null;
     }
@@ -228,6 +242,35 @@ export function ConfirmProvider({ children }) {
             {/* Optional Input Field */}
             {modalState.showInput && (
               <div className="warda-confirm-input-wrap">
+                {Array.isArray(modalState.presets) &&
+                  modalState.presets.length > 0 && (
+                    <div className="warda-confirm-presets">
+                      {modalState.presets.map((preset) => {
+                        const parts = inputValue
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        const isActive = parts.includes(preset);
+                        return (
+                          <button
+                            key={preset}
+                            type="button"
+                            className={`warda-confirm-preset-btn ${isActive ? "warda-confirm-preset-btn--active" : ""}`}
+                            onClick={() => {
+                              const nextParts = isActive
+                                ? parts.filter((p) => p !== preset)
+                                : [...parts, preset];
+                              const nextVal = nextParts.join(", ");
+                              inputValueRef.current = nextVal;
+                              setInputValue(nextVal);
+                            }}
+                          >
+                            {preset}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 {modalState.inputLabel && (
                   <label
                     className="warda-confirm-input-label"
@@ -248,6 +291,19 @@ export function ConfirmProvider({ children }) {
                     setInputValue(e.target.value);
                   }}
                 />
+                {modalState.checkboxLabel && (
+                  <label className="warda-confirm-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={checkboxValue}
+                      onChange={(e) => {
+                        checkboxValueRef.current = e.target.checked;
+                        setCheckboxValue(e.target.checked);
+                      }}
+                    />
+                    <span>{modalState.checkboxLabel}</span>
+                  </label>
+                )}
               </div>
             )}
 

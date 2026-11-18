@@ -267,6 +267,61 @@
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.22);
 }
 
+.warda-confirm-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.warda-confirm-preset-btn {
+  padding: 0.32rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.08);
+  color: #e6d9c8;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.warda-confirm-preset-btn:hover {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.18);
+  color: #fff;
+}
+
+.warda-confirm-preset-btn--active {
+  background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+  border-color: #ffd700;
+  color: #080605;
+  font-weight: 700;
+}
+
+.warda-confirm-preset-btn--active:hover {
+  color: #080605;
+}
+
+.warda-confirm-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #f7ede2;
+  cursor: pointer;
+  user-select: none;
+}
+
+.warda-confirm-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #d4af37;
+  cursor: pointer;
+}
+
 @media screen and (max-width: 420px) {
   .warda-confirm-actions {
     flex-direction: column-reverse;
