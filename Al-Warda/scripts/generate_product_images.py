@@ -2077,7 +2077,75 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
             canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
             canvas.paste(resized, (pos_x + err, pos_y), resized)
 
+    canvas = align_multi_object_floor(canvas)
     return canvas
+
+
+def align_multi_object_floor(canvas):
+    """When a cutout has 2+ horizontally separated standing objects (e.g. box + bottle),
+    align the bottom baseline of any slightly higher object down to the shared floor
+    line so the second object never appears to float above the stage."""
+    import numpy as np
+    arr = np.array(canvas.convert("RGBA"))
+    h, w = arr.shape[:2]
+    alpha = arr[:, :, 3]
+    ys, xs = np.where(alpha > 35)
+    if len(ys) == 0:
+        return canvas
+    min_x, max_x = int(xs.min()), int(xs.max())
+    min_y, max_y = int(ys.min()), int(ys.max())
+    col_has = np.any(alpha[min_y:max_y + 1, :] > 35, axis=0)
+
+    segs = []
+    in_seg = False
+    start = 0
+    for x in range(min_x, max_x + 1):
+        if col_has[x] and not in_seg:
+            in_seg = True
+            start = x
+        elif not col_has[x] and in_seg:
+            in_seg = False
+            segs.append((start, x - 1))
+    if in_seg:
+        segs.append((start, max_x))
+
+    merged = []
+    for s in segs:
+        if merged and s[0] - merged[-1][1] < 4:
+            merged[-1] = (merged[-1][0], s[1])
+        else:
+            merged.append(s)
+
+    if len(merged) < 2:
+        return canvas
+
+    seg_info = []
+    for sx, ex in merged:
+        sy = np.where(alpha[:, sx:ex + 1] > 35)[0]
+        if len(sy) == 0:
+            continue
+        s_min_y, s_max_y = int(sy.min()), int(sy.max())
+        seg_info.append((sx, ex, s_min_y, s_max_y, ex - sx + 1, s_max_y - s_min_y + 1))
+
+    if len(seg_info) < 2:
+        return canvas
+
+    target_bottom = max(s[3] for s in seg_info)
+    out = arr.copy()
+    changed = False
+    for sx, ex, s_min_y, s_max_y, sw, sh in seg_info:
+        delta = target_bottom - s_max_y
+        if 10 <= delta <= 150 and sw >= 60 and sh >= 200 and s_max_y >= h * 0.60:
+            slice_rgba = arr[s_min_y:s_max_y + 1, sx:ex + 1].copy()
+            out[s_min_y:s_max_y + 1, sx:ex + 1] = 0
+            dst_y1 = min(h, s_min_y + delta)
+            dst_y2 = min(h, s_max_y + 1 + delta)
+            copy_h = dst_y2 - dst_y1
+            if copy_h > 0:
+                out[dst_y1:dst_y2, sx:ex + 1] = slice_rgba[:copy_h, :]
+                changed = True
+
+    return Image.fromarray(out, "RGBA") if changed else canvas
 
 
 
