@@ -251,6 +251,21 @@
   z-index: 2;
 }
 
+/* Soft studio backlight behind the flacon/box so dark bottles never merge into the #080605 backdrop */
+.warda-stage-assembly::before {
+  content: "";
+  position: absolute;
+  inset: -6% -8% 12% -8%;
+  background: radial-gradient(
+    ellipse 66% 62% at 50% 48%,
+    rgba(212, 175, 55, 0.16) 0%,
+    rgba(168, 124, 32, 0.08) 44%,
+    rgba(8, 6, 5, 0) 76%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* User's Golden Horizon & Rising Glow Stage (bottom_glow_stage.webp) */
 .warda-details-bottom-glow {
   position: absolute;
@@ -300,13 +315,19 @@
   backface-visibility: hidden;
   transform-origin: bottom center;
   transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
-  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.7));
+  filter:
+    drop-shadow(0 0 2px rgba(245, 215, 145, 0.34))
+    drop-shadow(0 0 18px rgba(212, 175, 55, 0.24))
+    drop-shadow(0 12px 26px rgba(0, 0, 0, 0.72));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
 }
 
 .warda-details-img-wrap:hover .warda-details-img {
   transform: scale(calc(var(--flacon-scale, 1) * 1.02)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
-  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.32));
+  filter:
+    drop-shadow(0 0 2.5px rgba(255, 224, 155, 0.45))
+    drop-shadow(0 0 28px rgba(212, 175, 55, 0.36))
+    drop-shadow(0 16px 32px rgba(0, 0, 0, 0.78));
 }
 
 @media (hover: none) {
