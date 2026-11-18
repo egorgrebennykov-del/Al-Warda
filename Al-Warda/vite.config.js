@@ -1,8 +1,26 @@
 import react from "@vitejs/plugin-react";
-import { createReadStream } from "node:fs";
+import { createReadStream, readdirSync } from "node:fs";
 import { stat } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
+
+const __viteDir = dirname(fileURLToPath(import.meta.url));
+
+function getAvailableProductImageHashes() {
+  try {
+    const dir = join(__viteDir, "public", "assets", "img", "generated-products");
+    const entries = readdirSync(dir);
+    const hashes = new Set();
+    for (const name of entries) {
+      const m = /^([a-f0-9]{64})\.(png|webp)$/i.exec(name);
+      if (m) hashes.add(m[1].toLowerCase());
+    }
+    return Array.from(hashes);
+  } catch {
+    return [];
+  }
+}
 
 export function generatedImageFallback() {
   return {
@@ -73,6 +91,11 @@ export function generatedImageFallback() {
 }
 
 export default defineConfig({
+  define: {
+    __AVAILABLE_PRODUCT_IMAGE_HASHES__: JSON.stringify(
+      getAvailableProductImageHashes(),
+    ),
+  },
   plugins: [react(), generatedImageFallback()],
   build: {
     emptyOutDir: true,

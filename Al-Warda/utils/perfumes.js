@@ -2470,7 +2470,15 @@ export async function fetchPerfumesFromSupabase() {
     if (allRows.length > 0) {
       // Filter out items with no actual generated cutout visual.
       // The server query already restricted rows to completed generated images,
-      // and here we also verify the image path is a real generated cutout.
+      // and here we also verify the image path is a real generated cutout that
+      // exists in the deployed assets bundle.
+      const availableHashSet =
+        typeof __AVAILABLE_PRODUCT_IMAGE_HASHES__ !== "undefined" &&
+        Array.isArray(__AVAILABLE_PRODUCT_IMAGE_HASHES__) &&
+        __AVAILABLE_PRODUCT_IMAGE_HASHES__.length > 0
+          ? new Set(__AVAILABLE_PRODUCT_IMAGE_HASHES__)
+          : null;
+
       const validRows = allRows.filter((r) => {
         if (!isGeneratedProductImage(r.image) || !String(r.image).startsWith("/")) {
           return false;
@@ -2483,6 +2491,12 @@ export async function fetchPerfumesFromSupabase() {
           img.includes("no_image")
         ) {
           return false;
+        }
+        if (availableHashSet) {
+          const m = /\/([a-f0-9]{64})\.(png|webp)$/i.exec(img.split("?")[0]);
+          if (!m || !availableHashSet.has(m[1])) {
+            return false;
+          }
         }
         return true;
       });
