@@ -500,6 +500,7 @@ export async function getProductImageQueueStatus(request, env) {
       const counts = { pending: 0, processing: 0, completed: 0, failed: 0 };
       const images = [];
       const failedItems = [];
+      const processingItems = [];
       const staleProcessingIds = [];
       const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
       let eligible = 0;
@@ -617,9 +618,25 @@ export async function getProductImageQueueStatus(request, env) {
         if (status === "processing") {
           const tsStr = job.startedAt || job.updatedAt || job.completedAt || "";
           const tsMs = tsStr ? Date.parse(tsStr) : 0;
-          if (!Number.isFinite(tsMs) || nowMs - tsMs >= 15 * 60 * 1000) {
+          const isStale = !Number.isFinite(tsMs) || nowMs - tsMs >= 15 * 60 * 1000;
+          if (isStale) {
             staleProcessingIds.push(String(row.id));
           }
+          processingItems.push({
+            id: row.id,
+            name: row.name || "",
+            brand: row.brand || "",
+            price:
+              Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            currency: row.currency || info.currency || "EUR",
+            image: row.image || job.imageUrl || null,
+            rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+            jobStatus: job.status,
+            startedAt: validIsoTimestamp(job.startedAt),
+            updatedAt: validIsoTimestamp(job.updatedAt),
+            isStale,
+            info,
+          });
         }
         if (job.attemptedOn === today) {
           attemptedToday++;
@@ -696,6 +713,7 @@ export async function getProductImageQueueStatus(request, env) {
         accounts,
         schedule,
         failedItems,
+        processingItems,
         staleProcessingIds,
         images,
         trashedImagesCount,

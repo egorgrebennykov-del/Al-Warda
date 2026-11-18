@@ -1,10 +1,55 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.resolve(__dirname, "..");
+const repoDir = path.resolve(appDir, "..");
+
+let gitPublishInFlight = null;
+
+function runGit(args) {
+  return new Promise((resolve, reject) => {
+    execFile("git", args, { cwd: repoDir, windowsHide: true }, (err, stdout, stderr) => {
+      if (err) {
+        reject(new Error((stderr || stdout || err.message || "").trim()));
+      } else {
+        resolve((stdout || "").trim());
+      }
+    });
+  });
+}
+
+async function publishGeneratedImagesToGit() {
+  if (gitPublishInFlight) return gitPublishInFlight;
+  gitPublishInFlight = (async () => {
+    try {
+      await runGit(["add", "Al-Warda/public/assets/img/generated-products/"]);
+      const diff = await runGit(["diff", "--cached", "--name-only"]);
+      if (!diff) return { published: false, reason: "no_changes" };
+      await runGit([
+        "commit",
+        "-m",
+        "chore(images): auto-publish GPU generated product cutouts",
+      ]);
+      try {
+        await runGit(["pull", "--rebase", "origin", "main"]);
+      } catch {
+        // Continue push attempt if already up-to-date or no upstream conflict
+      }
+      await runGit(["push", "origin", "main"]);
+      currentJob.logs.push("Новые сгенерированные фото автоматически отправлены на сайт (GitHub -> Cloudflare).");
+      return { published: true };
+    } catch (err) {
+      currentJob.logs.push(`Предупреждение автопубликации Git: ${err.message}`);
+      return { published: false, error: err.message };
+    } finally {
+      gitPublishInFlight = null;
+    }
+  })();
+  return gitPublishInFlight;
+}
 
 let activeProcess = null;
 let currentJob = {
@@ -156,6 +201,9 @@ export function startGpuGeneration({ count = "all", productIds = null, coolingDe
         const parts = line.split(" ");
         if (parts[2]) currentJob.lastImageUrl = parts[2].trim();
         currentJob.currentProduct = null;
+        if (currentJob.completedCount % 25 === 0) {
+          publishGeneratedImagesToGit();
+        }
       } else if (line.startsWith("DESCRIBED ") || line.includes("Processing ")) {
         currentJob.currentProduct = line;
       } else if (line.includes("AI Super-Resolution succeeded:")) {
@@ -176,6 +224,9 @@ export function startGpuGeneration({ count = "all", productIds = null, coolingDe
       : `Процесс завершился с кодом ${code}.`;
     currentJob.logs.push(finalMsg);
     currentJob.lastLogLine = finalMsg;
+    if (currentJob.completedCount > 0) {
+      publishGeneratedImagesToGit();
+    }
   });
 
   activeProcess.on("error", (err) => {
@@ -212,6 +263,9 @@ export function stopGpuGeneration() {
   currentJob.logs.push("Процесс генерации был остановлен администратором.");
   currentJob.lastLogLine = "Остановлено пользователем.";
   activeProcess = null;
+  if (currentJob.completedCount > 0) {
+    publishGeneratedImagesToGit();
+  }
 
   return { ok: true, message: "Генерация на видеокарте остановлена" };
 }

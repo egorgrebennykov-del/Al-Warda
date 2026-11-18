@@ -11,6 +11,8 @@
   - `isDecantablePerfume` must always return `false`. Wholesale multipacks/bundles (`pack of 6`, `carton`, etc.) are filtered out via `isWholesaleBundle`.
 - **Verified Olfactory Notes Only**:
   - Never display unverified or hallucinated fragrance notes. Notes are shown only when `info.notesVerified === true` (verified via DeepSeek / official pyramid lookup).
+- **Keep `AGENTS.md` Up to Date**:
+  - Whenever you make important changes to architecture, pipelines, visual stage rules, catalog filtering, admin workflows, API endpoints, or safety/business rules, you **MUST** update `AGENTS.md` in the same task so future agents always have accurate instructions.
 
 ---
 

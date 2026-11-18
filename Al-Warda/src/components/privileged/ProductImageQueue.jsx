@@ -570,6 +570,8 @@ export default function ProductImageQueue({
   const [gpuBusy, setGpuBusy] = useState(false);
   const [gpuError, setGpuError] = useState("");
   const [showGpuLogs, setShowGpuLogs] = useState(false);
+  const [filterGenerated, setFilterGenerated] = useState(false);
+  const [filterProcessing, setFilterProcessing] = useState(false);
   const confirm = useConfirm();
   const alert = useAlert();
 
@@ -1953,6 +1955,51 @@ export default function ProductImageQueue({
             ))}
           </div>
 
+          <div
+            className="product-image-queue__filter-bar"
+            role="group"
+            aria-label={isRussian ? "Фильтры списка фото" : "Photo list filters"}
+          >
+            <button
+              type="button"
+              className={`product-image-queue__filter-pill ${filterGenerated ? "is-active" : ""}`}
+              aria-pressed={filterGenerated}
+              onClick={() => setFilterGenerated((v) => !v)}
+            >
+              <i className="ri-checkbox-circle-line" />
+              <span>
+                {isRussian ? "Сгенерированные фото" : "Generated photos"} (
+                {(status.images || []).length})
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`product-image-queue__filter-pill ${filterProcessing ? "is-active" : ""}`}
+              aria-pressed={filterProcessing}
+              onClick={() => setFilterProcessing((v) => !v)}
+            >
+              <i className="ri-loader-4-line" />
+              <span>
+                {isRussian ? "В процессе генерации" : "In generation process"} (
+                {(status.processingItems || []).length})
+              </span>
+            </button>
+            {(filterGenerated || filterProcessing) && (
+              <button
+                type="button"
+                className="product-image-queue__filter-reset"
+                onClick={() => {
+                  setFilterGenerated(false);
+                  setFilterProcessing(false);
+                }}
+              >
+                <i className="ri-close-circle-line" />
+                {isRussian ? "Показать все" : "Show all"}
+              </button>
+            )}
+          </div>
+
+          {(!filterGenerated && !filterProcessing) && (
           <section
             className="product-image-queue__failed"
             aria-labelledby="failed-images-heading"
@@ -2223,7 +2270,128 @@ export default function ProductImageQueue({
               </>
             )}
           </section>
+          )}
 
+          {((!filterGenerated && !filterProcessing) || filterProcessing) && (
+            <section
+              className="product-image-queue__processing-section"
+              aria-labelledby="processing-images-heading"
+            >
+              <div className="product-image-queue__failed-header">
+                <div>
+                  <h3 id="processing-images-heading">
+                    {isRussian ? "В процессе генерации" : "In generation process"} (
+                    {(status.processingItems || []).length})
+                  </h3>
+                  <p>
+                    {isRussian
+                      ? "Товары, обработка фотографий которых сейчас выполняется или ожидает завершения."
+                      : "Products whose photo generation is currently in progress."}
+                  </p>
+                </div>
+                {Array.isArray(status.staleProcessingIds) &&
+                  status.staleProcessingIds.length > 0 && (
+                    <button
+                      type="button"
+                      className="product-image-queue__start"
+                      disabled={busy || deletingFailed}
+                      onClick={() => requeueFailed(status.staleProcessingIds)}
+                    >
+                      <i className="ri-refresh-line" />
+                      {isRussian
+                        ? `Сбросить зависшие (${status.staleProcessingIds.length})`
+                        : `Reset stale (${status.staleProcessingIds.length})`}
+                    </button>
+                  )}
+              </div>
+              {!(status.processingItems || []).length ? (
+                <p className="product-image-queue__failed-empty">
+                  {isRussian
+                    ? "Сейчас нет товаров в процессе генерации."
+                    : "No products currently in generation."}
+                </p>
+              ) : (
+                <div className="product-image-queue__failed-list">
+                  {(status.processingItems || []).map((item) => {
+                    const itemId = String(item.id);
+                    const thumbSrc = item.rawImage || item.image;
+                    return (
+                      <article
+                        key={itemId}
+                        className="product-image-queue__failed-item product-image-queue__processing-item"
+                      >
+                        <div className="product-image-queue__failed-top">
+                          <span className="product-image-queue__processing-pill">
+                            <i className="ri-loader-4-line ri-spin" />
+                            {item.jobStatus === "publishing"
+                              ? isRussian
+                                ? "Публикация"
+                                : "Publishing"
+                              : isRussian
+                                ? "Генерация"
+                                : "Processing"}
+                          </span>
+                          <span>ID #{itemId}</span>
+                          {item.isStale && (
+                            <button
+                              type="button"
+                              className="product-image-queue__failed-delete-one product-image-queue__failed-requeue-one"
+                              disabled={busy || deletingFailed}
+                              onClick={() => requeueFailed([itemId])}
+                            >
+                              <i className="ri-refresh-line" />
+                              {isRussian ? "В ожидание" : "To pending"}
+                            </button>
+                          )}
+                        </div>
+                        <div className="product-image-queue__failed-body">
+                          {thumbSrc && (
+                            <Link
+                              to={item.url || getPerfumeUrl(item)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="product-image-queue__failed-thumb"
+                            >
+                              <img
+                                src={thumbSrc}
+                                alt={item.name || `ID ${itemId}`}
+                                loading="lazy"
+                              />
+                            </Link>
+                          )}
+                          <div className="product-image-queue__failed-info">
+                            <strong>
+                              <Link
+                                to={item.url || getPerfumeUrl(item)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="product-image-queue__product-link"
+                              >
+                                {item.name || `ID #${itemId}`}
+                              </Link>
+                            </strong>
+                            {item.brand && (
+                              <span className="product-image-queue__failed-brand">
+                                {item.brand}
+                              </span>
+                            )}
+                            {item.startedAt && (
+                              <time dateTime={item.startedAt}>
+                                {isRussian ? "Запущено: " : "Started: "}
+                                {formatDateTime(item.startedAt, isRussian)}
+                              </time>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
+          {((!filterGenerated && !filterProcessing) || filterGenerated) && (
           <section
             className="product-image-queue__gallery"
             aria-labelledby="generated-images-heading"
@@ -2440,6 +2608,7 @@ export default function ProductImageQueue({
               </>
             )}
           </section>
+          )}
         </>
       )}
 

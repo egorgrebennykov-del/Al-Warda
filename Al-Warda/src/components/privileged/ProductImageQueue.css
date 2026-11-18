@@ -1936,3 +1936,102 @@
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   box-shadow: 0 6px 16px rgba(239, 68, 68, 0.55);
 }
+
+.product-image-queue__filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.product-image-queue__filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.05rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.08);
+  color: #3f3933;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-image-queue__filter-pill:hover {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.16);
+}
+
+.product-image-queue__filter-pill.is-active {
+  background: linear-gradient(135deg, #d4af37 0%, #a47d24 100%);
+  color: #161208;
+  border-color: #d4af37;
+  box-shadow: 0 3px 12px rgba(212, 175, 55, 0.32);
+}
+
+.product-image-queue__filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.48rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(150, 140, 125, 0.35);
+  background: transparent;
+  color: #7a6e65;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-image-queue__filter-reset:hover {
+  color: #24201c;
+  border-color: rgba(150, 140, 125, 0.7);
+}
+
+.product-image-queue__processing-section {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(254, 243, 199, 0.28);
+}
+
+.product-image-queue__processing-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+}
+
+.dark-theme .product-image-queue__filter-pill {
+  color: #e8dcc8;
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.dark-theme .product-image-queue__filter-pill.is-active {
+  color: #161208;
+}
+
+.dark-theme .product-image-queue__filter-reset {
+  color: #b5a48e;
+}
+
+.dark-theme .product-image-queue__filter-reset:hover {
+  color: #f7ede2;
+}
+
+.dark-theme .product-image-queue__processing-section {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.35);
+}
