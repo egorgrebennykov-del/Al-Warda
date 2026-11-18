@@ -2210,9 +2210,9 @@ def align_multi_object_floor(canvas):
 
 
 def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
-    """For single-bottle cutouts photographed at a 3/4 or tilted angle with a crisp,
-    straight angled front-bottom edge (4..20 deg), apply a gentle vertical shear so the
-    dominant front face sits flat on the stage while keeping vertical edges upright."""
+    """For single-bottle cutouts photographed with a slight camera roll (2..8 deg
+    where both vertical sides and bottom edge lean in the same direction), apply pure
+    rigid rotation (never shear/stretch) so the bottle stands upright without distortion."""
     try:
         import cv2
         import numpy as np
@@ -2229,7 +2229,8 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     min_x, max_x = int(xs.min()), int(xs.max())
     min_y, max_y = int(ys.min()), int(ys.max())
     w_obj = max_x - min_x + 1
-    if w_obj < 60:
+    h_obj = max_y - min_y + 1
+    if w_obj < 60 or h_obj < 120:
         return canvas
 
     # Skip multi-object cutouts (box + bottle, sets)
@@ -2252,57 +2253,53 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     if gaps > 0:
         return canvas
 
+    # Measure vertical side tilt in middle 35%-75% of object height
+    y_lo, y_hi = int(min_y + h_obj * 0.35), int(min_y + h_obj * 0.75)
+    l_pts, r_pts = [], []
+    for y in range(y_lo, y_hi):
+        row = np.where(alpha[y, :] > 120)[0]
+        if len(row) > 0:
+            l_pts.append((float(y), float(row.min())))
+            r_pts.append((float(y), float(row.max())))
+    if len(l_pts) < 20:
+        return canvas
+    ml = float(np.polyfit([p[0] for p in l_pts], [p[1] for p in l_pts], 1)[0])
+    mr = float(np.polyfit([p[0] for p in r_pts], [p[1] for p in r_pts], 1)[0])
+    l_deg = float(np.degrees(np.arctan(ml)))
+    r_deg = float(np.degrees(np.arctan(mr)))
+    # Both sides must lean in the same direction (true camera roll, not tapered bottle or 3/4 cube)
+    if l_deg * r_deg <= 0 or abs(l_deg - r_deg) > 2.5:
+        return canvas
+    v_deg = (l_deg + r_deg) / 2.0
+    if not (2.0 <= abs(v_deg) <= 8.0):
+        return canvas
+
+    # Also verify bottom edge tilts in the matching direction
     bottom_y = {}
     for x in range(min_x, max_x + 1):
         col = np.where(alpha[:, x] > 120)[0]
         if len(col) > 0:
             bottom_y[x] = int(col.max())
-    if len(bottom_y) < 40:
-        return canvas
-
     pts_x = sorted(bottom_y.keys())
-    x_mid = pts_x[int(np.argmax([bottom_y[x] for x in pts_x]))]
-
-    chosen_m = None
-    for sub_xs, expect_sign in [
-        ([x for x in pts_x if x < x_mid - 15], 1),
-        ([x for x in pts_x if x > x_mid + 15], -1),
-    ]:
-        if len(sub_xs) < w_obj * 0.48:
-            continue
-        n = len(sub_xs)
-        trim = max(2, int(n * 0.12))
-        core_xs = sub_xs[trim:-trim] if n > 20 else sub_xs
-        if len(core_xs) < 15:
-            continue
-        pts = np.array([[float(x), float(bottom_y[x])] for x in core_xs], dtype=np.float32)
-        vx, vy, x0, y0 = cv2.fitLine(pts, cv2.DIST_HUBER, 0, 0.01, 0.01).flatten()
-        if abs(vx) < 1e-6:
-            continue
-        m = float(vy / vx)
-        deg = float(np.degrees(np.arctan(m)))
-        b = float(y0 - m * x0)
-        resid = np.abs(pts[:, 1] - (m * pts[:, 0] + b))
-        inlier_ratio = float(np.mean(resid < 4.5))
-        med_err = float(np.median(resid))
-        span_ratio = len(sub_xs) / float(w_obj)
-        is_strong_tilt = 4.0 <= deg * expect_sign <= 20.0 and inlier_ratio >= 0.92 and med_err <= 1.2
-        is_residual_tilt = span_ratio >= 0.55 and 1.1 <= deg * expect_sign < 4.0 and inlier_ratio >= 0.94 and med_err <= 0.8
-        if is_strong_tilt or is_residual_tilt:
-            chosen_m = m
-            break
-
-    if chosen_m is None:
+    if len(pts_x) < 40:
+        return canvas
+    trim = max(4, int(len(pts_x) * 0.15))
+    core_xs = pts_x[trim:-trim]
+    if len(core_xs) < 20:
+        return canvas
+    pts = np.array([[float(x), float(bottom_y[x])] for x in core_xs], dtype=np.float32)
+    vx, vy, x0, y0 = cv2.fitLine(pts, cv2.DIST_HUBER, 0, 0.01, 0.01).flatten()
+    if abs(vx) < 1e-6:
+        return canvas
+    b_deg = float(np.degrees(np.arctan(vy / vx)))
+    if abs(b_deg - (-v_deg)) > 2.5:
         return canvas
 
-    k = float(np.clip(chosen_m, -0.32, 0.32))
-    # Compute padded canvas so vertical shear never clips top/bottom corners
-    pad = int(abs(k) * w_obj) + 32
-    padded = cv2.copyMakeBorder(arr, pad, pad, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0, 0))
-    ph, pw = padded.shape[:2]
-    M = np.float32([[1, 0, 0], [-k, 1, k * x_mid]])
+    # Pure rigid rotation (no shear/stretching)
+    cx, cy = (min_x + max_x) / 2.0, (min_y + max_y) / 2.0
+    M = cv2.getRotationMatrix2D((cx, cy), -v_deg, 1.0)
     warped = cv2.warpAffine(
-        padded, M, (pw, ph),
+        arr, M, (w, h),
         flags=cv2.INTER_LANCZOS4,
         borderMode=cv2.BORDER_CONSTANT,
         borderValue=(0, 0, 0, 0),
@@ -2312,7 +2309,7 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     if len(w_xs) == 0:
         return canvas
     wx1, wy1 = max(0, int(w_xs.min()) - 4), max(0, int(w_ys.min()) - 4)
-    wx2, wy2 = min(pw, int(w_xs.max()) + 5), min(ph, int(w_ys.max()) + 5)
+    wx2, wy2 = min(w, int(w_xs.max()) + 5), min(h, int(w_ys.max()) + 5)
     cw, ch = wx2 - wx1, wy2 - wy1
     if cw <= 0 or ch <= 0:
         return canvas
