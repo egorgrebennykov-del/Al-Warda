@@ -254,12 +254,12 @@
 /* User's Golden Horizon & Rising Glow Stage (bottom_glow_stage.webp) */
 .warda-details-bottom-glow {
   position: absolute;
-  bottom: 0;
+  bottom: -28px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 586px;
-  height: 600px;
+  width: 126%;
+  max-width: 740px;
+  height: 740px;
   pointer-events: none;
   z-index: 1;
 }
@@ -270,7 +270,7 @@
   display: block;
   object-fit: fill;
   mix-blend-mode: screen;
-  filter: brightness(1.12) contrast(1.04);
+  filter: brightness(1.25) contrast(1.06);
 }
 
 /* Flacon Container & Photo Presentation */
@@ -741,10 +741,10 @@
   }
 
   .warda-details-bottom-glow {
-    bottom: 0;
-    width: 100%;
-    max-width: 340px;
-    height: 422px;
+    bottom: -18px;
+    width: 122%;
+    max-width: 420px;
+    height: 500px;
   }
 
   .warda-details-photo {
@@ -810,10 +810,10 @@
   }
 
   .warda-details-bottom-glow {
-    bottom: 0;
-    width: 100%;
-    max-width: 300px;
-    height: 378px;
+    bottom: -14px;
+    width: 120%;
+    max-width: 360px;
+    height: 440px;
   }
 
   .warda-details-photo {
