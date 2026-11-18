@@ -313,14 +313,14 @@
   max-width: 100%;
   max-height: 100%;
   width: auto;
-  height: 420px;
+  height: calc(420px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   position: relative;
   z-index: 4;
   image-rendering: auto;
   transform-origin: bottom center;
-  transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%));
+  transform: translateY(var(--flacon-pad-pct, 7.4%));
   filter:
     drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.42))
     drop-shadow(0 0 20px rgba(212, 175, 55, 0.28))
@@ -480,11 +480,11 @@
   display: block;
   max-width: 100%;
   width: auto;
-  height: 420px;
+  height: calc(420px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   transform-origin: center center;
-  transform: translateY(calc((var(--flacon-scale, 1) - 1) * 50%)) scale(var(--flacon-scale, 1)) translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+  transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
   opacity: 0.78;
   filter: blur(0.9px) brightness(1.15);
 }
@@ -786,15 +786,15 @@
     max-width: 100%;
     max-height: 100%;
     width: auto;
-    height: 330px;
+    height: calc(330px * var(--flacon-scale, 1));
     object-fit: contain;
     object-position: bottom center;
     transform-origin: bottom center;
-    transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%));
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%));
   }
 
   .warda-stage-contact-shadow {
@@ -810,11 +810,11 @@
   .warda-stage-reflection-img {
     max-width: 100%;
     width: auto;
-    height: 330px;
+    height: calc(330px * var(--flacon-scale, 1));
     object-fit: contain;
     object-position: bottom center;
     transform-origin: center center;
-    transform: translateY(calc((var(--flacon-scale, 1) - 1) * 50%)) scale(var(--flacon-scale, 1)) translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
   }
 
   .warda-details-zoom-pill {
@@ -854,15 +854,15 @@
     max-width: 100%;
     max-height: 100%;
     width: auto;
-    height: 360px;
+    height: calc(360px * var(--flacon-scale, 1));
     object-fit: contain;
     object-position: bottom center;
     transform-origin: bottom center;
-    transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%));
   }
 
   .warda-details-img-wrap:hover .warda-details-img {
-    transform: scale(var(--flacon-scale, 1)) translateY(var(--flacon-pad-pct, 7.4%)) translateZ(0);
+    transform: translateY(var(--flacon-pad-pct, 7.4%));
   }
 
   .warda-stage-contact-shadow {
@@ -879,11 +879,11 @@
   .warda-stage-reflection-img {
     max-width: 100%;
     width: auto;
-    height: 360px;
+    height: calc(360px * var(--flacon-scale, 1));
     object-fit: contain;
     object-position: bottom center;
     transform-origin: center center;
-    transform: translateY(calc((var(--flacon-scale, 1) - 1) * 50%)) scale(var(--flacon-scale, 1)) translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
   }
 }
 

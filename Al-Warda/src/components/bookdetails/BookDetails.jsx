@@ -125,7 +125,7 @@ export default function BookDetails() {
     setFlaconLoaded(false);
     setAllSourcesExhausted(false);
     setFlaconBottomPadPct(7.4);
-    setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.38 : 1);
+    setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.15 : 1);
     setMarkedFailedMsg("");
     setIsInErrors(
       Boolean(
@@ -365,7 +365,7 @@ export default function BookDetails() {
           const maxScaleW = (containerW * 0.94) / Math.max(1, renderedW * fgW);
           computedScale = Math.max(
             1,
-            Math.min(1.85, targetScaleH, maxScaleW),
+            Math.min(1.22, targetScaleH, maxScaleW),
           );
         }
       }
