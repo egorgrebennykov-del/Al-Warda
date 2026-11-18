@@ -20,13 +20,7 @@
   padding: 0;
   overflow: hidden;
   border-radius: 12px 12px 0 0;
-  background: radial-gradient(
-    ellipse 72% 70% at 50% 56%,
-    rgba(245, 215, 145, 0.26) 0%,
-    rgba(212, 175, 55, 0.14) 44%,
-    rgba(120, 88, 28, 0.05) 68%,
-    transparent 86%
-  ) !important;
+  background: transparent !important;
   -webkit-mask-image: none;
   mask-image: none;
   transform: none;
@@ -67,10 +61,7 @@
   box-sizing: border-box !important;
   padding: 0.25rem;
   transform: none !important;
-  filter:
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
-    drop-shadow(0 0 16px rgba(212, 175, 55, 0.26))
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
@@ -103,13 +94,7 @@
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 13px 13px 0 0;
-  background: radial-gradient(
-    ellipse 72% 70% at 50% 56%,
-    rgba(245, 215, 145, 0.26) 0%,
-    rgba(212, 175, 55, 0.14) 44%,
-    rgba(120, 88, 28, 0.05) 68%,
-    transparent 86%
-  );
+  background: transparent;
   transform: none;
 }
 
@@ -122,18 +107,12 @@
   max-width: none;
   max-height: none;
   object-fit: contain;
-  filter:
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
-    drop-shadow(0 0 16px rgba(212, 175, 55, 0.26))
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .search__card:hover .search__card-img {
   animation: none;
-  filter:
-    drop-shadow(0 0 2px rgba(255, 224, 155, 0.42))
-    drop-shadow(0 0 18px rgba(212, 175, 55, 0.28))
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.6));
 }
 
 .search__card .search__card-body {
