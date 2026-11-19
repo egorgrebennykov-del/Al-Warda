@@ -425,7 +425,16 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
         raise RuntimeError("SUPABASE_URL is not configured")
 
     db_session = gpi.make_session()
-    rows = gpi.fetch_stock_rows(db_session, supabase_url)
+    rows = None
+    for f_attempt in range(3):
+        try:
+            rows = gpi.fetch_stock_rows(db_session, supabase_url)
+            break
+        except Exception as exc:
+            if f_attempt == 2:
+                raise
+            print(f"fetch_stock_rows retry {f_attempt + 1}/3: {exc}", flush=True)
+            time.sleep(3 * (f_attempt + 1))
     all_rows = [
         r for r in rows
         if r.get("slug") != "site-settings"
@@ -563,7 +572,10 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
             )
             if not dry_run:
                 for r in group_rows:
-                    patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=True)
+                    try:
+                        patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=True)
+                    except Exception as exc:
+                        print(f"Warning patching {r.get('id')}: {exc}", flush=True)
         elif had_error:
             errors += len(group_rows)
             print(
@@ -579,7 +591,10 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
             )
             if not dry_run:
                 for r in group_rows:
-                    patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=False)
+                    try:
+                        patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=False)
+                    except Exception as exc:
+                        print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
     save_trends_cache(cache)
     remaining_series = sum(
