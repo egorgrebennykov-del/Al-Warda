@@ -2665,6 +2665,9 @@ def select_candidates(rows, now, regenerate_completed=False):
         if not product_source(row):
             continue
         info = row.get("info") or {}
+        gt = info.get("googleTrends") or {}
+        if row.get("in_stock") is False or gt.get("passed") is False or gt.get("hiddenFromSite") is True:
+            continue
         job = image_generation(info)
         if job.get("attemptedOn") == utc_day:
             attempts_today += 1

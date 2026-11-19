@@ -299,7 +299,8 @@ def check_perfume_trends(name, brand="", client=None, cache=None):
     return entry
 
 
-def delete_stock_row(session, supabase_url, row_id):
+def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
+    """Update stocks row with Google Trends result and in_stock visibility (never deletes)."""
     base = (supabase_url or "").rstrip("/")
     if "workers.dev" in base and "/api" not in base:
         url = f"{base}/api/rest/v1/stocks"
@@ -307,13 +308,28 @@ def delete_stock_row(session, supabase_url, row_id):
         url = f"{base}/rest/v1/stocks"
     else:
         url = f"{base}/rest/v1/stocks"
-    resp = session.delete(url, params={"id": f"eq.{row_id}"}, timeout=30)
+    info = dict(row.get("info") or {})
+    info["googleTrends"] = {
+        **(trends_meta or {}),
+        "hiddenFromSite": not visible,
+    }
+    payload = {
+        "in_stock": bool(visible),
+        "info": info,
+    }
+    resp = session.patch(
+        url,
+        params={"id": f"eq.{row['id']}"},
+        json=payload,
+        headers={"Content-Type": "application/json", "Prefer": "return=minimal"},
+        timeout=30,
+    )
     if not resp.ok:
-        raise RuntimeError(f"Could not delete stock {row_id} ({resp.status_code}): {resp.text[:200]}")
+        raise RuntimeError(f"Could not update stock {row['id']} ({resp.status_code}): {resp.text[:200]}")
 
 
-def filter_existing_site_products(dry_run=False):
-    """Run all existing products on the site through the Google Trends filter and delete failing ones."""
+def filter_all_db_products(dry_run=False, force=False):
+    """Analyze ALL products in DB via Google Trends (series-aware) and hide failing ones without deleting."""
     sys.path.insert(0, str(SCRIPT_DIR))
     import generate_product_images as gpi
 
@@ -324,47 +340,48 @@ def filter_existing_site_products(dry_run=False):
 
     db_session = gpi.make_session()
     rows = gpi.fetch_stock_rows(db_session, supabase_url)
-    site_rows = [
+    all_rows = [
         r for r in rows
         if r.get("slug") != "site-settings"
         and str(r.get("id")) != "999999"
-        and ((r.get("info") or {}).get("imageGeneration") or {}).get("status") == "completed"
     ]
-    print(f"Found {len(site_rows)} completed products on site to check against Google Trends...", flush=True)
+    print(f"Found {len(all_rows)} total products in DB to analyze against Google Trends...", flush=True)
 
     client = GoogleTrendsClient(delay_sec=2.5)
     cache = load_trends_cache()
     kept = 0
-    deleted = 0
+    hidden = 0
+    skipped_checked = 0
     errors = 0
-    deleted_ids = set()
 
-    # Group products by perfume series/family so if ANY member passes, the whole series is kept
     from collections import defaultdict
     series_groups = defaultdict(list)
-    for row in site_rows:
+    for row in all_rows:
         s_key = extract_perfume_series_key(row.get("name") or "", row.get("brand") or "")
         series_groups[s_key or f"id:{row.get('id')}"].append(row)
 
     print(f"Grouped into {len(series_groups)} perfume series/families.", flush=True)
 
     for s_idx, (s_key, group_rows) in enumerate(series_groups.items(), 1):
-        # Build unique queries for this series: shortest / series base first
+        if not force and all(((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt") for r in group_rows):
+            skipped_checked += len(group_rows)
+            continue
+
         queries_to_try = []
         seen_q = set()
         if s_key and not s_key.startswith("id:"):
-            queries_to_try.append((s_key, group_rows[0].get("brand") or ""))
+            queries_to_try.append(s_key)
             seen_q.add(s_key)
         for r in sorted(group_rows, key=lambda x: len(x.get("name") or "")):
             cq = clean_perfume_name_for_trends(r.get("name") or "", r.get("brand") or "").lower()
             if cq and cq not in seen_q:
                 seen_q.add(cq)
-                queries_to_try.append((cq, r.get("brand") or ""))
+                queries_to_try.append(cq)
 
         series_passed = None
         last_res = None
         had_error = False
-        for q_text, q_brand in queries_to_try:
+        for q_text in queries_to_try:
             res = check_perfume_trends(q_text, brand="", client=client, cache=cache)
             last_res = res
             if res.get("passed") is True:
@@ -376,13 +393,26 @@ def filter_existing_site_products(dry_run=False):
         if s_idx % 5 == 0:
             save_trends_cache(cache)
 
+        trends_meta = {
+            "query": last_res.get("query") if last_res else s_key,
+            "seriesKey": s_key,
+            "scores": last_res.get("scores") if last_res else {},
+            "avg": last_res.get("avg") if last_res else 0.0,
+            "max": last_res.get("max") if last_res else 0,
+            "passed": bool(series_passed is True),
+            "checkedAt": datetime.now(timezone.utc).isoformat(),
+        }
+
         if series_passed is True:
             kept += len(group_rows)
             print(
                 f"[Series {s_idx}/{len(series_groups)}] KEEP {len(group_rows)} item(s) in '{s_key}' "
-                f"(matched '{last_res['query']}': {last_res['scores']} avg={last_res['avg']} max={last_res['max']})",
+                f"(matched '{trends_meta['query']}': {trends_meta['scores']} avg={trends_meta['avg']} max={trends_meta['max']})",
                 flush=True,
             )
+            if not dry_run:
+                for r in group_rows:
+                    patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=True)
         elif had_error:
             errors += len(group_rows)
             print(
@@ -390,47 +420,35 @@ def filter_existing_site_products(dry_run=False):
                 flush=True,
             )
         else:
-            deleted += len(group_rows)
+            hidden += len(group_rows)
             print(
-                f"[Series {s_idx}/{len(series_groups)}] DELETE {len(group_rows)} item(s) in '{s_key}': "
-                f"{last_res['scores'] if last_res else {}} avg={last_res['avg'] if last_res else 0} max={last_res['max'] if last_res else 0}",
+                f"[Series {s_idx}/{len(series_groups)}] HIDE {len(group_rows)} item(s) in '{s_key}': "
+                f"{trends_meta['scores']} avg={trends_meta['avg']} max={trends_meta['max']}",
                 flush=True,
             )
             if not dry_run:
                 for r in group_rows:
-                    rid = r.get("id")
-                    delete_stock_row(db_session, supabase_url, rid)
-                    deleted_ids.add(rid)
+                    patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=False)
 
     save_trends_cache(cache)
-
-    enriched_path = APP_DIR / "server" / "data" / "enrichedStocks.json"
-    if not dry_run and deleted_ids and enriched_path.exists():
-        try:
-            data = json.loads(enriched_path.read_text(encoding="utf-8"))
-            if isinstance(data, dict):
-                before = len(data)
-                cleaned_data = {k: v for k, v in data.items() if (v or {}).get("id") not in deleted_ids}
-                if len(cleaned_data) != before:
-                    enriched_path.write_text(json.dumps(cleaned_data, ensure_ascii=False, indent=2), encoding="utf-8")
-                    print(f"Removed {before - len(cleaned_data)} entries from enrichedStocks.json", flush=True)
-        except Exception as exc:
-            print(f"Warning updating enrichedStocks.json: {exc}", flush=True)
-
-    print(f"\n=== Google Trends Filter Done: kept={kept}, deleted={deleted}, errors={errors} ===", flush=True)
+    print(
+        f"\n=== Google Trends DB Filter Done: kept={kept}, hidden={hidden}, skipped_already_checked={skipped_checked}, errors={errors} ===",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check perfume names in Google Trends (BG, RO, GR, HU).")
     parser.add_argument("name", nargs="?", help="Perfume name")
     parser.add_argument("--brand", default="", help="Brand name")
-    parser.add_argument("--filter-existing-site", action="store_true", help="Filter all existing site products and delete failing ones")
-    parser.add_argument("--dry-run", action="store_true", help="Do not delete from DB when running --filter-existing-site")
+    parser.add_argument("--filter-all-db", action="store_true", help="Analyze ALL products in DB and hide failing ones (no deletion)")
+    parser.add_argument("--force", action="store_true", help="Re-check even already checked rows")
+    parser.add_argument("--dry-run", action="store_true", help="Do not update DB when running --filter-all-db")
     args = parser.parse_args()
-    if args.filter_existing_site:
-        filter_existing_site_products(dry_run=args.dry_run)
+    if args.filter_all_db:
+        filter_all_db_products(dry_run=args.dry_run, force=args.force)
     elif args.name:
         res = check_perfume_trends(args.name, brand=args.brand)
         print(json.dumps(res, ensure_ascii=False, indent=2))
     else:
-        parser.error("Provide a perfume name or --filter-existing-site")
+        parser.error("Provide a perfume name or --filter-all-db")

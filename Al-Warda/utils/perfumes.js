@@ -2432,9 +2432,12 @@ async function fetchPerfumeDetailsById(id) {
   const r = Array.isArray(rows) ? rows[0] : null;
   if (!r) return null;
   const ig = r.info?.imageGeneration;
+  const gt = r.info?.googleTrends;
   if (
-    ig &&
-    (ig.status === "failed" || ig.failed === true || ig.manualFailed === true)
+    r.in_stock === false ||
+    (gt && (gt.passed === false || gt.hiddenFromSite === true)) ||
+    (ig &&
+      (ig.status === "failed" || ig.failed === true || ig.manualFailed === true))
   ) {
     return null;
   }
@@ -2541,6 +2544,9 @@ export async function fetchPerfumesFromSupabase() {
           : null;
 
       const validRows = allRows.filter((r) => {
+        if (r.in_stock === false) {
+          return false;
+        }
         if (!isGeneratedProductImage(r.image) || !String(r.image).startsWith("/")) {
           return false;
         }

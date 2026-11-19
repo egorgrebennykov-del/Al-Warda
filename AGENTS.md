@@ -13,7 +13,8 @@
   - Never display unverified or hallucinated fragrance notes. Notes are shown only when `info.notesVerified === true` (verified via DeepSeek / official pyramid lookup).
 - **Google Trends Regional Filter (`google_trends_filter.py`)**:
   - Catalog additions from Qogita follow the 5-step pipeline: `1. Qogita fetch` -> `2. Google Trends filter` -> `3. Image generation` -> `4. Fragrance notes` -> `5. AI description`.
-  - Before adding any new Qogita product, its cleaned name (without ml, gender, or perfume type) is checked in Google Trends (`today 3-m`) across `BG`, `RO`, `GR`, `HU`; it passes only if `avg >= 35` or `max >= 50`.
+  - Before adding any new Qogita product, its cleaned name (without ml, gender, or perfume type) is checked in Google Trends (`today 3-m`) across `BG`, `RO`, `GR`, `HU`; it passes if `avg >= 35` or `max >= 50`, or if any perfume in its series/family (`extract_perfume_series_key`, e.g., `9pm` & `9pm Rebel`) passes.
+  - Existing DB products that fail Google Trends are **not deleted** from `stocks`; instead they are marked `in_stock = false` and `info.googleTrends.hiddenFromSite = true`, and are hidden from both the catalog (`fetchPerfumesFromSupabase`) and product details pages (`fetchPerfumeDetailsById`), as well as skipped by image generation (`select_candidates`).
 - **Keep `AGENTS.md` Up to Date**:
   - Whenever you make important changes to architecture, pipelines, visual stage rules, catalog filtering, admin workflows, API endpoints, or safety/business rules, you **MUST** update `AGENTS.md` in the same task so future agents always have accurate instructions.
 
