@@ -13739,5 +13739,629 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:00:32.337893+00:00"
+  },
+  "asdaaf bawadi": {
+    "query": "asdaaf bawadi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:01.366705+00:00"
+  },
+  "french avenue ravine": {
+    "query": "french avenue ravine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:02.653338+00:00"
+  },
+  "french avenue ravine ice": {
+    "query": "french avenue ravine ice",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:03.911907+00:00"
+  },
+  "french avenue ravine ginger": {
+    "query": "french avenue ravine ginger",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:05.047199+00:00"
+  },
+  "khadlaj valor honor": {
+    "query": "khadlaj valor honor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:06.337026+00:00"
+  },
+  "rasasi arabian prive nagham": {
+    "query": "rasasi arabian prive nagham",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:07.488259+00:00"
+  },
+  "rasasi somow al lavender oud": {
+    "query": "rasasi somow al lavender oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:09.024441+00:00"
+  },
+  "maa arwaak rasasi": {
+    "query": "maa arwaak rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:10.142243+00:00"
+  },
+  "dareej by rasasi": {
+    "query": "dareej by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:11.272524+00:00"
+  },
+  "dareej by rasasi spicy": {
+    "query": "dareej by rasasi spicy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:12.640516+00:00"
+  },
+  "rasasi aiyara": {
+    "query": "rasasi aiyara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:13.943987+00:00"
+  },
+  "faqat lil rijal by rasasi": {
+    "query": "faqat lil rijal by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:15.149652+00:00"
+  },
+  "rasasi marha": {
+    "query": "rasasi marha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:16.343567+00:00"
+  },
+  "rasasi qasamat bareeq": {
+    "query": "rasasi qasamat bareeq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:17.595327+00:00"
+  },
+  "rasasi shuhrah": {
+    "query": "rasasi shuhrah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:18.876741+00:00"
+  },
+  "rasasi shuhrah sensuelle": {
+    "query": "rasasi shuhrah sensuelle",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:20.173222+00:00"
+  },
+  "swiss arabian shaghaf": {
+    "query": "swiss arabian shaghaf",
+    "scores": {
+      "BG": 34,
+      "RO": 19,
+      "GR": 0,
+      "HU": 29
+    },
+    "avg": 20.5,
+    "max": 34,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:21.609459+00:00"
+  },
+  "swiss arabian shaghaf oud": {
+    "query": "swiss arabian shaghaf oud",
+    "scores": {
+      "BG": 2,
+      "RO": 16,
+      "GR": 0,
+      "HU": 29
+    },
+    "avg": 11.75,
+    "max": 29,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:22.964745+00:00"
+  },
+  "swiss arabian shaghaf oud elixir": {
+    "query": "swiss arabian shaghaf oud elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:23.990192+00:00"
+  },
+  "swiss arabian shaghaf oud royale": {
+    "query": "swiss arabian shaghaf oud royale",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:25.222730+00:00"
+  },
+  "swiss arabian tobacco 01": {
+    "query": "swiss arabian tobacco 01",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 10
+    },
+    "avg": 2.5,
+    "max": 10,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:27.747276+00:00"
+  },
+  "swiss arabian casablanca": {
+    "query": "swiss arabian casablanca",
+    "scores": {
+      "BG": 3,
+      "RO": 25,
+      "GR": 0,
+      "HU": 25
+    },
+    "avg": 13.25,
+    "max": 25,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:28.847415+00:00"
+  },
+  "swiss arabian intense pride": {
+    "query": "swiss arabian intense pride",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:30.152539+00:00"
+  },
+  "swiss arabian gharaam": {
+    "query": "swiss arabian gharaam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:31.300154+00:00"
+  },
+  "swiss arabian patchouli 01": {
+    "query": "swiss arabian patchouli 01",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:32.462430+00:00"
+  },
+  "swiss arabian amaali cpo": {
+    "query": "swiss arabian amaali cpo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:33.858697+00:00"
+  },
+  "swiss arabian pure instinct": {
+    "query": "swiss arabian pure instinct",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:39.017024+00:00"
+  },
+  "swiss arabian amber 07": {
+    "query": "swiss arabian amber 07",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:40.148332+00:00"
+  },
+  "swiss arabian jasmine honey 1413": {
+    "query": "swiss arabian jasmine honey 1413",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:41.360582+00:00"
+  },
+  "swiss arabian wajd": {
+    "query": "swiss arabian wajd",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:46.735713+00:00"
+  },
+  "rose malaki by swiss arabian": {
+    "query": "rose malaki by swiss arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:47.986637+00:00"
+  },
+  "swiss arabian nouf": {
+    "query": "swiss arabian nouf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:49.118513+00:00"
+  },
+  "sawalef glamorous bloom by swiss arabian seductive elixir de": {
+    "query": "sawalef glamorous bloom by swiss arabian seductive elixir de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:50.382302+00:00"
+  },
+  "swiss arabian ishq": {
+    "query": "swiss arabian ishq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:51.375136+00:00"
+  },
+  "swiss arabian bergamot cedarwood 1412": {
+    "query": "swiss arabian bergamot cedarwood 1412",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:52.606189+00:00"
+  },
+  "swiss arabian layali": {
+    "query": "swiss arabian layali",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:53.926018+00:00"
+  },
+  "swiss arabian layali rouge cpo": {
+    "query": "swiss arabian layali rouge cpo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:55.065005+00:00"
+  },
+  "swiss arabian edge": {
+    "query": "swiss arabian edge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:56.343398+00:00"
+  },
+  "swiss arabian edge intense": {
+    "query": "swiss arabian edge intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:57.712992+00:00"
+  },
+  "swiss arabian edge intense m 984": {
+    "query": "swiss arabian edge intense m 984",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:03:58.891343+00:00"
+  },
+  "swiss arabian edge - floral green": {
+    "query": "swiss arabian edge - floral green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:00.096983+00:00"
+  },
+  "swiss arabian jamila cpo": {
+    "query": "swiss arabian jamila cpo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:01.812313+00:00"
+  },
+  "oud lychee by swiss arabian": {
+    "query": "oud lychee by swiss arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:03.142777+00:00"
+  },
+  "swiss arabian rose patchouli": {
+    "query": "swiss arabian rose patchouli",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:04.286291+00:00"
+  },
+  "cardamom apple by swiss arabian": {
+    "query": "cardamom apple by swiss arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:05.333965+00:00"
+  },
+  "swiss arabian mint wood": {
+    "query": "swiss arabian mint wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:06.693278+00:00"
+  },
+  "swiss arabian amber apricot": {
+    "query": "swiss arabian amber apricot",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:07.921105+00:00"
+  },
+  "swiss arabian wafaa": {
+    "query": "swiss arabian wafaa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:04:17.985234+00:00"
   }
 }
