@@ -104,8 +104,9 @@ _FLANKER_WORDS = {
     "absolute", "ultra", "pure", "fresh", "ice", "gala", "private", "prive",
     "reserve", "royal", "platinum", "diamond", "velvet", "sillage", "milestone",
     "untold", "tobacco", "ruby", "emerald", "aqua", "sport", "extreme",
-    "limited", "summer", "winter", "night", "day", "in", "on", "of", "not",
-    "only", "by", "balm", "body", "milk", "veil", "iv", "iii", "ii", "vi",
+    "limited", "summer", "winter", "night", "day", "out", "dubai", "candy",
+    "tous", "moi", "in", "on", "of", "not", "only", "by", "balm", "body",
+    "milk", "veil", "iv", "iii", "ii", "vi",
 }
 _TWO_WORD_SERIES_HEADS = {
     "amber", "club", "oud", "musk", "rare", "his", "her", "highness",
@@ -119,6 +120,7 @@ def extract_perfume_series_key(name, brand=""):
     cleaned = clean_perfume_name_for_trends(name, brand=brand)
     if not cleaned:
         return ""
+    cleaned = re.sub(r"['’]s\b", "s", cleaned, flags=re.I)
     tokens = cleaned.split()
     brand_tokens = str(brand or "").strip().split()
     min_len = len(brand_tokens) + 1 if brand_tokens else 2
@@ -129,6 +131,46 @@ def extract_perfume_series_key(name, brand=""):
     while len(tokens) > min_len and tokens[-1].lower() in _FLANKER_WORDS:
         tokens.pop()
     return " ".join(tokens).lower()
+
+
+def build_series_groups(rows):
+    """Group rows by series key and collapse longer flanker keys into shorter prefix series keys."""
+    from collections import defaultdict
+
+    raw_groups = defaultdict(list)
+    key_brand_min_words = {}
+    for row in rows:
+        brand = str(row.get("brand") or "").strip()
+        s_key = extract_perfume_series_key(row.get("name") or "", brand)
+        if not s_key:
+            s_key = f"id:{row.get('id')}"
+        raw_groups[s_key].append(row)
+        b_words = len(brand.split()) if brand and brand.lower() not in ("al-warda", "unknown") else 1
+        key_brand_min_words[s_key] = max(key_brand_min_words.get(s_key, 2), b_words + 1)
+
+    # Prefix-collapse: if 'afnan 9pm' exists, merge 'afnan 9pm night out' into 'afnan 9pm'
+    sorted_keys = sorted(
+        (k for k in raw_groups if not k.startswith("id:")),
+        key=lambda k: (len(k.split()), len(k)),
+    )
+    canonical = {}
+    for k in sorted_keys:
+        merged_to = k
+        for short_k in sorted_keys:
+            if short_k == k:
+                break
+            if len(short_k.split()) < key_brand_min_words.get(short_k, 2):
+                continue
+            if k.startswith(short_k + " "):
+                merged_to = short_k
+                break
+        canonical[k] = merged_to
+
+    groups = defaultdict(list)
+    for k, grp in raw_groups.items():
+        target = canonical.get(k, k)
+        groups[target].extend(grp)
+    return groups
 
 
 def passes_trends_threshold(scores):
@@ -356,11 +398,48 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
     consecutive_429 = 0
     processed_series = 0
 
-    from collections import defaultdict
-    series_groups = defaultdict(list)
-    for row in all_rows:
-        s_key = extract_perfume_series_key(row.get("name") or "", row.get("brand") or "")
-        series_groups[s_key or f"id:{row.get('id')}"].append(row)
+    series_groups = build_series_groups(all_rows)
+
+    # Reconcile any series whose grouping changed (e.g. merged 'afnan 9pm' + 'afnan 9pm night out')
+    reconciled_passed = 0
+    reconciled_reset = 0
+    for s_key, group_rows in series_groups.items():
+        checked_rows = [r for r in group_rows if ((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt")]
+        if not checked_rows:
+            continue
+        old_keys = {((r.get("info") or {}).get("googleTrends") or {}).get("seriesKey") for r in checked_rows}
+        has_unchecked = len(checked_rows) < len(group_rows)
+        if old_keys != {s_key} or has_unchecked:
+            passing_row = next(
+                (r for r in checked_rows if ((r.get("info") or {}).get("googleTrends") or {}).get("passed") is True),
+                None,
+            )
+            if passing_row:
+                win_meta = dict((passing_row.get("info") or {}).get("googleTrends") or {})
+                win_meta["seriesKey"] = s_key
+                for r in group_rows:
+                    r_gt = (r.get("info") or {}).get("googleTrends") or {}
+                    if r_gt.get("seriesKey") != s_key or r_gt.get("passed") is not True or r.get("in_stock") is not True:
+                        if not dry_run:
+                            patch_stock_trends(db_session, supabase_url, r, win_meta, visible=True)
+                        reconciled_passed += 1
+            else:
+                for r in checked_rows:
+                    r_info = dict(r.get("info") or {})
+                    r_gt = dict(r_info.get("googleTrends") or {})
+                    r_gt.pop("checkedAt", None)
+                    r_gt.pop("passed", None)
+                    r_gt.pop("hiddenFromSite", None)
+                    r_gt["seriesKey"] = s_key
+                    r_info["googleTrends"] = r_gt
+                    r["info"] = r_info
+                    if not dry_run:
+                        base_u = (supabase_url or "").rstrip("/")
+                        u = f"{base_u}/api/rest/v1/stocks" if ("workers.dev" in base_u and "/api" not in base_u) else f"{base_u}/rest/v1/stocks"
+                        db_session.patch(u, params={"id": f"eq.{r['id']}"}, json={"info": r_info}, headers={"Content-Type": "application/json", "Prefer": "return=minimal"}, timeout=30)
+                    reconciled_reset += 1
+    if reconciled_passed or reconciled_reset:
+        print(f"Reconciled changed groups: auto-kept={reconciled_passed}, queued-for-recheck={reconciled_reset}", flush=True)
 
     ordered_groups = list(series_groups.items())
     if completed_first:
@@ -389,7 +468,7 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
             if cq and cq not in seen_q:
                 seen_q.add(cq)
                 queries_to_try.append(cq)
-                if len(queries_to_try) >= 2:
+                if len(queries_to_try) >= 4:
                     break
 
         series_passed = None
