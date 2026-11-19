@@ -285,15 +285,19 @@
   display: block;
   object-fit: fill;
   mix-blend-mode: screen;
-  filter: brightness(1.25) contrast(1.06);
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 18%, #000 68%, transparent 96%),
-    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 18%, #000 68%, transparent 96%),
-    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  mask-composite: intersect;
+  filter: brightness(1.08);
+  -webkit-mask-image: radial-gradient(
+    ellipse 52% 54% at 50% 56%,
+    #000 45%,
+    rgba(0, 0, 0, 0.65) 68%,
+    transparent 96%
+  );
+  mask-image: radial-gradient(
+    ellipse 52% 54% at 50% 56%,
+    #000 45%,
+    rgba(0, 0, 0, 0.65) 68%,
+    transparent 96%
+  );
 }
 
 /* Flacon Container & Photo Presentation */
