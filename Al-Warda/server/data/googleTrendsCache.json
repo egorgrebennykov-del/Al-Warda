@@ -11191,5 +11191,525 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T13:45:17.798902+00:00"
+  },
+  "arabian oud diwan": {
+    "query": "arabian oud diwan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:38.326126+00:00"
+  },
+  "arabian oud yacht mood": {
+    "query": "arabian oud yacht mood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:43.334203+00:00"
+  },
+  "arabian oud nagham intense - fruity floral scent freesia blackcurrant": {
+    "query": "arabian oud nagham intense - fruity floral scent freesia blackcurrant",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:44.820515+00:00"
+  },
+  "arabian oud royal musk 1 4 tola - floral powdery scent": {
+    "query": "arabian oud royal musk 1 4 tola - floral powdery scent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:49.799792+00:00"
+  },
+  "arabian oud s aseel special": {
+    "query": "arabian oud s aseel special",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:51.012369+00:00"
+  },
+  "arabian oud 's aseel special edition": {
+    "query": "arabian oud 's aseel special edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:52.357462+00:00"
+  },
+  "arabian oud najd": {
+    "query": "arabian oud najd",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:53.336253+00:00"
+  },
+  "arabian oud ramz": {
+    "query": "arabian oud ramz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:54.585466+00:00"
+  },
+  "arabian oud bullet lavender saffron cedarwood fresh woody scents": {
+    "query": "arabian oud bullet lavender saffron cedarwood fresh woody scents",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:55.834281+00:00"
+  },
+  "arabian oud only": {
+    "query": "arabian oud only",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:57.024855+00:00"
+  },
+  "arabian oud only pink": {
+    "query": "arabian oud only pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:58.224688+00:00"
+  },
+  "arabian oud only blue": {
+    "query": "arabian oud only blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:47:59.458926+00:00"
+  },
+  "arabian oud only black": {
+    "query": "arabian oud only black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:00.618269+00:00"
+  },
+  "arabian oud different": {
+    "query": "arabian oud different",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:06.262804+00:00"
+  },
+  "centro arabian oud parfums": {
+    "query": "centro arabian oud parfums",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:07.567919+00:00"
+  },
+  "arabian oud bussma": {
+    "query": "arabian oud bussma",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:08.759977+00:00"
+  },
+  "arabian oud velvet touch": {
+    "query": "arabian oud velvet touch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:09.992073+00:00"
+  },
+  "arabian oud shalki": {
+    "query": "arabian oud shalki",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:14.971031+00:00"
+  },
+  "arabian oud shalki blue": {
+    "query": "arabian oud shalki blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:16.278296+00:00"
+  },
+  "arabian oud shalki yellow": {
+    "query": "arabian oud shalki yellow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:21.174962+00:00"
+  },
+  "arabian oud bella": {
+    "query": "arabian oud bella",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:22.724366+00:00"
+  },
+  "asdaaf lattafa ameerat al arab": {
+    "query": "asdaaf lattafa ameerat al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:23.971140+00:00"
+  },
+  "asdaaf ameer al arab": {
+    "query": "asdaaf ameer al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:28.786147+00:00"
+  },
+  "asdaaf ameer al arab imperium": {
+    "query": "asdaaf ameer al arab imperium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:30.173276+00:00"
+  },
+  "asdaaf ameerat al arab": {
+    "query": "asdaaf ameerat al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:31.435880+00:00"
+  },
+  "asdaaf ameerat al arab all over": {
+    "query": "asdaaf ameerat al arab all over",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:36.461722+00:00"
+  },
+  "asdaaf ameerat al arab sugar crown": {
+    "query": "asdaaf ameerat al arab sugar crown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:37.726993+00:00"
+  },
+  "asdaaf ameerat al arab prive rose all over": {
+    "query": "asdaaf ameerat al arab prive rose all over",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:39.069221+00:00"
+  },
+  "asdaaf sa'ud": {
+    "query": "asdaaf sa'ud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:40.911016+00:00"
+  },
+  "shaghaf man by asdaaf": {
+    "query": "shaghaf man by asdaaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:42.133760+00:00"
+  },
+  "asdaaf andaleeb flora": {
+    "query": "asdaaf andaleeb flora",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:43.282911+00:00"
+  },
+  "asdaaf durrat al oud": {
+    "query": "asdaaf durrat al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:44.577527+00:00"
+  },
+  "asdaaf rana": {
+    "query": "asdaaf rana",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:45.747738+00:00"
+  },
+  "asdaaf majd al sultan": {
+    "query": "asdaaf majd al sultan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:46.915568+00:00"
+  },
+  "asdaaf majd al sultan black intense": {
+    "query": "asdaaf majd al sultan black intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:51.932707+00:00"
+  },
+  "lattafa asdaaf reem": {
+    "query": "lattafa asdaaf reem",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:53.151526+00:00"
+  },
+  "asdaaf golden oud": {
+    "query": "asdaaf golden oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:58.232266+00:00"
+  },
+  "laraib asdaaf": {
+    "query": "laraib asdaaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:48:59.624759+00:00"
+  },
+  "asdaaf haayati enta": {
+    "query": "asdaaf haayati enta",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:49:00.858340+00:00"
+  },
+  "lattafa asdaaf ya habibti": {
+    "query": "lattafa asdaaf ya habibti",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:49:02.059857+00:00"
   }
 }
