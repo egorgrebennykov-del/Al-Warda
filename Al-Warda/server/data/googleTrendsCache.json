@@ -15455,5 +15455,135 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:12:42.198369+00:00"
+  },
+  "riiffs angelique extrit de plum yum pistachio": {
+    "query": "riiffs angelique extrit de plum yum pistachio",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:30.875384+00:00"
+  },
+  "riiffs falak": {
+    "query": "riiffs falak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:35.843109+00:00"
+  },
+  "riiffs cruise": {
+    "query": "riiffs cruise",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:36.999057+00:00"
+  },
+  "sillage oros by riiffs": {
+    "query": "sillage oros by riiffs",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:38.821733+00:00"
+  },
+  "riiffs areebah": {
+    "query": "riiffs areebah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:40.347487+00:00"
+  },
+  "riiffs spectra surge": {
+    "query": "riiffs spectra surge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:41.871009+00:00"
+  },
+  "riiffs seasons drift": {
+    "query": "riiffs seasons drift",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:46.551173+00:00"
+  },
+  "riiffs veloce": {
+    "query": "riiffs veloce",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:15:47.931358+00:00"
+  },
+  "riiffs la femme bloom": {
+    "query": "riiffs la femme bloom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:52.921817+00:00"
+  },
+  "gulf orchid pistachio": {
+    "query": "gulf orchid pistachio",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:15:57.845051+00:00"
   }
 }
