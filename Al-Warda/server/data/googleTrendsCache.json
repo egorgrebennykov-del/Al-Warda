@@ -25426,5 +25426,265 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T15:25:00.947125+00:00"
+  },
+  "armaf let's move tango": {
+    "query": "armaf let's move tango",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:31:56.080544+00:00"
+  },
+  "armaf niche bucephalus nix": {
+    "query": "armaf niche bucephalus nix",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:31:57.481013+00:00"
+  },
+  "armaf lets move salsa": {
+    "query": "armaf lets move salsa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:02.886201+00:00"
+  },
+  "armaf let's move salsa": {
+    "query": "armaf let's move salsa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:03.992081+00:00"
+  },
+  "armaf old money": {
+    "query": "armaf old money",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:09.421751+00:00"
+  },
+  "armaf x christian provenzano": {
+    "query": "armaf x christian provenzano",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:15.068281+00:00"
+  },
+  "armaf x christian provenzano i pure": {
+    "query": "armaf x christian provenzano i pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:15.993622+00:00"
+  },
+  "armaf x christian provenzano ii pure": {
+    "query": "armaf x christian provenzano ii pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:17.247070+00:00"
+  },
+  "armaf x christian provenzano iv pure": {
+    "query": "armaf x christian provenzano iv pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:18.596049+00:00"
+  },
+  "armaf le femme": {
+    "query": "armaf le femme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:23.102651+00:00"
+  },
+  "armaf oros": {
+    "query": "armaf oros",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:25.979832+00:00"
+  },
+  "armaf oros uomo": {
+    "query": "armaf oros uomo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:27.151413+00:00"
+  },
+  "armaf oros pure evening rose": {
+    "query": "armaf oros pure evening rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:28.315251+00:00"
+  },
+  "armaf oros pure affecte": {
+    "query": "armaf oros pure affecte",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:29.585639+00:00"
+  },
+  "armaf uniq effects of uniq": {
+    "query": "armaf uniq effects of uniq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:33.447300+00:00"
+  },
+  "oros donna by armaf made swarovski crystals": {
+    "query": "oros donna by armaf made swarovski crystals",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:34.943834+00:00"
+  },
+  "armaf art d'amour": {
+    "query": "armaf art d'amour",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:36.251409+00:00"
+  },
+  "armaf ladies perle d'or": {
+    "query": "armaf ladies perle d'or",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:37.652413+00:00"
+  },
+  "armaf ego the falcon by armaf": {
+    "query": "armaf ego the falcon by armaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:39.004983+00:00"
+  },
+  "armaf wheel of odyssey": {
+    "query": "armaf wheel of odyssey",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:32:48.606003+00:00"
   }
 }
