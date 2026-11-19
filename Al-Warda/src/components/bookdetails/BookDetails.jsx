@@ -364,15 +364,15 @@ export default function BookDetails() {
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
           const visibleGroundH = Math.max(0.15, (groundRow - firstRow + 1) / sampleSize);
           const containerW = img.parentElement?.clientWidth || 586;
-          const photoH = img.parentElement?.clientHeight || 438;
-          const renderedH = img.offsetHeight || 420;
-          const renderedW = img.offsetWidth || 420;
+          const photoH = img.parentElement?.clientHeight || 500;
+          const renderedH = img.offsetHeight || 475;
+          const renderedW = img.offsetWidth || 475;
           const visiblePxH = visibleGroundH * renderedH;
           const targetScaleH = (photoH - 4) / Math.max(1, visiblePxH);
-          const maxScaleW = (containerW * 0.94) / Math.max(1, renderedW * fgW);
+          const maxScaleW = (containerW * 0.96) / Math.max(1, renderedW * fgW);
           computedScale = Math.max(
             1,
-            Math.min(1.22, targetScaleH, maxScaleW),
+            Math.min(1.28, targetScaleH, maxScaleW),
           );
         }
       }

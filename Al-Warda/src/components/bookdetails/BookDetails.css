@@ -247,7 +247,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 40.8px; /* aligns topmost point of flacon flush with title heading */
+  padding-top: 12px;
   z-index: 2;
 }
 
@@ -304,16 +304,16 @@
   justify-content: center;
   width: 100%;
   max-width: 586px;
-  height: 438px;
+  height: 500px;
   z-index: 4;
 }
 
 .warda-details-img {
   display: block;
   max-width: 100%;
-  max-height: 100%;
+  max-height: none;
   width: auto;
-  height: calc(420px * var(--flacon-scale, 1));
+  height: calc(475px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   position: relative;
@@ -329,7 +329,7 @@
 }
 
 .warda-details-img-wrap:hover .warda-details-img {
-  height: 428px;
+  height: calc(485px * var(--flacon-scale, 1));
   filter:
     drop-shadow(0 0 2.5px rgba(255, 224, 155, 0.45))
     drop-shadow(0 0 28px rgba(212, 175, 55, 0.36))
@@ -338,7 +338,7 @@
 
 @media (hover: none) {
   .warda-details-img-wrap:hover .warda-details-img {
-    height: 420px;
+    height: calc(475px * var(--flacon-scale, 1));
   }
 }
 
@@ -482,7 +482,7 @@
   display: block;
   max-width: 100%;
   width: auto;
-  height: calc(420px * var(--flacon-scale, 1));
+  height: calc(475px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   transform-origin: center center;
