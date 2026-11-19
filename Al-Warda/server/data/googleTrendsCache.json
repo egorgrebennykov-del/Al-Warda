@@ -18432,5 +18432,551 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:45:52.403578+00:00"
+  },
+  "nabeel nader": {
+    "query": "nabeel nader",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:49:59.370572+00:00"
+  },
+  "nabeel modern": {
+    "query": "nabeel modern",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:00.597847+00:00"
+  },
+  "world just lychee": {
+    "query": "world just lychee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:02.155046+00:00"
+  },
+  "world suits": {
+    "query": "world suits",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:03.635311+00:00"
+  },
+  "paris corner eternal coffee": {
+    "query": "paris corner eternal coffee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:05.220657+00:00"
+  },
+  "paris corner december": {
+    "query": "paris corner december",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:06.932820+00:00"
+  },
+  "paris corner december rose": {
+    "query": "paris corner december rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:08.079348+00:00"
+  },
+  "paris corner december ambar": {
+    "query": "paris corner december ambar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:09.432840+00:00"
+  },
+  "paris corner december vanilla": {
+    "query": "paris corner december vanilla",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:10.584667+00:00"
+  },
+  "paris corner qissa": {
+    "query": "paris corner qissa",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:50:13.366269+00:00"
+  },
+  "paris corner azm": {
+    "query": "paris corner azm",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:18.206156+00:00"
+  },
+  "paris corner emir mango punch": {
+    "query": "paris corner emir mango punch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:19.539691+00:00"
+  },
+  "paris corner rua": {
+    "query": "paris corner rua",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:20.833957+00:00"
+  },
+  "paris corner rua radiant roses": {
+    "query": "paris corner rua radiant roses",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:25.973938+00:00"
+  },
+  "paris corner kaheela": {
+    "query": "paris corner kaheela",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:27.500412+00:00"
+  },
+  "paris corner kaheela lux": {
+    "query": "paris corner kaheela lux",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:28.594838+00:00"
+  },
+  "paris corner kaheela platinum": {
+    "query": "paris corner kaheela platinum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:29.784123+00:00"
+  },
+  "paris corner vertex": {
+    "query": "paris corner vertex",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:31.239636+00:00"
+  },
+  "paris corner indomitable": {
+    "query": "paris corner indomitable",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:32.477423+00:00"
+  },
+  "paris corner molten caramel": {
+    "query": "paris corner molten caramel",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:50:33.701705+00:00"
+  },
+  "paris corner emir vibrant orange neroli": {
+    "query": "paris corner emir vibrant orange neroli",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:35.006544+00:00"
+  },
+  "paris corner emir opulentia primus": {
+    "query": "paris corner emir opulentia primus",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:36.314285+00:00"
+  },
+  "paris corner veteran oud": {
+    "query": "paris corner veteran oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:37.464029+00:00"
+  },
+  "paris corner confidential": {
+    "query": "paris corner confidential",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:38.977066+00:00"
+  },
+  "paris corner twilight shadow musk": {
+    "query": "paris corner twilight shadow musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:40.164688+00:00"
+  },
+  "paris corner twilight shadow musk collection": {
+    "query": "paris corner twilight shadow musk collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:41.402734+00:00"
+  },
+  "paris corner killer oud overdose": {
+    "query": "paris corner killer oud overdose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:42.549737+00:00"
+  },
+  "paris corner fayora": {
+    "query": "paris corner fayora",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:43.858216+00:00"
+  },
+  "paris corner fayora oshino": {
+    "query": "paris corner fayora oshino",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:45.014201+00:00"
+  },
+  "paris corner emir celestial": {
+    "query": "paris corner emir celestial",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:46.451929+00:00"
+  },
+  "paris corner emir voux patisserie": {
+    "query": "paris corner emir voux patisserie",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:47.972546+00:00"
+  },
+  "paris corner bayn al asrar": {
+    "query": "paris corner bayn al asrar",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:50:49.228676+00:00"
+  },
+  "paris corner misty dawn musk": {
+    "query": "paris corner misty dawn musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:50.507533+00:00"
+  },
+  "paris corner misty dawn musk collection": {
+    "query": "paris corner misty dawn musk collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:51.704309+00:00"
+  },
+  "paris corner emir vibrant spicy": {
+    "query": "paris corner emir vibrant spicy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:52.945504+00:00"
+  },
+  "paris corner emir vibrant spicy tobacco": {
+    "query": "paris corner emir vibrant spicy tobacco",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:54.030651+00:00"
+  },
+  "paris corner mysterium": {
+    "query": "paris corner mysterium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:55.308103+00:00"
+  },
+  "paris corner eshal vanilla": {
+    "query": "paris corner eshal vanilla",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:56.579578+00:00"
+  },
+  "paris corner emir trillium": {
+    "query": "paris corner emir trillium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:58.095814+00:00"
+  },
+  "al haramain khulasat al oud": {
+    "query": "al haramain khulasat al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:50:59.365547+00:00"
+  },
+  "al haramain taj": {
+    "query": "al haramain taj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:51:04.751009+00:00"
+  },
+  "al haramain taj malaki velvet": {
+    "query": "al haramain taj malaki velvet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:51:05.923749+00:00"
   }
 }
