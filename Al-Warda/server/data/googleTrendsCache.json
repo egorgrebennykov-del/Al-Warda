@@ -24893,5 +24893,538 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T15:20:19.946840+00:00"
+  },
+  "armaf connoisseur": {
+    "query": "armaf connoisseur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:09.131306+00:00"
+  },
+  "armaf infinity": {
+    "query": "armaf infinity",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 4
+    },
+    "avg": 1.0,
+    "max": 4,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:10.974524+00:00"
+  },
+  "armaf infinity silver": {
+    "query": "armaf infinity silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:12.183498+00:00"
+  },
+  "armaf infinity gold by armaf": {
+    "query": "armaf infinity gold by armaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:13.424163+00:00"
+  },
+  "armaf uniq oud forever": {
+    "query": "armaf uniq oud forever",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:15.206086+00:00"
+  },
+  "armaf fade denim edit": {
+    "query": "armaf fade denim edit",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:16.435403+00:00"
+  },
+  "armaf pride cloud 9": {
+    "query": "armaf pride cloud 9",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:17.599558+00:00"
+  },
+  "armaf miss armaf catwalk": {
+    "query": "armaf miss armaf catwalk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:18.821789+00:00"
+  },
+  "armaf lions club majestueux": {
+    "query": "armaf lions club majestueux",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:19.962479+00:00"
+  },
+  "armaf lion's club majestueux": {
+    "query": "armaf lion's club majestueux",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:21.164761+00:00"
+  },
+  "armaf emotions": {
+    "query": "armaf emotions",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:22.362568+00:00"
+  },
+  "armaf ladies odyssey candee": {
+    "query": "armaf ladies odyssey candee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:23.597547+00:00"
+  },
+  "armaf ladies odyssey candee rollerball": {
+    "query": "armaf ladies odyssey candee rollerball",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:24.861214+00:00"
+  },
+  "armaf niche black onyx": {
+    "query": "armaf niche black onyx",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:26.378862+00:00"
+  },
+  "armaf ego panthera by armaf": {
+    "query": "armaf ego panthera by armaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:27.537995+00:00"
+  },
+  "armaf bucephalus no x": {
+    "query": "armaf bucephalus no x",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:28.739099+00:00"
+  },
+  "armaf tres jour": {
+    "query": "armaf tres jour",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:29.906001+00:00"
+  },
+  "armaf seduction": {
+    "query": "armaf seduction",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:31.115844+00:00"
+  },
+  "armaf dunescape": {
+    "query": "armaf dunescape",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:33.012924+00:00"
+  },
+  "armaf signature true": {
+    "query": "armaf signature true",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:34.226216+00:00"
+  },
+  "armaf oasis": {
+    "query": "armaf oasis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:35.531413+00:00"
+  },
+  "armaf niche oud": {
+    "query": "armaf niche oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:36.583454+00:00"
+  },
+  "armaf the lions club monarque": {
+    "query": "armaf the lions club monarque",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:37.795987+00:00"
+  },
+  "armaf the lion's club monarque": {
+    "query": "armaf the lion's club monarque",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:39.012596+00:00"
+  },
+  "armaf checkmate queen": {
+    "query": "armaf checkmate queen",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:40.215073+00:00"
+  },
+  "armaf untold stick": {
+    "query": "armaf untold stick",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:41.375524+00:00"
+  },
+  "armaf ombre oud": {
+    "query": "armaf ombre oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:42.634604+00:00"
+  },
+  "armaf ombre oud intense black": {
+    "query": "armaf ombre oud intense black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:43.875916+00:00"
+  },
+  "armaf excellus": {
+    "query": "armaf excellus",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:44.963127+00:00"
+  },
+  "armaf vanity femme essence": {
+    "query": "armaf vanity femme essence",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:46.262157+00:00"
+  },
+  "armaf club denuit woman stick hand cream": {
+    "query": "armaf club denuit woman stick hand cream",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:47.749471+00:00"
+  },
+  "armaf bucephalus no xii": {
+    "query": "armaf bucephalus no xii",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:48.833302+00:00"
+  },
+  "armaf futura la": {
+    "query": "armaf futura la",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:50.018943+00:00"
+  },
+  "armaf futura la homme intense": {
+    "query": "armaf futura la homme intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:51.383346+00:00"
+  },
+  "armaf craze": {
+    "query": "armaf craze",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:54.092462+00:00"
+  },
+  "armaf craze noir": {
+    "query": "armaf craze noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:54.885081+00:00"
+  },
+  "armaf mystique": {
+    "query": "armaf mystique",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:56.109085+00:00"
+  },
+  "armaf luxe craze": {
+    "query": "armaf luxe craze",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:57.349472+00:00"
+  },
+  "armaf space age": {
+    "query": "armaf space age",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:58.558493+00:00"
+  },
+  "armaf miss attitude": {
+    "query": "armaf miss attitude",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:24:59.737325+00:00"
+  },
+  "armaf lets move tango": {
+    "query": "armaf lets move tango",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:25:00.947125+00:00"
   }
 }
