@@ -2505,7 +2505,7 @@ export async function fetchPerfumesFromSupabase() {
         ? setTimeout(() => controller.abort(), 15000)
         : null;
       const res = await fetch(
-        `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description&order=id.asc&info->imageGeneration->>status=eq.completed&limit=${pageSize}&offset=${from}`,
+        `${TABLE_PERFUMES}?select=id,slug,name,title,brand,category,price,currency,image,in_stock,description&order=id.asc&info->imageGeneration->>status=eq.completed&in_stock=eq.true&limit=${pageSize}&offset=${from}`,
         {
           headers: {
             apikey: "",
