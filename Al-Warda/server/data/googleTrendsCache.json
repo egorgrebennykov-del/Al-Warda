@@ -15585,5 +15585,369 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:15:57.845051+00:00"
+  },
+  "gulf orchid mysterious tahara": {
+    "query": "gulf orchid mysterious tahara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:18:45.146331+00:00"
+  },
+  "gulf orchid tahiti colada": {
+    "query": "gulf orchid tahiti colada",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:18:55.590750+00:00"
+  },
+  "gulf orchid old fashioned": {
+    "query": "gulf orchid old fashioned",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:18:56.818858+00:00"
+  },
+  "gulf orchid toffee": {
+    "query": "gulf orchid toffee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:18:57.921242+00:00"
+  },
+  "gulf orchid sweet like": {
+    "query": "gulf orchid sweet like",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:18:59.127770+00:00"
+  },
+  "gulf orchid sweet like candy": {
+    "query": "gulf orchid sweet like candy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:00.391207+00:00"
+  },
+  "gulf orchid creamy pistachio": {
+    "query": "gulf orchid creamy pistachio",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:01.616874+00:00"
+  },
+  "gulf orchid sweet heaven": {
+    "query": "gulf orchid sweet heaven",
+    "scores": {
+      "BG": 0,
+      "RO": 66,
+      "GR": 0,
+      "HU": 11
+    },
+    "avg": 19.25,
+    "max": 66,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:19:02.750952+00:00"
+  },
+  "gulf orchid mangotini": {
+    "query": "gulf orchid mangotini",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:04.634228+00:00"
+  },
+  "gulf orchid cherry kokomo": {
+    "query": "gulf orchid cherry kokomo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:05.828828+00:00"
+  },
+  "gulf orchid angel musk": {
+    "query": "gulf orchid angel musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:07.023705+00:00"
+  },
+  "gulf orchid nobility s": {
+    "query": "gulf orchid nobility s",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:08.203738+00:00"
+  },
+  "gulf orchid nobility 's": {
+    "query": "gulf orchid nobility 's",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:09.444588+00:00"
+  },
+  "gulf orchid el capitan": {
+    "query": "gulf orchid el capitan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:10.521951+00:00"
+  },
+  "gulf orchid el capitan extreme": {
+    "query": "gulf orchid el capitan extreme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:11.803223+00:00"
+  },
+  "gulf orchid blueberry": {
+    "query": "gulf orchid blueberry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:13.053386+00:00"
+  },
+  "gulf orchid cotton": {
+    "query": "gulf orchid cotton",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:14.071185+00:00"
+  },
+  "gulf orchid cotton candy": {
+    "query": "gulf orchid cotton candy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:15.423428+00:00"
+  },
+  "gulf orchid pina colada": {
+    "query": "gulf orchid pina colada",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:16.507097+00:00"
+  },
+  "gulf orchid musk tahara blueberry": {
+    "query": "gulf orchid musk tahara blueberry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:17.821368+00:00"
+  },
+  "hikma by gulf orchid ambery woody": {
+    "query": "hikma by gulf orchid ambery woody",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:18.910173+00:00"
+  },
+  "gulf orchid coffee note": {
+    "query": "gulf orchid coffee note",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:20.212732+00:00"
+  },
+  "gulf orchid exotic oud": {
+    "query": "gulf orchid exotic oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:21.461427+00:00"
+  },
+  "gulf orchid rare rose": {
+    "query": "gulf orchid rare rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:22.626322+00:00"
+  },
+  "gulf orchid mango": {
+    "query": "gulf orchid mango",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:23.777238+00:00"
+  },
+  "gulf orchid mango ice": {
+    "query": "gulf orchid mango ice",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:28.728131+00:00"
+  },
+  "gulf orchid vanilla addiction": {
+    "query": "gulf orchid vanilla addiction",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 11
+    },
+    "avg": 2.75,
+    "max": 11,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:30.191898+00:00"
+  },
+  "gulf orchid musk tahara pomegranate": {
+    "query": "gulf orchid musk tahara pomegranate",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:19:35.207919+00:00"
   }
 }
