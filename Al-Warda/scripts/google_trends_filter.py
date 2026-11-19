@@ -311,6 +311,8 @@ def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
         **(trends_meta or {}),
         "hiddenFromSite": not visible,
     }
+    row["info"] = info
+    row["in_stock"] = bool(visible)
     payload = {
         "in_stock": bool(visible),
         "info": info,
@@ -457,10 +459,21 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
                     patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=False)
 
     save_trends_cache(cache)
+    remaining_series = sum(
+        1 for _, group_rows in ordered_groups
+        if not all(((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt") for r in group_rows)
+    )
     print(
-        f"\n=== Google Trends DB Filter Done: kept={kept}, hidden={hidden}, skipped_already_checked={skipped_checked}, errors={errors} ===",
+        f"\n=== Google Trends DB Filter Done: kept={kept}, hidden={hidden}, skipped_already_checked={skipped_checked}, errors={errors}, remaining_series={remaining_series} ===",
         flush=True,
     )
+    gh_out = os.environ.get("GITHUB_OUTPUT")
+    if gh_out:
+        try:
+            with open(gh_out, "a", encoding="utf-8") as fh:
+                fh.write(f"remaining={remaining_series}\n")
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

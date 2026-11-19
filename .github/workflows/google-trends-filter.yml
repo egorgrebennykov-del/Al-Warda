@@ -4,12 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       max_series:
-        description: "Max unchecked perfume series to evaluate in this run"
+        description: "Max unchecked perfume series per runner IP before chaining to a fresh runner"
         required: false
-        default: "60"
+        default: "80"
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: google-trends-catalog-filter
@@ -35,11 +36,12 @@ jobs:
         run: pip install requests
 
       - name: Run Google Trends DB filter (series-aware, non-destructive)
+        id: filter
         run: |
           python Al-Warda/scripts/google_trends_filter.py \
             --filter-all-db \
             --completed-first \
-            --max-series "${{ inputs.max_series || '60' }}"
+            --max-series "${{ inputs.max_series || '80' }}"
         env:
           SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
@@ -54,3 +56,13 @@ jobs:
             git pull --rebase origin main || true
             git push origin main
           fi
+
+      - name: Chain next batch if series remain
+        if: steps.filter.outputs.remaining != '' && steps.filter.outputs.remaining != '0'
+        run: |
+          echo "Remaining series: ${{ steps.filter.outputs.remaining }}. Dispatching next runner..."
+          curl -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/google-trends-filter.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"max_series":"${{ inputs.max_series || '\''80'\'' }}"}}'
