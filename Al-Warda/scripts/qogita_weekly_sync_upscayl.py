@@ -605,10 +605,28 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             print(f"Warning: could not load qogitaMinOrderMap.json: {e}")
 
     # 4. Fetch and Process Perfumes
+    from google_trends_filter import (
+        GoogleTrendsClient,
+        check_perfume_trends,
+        extract_perfume_series_key,
+        load_trends_cache,
+        save_trends_cache,
+    )
+    trends_client = GoogleTrendsClient()
+    trends_cache = load_trends_cache()
+    trends_checks_since_save = 0
+    passed_series_keys = {
+        extract_perfume_series_key(r.get("name") or "", r.get("brand") or "")
+        for r in list(existing_by_gtin.values()) + list(existing_by_name.values())
+        if r.get("name")
+    }
+    passed_series_keys.discard("")
+
     all_perfumes = []
     new_additions_count = 0
     updated_items_count = 0
     skipped_count = 0
+    trends_rejected_count = 0
 
     for brand in target_brands:
         items = client.fetch_brand_perfumes(brand, limit=limit_per_brand)
@@ -634,6 +652,40 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
             # Delta / incremental check
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
+
+            if not existing_item:
+                series_key = extract_perfume_series_key(name_raw, brand=brand)
+                if series_key and series_key in passed_series_keys:
+                    trends_res = {"passed": True, "query": series_key, "seriesMatch": True}
+                else:
+                    trends_res = check_perfume_trends(
+                        name_raw,
+                        brand=brand,
+                        client=trends_client,
+                        cache=trends_cache,
+                    )
+                    if trends_res.get("passed") is False and series_key and series_key != (trends_res.get("query") or "").lower():
+                        series_res = check_perfume_trends(
+                            series_key,
+                            brand="",
+                            client=trends_client,
+                            cache=trends_cache,
+                        )
+                        if series_res.get("passed") is True:
+                            trends_res = series_res
+                    trends_checks_since_save += 1
+                    if trends_checks_since_save >= 20:
+                        save_trends_cache(trends_cache)
+                        trends_checks_since_save = 0
+                    if trends_res.get("passed") is True and series_key:
+                        passed_series_keys.add(series_key)
+                if trends_res.get("passed") is False:
+                    trends_rejected_count += 1
+                    print(
+                        f"  ✗ Google Trends rejected: {trends_res.get('query')} "
+                        f"(scores={trends_res.get('scores')}, avg={trends_res.get('avg')}, max={trends_res.get('max')})"
+                    )
+                    continue
 
             if existing_item:
                 existing_info = existing_item.setdefault("info", {})
@@ -776,8 +828,10 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 )
                 updated_items_count += 1
 
+    save_trends_cache(trends_cache)
     print(f"\n--- Sync Summary ---")
     print(f"✓ New additions: {new_additions_count}")
+    print(f"✗ Rejected by Google Trends: {trends_rejected_count}")
     print(f"✓ Updated items: {updated_items_count}")
     print(f"✓ Skipped (unchanged): {skipped_count}")
     print("✓ Original product photos were not changed; generation is queued in Supabase.")
