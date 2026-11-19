@@ -538,6 +538,10 @@ export async function getProductImageQueueStatus(request, env) {
             }
           }
         }
+        const gt = info.googleTrends && typeof info.googleTrends === "object" ? info.googleTrends : null;
+        if (row.in_stock === false || gt?.hiddenFromSite === true || gt?.passed === false) {
+          continue;
+        }
         const job = info.imageGeneration || {};
         const replacementJob = info.imageGenerationReplacement || {};
         const imageUrl = job.imageUrl || row.image;
@@ -1917,10 +1921,16 @@ export async function getAllAdminProducts(request, env) {
     const key = getServiceKey(env);
     const rows = await fetchAllStocks(env, key);
     const products = rows
-      .filter(
-        (row) =>
-          row && row.id && !String(row.slug || "").includes("site-settings"),
-      )
+      .filter((row) => {
+        if (!row || !row.id || String(row.slug || "").includes("site-settings")) {
+          return false;
+        }
+        const gt = row.info && typeof row.info === "object" ? row.info.googleTrends : null;
+        if (row.in_stock === false || gt?.hiddenFromSite === true || gt?.passed === false) {
+          return false;
+        }
+        return true;
+      })
       .map((row) => {
         const info = row.info && typeof row.info === "object" ? row.info : {};
         const gen = info.imageGeneration || {};
