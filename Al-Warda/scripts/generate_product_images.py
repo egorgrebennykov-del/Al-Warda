@@ -510,11 +510,19 @@ BRAND_DOMAINS = {
     "al haramain": ["alharamainperfumes.co.uk", "alharamainperfumes.com"],
     "orientica": ["orientica.com", "alharamainperfumes.co.uk", "alharamainperfumes.com"],
     "al wataniah": ["alwataniah.com"],
+    "amouage": ["amouage.com"],
     "rasasi": ["rasasistore.com"],
     "paris corner": ["pariscornerperfumes.com"],
     "fragrance world": ["fragranceworld.ae"],
     "french avenue": ["fragranceworld.ae"],
 }
+
+TRUSTED_RETAILER_DOMAINS = [
+    "intenseoud.com",
+    "oudstore.com",
+    "tripletraders.com",
+    "fragflex.com",
+]
 
 GENERIC_STOPWORDS = {
     "fragrance", "perfume", "perfumes", "spray", "eau", "de", "parfum",
@@ -595,8 +603,6 @@ def search_official_studio_candidates(name, brand="", is_set=False):
             for d in d_list:
                 if d not in domains:
                     domains.append(d)
-    if not domains:
-        return []
 
     cleaned = clean_product_name_for_search(name, brand)
     queries = []
@@ -619,6 +625,7 @@ def search_official_studio_candidates(name, brand="", is_set=False):
     }
 
     clean_tokens = set(re.findall(r"[a-z0-9]+", cleaned.lower())) - GENERIC_STOPWORDS
+    brand_tokens = set(re.findall(r"[a-z0-9]+", brand_key)) - GENERIC_STOPWORDS
     query_is_deo_or_body = bool(
         re.search(
             r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
@@ -629,76 +636,90 @@ def search_official_studio_candidates(name, brand="", is_set=False):
     all_matches = []
     seen_urls = set()
 
-    for domain in domains:
-        for q in queries:
-            if not q:
-                continue
-            try:
-                url = f"https://{domain}/search/suggest.json?q={urllib.parse.quote(q)}&resources[type]=product"
-                resp = requests.get(url, headers=headers, timeout=6)
-                if not resp.ok or "json" not in (resp.headers.get("content-type") or "").lower():
+    def _query_shopify_domains(domain_list, include_brand_in_query=False, require_brand_match=False, source_tag="official_studio"):
+        nonlocal all_matches
+        for domain in domain_list:
+            for q in queries:
+                if not q:
                     continue
-                data = resp.json()
-                products = data.get("resources", {}).get("results", {}).get("products", [])
-                for p in products:
-                    title = p.get("title", "")
-                    title_lower = title.lower()
-                    page_url_raw = str(p.get("url") or "").lower()
-                    p_is_set = bool(
-                        re.search(
-                            r"\b(set|gift|coffret|discovery|travel\s+set|pack\s+of)\b",
-                            title_lower,
+                q_str = f"{brand} {q}".strip() if (include_brand_in_query and brand) else q
+                try:
+                    url = f"https://{domain}/search/suggest.json?q={urllib.parse.quote(q_str)}&resources[type]=product"
+                    resp = requests.get(url, headers=headers, timeout=6)
+                    if not resp.ok or "json" not in (resp.headers.get("content-type") or "").lower():
+                        continue
+                    data = resp.json()
+                    products = data.get("resources", {}).get("results", {}).get("products", [])
+                    for p in products:
+                        title = p.get("title", "")
+                        title_lower = title.lower()
+                        page_url_raw = str(p.get("url") or "").lower()
+                        p_is_set = bool(
+                            re.search(
+                                r"\b(set|gift|coffret|discovery|travel\s+set|pack\s+of)\b",
+                                title_lower,
+                            )
                         )
-                    )
-                    p_is_deo_or_body = bool(
-                        re.search(
-                            r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
-                            f"{title_lower} {page_url_raw}",
+                        p_is_deo_or_body = bool(
+                            re.search(
+                                r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+                                f"{title_lower} {page_url_raw}",
+                            )
                         )
-                    )
 
-                    if is_set and not p_is_set:
-                        continue
-                    if not is_set and p_is_set:
-                        continue
-                    if not query_is_deo_or_body and p_is_deo_or_body:
-                        continue
-
-                    title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
-                    if clean_tokens and (clean_tokens.issubset(title_tokens) or len(clean_tokens & title_tokens) >= max(1, len(clean_tokens) * 0.7)):
-                        img_url = p.get("image") or (p.get("featured_image") or {}).get("url")
-                        if not img_url:
+                        if is_set and not p_is_set:
                             continue
-                        img_url = upgrade_shopify_image_url(img_url)
-                        if img_url in seen_urls:
+                        if not is_set and p_is_set:
                             continue
-                        seen_urls.add(img_url)
+                        if not query_is_deo_or_body and p_is_deo_or_body:
+                            continue
 
-                        page_url = p.get("url", "")
-                        if page_url and page_url.startswith("/"):
-                            page_url = f"https://{domain}{page_url}"
+                        title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
+                        if require_brand_match and brand_tokens and not (brand_tokens & title_tokens):
+                            vendor_tokens = set(re.findall(r"[a-z0-9]+", str(p.get("vendor") or "").lower()))
+                            if not (brand_tokens & vendor_tokens):
+                                continue
+                        if clean_tokens and (clean_tokens.issubset(title_tokens) or len(clean_tokens & title_tokens) >= max(1, len(clean_tokens) * 0.7)):
+                            img_url = p.get("image") or (p.get("featured_image") or {}).get("url")
+                            if not img_url:
+                                continue
+                            img_url = upgrade_shopify_image_url(img_url)
+                            if img_url in seen_urls:
+                                continue
+                            seen_urls.add(img_url)
 
-                        overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
-                        img_lower = img_url.lower()
-                        score = overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
-                        all_matches.append((
-                            score,
-                            {
-                                "imageUrl": img_url,
-                                "sourceUrl": page_url or img_url,
-                                "sourceName": f"{brand or 'Official'} ({domain})",
-                                "sourceType": "official_studio",
-                                "title": title,
-                            },
-                        ))
-                if all_matches:
-                    break
-            except Exception:
-                pass
-        if all_matches:
-            break
+                            page_url = p.get("url", "")
+                            if page_url and page_url.startswith("/"):
+                                page_url = f"https://{domain}{page_url}"
+
+                            overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
+                            img_lower = img_url.lower()
+                            tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
+                            score = tier_bonus + overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                            all_matches.append((
+                                score,
+                                {
+                                    "imageUrl": img_url,
+                                    "sourceUrl": page_url or img_url,
+                                    "sourceName": f"{brand or 'Official'} ({domain})",
+                                    "sourceType": source_tag,
+                                    "title": title,
+                                },
+                            ))
+                    if all_matches:
+                        break
+                except Exception:
+                    pass
+            if len(all_matches) >= 3:
+                break
+
+    if domains:
+        _query_shopify_domains(domains, include_brand_in_query=False, require_brand_match=False, source_tag="official_studio")
+    if len(all_matches) < 2:
+        _query_shopify_domains(TRUSTED_RETAILER_DOMAINS, include_brand_in_query=True, require_brand_match=True, source_tag="verified_retailer")
+
     all_matches.sort(key=lambda item: item[0], reverse=True)
-    return [item[1] for item in all_matches[:3]]
+    return [item[1] for item in all_matches[:4]]
 
 
 def make_session():
@@ -3088,7 +3109,7 @@ def process_product(
                     source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
                     source_name = studio_asset["sourceName"]
-                    source_type = "official_studio"
+                    source_type = studio_asset.get("sourceType") or "official_studio"
                     break
                 if cand_min >= 300 and (best_small_studio is None or cand_min > best_small_studio[0]):
                     best_small_studio = (cand_min, cand_bytes, cand_q, studio_asset)
@@ -3120,7 +3141,7 @@ def process_product(
                             source_bytes, source_quality = best_small_studio[1], st_q
                             source_url = best_small_studio[3]["sourceUrl"]
                             source_name = best_small_studio[3]["sourceName"]
-                            source_type = "official_studio"
+                            source_type = best_small_studio[3].get("sourceType") or "official_studio"
                     if source_bytes is None:
                         source_bytes = raw_bytes
                         source_quality = raw_q
@@ -3131,7 +3152,7 @@ def process_product(
                     source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
                     source_url = best_small_studio[3]["sourceUrl"]
                     source_name = best_small_studio[3]["sourceName"]
-                    source_type = "official_studio"
+                    source_type = best_small_studio[3].get("sourceType") or "official_studio"
                 else:
                     raise RuntimeError(f"Qogita image fetch failed ({raw_resp.status_code})")
             elif best_small_studio is not None:
