@@ -196,21 +196,20 @@ class GoogleTrendsClient:
             time.sleep(self.delay_sec - elapsed)
         self._last_req_ts = time.monotonic()
 
-    def fetch_region_scores(self, query, max_retries=4):
+    def fetch_region_scores(self, query, max_retries=1):
         """Fetch last-3-months Google Trends interest by region for BG, RO, GR, HU."""
         req_payload = {
             "comparisonItem": [{"keyword": query, "geo": "", "time": "today 3-m"}],
             "category": 0,
             "property": "",
         }
-        backoffs = (6, 15, 30, 60)
         for attempt in range(max_retries + 1):
             try:
                 self._pace()
                 r1 = self.session.get(
                     "https://trends.google.com/trends/api/explore",
                     params={"hl": "en-US", "tz": "-120", "req": json.dumps(req_payload)},
-                    timeout=15,
+                    timeout=12,
                 )
                 if r1.status_code == 429 or r1.status_code >= 500:
                     raise RuntimeError(f"explore HTTP {r1.status_code}")
@@ -223,7 +222,7 @@ class GoogleTrendsClient:
                 if not geo_widget:
                     return {c: 0 for c in REGIONS}, None
 
-                time.sleep(1.0)
+                time.sleep(0.5)
                 r2 = self.session.get(
                     "https://trends.google.com/trends/api/widgetdata/comparedgeo",
                     params={
@@ -232,7 +231,7 @@ class GoogleTrendsClient:
                         "req": json.dumps(geo_widget["request"]),
                         "token": geo_widget["token"],
                     },
-                    timeout=15,
+                    timeout=12,
                 )
                 if r2.status_code == 429 or r2.status_code >= 500:
                     raise RuntimeError(f"comparedgeo HTTP {r2.status_code}")
@@ -248,9 +247,8 @@ class GoogleTrendsClient:
                 return {c: by_code.get(c, 0) for c in REGIONS}, None
             except Exception as exc:
                 if attempt < max_retries:
-                    wait_s = backoffs[min(attempt, len(backoffs) - 1)]
-                    print(f"  [GoogleTrends] {query!r} retry {attempt + 1}/{max_retries} in {wait_s}s ({exc})", flush=True)
-                    time.sleep(wait_s)
+                    print(f"  [GoogleTrends] {query!r} retry in 3s ({exc})", flush=True)
+                    time.sleep(3)
                     self._init_session()
                 else:
                     return None, str(exc)
@@ -347,12 +345,13 @@ def filter_all_db_products(dry_run=False, force=False):
     ]
     print(f"Found {len(all_rows)} total products in DB to analyze against Google Trends...", flush=True)
 
-    client = GoogleTrendsClient(delay_sec=2.5)
+    client = GoogleTrendsClient(delay_sec=1.2)
     cache = load_trends_cache()
     kept = 0
     hidden = 0
     skipped_checked = 0
     errors = 0
+    consecutive_429 = 0
 
     from collections import defaultdict
     series_groups = defaultdict(list)
@@ -377,6 +376,8 @@ def filter_all_db_products(dry_run=False, force=False):
             if cq and cq not in seen_q:
                 seen_q.add(cq)
                 queries_to_try.append(cq)
+                if len(queries_to_try) >= 2:
+                    break
 
         series_passed = None
         last_res = None
@@ -386,12 +387,26 @@ def filter_all_db_products(dry_run=False, force=False):
             last_res = res
             if res.get("passed") is True:
                 series_passed = True
+                consecutive_429 = 0
                 break
             elif res.get("passed") is None:
                 had_error = True
+                if "429" in str(res.get("error") or ""):
+                    consecutive_429 += 1
+                break
+            else:
+                consecutive_429 = 0
 
         if s_idx % 5 == 0:
             save_trends_cache(cache)
+
+        if consecutive_429 >= 3:
+            print(
+                f"\n[GoogleTrends] Rate limit (429) hit 3 times in a row at series {s_idx}/{len(series_groups)}. "
+                f"Progress saved; re-run later to resume cleanly.",
+                flush=True,
+            )
+            break
 
         trends_meta = {
             "query": last_res.get("query") if last_res else s_key,
