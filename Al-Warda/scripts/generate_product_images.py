@@ -3160,7 +3160,7 @@ def process_product(
                 source_type = best_small_studio[3].get("sourceType") or "official_studio"
             else:
                 local_rel = str(row.get("image") or "").split("?")[0].lstrip("/")
-                local_path = (ROOT_DIR / "public" / local_rel) if local_rel.startswith("assets/img/dropship/") else None
+                local_path = (Path(__file__).resolve().parents[1] / "public" / local_rel) if local_rel.startswith("assets/img/dropship/") else None
                 if local_path and local_path.is_file():
                     source_bytes = local_path.read_bytes()
                     source_quality = measure_source_quality(source_bytes)
