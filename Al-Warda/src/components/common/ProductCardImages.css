@@ -48,6 +48,11 @@
   display: block;
   position: absolute;
   inset: 4%;
+  width: auto;
+  height: auto;
+  transform: none;
+  filter: none;
+  border-radius: 0;
   background: radial-gradient(
     ellipse 64% 62% at 50% 50%,
     rgba(245, 215, 145, 0.16) 0%,
@@ -60,7 +65,7 @@
 
 .warda-perfume-card .warda-perfume-card__media::after,
 .warda-perfume-card .warda-perfume-card__aura {
-  display: none;
+  display: none !important;
 }
 
 .warda-perfume-card .warda-perfume-card__img {
