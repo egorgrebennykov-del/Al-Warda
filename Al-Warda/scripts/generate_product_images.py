@@ -3101,8 +3101,11 @@ def process_product(
                         raise ValueError("Original product photo exceeds the 20 MB processing limit")
                 cand_bytes = buf.getvalue()
                 cand_q = measure_source_quality(cand_bytes)
-                cand_min = min(cand_q.get("width", 0), cand_q.get("height", 0))
-                if cand_min >= 500 and not cand_q.get("low_sharpness"):
+                cand_w = cand_q.get("originalWidth") or cand_q.get("width") or 0
+                cand_h = cand_q.get("originalHeight") or cand_q.get("height") or 0
+                cand_min = min(cand_w, cand_h)
+                cand_low_sharp = (cand_q.get("qualityStatus") == "low_sharpness") or bool(cand_q.get("low_sharpness"))
+                if cand_min >= 500 and not cand_low_sharp:
                     source_bytes = cand_bytes
                     source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
@@ -3131,10 +3134,10 @@ def process_product(
                             raise ValueError("Original product photo exceeds the 20 MB processing limit")
                     raw_bytes = raw_buf.getvalue()
                     raw_q = measure_source_quality(raw_bytes)
-                    raw_area = raw_q.get("width", 0) * raw_q.get("height", 0)
+                    raw_area = (raw_q.get("originalWidth") or raw_q.get("width") or 0) * (raw_q.get("originalHeight") or raw_q.get("height") or 0)
                     if best_small_studio is not None:
                         st_q = best_small_studio[2]
-                        st_area = st_q.get("width", 0) * st_q.get("height", 0)
+                        st_area = (st_q.get("originalWidth") or st_q.get("width") or 0) * (st_q.get("originalHeight") or st_q.get("height") or 0)
                         if st_area >= raw_area:
                             source_bytes, source_quality = best_small_studio[1], st_q
                             source_url = best_small_studio[3]["sourceUrl"]

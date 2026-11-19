@@ -258,6 +258,17 @@ function GalleryImageItem({
     setImgStatus("failed");
   };
 
+  useEffect(() => {
+    if (imgStatus !== "failed") return undefined;
+    const timer = setTimeout(() => {
+      setSourceIndex(0);
+      setRetryCount(0);
+      setCacheBuster(`?autoretry=${Date.now()}`);
+      setImgStatus("initial");
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [imgStatus]);
+
   const handleManualRetry = (e) => {
     e.preventDefault();
     e.stopPropagation();
