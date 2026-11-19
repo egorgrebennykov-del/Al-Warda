@@ -3742,5 +3742,642 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T13:02:27.346681+00:00"
+  },
+  "al haramain manege": {
+    "query": "al haramain manege",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:22.237284+00:00"
+  },
+  "al haramain manege blanche": {
+    "query": "al haramain manege blanche",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:23.425141+00:00"
+  },
+  "al haramain amber oud ruby edition 3 pieces": {
+    "query": "al haramain amber oud ruby edition 3 pieces",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:34.590368+00:00"
+  },
+  "al haramain": {
+    "query": "al haramain",
+    "scores": {
+      "BG": 43,
+      "RO": 30,
+      "GR": 23,
+      "HU": 29
+    },
+    "avg": 31.25,
+    "max": 43,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:35.864930+00:00"
+  },
+  "al haramain l'aventure - extreme citrus": {
+    "query": "al haramain l'aventure - extreme citrus",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:37.097112+00:00"
+  },
+  "al haramain haramain amber oud ultra violet perfumery": {
+    "query": "al haramain haramain amber oud ultra violet perfumery",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:38.465695+00:00"
+  },
+  "al haramain amber oud - gold lux": {
+    "query": "al haramain amber oud - gold lux",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:43.274299+00:00"
+  },
+  "al haramain l'aventure - sport for": {
+    "query": "al haramain l'aventure - sport for",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:44.511131+00:00"
+  },
+  "al haramain amber oud gold mine": {
+    "query": "al haramain amber oud gold mine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:45.793939+00:00"
+  },
+  "al haramain amber oud imagine dubai": {
+    "query": "al haramain amber oud imagine dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:46.981681+00:00"
+  },
+  "al haramain amber oud tobacco edition atomizer for adult": {
+    "query": "al haramain amber oud tobacco edition atomizer for adult",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:48.236208+00:00"
+  },
+  "al haramain sheikh al arab": {
+    "query": "al haramain sheikh al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:49.268913+00:00"
+  },
+  "al haramain almas": {
+    "query": "al haramain almas",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:50.433980+00:00"
+  },
+  "al haramain almas silver": {
+    "query": "al haramain almas silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:51.673450+00:00"
+  },
+  "al haramain oud": {
+    "query": "al haramain oud",
+    "scores": {
+      "BG": 35,
+      "RO": 30,
+      "GR": 19,
+      "HU": 29
+    },
+    "avg": 28.25,
+    "max": 35,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:52.826712+00:00"
+  },
+  "al haramain haramain musk collection includes amber musk musk collection musk maliki royal musk": {
+    "query": "al haramain haramain musk collection includes amber musk musk collection musk maliki royal musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:54.155921+00:00"
+  },
+  "al haramain zahara ajwa dubai": {
+    "query": "al haramain zahara ajwa dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:55.284700+00:00"
+  },
+  "al haramain oudh musk": {
+    "query": "al haramain oudh musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:56.463839+00:00"
+  },
+  "al haramain amber oud gold edition extreme luxury": {
+    "query": "al haramain amber oud gold edition extreme luxury",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:57.670477+00:00"
+  },
+  "al haramain al absar divine dahab": {
+    "query": "al haramain al absar divine dahab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:04:58.894904+00:00"
+  },
+  "al haramain black musk": {
+    "query": "al haramain black musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:00.078077+00:00"
+  },
+  "al haramain al absar divine samaa": {
+    "query": "al haramain al absar divine samaa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:01.304768+00:00"
+  },
+  "al haramain al absar divine muhit": {
+    "query": "al haramain al absar divine muhit",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:02.501500+00:00"
+  },
+  "al haramain l'aventure blanche eau de": {
+    "query": "al haramain l'aventure blanche eau de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:03.680910+00:00"
+  },
+  "al haramain velvet orchid room freshener": {
+    "query": "al haramain velvet orchid room freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:04.850582+00:00"
+  },
+  "al haramain fall in love": {
+    "query": "al haramain fall in love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:06.229276+00:00"
+  },
+  "delicate red fruits musk violet fresh al haramain": {
+    "query": "delicate red fruits musk violet fresh al haramain",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:07.339322+00:00"
+  },
+  "al haramain velvet carbon room": {
+    "query": "al haramain velvet carbon room",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:08.495867+00:00"
+  },
+  "al haramain velvet bleu room freshener": {
+    "query": "al haramain velvet bleu room freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:09.825901+00:00"
+  },
+  "al haramain noora oil luxurious arabian long-lasting": {
+    "query": "al haramain noora oil luxurious arabian long-lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:10.933321+00:00"
+  },
+  "al haramain amber": {
+    "query": "al haramain amber",
+    "scores": {
+      "BG": 24,
+      "RO": 21,
+      "GR": 12,
+      "HU": 20
+    },
+    "avg": 19.25,
+    "max": 24,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:12.049869+00:00"
+  },
+  "al haramain al absar lailatun hadiyah": {
+    "query": "al haramain al absar lailatun hadiyah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:13.236148+00:00"
+  },
+  "al haramain mukhallath": {
+    "query": "al haramain mukhallath",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:14.806926+00:00"
+  },
+  "al haramain black oudh": {
+    "query": "al haramain black oudh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:15.771799+00:00"
+  },
+  "al haramain haramain amber oud ruby edition mist": {
+    "query": "al haramain haramain amber oud ruby edition mist",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:17.366290+00:00"
+  },
+  "al haramain vintage": {
+    "query": "al haramain vintage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:18.627498+00:00"
+  },
+  "al haramain vintage silver": {
+    "query": "al haramain vintage silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:19.949488+00:00"
+  },
+  "haramain musk al haramain": {
+    "query": "haramain musk al haramain",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:21.236725+00:00"
+  },
+  "al haramain musk black vanilla": {
+    "query": "al haramain musk black vanilla",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:22.573838+00:00"
+  },
+  "al haramain white neroli": {
+    "query": "al haramain white neroli",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:23.883404+00:00"
+  },
+  "al haramain wardi": {
+    "query": "al haramain wardi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:25.164322+00:00"
+  },
+  "al haramain shams oil mini": {
+    "query": "al haramain shams oil mini",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:35.197293+00:00"
+  },
+  "al haramain rafia gold - long-lasting": {
+    "query": "al haramain rafia gold - long-lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:40.233704+00:00"
+  },
+  "najm noir by al haramain - orange blossom vetiver vanilla musk": {
+    "query": "najm noir by al haramain - orange blossom vetiver vanilla musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:46.697850+00:00"
+  },
+  "al haramain floral oil mini": {
+    "query": "al haramain floral oil mini",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:56.676743+00:00"
+  },
+  "al haramain haramain dunes of dubai": {
+    "query": "al haramain haramain dunes of dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:05:57.957375+00:00"
+  },
+  "al haramain haramain dunes of dubai pure": {
+    "query": "al haramain haramain dunes of dubai pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:06:02.976059+00:00"
+  },
+  "al haramain al absar divine maghri": {
+    "query": "al haramain al absar divine maghri",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:06:04.213089+00:00"
+  },
+  "al haramain haramain treasure": {
+    "query": "al haramain haramain treasure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:06:09.135667+00:00"
   }
 }
