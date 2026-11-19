@@ -52440,5 +52440,967 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T17:51:58.307263+00:00"
+  },
+  "rasasi amazing": {
+    "query": "rasasi amazing",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:12.474865+00:00"
+  },
+  "rasasi amazing blue": {
+    "query": "rasasi amazing blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:13.803961+00:00"
+  },
+  "rasasi hasaas": {
+    "query": "rasasi hasaas",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:15.275712+00:00"
+  },
+  "risala a ameer": {
+    "query": "risala a ameer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:17.039827+00:00"
+  },
+  "risala elite eleganzia": {
+    "query": "risala elite eleganzia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:18.540837+00:00"
+  },
+  "risala elite eleganzia pure": {
+    "query": "risala elite eleganzia pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:19.751305+00:00"
+  },
+  "risala elite eleganzia bleu": {
+    "query": "risala elite eleganzia bleu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:20.953334+00:00"
+  },
+  "hope by risala": {
+    "query": "hope by risala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:23.255749+00:00"
+  },
+  "risala elite burj": {
+    "query": "risala elite burj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:24.741896+00:00"
+  },
+  "risala elite burj blanc": {
+    "query": "risala elite burj blanc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:26.021444+00:00"
+  },
+  "risala elite burj noir": {
+    "query": "risala elite burj noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:27.145643+00:00"
+  },
+  "risala epic mirage": {
+    "query": "risala epic mirage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:29.324336+00:00"
+  },
+  "risala ehsas joy": {
+    "query": "risala ehsas joy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:30.894182+00:00"
+  },
+  "risala elite honor": {
+    "query": "risala elite honor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:32.212966+00:00"
+  },
+  "risala elite honor royal": {
+    "query": "risala elite honor royal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:33.442631+00:00"
+  },
+  "risala elite honor ciel": {
+    "query": "risala elite honor ciel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:34.626776+00:00"
+  },
+  "risala elite hikmah of love": {
+    "query": "risala elite hikmah of love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:36.962379+00:00"
+  },
+  "risala elite muhareb": {
+    "query": "risala elite muhareb",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:38.297978+00:00"
+  },
+  "risala elite muhareb night": {
+    "query": "risala elite muhareb night",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:39.555516+00:00"
+  },
+  "risala elite muhareb day": {
+    "query": "risala elite muhareb day",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:40.779423+00:00"
+  },
+  "risala elite kefi latte": {
+    "query": "risala elite kefi latte",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:42.954602+00:00"
+  },
+  "risala elite empire arza": {
+    "query": "risala elite empire arza",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:44.466631+00:00"
+  },
+  "risala elite hikmah of life": {
+    "query": "risala elite hikmah of life",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:46.003956+00:00"
+  },
+  "risala elite hikmah of life intense": {
+    "query": "risala elite hikmah of life intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:47.129333+00:00"
+  },
+  "risala elite hikmah of life intense woman": {
+    "query": "risala elite hikmah of life intense woman",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:48.407788+00:00"
+  },
+  "risala ehsas love": {
+    "query": "risala ehsas love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:50.067183+00:00"
+  },
+  "emir al saharaa by risala": {
+    "query": "emir al saharaa by risala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:51.497915+00:00"
+  },
+  "risala elite fruity bliss": {
+    "query": "risala elite fruity bliss",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:52.687388+00:00"
+  },
+  "music of oud by risala": {
+    "query": "music of oud by risala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:53.899840+00:00"
+  },
+  "risala elite muluki": {
+    "query": "risala elite muluki",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:55.112079+00:00"
+  },
+  "risala elite muluki extreme": {
+    "query": "risala elite muluki extreme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:56.287322+00:00"
+  },
+  "risala elite tayf al hub": {
+    "query": "risala elite tayf al hub",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:57.752362+00:00"
+  },
+  "risala elite khazna kohinoor": {
+    "query": "risala elite khazna kohinoor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:55:58.925024+00:00"
+  },
+  "risala elite khazna najmat africa": {
+    "query": "risala elite khazna najmat africa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:00.191214+00:00"
+  },
+  "risala elite empire najm": {
+    "query": "risala elite empire najm",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:01.351744+00:00"
+  },
+  "risala helios": {
+    "query": "risala helios",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:02.572321+00:00"
+  },
+  "risala elite aroosat al arab": {
+    "query": "risala elite aroosat al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:03.830464+00:00"
+  },
+  "risala amalia": {
+    "query": "risala amalia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:05.013616+00:00"
+  },
+  "risala amalia solaris": {
+    "query": "risala amalia solaris",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:06.253072+00:00"
+  },
+  "risala amalia exquisite": {
+    "query": "risala amalia exquisite",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:07.436043+00:00"
+  },
+  "risala amalia air freshener": {
+    "query": "risala amalia air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:08.615530+00:00"
+  },
+  "al sayyad gold by risala": {
+    "query": "al sayyad gold by risala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:10.433466+00:00"
+  },
+  "risala elite yaqoot": {
+    "query": "risala elite yaqoot",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:11.641391+00:00"
+  },
+  "risala elite vittorio milano": {
+    "query": "risala elite vittorio milano",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:12.826648+00:00"
+  },
+  "risala adam": {
+    "query": "risala adam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:13.997766+00:00"
+  },
+  "risala amore dolce": {
+    "query": "risala amore dolce",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:15.243357+00:00"
+  },
+  "risala elite fayruz": {
+    "query": "risala elite fayruz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:16.439719+00:00"
+  },
+  "risala elite kefi paradise": {
+    "query": "risala elite kefi paradise",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:17.649363+00:00"
+  },
+  "risala air freshener tamara long lasting arabic oriental room sweet floral amber musk": {
+    "query": "risala air freshener tamara long lasting arabic oriental room sweet floral amber musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:19.033775+00:00"
+  },
+  "risala hayder air freshener long lasting arabic oriental room woody spicy amber musk": {
+    "query": "risala hayder air freshener long lasting arabic oriental room woody spicy amber musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:20.486839+00:00"
+  },
+  "risala air sensuelle": {
+    "query": "risala air sensuelle",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:21.683668+00:00"
+  },
+  "risala sharaf air freshener": {
+    "query": "risala sharaf air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:22.887454+00:00"
+  },
+  "risala al azeem air freshener": {
+    "query": "risala al azeem air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:24.183696+00:00"
+  },
+  "risala elite genesis alpha": {
+    "query": "risala elite genesis alpha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:35.831232+00:00"
+  },
+  "risala black amber": {
+    "query": "risala black amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:36.955515+00:00"
+  },
+  "risala elite qasr": {
+    "query": "risala elite qasr",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:38.211367+00:00"
+  },
+  "risala elite qasr royal": {
+    "query": "risala elite qasr royal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:39.400625+00:00"
+  },
+  "risala elite qasr majestic": {
+    "query": "risala elite qasr majestic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:41.087553+00:00"
+  },
+  "risala epic onyx": {
+    "query": "risala epic onyx",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:42.629413+00:00"
+  },
+  "risala oasis fruity oud": {
+    "query": "risala oasis fruity oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:43.926479+00:00"
+  },
+  "risala elite aroosat al gharb": {
+    "query": "risala elite aroosat al gharb",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:45.212600+00:00"
+  },
+  "risala elite tayf al ehsas": {
+    "query": "risala elite tayf al ehsas",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:46.851491+00:00"
+  },
+  "risala elite lippop sassy": {
+    "query": "risala elite lippop sassy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:48.402574+00:00"
+  },
+  "risala elite bubbliz mango pop": {
+    "query": "risala elite bubbliz mango pop",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:49.799659+00:00"
+  },
+  "risala elite haris al qamar": {
+    "query": "risala elite haris al qamar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:51.136482+00:00"
+  },
+  "risala a ameera": {
+    "query": "risala a ameera",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:52.842890+00:00"
+  },
+  "risala elite aura musk": {
+    "query": "risala elite aura musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:54.354580+00:00"
+  },
+  "risala emeralds of atlantis": {
+    "query": "risala emeralds of atlantis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:55.847521+00:00"
+  },
+  "risala elite fragaby 1": {
+    "query": "risala elite fragaby 1",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:57.153784+00:00"
+  },
+  "risala elite bubbliz aloha": {
+    "query": "risala elite bubbliz aloha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:58.382830+00:00"
+  },
+  "risala elite aura oud": {
+    "query": "risala elite aura oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:56:59.547194+00:00"
+  },
+  "risala elite fragaby 2": {
+    "query": "risala elite fragaby 2",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:57:00.898364+00:00"
+  },
+  "risala hawa": {
+    "query": "risala hawa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:57:02.130891+00:00"
+  },
+  "risala gold amber": {
+    "query": "risala gold amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:57:03.381785+00:00"
   }
 }
