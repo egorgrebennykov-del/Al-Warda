@@ -609,11 +609,14 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         GoogleTrendsClient,
         check_perfume_trends,
         extract_perfume_series_key,
+        fetch_brand_bestsellers,
         load_trends_cache,
         save_trends_cache,
+        verify_whitelist_popularity,
     )
     trends_client = GoogleTrendsClient()
     trends_cache = load_trends_cache()
+    bestseller_catalog = fetch_brand_bestsellers()
     trends_checks_since_save = 0
     passed_series_keys = {
         extract_perfume_series_key(r.get("name") or "", r.get("brand") or "")
@@ -680,12 +683,23 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                     if trends_res.get("passed") is True and series_key:
                         passed_series_keys.add(series_key)
                 if trends_res.get("passed") is False:
-                    trends_rejected_count += 1
-                    print(
-                        f"  ✗ Google Trends rejected: {trends_res.get('query')} "
-                        f"(scores={trends_res.get('scores')}, avg={trends_res.get('avg')}, max={trends_res.get('max')})"
+                    w_status, w_reason, _ = verify_whitelist_popularity(
+                        {"brand": brand, "name": name_raw, "info": {}},
+                        series_key,
+                        bestseller_catalog,
+                        passing_series_keys=passed_series_keys,
                     )
-                    continue
+                    if w_status == "whitelist_admitted":
+                        print(f"  ✓ Whitelist admitted ({name_raw}): {w_reason}")
+                        if series_key:
+                            passed_series_keys.add(series_key)
+                    else:
+                        trends_rejected_count += 1
+                        print(
+                            f"  ✗ Google Trends / Whitelist rejected ({w_status}): {trends_res.get('query')} "
+                            f"(scores={trends_res.get('scores')}, avg={trends_res.get('avg')}, max={trends_res.get('max')}, reason={w_reason})"
+                        )
+                        continue
 
             if existing_item:
                 existing_info = existing_item.setdefault("info", {})

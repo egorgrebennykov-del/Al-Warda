@@ -18,6 +18,63 @@ CACHE_PATH = APP_DIR / "server" / "data" / "googleTrendsCache.json"
 REGIONS = ("BG", "RO", "GR", "HU")
 CACHE_TTL_DAYS = 14
 
+WHITELIST_PRIORITY_1 = {
+    "lattafa": ("lattafa", "lattafa perfumes", "lattafa pride"),
+    "armaf": ("armaf", "armaf perfumes"),
+    "afnan": ("afnan", "afnan perfumes"),
+    "rasasi": ("rasasi", "rasasi perfumes"),
+    "al haramain": ("al haramain", "al-haramain", "alharamain", "al haramain perfumes", "haramain"),
+}
+
+WHITELIST_PRIORITY_2 = {
+    "ajmal": ("ajmal", "ajmal perfumes"),
+    "swiss arabian": ("swiss arabian", "swiss-arabian", "swiss arabian perfumes"),
+    "amouage": ("amouage",),
+    "arabian oud": ("arabian oud", "arabian-oud"),
+    "maison alhambra": ("maison alhambra", "alhambra"),
+    "ahmed al maghribi": ("ahmed al maghribi", "ahmed al-maghribi", "al maghribi"),
+    "ard al zaafaran": ("ard al zaafaran", "ard al-zaafaran"),
+}
+
+BRAND_ALIAS_MAP = {}
+for _canon, _aliases in WHITELIST_PRIORITY_1.items():
+    for _a in _aliases:
+        BRAND_ALIAS_MAP[_a] = (_canon, 1)
+for _canon, _aliases in WHITELIST_PRIORITY_2.items():
+    for _a in _aliases:
+        BRAND_ALIAS_MAP[_a] = (_canon, 2)
+
+BRAND_OFFICIAL_DOMAINS = {
+    "afnan": ["afnan.com"],
+    "lattafa": ["lattafa-usa.com"],
+    "maison alhambra": ["lattafa-usa.com"],
+    "armaf": ["armaf.com"],
+    "swiss arabian": ["swissarabian.com"],
+    "al haramain": ["alharamainperfumes.co.uk"],
+    "ajmal": ["in.ajmal.com"],
+    "rasasi": ["rasasistore.com"],
+}
+
+
+def normalize_brand_name(brand):
+    """Normalize brand name (case-insensitive, punctuation/alias safe, no unrelated parent confusion)."""
+    raw = re.sub(r"['’`]", "", str(brand or "").strip().lower())
+    raw = re.sub(r"[-_]+", " ", raw)
+    raw = re.sub(r"\s+", " ", raw).strip()
+    if raw in BRAND_ALIAS_MAP:
+        return BRAND_ALIAS_MAP[raw][0]
+    return raw
+
+
+def get_whitelist_priority(brand):
+    """Return (canonical_brand, priority_int) or (normalized_brand, 0) if not whitelisted."""
+    raw = re.sub(r"['’`]", "", str(brand or "").strip().lower())
+    raw = re.sub(r"[-_]+", " ", raw)
+    raw = re.sub(r"\s+", " ", raw).strip()
+    if raw in BRAND_ALIAS_MAP:
+        return BRAND_ALIAS_MAP[raw]
+    return raw, 0
+
 _NOISE_PHRASES = (
     r"eau\s+de\s+parfum",
     r"eau\s+de\s+toilette",
@@ -456,7 +513,10 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
 
     client = GoogleTrendsClient(delay_sec=1.2)
     cache = load_trends_cache()
+    bestseller_catalog = fetch_brand_bestsellers()
     kept = 0
+    whitelist_admitted = 0
+    awaiting_verification = 0
     hidden = 0
     skipped_checked = 0
     errors = 0
@@ -577,6 +637,8 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
 
         if series_passed is True:
             kept += len(group_rows)
+            trends_meta["filterStatus"] = "trends_passed"
+            trends_meta["filterReason"] = f"google_trends_passed: avg={trends_meta['avg']} max={trends_meta['max']}"
             print(
                 f"[Series {s_idx}/{len(series_groups)}] KEEP {len(group_rows)} item(s) in '{s_key}' "
                 f"(matched '{trends_meta['query']}': {trends_meta['scores']} avg={trends_meta['avg']} max={trends_meta['max']})",
@@ -595,16 +657,27 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
                 flush=True,
             )
         else:
-            hidden += len(group_rows)
-            print(
-                f"[Series {s_idx}/{len(series_groups)}] HIDE {len(group_rows)} item(s) in '{s_key}': "
-                f"{trends_meta['scores']} avg={trends_meta['avg']} max={trends_meta['max']}",
-                flush=True,
-            )
-            if not dry_run:
-                for r in group_rows:
+            for r in group_rows:
+                w_status, w_reason, w_ev = verify_whitelist_popularity(r, s_key, bestseller_catalog)
+                r_meta = {
+                    **trends_meta,
+                    "passed": (w_status == "whitelist_admitted"),
+                    "filterStatus": w_status,
+                    "filterReason": w_reason,
+                    "whitelistEvidence": w_ev,
+                }
+                if w_status == "whitelist_admitted":
+                    whitelist_admitted += 1
+                    print(f"[Series {s_idx}/{len(series_groups)}] WHITELIST ADMIT {r.get('id')} ({r.get('name')}): {w_reason}", flush=True)
+                elif w_status == "awaiting_popularity_verification":
+                    awaiting_verification += 1
+                    print(f"[Series {s_idx}/{len(series_groups)}] AWAIT VERIFY {r.get('id')} ({r.get('name')}): {w_reason}", flush=True)
+                else:
+                    hidden += 1
+                    print(f"[Series {s_idx}/{len(series_groups)}] REJECT {r.get('id')} ({r.get('name')}): {w_reason}", flush=True)
+                if not dry_run:
                     try:
-                        patch_stock_trends(db_session, supabase_url, r, trends_meta, visible=False)
+                        patch_stock_trends(db_session, supabase_url, r, r_meta, visible=(w_status == "whitelist_admitted"))
                     except Exception as exc:
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
@@ -626,17 +699,241 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
             pass
 
 
+def fetch_brand_bestsellers():
+    """Fetch real bestseller titles & review counts from official brand storefronts (no fabrication)."""
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        )
+    }
+    session = requests.Session()
+    try:
+        session.get("https://afnan.com", headers=headers, timeout=8)
+    except requests.exceptions.SSLError:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        session.verify = False
+    except Exception:
+        pass
+
+    bestsellers_by_brand = {}
+    for canon_brand, domains in BRAND_OFFICIAL_DOMAINS.items():
+        series_set = set()
+        titles_list = []
+        for dom in domains:
+            for col in ("best-sellers", "bestsellers"):
+                try:
+                    r = session.get(f"https://{dom}/collections/{col}/products.json?limit=50", headers=headers, timeout=8)
+                    if r.ok and "json" in (r.headers.get("content-type") or "").lower():
+                        for p in r.json().get("products", []):
+                            t = (p.get("title") or "").strip()
+                            if t:
+                                titles_list.append(t)
+                                sk = extract_perfume_series_key(t, canon_brand)
+                                if sk:
+                                    series_set.add(sk)
+                        if titles_list:
+                            break
+                except Exception:
+                    pass
+            try:
+                r2 = session.get(f"https://{dom}/collections/all?sort_by=best-selling", headers=headers, timeout=8)
+                if r2.ok:
+                    found_titles = re.findall(
+                        r'class="[^"]*(?:card__heading|product-item__title|grid-product__title|product-card__title)[^"]*"[^>]*>.*?<a[^>]*>([^<]+)<',
+                        r2.text,
+                        re.S,
+                    )
+                    for t in found_titles[:30]:
+                        t_clean = re.sub(r"\s+", " ", t).strip()
+                        if t_clean:
+                            titles_list.append(t_clean)
+                            sk = extract_perfume_series_key(t_clean, canon_brand)
+                            if sk:
+                                series_set.add(sk)
+            except Exception:
+                pass
+        bestsellers_by_brand[canon_brand] = {
+            "series": series_set,
+            "titles": titles_list,
+        }
+    return bestsellers_by_brand
+
+
+def verify_whitelist_popularity(row, series_key, bestseller_catalog, passing_series_keys=None):
+    """Evaluate real popularity signals for a whitelisted brand below Trends threshold.
+    Returns (status, reason, evidence) where status is 'whitelist_admitted' or 'awaiting_popularity_verification'."""
+    brand = row.get("brand") or ""
+    canon_brand, priority = get_whitelist_priority(brand)
+    if priority == 0:
+        return "rejected", "non_whitelisted_below_trends_threshold", {}
+
+    info = row.get("info") or {}
+    evidence = {"canonicalBrand": canon_brand, "whitelistPriority": priority}
+
+    # 1. Product line / series popularity (another item in the same series passed Trends)
+    if passing_series_keys and series_key in passing_series_keys:
+        evidence["productLinePopular"] = True
+        return "whitelist_admitted", f"whitelist_p{priority}: popular product line '{series_key}'", evidence
+
+    # 2. Verified sales data in DB
+    sales_count = int(info.get("salesCount") or info.get("ordersCount") or 0)
+    if sales_count >= 10:
+        evidence["salesCount"] = sales_count
+        return "whitelist_admitted", f"whitelist_p{priority}: verified salesCount={sales_count}", evidence
+
+    # 3. Genuine customer reviews in DB
+    reviews_count = int(info.get("reviewsCount") or info.get("reviewCount") or 0)
+    if reviews_count >= 15:
+        evidence["reviewsCount"] = reviews_count
+        return "whitelist_admitted", f"whitelist_p{priority}: genuine reviewsCount={reviews_count}", evidence
+
+    # 4. Official brand store bestseller recognition
+    if info.get("bestseller") is True or info.get("isBestseller") is True:
+        evidence["bestseller"] = True
+        return "whitelist_admitted", f"whitelist_p{priority}: marked bestseller in DB", evidence
+
+    brand_bs = (bestseller_catalog or {}).get(canon_brand) or {}
+    if series_key and series_key in (brand_bs.get("series") or set()):
+        evidence["officialBestsellerSeries"] = series_key
+        return "whitelist_admitted", f"whitelist_p{priority}: official {canon_brand} bestseller line '{series_key}'", evidence
+
+    return (
+        "awaiting_popularity_verification",
+        f"whitelist_p{priority}: awaiting popularity verification (no verified sales/reviews/bestseller evidence)",
+        evidence,
+    )
+
+
+def verify_whitelisted_products(dry_run=False):
+    """Re-evaluate all whitelisted products in DB using real popularity verification, restore admitted ones, and print full report."""
+    sys.path.insert(0, str(SCRIPT_DIR))
+    import generate_product_images as gpi
+
+    gpi._load_dotenv_if_needed()
+    supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+    if not supabase_url:
+        raise RuntimeError("SUPABASE_URL is not configured")
+
+    db_session = gpi.make_session()
+    rows = gpi.fetch_stock_rows(db_session, supabase_url)
+    all_rows = [
+        r for r in rows
+        if r.get("slug") != "site-settings"
+        and str(r.get("id")) != "999999"
+    ]
+
+    print("Fetching official brand bestseller catalogs...", flush=True)
+    bestseller_catalog = fetch_brand_bestsellers()
+    for cb, info_bs in bestseller_catalog.items():
+        if info_bs["series"]:
+            print(f"  [{cb}] {len(info_bs['series'])} official bestseller series loaded", flush=True)
+
+    series_groups = build_series_groups(all_rows)
+    passing_series_keys = {
+        s_key for s_key, grp in series_groups.items()
+        if any(((r.get("info") or {}).get("googleTrends") or {}).get("passed") is True for r in grp)
+    }
+
+    stats = {
+        "trends_passed": 0,
+        "whitelist_admitted": 0,
+        "rejected": 0,
+        "awaiting_popularity_verification": 0,
+        "unchecked": 0,
+        "restored_count": 0,
+        "by_brand": {},
+    }
+
+    for s_key, group_rows in series_groups.items():
+        for r in group_rows:
+            brand_raw = r.get("brand") or "Unknown"
+            canon_brand, priority = get_whitelist_priority(brand_raw)
+            b_key = canon_brand or brand_raw.lower()
+            b_stat = stats["by_brand"].setdefault(b_key, {
+                "priority": priority,
+                "trends_passed": 0,
+                "whitelist_admitted": 0,
+                "rejected": 0,
+                "awaiting_popularity_verification": 0,
+                "unchecked": 0,
+            })
+
+            info = r.get("info") or {}
+            gt = info.get("googleTrends") or {}
+            if not gt.get("checkedAt"):
+                stats["unchecked"] += 1
+                b_stat["unchecked"] += 1
+                continue
+
+            avg_s = float(gt.get("avg") or 0)
+            max_s = int(gt.get("max") or 0)
+            passed_trends = (avg_s >= 35.0 or max_s >= 50) or (s_key in passing_series_keys and gt.get("filterStatus") != "whitelist_admitted")
+
+            if passed_trends and gt.get("filterStatus") != "whitelist_admitted":
+                stats["trends_passed"] += 1
+                b_stat["trends_passed"] += 1
+                continue
+
+            if priority == 0:
+                stats["rejected"] += 1
+                b_stat["rejected"] += 1
+                continue
+
+            decision, reason, evidence = verify_whitelist_popularity(
+                r, s_key, bestseller_catalog, passing_series_keys=passing_series_keys
+            )
+            stats[decision] += 1
+            b_stat[decision] += 1
+
+            was_hidden = (r.get("in_stock") is False) or (gt.get("hiddenFromSite") is True)
+            should_be_visible = (decision == "whitelist_admitted")
+            needs_patch = (
+                gt.get("filterStatus") != decision
+                or gt.get("filterReason") != reason
+                or (should_be_visible and was_hidden)
+            )
+            if needs_patch:
+                new_meta = {
+                    **gt,
+                    "seriesKey": s_key,
+                    "passed": should_be_visible,
+                    "filterStatus": decision,
+                    "filterReason": reason,
+                    "whitelistEvidence": evidence,
+                    "verifiedAt": datetime.now(timezone.utc).isoformat(),
+                }
+                if should_be_visible and was_hidden:
+                    stats["restored_count"] += 1
+                    print(f"  RESTORE {r['id']} ({r.get('name')}) -> {reason}", flush=True)
+                elif decision == "awaiting_popularity_verification":
+                    print(f"  AWAIT {r['id']} ({r.get('name')}) -> {reason}", flush=True)
+                if not dry_run:
+                    try:
+                        patch_stock_trends(db_session, supabase_url, r, new_meta, visible=should_be_visible)
+                    except Exception as exc:
+                        print(f"Warning patching {r.get('id')}: {exc}", flush=True)
+
+    print("\n=== PERFUME FILTERING REPORT ===")
+    print(json.dumps(stats, ensure_ascii=False, indent=2))
+    return stats
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check perfume names in Google Trends (BG, RO, GR, HU).")
     parser.add_argument("name", nargs="?", help="Perfume name")
     parser.add_argument("--brand", default="", help="Brand name")
     parser.add_argument("--filter-all-db", action="store_true", help="Analyze ALL products in DB and hide failing ones (no deletion)")
+    parser.add_argument("--verify-whitelisted", action="store_true", help="Run whitelist popularity verification across DB and restore admitted products")
     parser.add_argument("--completed-first", action="store_true", default=True, help="Prioritize completed site products first")
     parser.add_argument("--max-series", type=int, default=0, help="Max unchecked series to process per run (0 = unlimited)")
     parser.add_argument("--force", action="store_true", help="Re-check even already checked rows")
-    parser.add_argument("--dry-run", action="store_true", help="Do not update DB when running --filter-all-db")
+    parser.add_argument("--dry-run", action="store_true", help="Do not update DB")
     args = parser.parse_args()
-    if args.filter_all_db:
+    if args.verify_whitelisted:
+        verify_whitelisted_products(dry_run=args.dry_run)
+    elif args.filter_all_db:
         filter_all_db_products(
             dry_run=args.dry_run,
             force=args.force,
@@ -647,4 +944,4 @@ if __name__ == "__main__":
         res = check_perfume_trends(args.name, brand=args.brand)
         print(json.dumps(res, ensure_ascii=False, indent=2))
     else:
-        parser.error("Provide a perfume name or --filter-all-db")
+        parser.error("Provide a perfume name, --filter-all-db, or --verify-whitelisted")
