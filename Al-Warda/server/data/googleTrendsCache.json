@@ -14363,5 +14363,928 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:04:17.985234+00:00"
+  },
+  "swiss arabian al ghutra": {
+    "query": "swiss arabian al ghutra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:24.855931+00:00"
+  },
+  "swiss arabian rasheeqa floral rose green woody": {
+    "query": "swiss arabian rasheeqa floral rose green woody",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:26.112130+00:00"
+  },
+  "swiss arabian primal code": {
+    "query": "swiss arabian primal code",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:27.268920+00:00"
+  },
+  "zimaya sharaf": {
+    "query": "zimaya sharaf",
+    "scores": {
+      "BG": 0,
+      "RO": 3,
+      "GR": 0,
+      "HU": 34
+    },
+    "avg": 9.25,
+    "max": 34,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:28.362066+00:00"
+  },
+  "zimaya sharaf divine par u": {
+    "query": "zimaya sharaf divine par u",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:29.586899+00:00"
+  },
+  "zimaya sharaf the club": {
+    "query": "zimaya sharaf the club",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:34.541947+00:00"
+  },
+  "zimaya sharaf blend": {
+    "query": "zimaya sharaf blend",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:39.679010+00:00"
+  },
+  "zimaya stallion": {
+    "query": "zimaya stallion",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:41.243720+00:00"
+  },
+  "zimaya red carpet paragon": {
+    "query": "zimaya red carpet paragon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:42.502533+00:00"
+  },
+  "zimaya ghyoom": {
+    "query": "zimaya ghyoom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:43.758384+00:00"
+  },
+  "zimaya anhaar valley": {
+    "query": "zimaya anhaar valley",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:45.038904+00:00"
+  },
+  "zimaya fatima": {
+    "query": "zimaya fatima",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:46.229523+00:00"
+  },
+  "zimaya fatima pink": {
+    "query": "zimaya fatima pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:47.272914+00:00"
+  },
+  "zimaya fatima velvet love": {
+    "query": "zimaya fatima velvet love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:48.439683+00:00"
+  },
+  "zimaya ilham al oud": {
+    "query": "zimaya ilham al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:49.643288+00:00"
+  },
+  "zimaya al fouz": {
+    "query": "zimaya al fouz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:50.912990+00:00"
+  },
+  "zimaya grandeur": {
+    "query": "zimaya grandeur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:52.073254+00:00"
+  },
+  "zimaya tiramisu caramel": {
+    "query": "zimaya tiramisu caramel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:53.234985+00:00"
+  },
+  "zimaya ghayath": {
+    "query": "zimaya ghayath",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:54.443082+00:00"
+  },
+  "zimaya itqan": {
+    "query": "zimaya itqan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:55.700511+00:00"
+  },
+  "zimaya itqan noir": {
+    "query": "zimaya itqan noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:56.895057+00:00"
+  },
+  "zimaya itqan gold": {
+    "query": "zimaya itqan gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:07:58.061794+00:00"
+  },
+  "zimaya evolution": {
+    "query": "zimaya evolution",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:02.975462+00:00"
+  },
+  "zimaya black symphony": {
+    "query": "zimaya black symphony",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:13.108837+00:00"
+  },
+  "zimaya royal leather": {
+    "query": "zimaya royal leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:14.327182+00:00"
+  },
+  "zimaya wujood": {
+    "query": "zimaya wujood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:24.082461+00:00"
+  },
+  "zimaya treasure": {
+    "query": "zimaya treasure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:29.191635+00:00"
+  },
+  "zimaya rajwah": {
+    "query": "zimaya rajwah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:30.449131+00:00"
+  },
+  "zimaya tiramisu coco": {
+    "query": "zimaya tiramisu coco",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:35.539481+00:00"
+  },
+  "zimaya anhaar dune": {
+    "query": "zimaya anhaar dune",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:36.680400+00:00"
+  },
+  "zimaya zukhruf": {
+    "query": "zimaya zukhruf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:37.818755+00:00"
+  },
+  "zimaya zukhruf black": {
+    "query": "zimaya zukhruf black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:39.083229+00:00"
+  },
+  "zimaya zukhruf cherry": {
+    "query": "zimaya zukhruf cherry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:40.234904+00:00"
+  },
+  "zimaya zukhruf peach please": {
+    "query": "zimaya zukhruf peach please",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:41.441180+00:00"
+  },
+  "zimaya mazaaj": {
+    "query": "zimaya mazaaj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:43.042220+00:00"
+  },
+  "zimaya mazaaj infused": {
+    "query": "zimaya mazaaj infused",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:44.283007+00:00"
+  },
+  "zimaya mazaaj rhythm": {
+    "query": "zimaya mazaaj rhythm",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:49.210288+00:00"
+  },
+  "zimaya awatif": {
+    "query": "zimaya awatif",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:50.614056+00:00"
+  },
+  "zimaya musk is great": {
+    "query": "zimaya musk is great",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:51.873423+00:00"
+  },
+  "zimaya ramsh imperium": {
+    "query": "zimaya ramsh imperium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:53.050631+00:00"
+  },
+  "zimaya luxor": {
+    "query": "zimaya luxor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:54.192200+00:00"
+  },
+  "zimaya farah": {
+    "query": "zimaya farah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:55.444421+00:00"
+  },
+  "zimaya ladies charisma": {
+    "query": "zimaya ladies charisma",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:56.606124+00:00"
+  },
+  "zimaya rabab": {
+    "query": "zimaya rabab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:57.845844+00:00"
+  },
+  "zimaya rabab blue": {
+    "query": "zimaya rabab blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:08:59.021813+00:00"
+  },
+  "zimaya rabab gems": {
+    "query": "zimaya rabab gems",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:00.249332+00:00"
+  },
+  "zimaya rabab pulp": {
+    "query": "zimaya rabab pulp",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:01.910631+00:00"
+  },
+  "zimaya happy oud": {
+    "query": "zimaya happy oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:03.406505+00:00"
+  },
+  "riiffs freeze extract": {
+    "query": "riiffs freeze extract",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:05.048901+00:00"
+  },
+  "riiffs momento riffs": {
+    "query": "riiffs momento riffs",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:06.083506+00:00"
+  },
+  "riiffs zenith": {
+    "query": "riiffs zenith",
+    "scores": {
+      "BG": 0,
+      "RO": 14,
+      "GR": 0,
+      "HU": 100
+    },
+    "avg": 28.5,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:09:07.729123+00:00"
+  },
+  "riiffs nusuk raheeq": {
+    "query": "riiffs nusuk raheeq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:09.251832+00:00"
+  },
+  "riiffs fareed": {
+    "query": "riiffs fareed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:10.689698+00:00"
+  },
+  "riiffs fleurie": {
+    "query": "riiffs fleurie",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:15.867244+00:00"
+  },
+  "riiffs fleurie emerald": {
+    "query": "riiffs fleurie emerald",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:17.178654+00:00"
+  },
+  "riiffs fleurie violette": {
+    "query": "riiffs fleurie violette",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:21.679895+00:00"
+  },
+  "riiffs samah": {
+    "query": "riiffs samah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:23.464065+00:00"
+  },
+  "riiffs samah pink": {
+    "query": "riiffs samah pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:28.405588+00:00"
+  },
+  "riiffs samah white": {
+    "query": "riiffs samah white",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:29.761179+00:00"
+  },
+  "riiffs samah ruby extract": {
+    "query": "riiffs samah ruby extract",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:31.191259+00:00"
+  },
+  "riiffs inspiro": {
+    "query": "riiffs inspiro",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:32.933124+00:00"
+  },
+  "riiffs luna stella": {
+    "query": "riiffs luna stella",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:34.577388+00:00"
+  },
+  "riiffs exclusive": {
+    "query": "riiffs exclusive",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:39.737608+00:00"
+  },
+  "riiffs exclusive prive pink": {
+    "query": "riiffs exclusive prive pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:41.111740+00:00"
+  },
+  "riiffs exclusive prive mystique noir": {
+    "query": "riiffs exclusive prive mystique noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:42.005920+00:00"
+  },
+  "riiffs costa de amalfi par u": {
+    "query": "riiffs costa de amalfi par u",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:43.357627+00:00"
+  },
+  "riiffs rose de soleil eclat": {
+    "query": "riiffs rose de soleil eclat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:44.490692+00:00"
+  },
+  "neu riiffs sahara desert extract": {
+    "query": "neu riiffs sahara desert extract",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:54.458229+00:00"
+  },
+  "riiffs imperial": {
+    "query": "riiffs imperial",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:55.796247+00:00"
+  },
+  "riiffs imperial blue": {
+    "query": "riiffs imperial blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:57.019938+00:00"
+  },
+  "riiffs imperial noir": {
+    "query": "riiffs imperial noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:09:58.574307+00:00"
   }
 }
