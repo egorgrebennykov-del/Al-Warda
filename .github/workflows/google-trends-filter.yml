@@ -41,8 +41,9 @@ jobs:
           python Al-Warda/scripts/google_trends_filter.py \
             --filter-all-db \
             --completed-first \
-            --max-series "${{ inputs.max_series || '80' }}"
+            --max-series "$MAX_SERIES"
         env:
+          MAX_SERIES: ${{ inputs.max_series || '80' }}
           SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
 
@@ -59,10 +60,11 @@ jobs:
 
       - name: Chain next batch if series remain
         if: steps.filter.outputs.remaining != '' && steps.filter.outputs.remaining != '0'
+        env:
+          MAX_SERIES: ${{ inputs.max_series || '80' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          REMAINING: ${{ steps.filter.outputs.remaining }}
         run: |
-          echo "Remaining series: ${{ steps.filter.outputs.remaining }}. Dispatching next runner..."
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/google-trends-filter.yml/dispatches" \
-            -d '{"ref":"main","inputs":{"max_series":"${{ inputs.max_series || '\''80'\'' }}"}}'
+          echo "Remaining series: $REMAINING. Dispatching next runner..."
+          python -c "import os, requests; r = requests.post(f'https://api.github.com/repos/{os.environ[\"GH_REPO\"]}/actions/workflows/google-trends-filter.yml/dispatches', headers={'Accept': 'application/vnd.github+json', 'Authorization': f'Bearer {os.environ[\"GH_TOKEN\"]}'}, json={'ref': 'main', 'inputs': {'max_series': os.environ['MAX_SERIES']}}, timeout=15); print('Next dispatch:', r.status_code, r.text); r.raise_for_status()"
