@@ -462,17 +462,19 @@
   justify-content: center;
   -webkit-mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.62) 40%,
-    rgba(0, 0, 0, 0.2) 68%,
-    transparent 92%
+    transparent 0%,
+    rgba(0, 0, 0, 0.72) 6%,
+    rgba(0, 0, 0, 0.42) 38%,
+    rgba(0, 0, 0, 0.12) 66%,
+    transparent 88%
   );
   mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.62) 40%,
-    rgba(0, 0, 0, 0.2) 68%,
-    transparent 92%
+    transparent 0%,
+    rgba(0, 0, 0, 0.72) 6%,
+    rgba(0, 0, 0, 0.42) 38%,
+    rgba(0, 0, 0, 0.12) 66%,
+    transparent 88%
   );
 }
 
@@ -484,9 +486,9 @@
   object-fit: contain;
   object-position: bottom center;
   transform-origin: center center;
-  transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
-  opacity: 0.78;
-  filter: blur(0.9px) brightness(1.15);
+  transform: translateY(calc(var(--flacon-pad-pct, 7.4%) - 2 * var(--flacon-last-pad-pct, 7.4%))) scaleY(-1);
+  opacity: 0.48;
+  filter: blur(1.5px) brightness(0.88);
 }
 
 .warda-details-info {
@@ -814,7 +816,7 @@
     object-fit: contain;
     object-position: bottom center;
     transform-origin: center center;
-    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+    transform: translateY(calc(var(--flacon-pad-pct, 7.4%) - 2 * var(--flacon-last-pad-pct, 7.4%))) scaleY(-1);
   }
 
   .warda-details-zoom-pill {
@@ -883,7 +885,7 @@
     object-fit: contain;
     object-position: bottom center;
     transform-origin: center center;
-    transform: translateY(calc(-1 * var(--flacon-pad-pct, 7.4%))) scaleY(-1);
+    transform: translateY(calc(var(--flacon-pad-pct, 7.4%) - 2 * var(--flacon-last-pad-pct, 7.4%))) scaleY(-1);
   }
 }
 

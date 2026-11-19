@@ -107,6 +107,7 @@ export default function BookDetails() {
   const [flaconLoaded, setFlaconLoaded] = useState(false);
   const [allSourcesExhausted, setAllSourcesExhausted] = useState(false);
   const [flaconBottomPadPct, setFlaconBottomPadPct] = useState(7.4);
+  const [flaconLastPadPct, setFlaconLastPadPct] = useState(7.4);
   const [flaconScale, setFlaconScale] = useState(1);
   const [markingFailed, setMarkingFailed] = useState(false);
   const [markedFailedMsg, setMarkedFailedMsg] = useState("");
@@ -125,6 +126,7 @@ export default function BookDetails() {
     setFlaconLoaded(false);
     setAllSourcesExhausted(false);
     setFlaconBottomPadPct(7.4);
+    setFlaconLastPadPct(7.4);
     setFlaconScale(perfume && isPerfumeSet(perfume) ? 1.15 : 1);
     setMarkedFailedMsg("");
     setIsInErrors(
@@ -273,6 +275,7 @@ export default function BookDetails() {
   const handleFlaconImgLoad = (e) => {
     const img = e.currentTarget;
     let bottomPadPct = 7.4;
+    let lastPadPct = 7.4;
     let computedScale = perfume && isPerfumeSet(perfume) ? 1.38 : 1;
     try {
       const sampleSize = 256;
@@ -353,6 +356,10 @@ export default function BookDetails() {
             0,
             Math.min(42, ((sampleSize - 1 - groundRow) / sampleSize) * 100),
           );
+          lastPadPct = Math.max(
+            0,
+            Math.min(42, ((sampleSize - 1 - refLast) / sampleSize) * 100),
+          );
           const fgH = Math.max(0.15, (lastRow - firstRow + 1) / sampleSize);
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
           const visibleGroundH = Math.max(0.15, (groundRow - firstRow + 1) / sampleSize);
@@ -373,6 +380,7 @@ export default function BookDetails() {
       // Keep default percentage and scale if canvas read is blocked
     }
     setFlaconBottomPadPct(Number(bottomPadPct.toFixed(2)));
+    setFlaconLastPadPct(Number(lastPadPct.toFixed(2)));
     setFlaconScale(Number(computedScale.toFixed(3)));
     setFlaconLoaded(true);
     setAllSourcesExhausted(false);
@@ -806,6 +814,7 @@ export default function BookDetails() {
                   className="warda-stage-assembly"
                   style={{
                     "--flacon-pad-pct": `${flaconBottomPadPct}%`,
+                    "--flacon-last-pad-pct": `${flaconLastPadPct}%`,
                     "--flacon-scale": flaconScale,
                   }}
                 >
