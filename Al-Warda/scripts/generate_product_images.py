@@ -3989,6 +3989,7 @@ def main():
         except Exception:
             pass
 
+    consecutive_db_errors = 0
     for idx, row in enumerate(candidates[:args.max_images]):
         if stop_requested:
             print("Stopping product queue processing per termination signal. Proceeding to publish...", flush=True)
@@ -4018,6 +4019,7 @@ def main():
                 publish_immediate=is_local_gpu,
             )
             completed += 1
+            consecutive_db_errors = 0
             print(f"COMPLETED {row['id']}: {url}")
             if args.cooling_delay > 0:
                 try:
@@ -4041,8 +4043,14 @@ def main():
             failed += 1
             print(f"FAILED {row['id']}: {error}")
             if str(error).startswith("Could not update stock"):
-                print("Stopping because Supabase queue state could not be persisted.")
-                break
+                consecutive_db_errors += 1
+                if consecutive_db_errors >= 3:
+                    print("Stopping because Supabase queue state could not be persisted 3 times in a row.")
+                    break
+                print(f"Transient DB error ({consecutive_db_errors}/3), waiting 5s and continuing...", flush=True)
+                time.sleep(5)
+            else:
+                consecutive_db_errors = 0
         time.sleep(0.25)
 
     print(

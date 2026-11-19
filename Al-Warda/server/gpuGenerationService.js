@@ -1,11 +1,15 @@
 import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.resolve(__dirname, "..");
 const repoDir = path.resolve(appDir, "..");
+
+const STATE_FILE = path.join(os.tmpdir(), "al-warda-gpu-generation-state.json");
+const LOG_FILE = path.join(os.tmpdir(), "al-warda-gpu-generation.log");
 
 let gitPublishInFlight = null;
 
@@ -39,10 +43,10 @@ async function publishGeneratedImagesToGit() {
         // Continue push attempt if already up-to-date or no upstream conflict
       }
       await runGit(["push", "origin", "main"]);
-      currentJob.logs.push("Новые сгенерированные фото автоматически отправлены на сайт (GitHub -> Cloudflare).");
+      appendLogLine("Новые сгенерированные фото автоматически отправлены на сайт (GitHub -> Cloudflare).");
       return { published: true };
     } catch (err) {
-      currentJob.logs.push(`Предупреждение автопубликации Git: ${err.message}`);
+      appendLogLine(`Предупреждение автопубликации Git: ${err.message}`);
       return { published: false, error: err.message };
     } finally {
       gitPublishInFlight = null;
@@ -51,22 +55,96 @@ async function publishGeneratedImagesToGit() {
   return gitPublishInFlight;
 }
 
-let activeProcess = null;
-let currentJob = {
-  isRunning: false,
-  mode: "local_gpu_upscayl",
-  startedAt: null,
-  finishedAt: null,
-  totalCandidates: 0,
-  targetCount: 0,
-  completedCount: 0,
-  failedCount: 0,
-  currentProduct: null,
-  lastImageUrl: null,
-  lastLogLine: "",
-  logs: [],
-  error: null,
-};
+function appendLogLine(line) {
+  try {
+    fs.appendFileSync(LOG_FILE, `${line}\n`, "utf-8");
+  } catch {}
+}
+
+function isPidAlive(pid) {
+  if (!pid || !Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return err?.code === "EPERM";
+  }
+}
+
+function readPersistedState() {
+  try {
+    if (!fs.existsSync(STATE_FILE)) return null;
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+function writePersistedState(state) {
+  try {
+    fs.writeFileSync(STATE_FILE, JSON.stringify(state), "utf-8");
+  } catch {}
+}
+
+function parseLogSnapshot(baseState) {
+  const job = {
+    isRunning: false,
+    mode: "local_gpu_upscayl",
+    startedAt: baseState?.startedAt || null,
+    finishedAt: baseState?.finishedAt || null,
+    totalCandidates: 0,
+    targetCount: baseState?.targetCount ?? 0,
+    completedCount: 0,
+    failedCount: 0,
+    currentProduct: null,
+    lastImageUrl: null,
+    lastLogLine: "",
+    logs: [],
+    error: baseState?.error || null,
+  };
+
+  try {
+    if (fs.existsSync(LOG_FILE)) {
+      const raw = fs.readFileSync(LOG_FILE, "utf-8");
+      const lines = raw.split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        if (line.includes("Targeting") && line.includes("specific product")) {
+          const m = line.match(/Targeting (\d+)/);
+          if (m) job.totalCandidates = parseInt(m[1], 10);
+        } else if (line.includes("Queue:") && line.includes("eligible")) {
+          const m = line.match(/Queue:\s*(\d+)/);
+          if (m) job.totalCandidates = parseInt(m[1], 10);
+        }
+
+        if (line.startsWith("COMPLETED ")) {
+          job.completedCount++;
+          const parts = line.split(" ");
+          if (parts[2]) job.lastImageUrl = parts[2].trim();
+          job.currentProduct = null;
+        } else if (line.startsWith("FAILED ")) {
+          job.failedCount++;
+          job.currentProduct = null;
+        } else if (line.startsWith("DESCRIBED ") || line.includes("Processing ")) {
+          job.currentProduct = line;
+        }
+      }
+      job.logs = lines.slice(-200);
+      if (job.logs.length > 0) {
+        job.lastLogLine = job.logs[job.logs.length - 1];
+      }
+    }
+  } catch {}
+
+  const alive = isPidAlive(baseState?.pid);
+  job.isRunning = alive;
+  if (!alive && baseState?.pid && !job.finishedAt) {
+    job.finishedAt = new Date().toISOString();
+    writePersistedState({ ...baseState, finishedAt: job.finishedAt });
+  }
+  return job;
+}
+
+let lastPublishedCompleted = 0;
 
 function resolvePythonBinary() {
   const candidates = [
@@ -100,16 +178,16 @@ function resolveUpscaylBinary() {
 export function getGpuGenerationStatus() {
   const upscaylPath = resolveUpscaylBinary();
   const pythonPath = resolvePythonBinary();
+  const state = readPersistedState();
+  const job = parseLogSnapshot(state);
 
-  // Verify if process is still running
-  if (activeProcess && activeProcess.exitCode !== null) {
-    currentJob.isRunning = false;
-    currentJob.finishedAt = currentJob.finishedAt || new Date().toISOString();
-    activeProcess = null;
+  if (job.completedCount > lastPublishedCompleted && (job.completedCount - lastPublishedCompleted >= 25 || (!job.isRunning && job.completedCount > 0))) {
+    lastPublishedCompleted = job.completedCount;
+    publishGeneratedImagesToGit();
   }
 
   return {
-    ...currentJob,
+    ...job,
     environment: {
       hasLocalPython: Boolean(pythonPath),
       pythonPath,
@@ -123,7 +201,8 @@ export function getGpuGenerationStatus() {
 }
 
 export function startGpuGeneration({ count = "all", productIds = null, coolingDelay = 0.8 } = {}) {
-  if (activeProcess && activeProcess.exitCode === null) {
+  const existing = readPersistedState();
+  if (existing?.pid && isPidAlive(existing.pid)) {
     return {
       ok: false,
       message: "Генерация на GPU уже выполняется",
@@ -148,124 +227,70 @@ export function startGpuGeneration({ count = "all", productIds = null, coolingDe
     args.push("--cooling-delay", String(coolingDelay));
   }
 
-  currentJob = {
-    isRunning: true,
-    mode: "local_gpu_upscayl",
-    startedAt: new Date().toISOString(),
-    finishedAt: null,
-    totalCandidates: 0,
-    targetCount: count === "all" ? "unlimited" : Number(count),
-    completedCount: 0,
-    failedCount: 0,
-    currentProduct: null,
-    lastImageUrl: null,
-    lastLogLine: "Запуск локального ИИ-пайплайна на GPU...",
-    logs: ["Запуск процесса генерации на локальной видеокарте..."],
-    error: null,
-  };
+  const startedAt = new Date().toISOString();
+  const targetCount = count === "all" ? "unlimited" : Number(count);
+  lastPublishedCompleted = 0;
 
   try {
-    activeProcess = spawn(pythonBin, args, {
+    fs.writeFileSync(LOG_FILE, "Запуск процесса генерации на локальной видеокарте...\n", "utf-8");
+    const logFd = fs.openSync(LOG_FILE, "a");
+    const child = spawn(pythonBin, args, {
       cwd: appDir,
       env: {
         ...process.env,
         PYTHONUNBUFFERED: "1",
         PYTHONIOENCODING: "utf-8",
       },
+      detached: true,
+      stdio: ["ignore", logFd, logFd],
       windowsHide: true,
     });
+    fs.closeSync(logFd);
+    child.unref();
+
+    writePersistedState({
+      pid: child.pid,
+      startedAt,
+      finishedAt: null,
+      targetCount,
+      error: null,
+    });
   } catch (err) {
-    currentJob.isRunning = false;
-    currentJob.error = err.message;
-    return { ok: false, error: err.message, job: currentJob };
+    writePersistedState({
+      pid: null,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      targetCount,
+      error: err.message,
+    });
+    return { ok: false, error: err.message, job: getGpuGenerationStatus() };
   }
 
-  const handleOutput = (data) => {
-    const text = data.toString("utf-8");
-    const lines = text.split(/\r?\n/).filter(Boolean);
-    for (const line of lines) {
-      currentJob.lastLogLine = line;
-      currentJob.logs.push(line);
-      if (currentJob.logs.length > 200) currentJob.logs.shift();
-
-      if (line.includes("Targeting") && line.includes("specific product")) {
-        const m = line.match(/Targeting (\d+)/);
-        if (m) currentJob.totalCandidates = parseInt(m[1], 10);
-      } else if (line.includes("Queue:") && line.includes("eligible")) {
-        const m = line.match(/Queue:\s*(\d+)/);
-        if (m) currentJob.totalCandidates = parseInt(m[1], 10);
-      }
-
-      if (line.startsWith("COMPLETED ")) {
-        currentJob.completedCount++;
-        const parts = line.split(" ");
-        if (parts[2]) currentJob.lastImageUrl = parts[2].trim();
-        currentJob.currentProduct = null;
-        if (currentJob.completedCount % 25 === 0) {
-          publishGeneratedImagesToGit();
-        }
-      } else if (line.startsWith("DESCRIBED ") || line.includes("Processing ")) {
-        currentJob.currentProduct = line;
-      } else if (line.includes("AI Super-Resolution succeeded:")) {
-        currentJob.lastLogLine = line;
-      }
-    }
-  };
-
-  activeProcess.stdout.on("data", handleOutput);
-  activeProcess.stderr.on("data", handleOutput);
-
-  activeProcess.on("close", (code) => {
-    currentJob.isRunning = false;
-    currentJob.finishedAt = new Date().toISOString();
-    activeProcess = null;
-    const finalMsg = code === 0
-      ? `Генерация успешно завершена! Обработано: ${currentJob.completedCount} фото.`
-      : `Процесс завершился с кодом ${code}.`;
-    currentJob.logs.push(finalMsg);
-    currentJob.lastLogLine = finalMsg;
-    if (currentJob.completedCount > 0) {
-      publishGeneratedImagesToGit();
-    }
-  });
-
-  activeProcess.on("error", (err) => {
-    currentJob.isRunning = false;
-    currentJob.error = err.message;
-    currentJob.logs.push(`Ошибка процесса: ${err.message}`);
-    activeProcess = null;
-  });
-
-  return { ok: true, message: "Генерация на видеокарте запущена", job: currentJob };
+  return { ok: true, message: "Генерация на видеокарте запущена", job: getGpuGenerationStatus() };
 }
 
 export function stopGpuGeneration() {
-  if (!activeProcess || activeProcess.exitCode !== null) {
-    currentJob.isRunning = false;
+  const existing = readPersistedState();
+  if (!existing?.pid || !isPidAlive(existing.pid)) {
+    if (existing) {
+      writePersistedState({ ...existing, finishedAt: existing.finishedAt || new Date().toISOString() });
+    }
     return { ok: true, message: "Процесс не был активен" };
   }
 
   try {
-    // Graceful stop on Windows via taskkill tree
     if (process.platform === "win32") {
-      spawn("taskkill", ["/pid", String(activeProcess.pid), "/T", "/F"]);
+      spawn("taskkill", ["/pid", String(existing.pid), "/T", "/F"], { windowsHide: true });
     } else {
-      activeProcess.kill("SIGTERM");
+      process.kill(-existing.pid, "SIGTERM");
     }
-  } catch (err) {
+  } catch {
     try {
-      activeProcess.kill();
+      process.kill(existing.pid);
     } catch {}
   }
 
-  currentJob.isRunning = false;
-  currentJob.finishedAt = new Date().toISOString();
-  currentJob.logs.push("Процесс генерации был остановлен администратором.");
-  currentJob.lastLogLine = "Остановлено пользователем.";
-  activeProcess = null;
-  if (currentJob.completedCount > 0) {
-    publishGeneratedImagesToGit();
-  }
-
-  return { ok: true, message: "Генерация на видеокарте остановлена" };
+  writePersistedState({ ...existing, finishedAt: new Date().toISOString() });
+  appendLogLine("Остановлено пользователем.");
+  return { ok: true, message: "Запрос на остановку отправлен" };
 }
