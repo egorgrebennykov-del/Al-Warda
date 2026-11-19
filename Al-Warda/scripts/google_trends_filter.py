@@ -326,7 +326,7 @@ def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
         raise RuntimeError(f"Could not update stock {row['id']} ({resp.status_code}): {resp.text[:200]}")
 
 
-def filter_all_db_products(dry_run=False, force=False):
+def filter_all_db_products(dry_run=False, force=False, completed_first=True, max_series=0):
     """Analyze ALL products in DB via Google Trends (series-aware) and hide failing ones without deleting."""
     sys.path.insert(0, str(SCRIPT_DIR))
     import generate_product_images as gpi
@@ -352,6 +352,7 @@ def filter_all_db_products(dry_run=False, force=False):
     skipped_checked = 0
     errors = 0
     consecutive_429 = 0
+    processed_series = 0
 
     from collections import defaultdict
     series_groups = defaultdict(list)
@@ -359,12 +360,22 @@ def filter_all_db_products(dry_run=False, force=False):
         s_key = extract_perfume_series_key(row.get("name") or "", row.get("brand") or "")
         series_groups[s_key or f"id:{row.get('id')}"].append(row)
 
-    print(f"Grouped into {len(series_groups)} perfume series/families.", flush=True)
+    ordered_groups = list(series_groups.items())
+    if completed_first:
+        ordered_groups.sort(
+            key=lambda kv: 0 if any((((r.get("info") or {}).get("imageGeneration") or {}).get("status") == "completed") for r in kv[1]) else 1
+        )
 
-    for s_idx, (s_key, group_rows) in enumerate(series_groups.items(), 1):
+    print(f"Grouped into {len(ordered_groups)} perfume series/families.", flush=True)
+
+    for s_idx, (s_key, group_rows) in enumerate(ordered_groups, 1):
         if not force and all(((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt") for r in group_rows):
             skipped_checked += len(group_rows)
             continue
+        if max_series and processed_series >= max_series:
+            print(f"Reached --max-series={max_series}. Stopping cleanly; re-run to continue.", flush=True)
+            break
+        processed_series += 1
 
         queries_to_try = []
         seen_q = set()
@@ -457,11 +468,18 @@ if __name__ == "__main__":
     parser.add_argument("name", nargs="?", help="Perfume name")
     parser.add_argument("--brand", default="", help="Brand name")
     parser.add_argument("--filter-all-db", action="store_true", help="Analyze ALL products in DB and hide failing ones (no deletion)")
+    parser.add_argument("--completed-first", action="store_true", default=True, help="Prioritize completed site products first")
+    parser.add_argument("--max-series", type=int, default=0, help="Max unchecked series to process per run (0 = unlimited)")
     parser.add_argument("--force", action="store_true", help="Re-check even already checked rows")
     parser.add_argument("--dry-run", action="store_true", help="Do not update DB when running --filter-all-db")
     args = parser.parse_args()
     if args.filter_all_db:
-        filter_all_db_products(dry_run=args.dry_run, force=args.force)
+        filter_all_db_products(
+            dry_run=args.dry_run,
+            force=args.force,
+            completed_first=args.completed_first,
+            max_series=args.max_series,
+        )
     elif args.name:
         res = check_perfume_trends(args.name, brand=args.brand)
         print(json.dumps(res, ensure_ascii=False, indent=2))

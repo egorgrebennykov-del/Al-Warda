@@ -1,0 +1,56 @@
+name: "Google Trends Catalog Filter"
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_series:
+        description: "Max unchecked perfume series to evaluate in this run"
+        required: false
+        default: "60"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: google-trends-catalog-filter
+  cancel-in-progress: false
+
+jobs:
+  filter-trends:
+    name: Filter Catalog via Google Trends (BG/RO/GR/HU)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Google Trends DB filter (series-aware, non-destructive)
+        run: |
+          python Al-Warda/scripts/google_trends_filter.py \
+            --filter-all-db \
+            --completed-first \
+            --max-series "${{ inputs.max_series || '60' }}"
+        env:
+          SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
+
+      - name: Commit updated Google Trends cache
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Al-Warda/server/data/googleTrendsCache.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(trends): update Google Trends cache"
+            git pull --rebase origin main || true
+            git push origin main
+          fi
