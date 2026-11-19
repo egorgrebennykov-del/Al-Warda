@@ -40298,5 +40298,564 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:47:09.953467+00:00"
+  },
+  "khadlaj sensuos": {
+    "query": "khadlaj sensuos",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:17.019167+00:00"
+  },
+  "khadlaj sensuos night": {
+    "query": "khadlaj sensuos night",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:18.387210+00:00"
+  },
+  "khadlaj 25 trust": {
+    "query": "khadlaj 25 trust",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:19.458846+00:00"
+  },
+  "khadlaj musk wa oud": {
+    "query": "khadlaj musk wa oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:21.019604+00:00"
+  },
+  "khadlaj 25 loyalty": {
+    "query": "khadlaj 25 loyalty",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:22.773986+00:00"
+  },
+  "khadlaj magnate premier": {
+    "query": "khadlaj magnate premier",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:24.503239+00:00"
+  },
+  "khadlaj lulu al khaleej olio profumato": {
+    "query": "khadlaj lulu al khaleej olio profumato",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:25.755410+00:00"
+  },
+  "khadlaj d love": {
+    "query": "khadlaj d love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:27.421317+00:00"
+  },
+  "mahasin dalouaa air freshener by khadlaj": {
+    "query": "mahasin dalouaa air freshener by khadlaj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:29.350938+00:00"
+  },
+  "maison epoque artistique by khadlaj perfumes": {
+    "query": "maison epoque artistique by khadlaj perfumes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:30.666029+00:00"
+  },
+  "khadlaj roohi wa roohak": {
+    "query": "khadlaj roohi wa roohak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:31.928359+00:00"
+  },
+  "khadlaj roohi wa roohak gold": {
+    "query": "khadlaj roohi wa roohak gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:33.133734+00:00"
+  },
+  "khadlaj roohi wa roohak gold parfumed": {
+    "query": "khadlaj roohi wa roohak gold parfumed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:34.390169+00:00"
+  },
+  "khadlaj ibhaar olio profumato": {
+    "query": "khadlaj ibhaar olio profumato",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:36.303285+00:00"
+  },
+  "khadlaj private blend tobac extra": {
+    "query": "khadlaj private blend tobac extra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:37.575787+00:00"
+  },
+  "khadlaj maknoon bakhoor incense home": {
+    "query": "khadlaj maknoon bakhoor incense home",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:39.099780+00:00"
+  },
+  "khadlaj stellar musk": {
+    "query": "khadlaj stellar musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:40.285738+00:00"
+  },
+  "khadlaj oudh rose moschus patchouli oud bakhoor": {
+    "query": "khadlaj oudh rose moschus patchouli oud bakhoor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:42.180259+00:00"
+  },
+  "khadlaj oudh rose moschus patchouli oud bakhoor incense": {
+    "query": "khadlaj oudh rose moschus patchouli oud bakhoor incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:43.319020+00:00"
+  },
+  "khadlaj oud pour shaikh": {
+    "query": "khadlaj oud pour shaikh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:44.885341+00:00"
+  },
+  "khadlaj oud muattar munawwara wood chips bakhoor authentic arabic": {
+    "query": "khadlaj oud muattar munawwara wood chips bakhoor authentic arabic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:46.502219+00:00"
+  },
+  "khadlaj oud muattar munawwara wood chips bakhoor authentic arabic incense": {
+    "query": "khadlaj oud muattar munawwara wood chips bakhoor authentic arabic incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:47.712464+00:00"
+  },
+  "khadlaj oud muattar ghaliya wood chip bakhoor authentic arabic": {
+    "query": "khadlaj oud muattar ghaliya wood chip bakhoor authentic arabic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:49.088032+00:00"
+  },
+  "khadlaj oud muattar ghaliya wood chip bakhoor authentic arabic incense": {
+    "query": "khadlaj oud muattar ghaliya wood chip bakhoor authentic arabic incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:50.684915+00:00"
+  },
+  "khadlaj spark": {
+    "query": "khadlaj spark",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:51.879728+00:00"
+  },
+  "khadlaj spark pure": {
+    "query": "khadlaj spark pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:53.034945+00:00"
+  },
+  "khadlaj spark dare": {
+    "query": "khadlaj spark dare",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:54.277657+00:00"
+  },
+  "khadlaj spark pretty": {
+    "query": "khadlaj spark pretty",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:49:55.455809+00:00"
+  },
+  "khadlaj bakhoor dukhoon manknoon": {
+    "query": "khadlaj bakhoor dukhoon manknoon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:00.338365+00:00"
+  },
+  "khadlaj bakhoor dukhoon manknoon incense": {
+    "query": "khadlaj bakhoor dukhoon manknoon incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:01.645082+00:00"
+  },
+  "khadlaj musk sahra": {
+    "query": "khadlaj musk sahra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:02.851418+00:00"
+  },
+  "khadlaj oud barakat": {
+    "query": "khadlaj oud barakat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:04.277851+00:00"
+  },
+  "khadlaj my paradise": {
+    "query": "khadlaj my paradise",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:05.523354+00:00"
+  },
+  "khadlaj opulence ameera a luxurious": {
+    "query": "khadlaj opulence ameera a luxurious",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:06.750171+00:00"
+  },
+  "khalis perfumes eternal collection lara": {
+    "query": "khalis perfumes eternal collection lara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:08.313602+00:00"
+  },
+  "khalis perfumes eternal collection lara candy": {
+    "query": "khalis perfumes eternal collection lara candy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:09.541277+00:00"
+  },
+  "niche collection jawad by khalis": {
+    "query": "niche collection jawad by khalis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:10.988254+00:00"
+  },
+  "khalis the sheik": {
+    "query": "khalis the sheik",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:12.334809+00:00"
+  },
+  "khalis the sheik gold edition": {
+    "query": "khalis the sheik gold edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:13.581862+00:00"
+  },
+  "khalis the sheik silver edition": {
+    "query": "khalis the sheik silver edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:14.703683+00:00"
+  },
+  "khalis ajwaa niche": {
+    "query": "khalis ajwaa niche",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:16.627036+00:00"
+  },
+  "khalis ajwaa niche collection": {
+    "query": "khalis ajwaa niche collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:17.831185+00:00"
+  },
+  "khalis niche collection hala": {
+    "query": "khalis niche collection hala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:50:19.079295+00:00"
   }
 }
