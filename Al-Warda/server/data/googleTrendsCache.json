@@ -15286,5 +15286,174 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T14:09:58.574307+00:00"
+  },
+  "zimaya phantom paragon": {
+    "query": "zimaya phantom paragon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:19.609614+00:00"
+  },
+  "zimaya al embratur": {
+    "query": "zimaya al embratur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:20.858400+00:00"
+  },
+  "zimaya al embratur intense": {
+    "query": "zimaya al embratur intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:22.414354+00:00"
+  },
+  "riiffs ciao by riiffs": {
+    "query": "riiffs ciao by riiffs",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:23.270651+00:00"
+  },
+  "riiffs imperial rouge b5058w": {
+    "query": "riiffs imperial rouge b5058w",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:28.317627+00:00"
+  },
+  "riiffs prive": {
+    "query": "riiffs prive",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 100
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T14:12:29.684467+00:00"
+  },
+  "riiffs bleu": {
+    "query": "riiffs bleu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:31.555601+00:00"
+  },
+  "riiffs bleu absolu": {
+    "query": "riiffs bleu absolu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:36.081960+00:00"
+  },
+  "riiffs masculin leather": {
+    "query": "riiffs masculin leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:37.439994+00:00"
+  },
+  "riiffs aurum": {
+    "query": "riiffs aurum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:38.576847+00:00"
+  },
+  "riiffs aurum femme": {
+    "query": "riiffs aurum femme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:39.789035+00:00"
+  },
+  "riiffs forever": {
+    "query": "riiffs forever",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:40.989501+00:00"
+  },
+  "riiffs forever absolu": {
+    "query": "riiffs forever absolu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T14:12:42.198369+00:00"
   }
 }
