@@ -1,0 +1,1250 @@
+{
+  "al haramain amber oud": {
+    "query": "al haramain amber oud",
+    "scores": {
+      "BG": 31,
+      "RO": 30,
+      "GR": 18,
+      "HU": 26
+    },
+    "avg": 26.25,
+    "max": 31,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:40.677746+00:00"
+  },
+  "al haramain amber oud tobacco edition": {
+    "query": "al haramain amber oud tobacco edition",
+    "scores": {
+      "BG": 0,
+      "RO": 16,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 4.0,
+    "max": 16,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:41.889809+00:00"
+  },
+  "al haramain l'aventure": {
+    "query": "al haramain l'aventure",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T12:38:49.351955+00:00"
+  },
+  "al haramain detour": {
+    "query": "al haramain detour",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:52.593177+00:00"
+  },
+  "al haramain detour noir intense": {
+    "query": "al haramain detour noir intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:53.825226+00:00"
+  },
+  "al haramain madinah": {
+    "query": "al haramain madinah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:55.925594+00:00"
+  },
+  "al haramain madinah pure": {
+    "query": "al haramain madinah pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:57.244031+00:00"
+  },
+  "al haramain amber oud gold 999 9 dubai": {
+    "query": "al haramain amber oud gold 999 9 dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:38:59.280851+00:00"
+  },
+  "al haramain amber oud gold 999 9 dubai edition": {
+    "query": "al haramain amber oud gold 999 9 dubai edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:00.757076+00:00"
+  },
+  "al haramain loulou": {
+    "query": "al haramain loulou",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:02.476104+00:00"
+  },
+  "al haramain loulou noir": {
+    "query": "al haramain loulou noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:03.734655+00:00"
+  },
+  "ajmal amaze": {
+    "query": "ajmal amaze",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:05.299018+00:00"
+  },
+  "ajmal amaze her": {
+    "query": "ajmal amaze her",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:06.580197+00:00"
+  },
+  "ajmal evoke midnight": {
+    "query": "ajmal evoke midnight",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:08.298793+00:00"
+  },
+  "ajmal evoke midnight edition": {
+    "query": "ajmal evoke midnight edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:09.151828+00:00"
+  },
+  "ajmal aurum": {
+    "query": "ajmal aurum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:10.910219+00:00"
+  },
+  "ajmal aurum winter": {
+    "query": "ajmal aurum winter",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:12.166577+00:00"
+  },
+  "ajmal amber wood": {
+    "query": "ajmal amber wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 38
+    },
+    "avg": 9.5,
+    "max": 38,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:13.855453+00:00"
+  },
+  "ajmal amber wood noir": {
+    "query": "ajmal amber wood noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:15.025900+00:00"
+  },
+  "ajmal elegancia": {
+    "query": "ajmal elegancia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:16.689492+00:00"
+  },
+  "ajmal shadow": {
+    "query": "ajmal shadow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:17.902387+00:00"
+  },
+  "ajmal shadow noir": {
+    "query": "ajmal shadow noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:19.131903+00:00"
+  },
+  "ajmal electron": {
+    "query": "ajmal electron",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:20.915030+00:00"
+  },
+  "ajmal centuria": {
+    "query": "ajmal centuria",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:22.093514+00:00"
+  },
+  "al wataniah al wesal": {
+    "query": "al wataniah al wesal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:23.395952+00:00"
+  },
+  "al wataniah al wesal elixir": {
+    "query": "al wataniah al wesal elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:24.565666+00:00"
+  },
+  "al haramain xplore": {
+    "query": "al haramain xplore",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:25.843659+00:00"
+  },
+  "al haramain xplore ruby": {
+    "query": "al haramain xplore ruby",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:26.990441+00:00"
+  },
+  "ajmal blu": {
+    "query": "ajmal blu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:28.207838+00:00"
+  },
+  "ajmal blu femme": {
+    "query": "ajmal blu femme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:29.537019+00:00"
+  },
+  "afnan mystique bouquet": {
+    "query": "afnan mystique bouquet",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T12:39:30.800571+00:00"
+  },
+  "afnan highness vi": {
+    "query": "afnan highness vi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:32.368417+00:00"
+  },
+  "afnan highness vi blue": {
+    "query": "afnan highness vi blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:33.260255+00:00"
+  },
+  "afnan adwaa al sharq": {
+    "query": "afnan adwaa al sharq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:34.410856+00:00"
+  },
+  "afnan sandal abiyad": {
+    "query": "afnan sandal abiyad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:35.554890+00:00"
+  },
+  "afnan fakhr": {
+    "query": "afnan fakhr",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:37.239220+00:00"
+  },
+  "afnan silver musk": {
+    "query": "afnan silver musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:38.283839+00:00"
+  },
+  "afnan pink rose room fabric mist": {
+    "query": "afnan pink rose room fabric mist",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:39.528093+00:00"
+  },
+  "afnan heritage collection soft & floral": {
+    "query": "afnan heritage collection soft & floral",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:40.679769+00:00"
+  },
+  "afnan heritage collection rose d' arabia air freshener": {
+    "query": "afnan heritage collection rose d' arabia air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:41.972137+00:00"
+  },
+  "afnan naseej al kiswah": {
+    "query": "afnan naseej al kiswah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:43.532253+00:00"
+  },
+  "afnan palace of dreams heritage": {
+    "query": "afnan palace of dreams heritage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:44.580516+00:00"
+  },
+  "afnan palace of dreams heritage collection": {
+    "query": "afnan palace of dreams heritage collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:45.957811+00:00"
+  },
+  "ajmal evoke": {
+    "query": "ajmal evoke",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:46.999951+00:00"
+  },
+  "ajmal evoke him": {
+    "query": "ajmal evoke him",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:48.226443+00:00"
+  },
+  "ajmal incense wood": {
+    "query": "ajmal incense wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:51.103549+00:00"
+  },
+  "ajmal kuro": {
+    "query": "ajmal kuro",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:52.252373+00:00"
+  },
+  "ajmal amber leather": {
+    "query": "ajmal amber leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:53.503422+00:00"
+  },
+  "ajmal ruby blossom": {
+    "query": "ajmal ruby blossom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:54.691571+00:00"
+  },
+  "ajmal entice": {
+    "query": "ajmal entice",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:55.895433+00:00"
+  },
+  "ajmal patchouli wood": {
+    "query": "ajmal patchouli wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:57.057475+00:00"
+  },
+  "ajmal amber santal hair": {
+    "query": "ajmal amber santal hair",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:58.335090+00:00"
+  },
+  "ajmal shiro": {
+    "query": "ajmal shiro",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:39:59.454779+00:00"
+  },
+  "ajmal cerise": {
+    "query": "ajmal cerise",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:00.712930+00:00"
+  },
+  "ajmal ruh": {
+    "query": "ajmal ruh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:01.886132+00:00"
+  },
+  "ajmal naya": {
+    "query": "ajmal naya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:03.168309+00:00"
+  },
+  "ajmal qadar": {
+    "query": "ajmal qadar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:04.274379+00:00"
+  },
+  "ajmal royale exclusif arabian": {
+    "query": "ajmal royale exclusif arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:05.571896+00:00"
+  },
+  "ajmal entice allura": {
+    "query": "ajmal entice allura",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:06.726321+00:00"
+  },
+  "ajmal cashmere musc": {
+    "query": "ajmal cashmere musc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:08.249451+00:00"
+  },
+  "ajmal noor al haya": {
+    "query": "ajmal noor al haya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:09.436451+00:00"
+  },
+  "ajmal al huruf adyan prestige": {
+    "query": "ajmal al huruf adyan prestige",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:10.563946+00:00"
+  },
+  "ajmal rehla by adyan anfar": {
+    "query": "ajmal rehla by adyan anfar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:12.018961+00:00"
+  },
+  "ajmal adyan jeehan by anfar - original": {
+    "query": "ajmal adyan jeehan by anfar - original",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:13.091328+00:00"
+  },
+  "ajmal dame": {
+    "query": "ajmal dame",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:14.252341+00:00"
+  },
+  "ajmal violet musc hairspray": {
+    "query": "ajmal violet musc hairspray",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:15.519426+00:00"
+  },
+  "ajmal norah bella arabian": {
+    "query": "ajmal norah bella arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:17.041335+00:00"
+  },
+  "ajmal fleur enigmatique": {
+    "query": "ajmal fleur enigmatique",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:18.066643+00:00"
+  },
+  "ajmal sarah by adyan anfar since 1950 made in united arab emirates": {
+    "query": "ajmal sarah by adyan anfar since 1950 made in united arab emirates",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:19.516379+00:00"
+  },
+  "ajmal hyba exquisite citrus floral scent orchid sandalwood vanilla base notes romantic alluring": {
+    "query": "ajmal hyba exquisite citrus floral scent orchid sandalwood vanilla base notes romantic alluring",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:21.103470+00:00"
+  },
+  "ajmal al muarikh oriental long-lasting": {
+    "query": "ajmal al muarikh oriental long-lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:22.476870+00:00"
+  },
+  "ajmal emira romantic floral rose amber patchouli musk": {
+    "query": "ajmal emira romantic floral rose amber patchouli musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:23.593821+00:00"
+  },
+  "ajmal al fares adyan prestige oriental": {
+    "query": "ajmal al fares adyan prestige oriental",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:25.265666+00:00"
+  },
+  "ajmal fleur de reve": {
+    "query": "ajmal fleur de reve",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:26.641805+00:00"
+  },
+  "ajmal aristocrat coastal": {
+    "query": "ajmal aristocrat coastal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:27.703505+00:00"
+  },
+  "ajmal amir two": {
+    "query": "ajmal amir two",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:28.877786+00:00"
+  },
+  "ajmal amir one": {
+    "query": "ajmal amir one",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:30.062770+00:00"
+  },
+  "ajmal aristocrat rose by ajmal": {
+    "query": "ajmal aristocrat rose by ajmal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:31.390119+00:00"
+  },
+  "ajmal exquisite essence": {
+    "query": "ajmal exquisite essence",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:32.958156+00:00"
+  },
+  "ajmal viola 's - spicy fresh fruity floral woody powdery": {
+    "query": "ajmal viola 's - spicy fresh fruity floral woody powdery",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:34.093799+00:00"
+  },
+  "ajmal qasida dahabia": {
+    "query": "ajmal qasida dahabia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:35.223295+00:00"
+  },
+  "ajmal wisal layl": {
+    "query": "ajmal wisal layl",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:40.890673+00:00"
+  },
+  "ajmal aristocrat": {
+    "query": "ajmal aristocrat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 2
+    },
+    "avg": 0.5,
+    "max": 2,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:41.999832+00:00"
+  },
+  "ajmal aristocrat her": {
+    "query": "ajmal aristocrat her",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:43.267683+00:00"
+  },
+  "ajmal amber musc": {
+    "query": "ajmal amber musc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:44.856823+00:00"
+  },
+  "ajmal rose wood": {
+    "query": "ajmal rose wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:46.089517+00:00"
+  },
+  "ajmal shine": {
+    "query": "ajmal shine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:47.308859+00:00"
+  },
+  "ajmal violet musc": {
+    "query": "ajmal violet musc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:48.521182+00:00"
+  },
+  "ajmal majestic melange": {
+    "query": "ajmal majestic melange",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:49.831356+00:00"
+  },
+  "ajmal eternal 51": {
+    "query": "ajmal eternal 51",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:50.940362+00:00"
+  },
+  "ajmal eternal 23": {
+    "query": "ajmal eternal 23",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:52.195011+00:00"
+  },
+  "ajmal the untold stories chapter 3": {
+    "query": "ajmal the untold stories chapter 3",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:53.378201+00:00"
+  },
+  "ajmal hatkora wood": {
+    "query": "ajmal hatkora wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:54.580319+00:00"
+  },
+  "ajmal evoke red her - floral woody": {
+    "query": "ajmal evoke red her - floral woody",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:56.169992+00:00"
+  },
+  "ajmal noble notes": {
+    "query": "ajmal noble notes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:57.254558+00:00"
+  },
+  "ajmal chemystery": {
+    "query": "ajmal chemystery",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T12:40:58.422463+00:00"
+  }
+}
