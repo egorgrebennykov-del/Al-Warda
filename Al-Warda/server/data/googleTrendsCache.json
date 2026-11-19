@@ -50633,5 +50633,720 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T17:38:40.620542+00:00"
+  },
+  "ibreez by rasasi": {
+    "query": "ibreez by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:41.934669+00:00"
+  },
+  "rasasi sotoor seen": {
+    "query": "rasasi sotoor seen",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:43.337572+00:00"
+  },
+  "rasasi al boruzz lamaat musk tabriz": {
+    "query": "rasasi al boruzz lamaat musk tabriz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:45.177762+00:00"
+  },
+  "kun mukthalifan by rasasi": {
+    "query": "kun mukthalifan by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:46.945713+00:00"
+  },
+  "hatem by rasasi": {
+    "query": "hatem by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:48.152161+00:00"
+  },
+  "rasasi sar lamaan oud ombre": {
+    "query": "rasasi sar lamaan oud ombre",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:49.380484+00:00"
+  },
+  "radi by rasasi": {
+    "query": "radi by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:50.795314+00:00"
+  },
+  "enteash by rasasi": {
+    "query": "enteash by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:52.513619+00:00"
+  },
+  "rasasi qasamat rasana": {
+    "query": "rasasi qasamat rasana",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:53.591717+00:00"
+  },
+  "rasasi emotion": {
+    "query": "rasasi emotion",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:54.863978+00:00"
+  },
+  "hawas by rasasi": {
+    "query": "hawas by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:56.380862+00:00"
+  },
+  "rasasi atlantis": {
+    "query": "rasasi atlantis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:57.945467+00:00"
+  },
+  "rasasi blue": {
+    "query": "rasasi blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:45:59.049897+00:00"
+  },
+  "rasasi blue lady": {
+    "query": "rasasi blue lady",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:00.317621+00:00"
+  },
+  "rasasi sotoor raa'": {
+    "query": "rasasi sotoor raa'",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:01.955263+00:00"
+  },
+  "rasasi somow al oud": {
+    "query": "rasasi somow al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:03.206830+00:00"
+  },
+  "rasasi somow al oud rose": {
+    "query": "rasasi somow al oud rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:04.490622+00:00"
+  },
+  "rasasi nafaeis al shaghaf": {
+    "query": "rasasi nafaeis al shaghaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:05.660757+00:00"
+  },
+  "rasasi nafaeis al shaghaf maraya femme": {
+    "query": "rasasi nafaeis al shaghaf maraya femme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:06.949113+00:00"
+  },
+  "rasasi nafaeis al shaghaf maraya": {
+    "query": "rasasi nafaeis al shaghaf maraya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:08.117531+00:00"
+  },
+  "rasasi boruzz jazeebiyat musk tabriz": {
+    "query": "rasasi boruzz jazeebiyat musk tabriz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:09.836238+00:00"
+  },
+  "rasasi ambar silk": {
+    "query": "rasasi ambar silk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:11.028178+00:00"
+  },
+  "rasasi eshq all over": {
+    "query": "rasasi eshq all over",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:12.237479+00:00"
+  },
+  "la yuqawam ambergris showers by rasasi": {
+    "query": "la yuqawam ambergris showers by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:13.483866+00:00"
+  },
+  "rumz al rasasi 9325 chypre": {
+    "query": "rumz al rasasi 9325 chypre",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:14.705418+00:00"
+  },
+  "rasasi hayan": {
+    "query": "rasasi hayan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:15.809865+00:00"
+  },
+  "rasasi somow al rasasi maali": {
+    "query": "rasasi somow al rasasi maali",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:17.219306+00:00"
+  },
+  "rasasi nebras al ishq wajah": {
+    "query": "rasasi nebras al ishq wajah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:18.311929+00:00"
+  },
+  "rasasi dorar tawleefa": {
+    "query": "rasasi dorar tawleefa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:19.522372+00:00"
+  },
+  "rasasi dorar tawleefa collection": {
+    "query": "rasasi dorar tawleefa collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:20.694322+00:00"
+  },
+  "rasasi wojdan": {
+    "query": "rasasi wojdan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:22.246464+00:00"
+  },
+  "rasasi gezellig": {
+    "query": "rasasi gezellig",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:23.493141+00:00"
+  },
+  "rasasi al galiya": {
+    "query": "rasasi al galiya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:24.697152+00:00"
+  },
+  "rasasi oud al ilhaam": {
+    "query": "rasasi oud al ilhaam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:25.911937+00:00"
+  },
+  "rasasi oud al omaraa": {
+    "query": "rasasi oud al omaraa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:27.116765+00:00"
+  },
+  "rasasi oud rouge": {
+    "query": "rasasi oud rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:28.269489+00:00"
+  },
+  "rasasi oud rouge red": {
+    "query": "rasasi oud rouge red",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:29.507885+00:00"
+  },
+  "rasasi kallos": {
+    "query": "rasasi kallos",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:30.701090+00:00"
+  },
+  "rasasi pashmina": {
+    "query": "rasasi pashmina",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:31.873408+00:00"
+  },
+  "rasasi maraqi cool sensation": {
+    "query": "rasasi maraqi cool sensation",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:33.132992+00:00"
+  },
+  "junoon collection scent odyssey - of 3 satin velvet leather by rasasi": {
+    "query": "junoon collection scent odyssey - of 3 satin velvet leather by rasasi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:34.366300+00:00"
+  },
+  "rasasi proud to be": {
+    "query": "rasasi proud to be",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:35.867477+00:00"
+  },
+  "rasasi rafan": {
+    "query": "rasasi rafan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:36.973503+00:00"
+  },
+  "rasasi scent odyssey la yuqawam": {
+    "query": "rasasi scent odyssey la yuqawam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:39.881360+00:00"
+  },
+  "rasasi scent odyssey la yuqawam 's": {
+    "query": "rasasi scent odyssey la yuqawam 's",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:41.524325+00:00"
+  },
+  "rasasi royale": {
+    "query": "rasasi royale",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:43.587282+00:00"
+  },
+  "rasasi royale blue": {
+    "query": "rasasi royale blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:48.668953+00:00"
+  },
+  "rasasi royale - charismatic musk lavender": {
+    "query": "rasasi royale - charismatic musk lavender",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:49.951148+00:00"
+  },
+  "rasasi extreme": {
+    "query": "rasasi extreme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:51.685992+00:00"
+  },
+  "rasasi habban": {
+    "query": "rasasi habban",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:53.151262+00:00"
+  },
+  "rasasi blooming beauty": {
+    "query": "rasasi blooming beauty",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:54.705400+00:00"
+  },
+  "rasasi princess": {
+    "query": "rasasi princess",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:55.764834+00:00"
+  },
+  "rasasi princess bleu": {
+    "query": "rasasi princess bleu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:46:57.238074+00:00"
+  },
+  "rasasi your manner is your beauty": {
+    "query": "rasasi your manner is your beauty",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:47:02.171519+00:00"
+  },
+  "rasasi achieve": {
+    "query": "rasasi achieve",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:47:07.003133+00:00"
   }
 }
