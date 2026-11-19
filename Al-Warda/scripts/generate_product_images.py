@@ -745,12 +745,17 @@ def fetch_stock_rows(session, supabase_url):
     start = 0
     endpoint = rest_stocks_url(supabase_url)
     while True:
-        response = session.get(
-            endpoint,
-            params={"select": "id,name,brand,image,info", "order": "id.asc"},
-            headers={"Range-Unit": "items", "Range": f"{start}-{start + PAGE_SIZE - 1}"},
-            timeout=30,
-        )
+        response = None
+        for attempt in range(4):
+            response = session.get(
+                endpoint,
+                params={"select": "id,name,brand,image,info", "order": "id.asc"},
+                headers={"Range-Unit": "items", "Range": f"{start}-{start + PAGE_SIZE - 1}"},
+                timeout=30,
+            )
+            if response.ok or response.status_code not in (429, 500, 502, 503, 504) or attempt == 3:
+                break
+            time.sleep(2 * (attempt + 1))
         if not response.ok:
             raise RuntimeError(
                 f"Could not read Supabase stocks from {endpoint} ({response.status_code}): "
