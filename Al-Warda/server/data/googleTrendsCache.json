@@ -64062,5 +64062,18 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T19:23:26.684507+00:00"
+  },
+  "al majed oud aromatics elixir": {
+    "query": "al majed oud aromatics elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T19:27:21.577278+00:00"
   }
 }
