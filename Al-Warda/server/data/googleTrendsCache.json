@@ -26648,5 +26648,759 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T15:37:45.438352+00:00"
+  },
+  "armaf shk i": {
+    "query": "armaf shk i",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:13.445186+00:00"
+  },
+  "armaf shk iv": {
+    "query": "armaf shk iv",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:15.163814+00:00"
+  },
+  "armaf shk iii": {
+    "query": "armaf shk iii",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:16.012352+00:00"
+  },
+  "armaf parfaite fix skin tint light makeup 05 sand": {
+    "query": "armaf parfaite fix skin tint light makeup 05 sand",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:19.028698+00:00"
+  },
+  "armaf beaute parfaite fix skin tint natural": {
+    "query": "armaf beaute parfaite fix skin tint natural",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:20.566777+00:00"
+  },
+  "armaf parfaite fix compact powder 06 tan": {
+    "query": "armaf parfaite fix compact powder 06 tan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:21.997629+00:00"
+  },
+  "atyab al marshoud magnolia body hair": {
+    "query": "atyab al marshoud magnolia body hair",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:33.860438+00:00"
+  },
+  "atyab al marshoud tonka body hair": {
+    "query": "atyab al marshoud tonka body hair",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:44.402147+00:00"
+  },
+  "marshoud black atyab al marshoud perfumes": {
+    "query": "marshoud black atyab al marshoud perfumes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:45.901428+00:00"
+  },
+  "atyab al marshoud shohra": {
+    "query": "atyab al marshoud shohra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:52.413390+00:00"
+  },
+  "atyab al marshoud shohra pink": {
+    "query": "atyab al marshoud shohra pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:53.703660+00:00"
+  },
+  "atyab al marshoud shohra blue": {
+    "query": "atyab al marshoud shohra blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:54.869465+00:00"
+  },
+  "atyab al marshoud lara": {
+    "query": "atyab al marshoud lara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:56.311332+00:00"
+  },
+  "atyab al marshoud hajr al akhdar": {
+    "query": "atyab al marshoud hajr al akhdar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:57.578292+00:00"
+  },
+  "atyab al marshoud amaya": {
+    "query": "atyab al marshoud amaya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:40:58.828287+00:00"
+  },
+  "atyab al marshoud amaya blue": {
+    "query": "atyab al marshoud amaya blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:00.070068+00:00"
+  },
+  "atyab al marshoud misk al lail": {
+    "query": "atyab al marshoud misk al lail",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:01.528523+00:00"
+  },
+  "atyab al marshoud maidan maliki brown": {
+    "query": "atyab al marshoud maidan maliki brown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:03.136532+00:00"
+  },
+  "atyab al marshoud atyaab hamdan": {
+    "query": "atyab al marshoud atyaab hamdan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:04.438759+00:00"
+  },
+  "azha perfumes agarwood amber": {
+    "query": "azha perfumes agarwood amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:05.536347+00:00"
+  },
+  "azha perfumes lubab": {
+    "query": "azha perfumes lubab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:06.763482+00:00"
+  },
+  "butterfly nebula collection ocean breeze by azha": {
+    "query": "butterfly nebula collection ocean breeze by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:08.563568+00:00"
+  },
+  "azha ocean breeze": {
+    "query": "azha ocean breeze",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:09.797708+00:00"
+  },
+  "butterfly nebula collection mountaineer by azha": {
+    "query": "butterfly nebula collection mountaineer by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:11.234700+00:00"
+  },
+  "azha lubab": {
+    "query": "azha lubab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:13.359451+00:00"
+  },
+  "emerald nebula collection arabian lady by azha": {
+    "query": "emerald nebula collection arabian lady by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:14.703474+00:00"
+  },
+  "azha eternal nights": {
+    "query": "azha eternal nights",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:15.856759+00:00"
+  },
+  "sun collection al dahr by azha": {
+    "query": "sun collection al dahr by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:17.061864+00:00"
+  },
+  "azha sugary dreams": {
+    "query": "azha sugary dreams",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:18.221214+00:00"
+  },
+  "azha gorgeous gardenia": {
+    "query": "azha gorgeous gardenia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:19.483409+00:00"
+  },
+  "azha nura": {
+    "query": "azha nura",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:20.603559+00:00"
+  },
+  "azha s taj al oud": {
+    "query": "azha s taj al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:21.892949+00:00"
+  },
+  "azha 's taj al oud": {
+    "query": "azha 's taj al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:23.035781+00:00"
+  },
+  "azha woody drop": {
+    "query": "azha woody drop",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:24.236210+00:00"
+  },
+  "ishq by azha": {
+    "query": "ishq by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:25.455133+00:00"
+  },
+  "azha explosion": {
+    "query": "azha explosion",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:26.626383+00:00"
+  },
+  "azha qamar": {
+    "query": "azha qamar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:27.829092+00:00"
+  },
+  "azha carambola": {
+    "query": "azha carambola",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:29.000464+00:00"
+  },
+  "azha ashes of moon": {
+    "query": "azha ashes of moon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:30.281726+00:00"
+  },
+  "azha amal": {
+    "query": "azha amal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:31.427632+00:00"
+  },
+  "azha al nayyir": {
+    "query": "azha al nayyir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:32.656456+00:00"
+  },
+  "mishmish al oud by azha": {
+    "query": "mishmish al oud by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:33.849195+00:00"
+  },
+  "azha qalb": {
+    "query": "azha qalb",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:35.060785+00:00"
+  },
+  "emerald nebula collection renad by azha": {
+    "query": "emerald nebula collection renad by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:36.330694+00:00"
+  },
+  "azha perfumes cigar oud": {
+    "query": "azha perfumes cigar oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:37.609607+00:00"
+  },
+  "intisar by azha": {
+    "query": "intisar by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:38.801901+00:00"
+  },
+  "azha amber eclipse": {
+    "query": "azha amber eclipse",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:40.028729+00:00"
+  },
+  "azha stunning oud": {
+    "query": "azha stunning oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:41.625051+00:00"
+  },
+  "azha perfumes mumtaz": {
+    "query": "azha perfumes mumtaz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:42.762509+00:00"
+  },
+  "emerald nebula collection ramshah by azha": {
+    "query": "emerald nebula collection ramshah by azha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:44.483746+00:00"
+  },
+  "azha mumtaz": {
+    "query": "azha mumtaz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:46.308133+00:00"
+  },
+  "azha nahr": {
+    "query": "azha nahr",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:47.391683+00:00"
+  },
+  "azha lulu": {
+    "query": "azha lulu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:48.595606+00:00"
+  },
+  "azha sarab": {
+    "query": "azha sarab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:49.827919+00:00"
+  },
+  "azha zahra": {
+    "query": "azha zahra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:51.002400+00:00"
+  },
+  "azha vetiver pepper": {
+    "query": "azha vetiver pepper",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:52.239909+00:00"
+  },
+  "azha al nujum": {
+    "query": "azha al nujum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:41:53.916500+00:00"
+  },
+  "azha al oud al aswad": {
+    "query": "azha al oud al aswad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T15:42:04.791467+00:00"
   }
 }
