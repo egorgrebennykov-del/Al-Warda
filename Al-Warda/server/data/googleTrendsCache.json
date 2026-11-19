@@ -38205,5 +38205,941 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:36:16.429677+00:00"
+  },
+  "hamidi asal - long-lasting based": {
+    "query": "hamidi asal - long-lasting based",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:41.447559+00:00"
+  },
+  "hamidi tharwa hamidi": {
+    "query": "hamidi tharwa hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:43.124770+00:00"
+  },
+  "hamidi nujood hamidi": {
+    "query": "hamidi nujood hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:45.054761+00:00"
+  },
+  "jenny glow neroli": {
+    "query": "jenny glow neroli",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:55.846192+00:00"
+  },
+  "jenny glow gaby": {
+    "query": "jenny glow gaby",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:57.700634+00:00"
+  },
+  "pretty little notes by jenny glow": {
+    "query": "pretty little notes by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:38:58.908602+00:00"
+  },
+  "jenny glow love": {
+    "query": "jenny glow love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:00.068487+00:00"
+  },
+  "c by jenny glow noir volume": {
+    "query": "c by jenny glow noir volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:02.366807+00:00"
+  },
+  "jenny glow angelica sinensis": {
+    "query": "jenny glow angelica sinensis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:03.805010+00:00"
+  },
+  "jenny glow vision": {
+    "query": "jenny glow vision",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:05.323836+00:00"
+  },
+  "jenny glow vision - volume": {
+    "query": "jenny glow vision - volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:06.469209+00:00"
+  },
+  "jenny glow scenti closet": {
+    "query": "jenny glow scenti closet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:08.749080+00:00"
+  },
+  "jennys trove by jenny glow": {
+    "query": "jennys trove by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:10.361981+00:00"
+  },
+  "jenny's trove by jenny glow": {
+    "query": "jenny's trove by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:11.728738+00:00"
+  },
+  "jenny glow charme": {
+    "query": "jenny glow charme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:13.558558+00:00"
+  },
+  "velours by jenny glow": {
+    "query": "velours by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:15.429003+00:00"
+  },
+  "jenny glow bellis collection etoille": {
+    "query": "jenny glow bellis collection etoille",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:16.748905+00:00"
+  },
+  "jenny glow bellis collection enchante": {
+    "query": "jenny glow bellis collection enchante",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:18.176417+00:00"
+  },
+  "jenny glow bellis collection beutyello": {
+    "query": "jenny glow bellis collection beutyello",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:19.376109+00:00"
+  },
+  "jenny glow sir ai": {
+    "query": "jenny glow sir ai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:20.851272+00:00"
+  },
+  "jenny glow wild orchid": {
+    "query": "jenny glow wild orchid",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:22.537258+00:00"
+  },
+  "jenny glow aqua lily": {
+    "query": "jenny glow aqua lily",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:23.708973+00:00"
+  },
+  "jenny glow pear blossom": {
+    "query": "jenny glow pear blossom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:24.945738+00:00"
+  },
+  "jenny glow blue": {
+    "query": "jenny glow blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:26.129554+00:00"
+  },
+  "jenny glow no": {
+    "query": "jenny glow no",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:27.494357+00:00"
+  },
+  "jenny glow rizz up": {
+    "query": "jenny glow rizz up",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:32.596740+00:00"
+  },
+  "jenny glow olivia blossom": {
+    "query": "jenny glow olivia blossom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:42.724872+00:00"
+  },
+  "jenny glow grape fruits": {
+    "query": "jenny glow grape fruits",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:44.106663+00:00"
+  },
+  "jenny glow chemistry 1 volume": {
+    "query": "jenny glow chemistry 1 volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:45.402831+00:00"
+  },
+  "jenny glow starlight": {
+    "query": "jenny glow starlight",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:46.785838+00:00"
+  },
+  "jenny glow aromatic explosion": {
+    "query": "jenny glow aromatic explosion",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:48.019830+00:00"
+  },
+  "jenny glow juno": {
+    "query": "jenny glow juno",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:49.224942+00:00"
+  },
+  "jenny glow billionaire": {
+    "query": "jenny glow billionaire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:50.861152+00:00"
+  },
+  "jenny glow billionaire - volume": {
+    "query": "jenny glow billionaire - volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:52.054511+00:00"
+  },
+  "jenny glow final touch": {
+    "query": "jenny glow final touch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:55.201125+00:00"
+  },
+  "jenny glow savage": {
+    "query": "jenny glow savage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:57.024133+00:00"
+  },
+  "jenny glow savage volume": {
+    "query": "jenny glow savage volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:39:58.354369+00:00"
+  },
+  "jenny glow velvet whisper": {
+    "query": "jenny glow velvet whisper",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:00.251933+00:00"
+  },
+  "jenny glow oomph": {
+    "query": "jenny glow oomph",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:01.904619+00:00"
+  },
+  "jenny glow mystic": {
+    "query": "jenny glow mystic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:03.314184+00:00"
+  },
+  "jenny glow mystic veil": {
+    "query": "jenny glow mystic veil",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:04.838386+00:00"
+  },
+  "jenny glow crystal oudyssey": {
+    "query": "jenny glow crystal oudyssey",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:07.150165+00:00"
+  },
+  "jenny glow amber": {
+    "query": "jenny glow amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:08.365567+00:00"
+  },
+  "jenny glow secret sugarbean": {
+    "query": "jenny glow secret sugarbean",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:09.606517+00:00"
+  },
+  "jenny glow pov": {
+    "query": "jenny glow pov",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:10.968469+00:00"
+  },
+  "jenny glow orchid noir volume": {
+    "query": "jenny glow orchid noir volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:12.190238+00:00"
+  },
+  "jenny glow uisce": {
+    "query": "jenny glow uisce",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:14.660568+00:00"
+  },
+  "jenny glow the shoe": {
+    "query": "jenny glow the shoe",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:15.832751+00:00"
+  },
+  "jenny glow basil": {
+    "query": "jenny glow basil",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:17.131841+00:00"
+  },
+  "jenny glow belle": {
+    "query": "jenny glow belle",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:18.486532+00:00"
+  },
+  "jenny glow origins": {
+    "query": "jenny glow origins",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:20.342295+00:00"
+  },
+  "jenny glow olympia": {
+    "query": "jenny glow olympia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:22.236365+00:00"
+  },
+  "jenny glow olympia volume": {
+    "query": "jenny glow olympia volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:23.445047+00:00"
+  },
+  "jenny glow reed diffuser lime basil": {
+    "query": "jenny glow reed diffuser lime basil",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:25.759991+00:00"
+  },
+  "jenny glow reed diffuser wood sage": {
+    "query": "jenny glow reed diffuser wood sage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:27.640458+00:00"
+  },
+  "jenny glow reed diffuser peony": {
+    "query": "jenny glow reed diffuser peony",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:29.691799+00:00"
+  },
+  "jenny glow reed diffuser pomegranate": {
+    "query": "jenny glow reed diffuser pomegranate",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:31.529120+00:00"
+  },
+  "jenny glow reed diffuser freesia pear": {
+    "query": "jenny glow reed diffuser freesia pear",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:33.210447+00:00"
+  },
+  "just jack s version x": {
+    "query": "just jack s version x",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:34.921465+00:00"
+  },
+  "just jack classic volume": {
+    "query": "just jack classic volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:37.755735+00:00"
+  },
+  "just jack mystery": {
+    "query": "just jack mystery",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:39.490357+00:00"
+  },
+  "just jack vintage volume": {
+    "query": "just jack vintage volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:41.758152+00:00"
+  },
+  "just jack niveau volume": {
+    "query": "just jack niveau volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:42.964659+00:00"
+  },
+  "just jack smoking": {
+    "query": "just jack smoking",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:44.923537+00:00"
+  },
+  "just jack smoking black": {
+    "query": "just jack smoking black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:45.770985+00:00"
+  },
+  "just jack scarlet jas": {
+    "query": "just jack scarlet jas",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:48.349897+00:00"
+  },
+  "just jack santal bloom": {
+    "query": "just jack santal bloom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:49.654705+00:00"
+  },
+  "just jack just oud": {
+    "query": "just jack just oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:51.980157+00:00"
+  },
+  "just jack oud oak": {
+    "query": "just jack oud oak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:53.726426+00:00"
+  },
+  "just jack wild orchid": {
+    "query": "just jack wild orchid",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:55.840476+00:00"
+  },
+  "just jack homme": {
+    "query": "just jack homme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:57.503718+00:00"
+  },
+  "just jack homme noir": {
+    "query": "just jack homme noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:40:58.767870+00:00"
   }
 }
