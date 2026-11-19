@@ -96,11 +96,17 @@ def clean_perfume_name_for_trends(name, brand=""):
     text = str(name or "").strip()
     if not text:
         return ""
+    # Drop long marketing subtitles after ' - ' when total string is long
+    if len(text) > 65 and " - " in text:
+        head = text.split(" - ", 1)[0].strip()
+        if len(head) >= 6:
+            text = head
     # Remove volume expressions like 100ml, 100 ml, 3.4 fl.oz, 100+20ml
     text = re.sub(r"\b\d+(?:[.,]\d+)?\s*(?:ml|cl|l|g|oz|fl\.?\s*oz)\b", " ", text, flags=re.I)
     text = re.sub(r"\b\d+\s*[x×+]\s*\d+(?:[.,]\d+)?\s*(?:ml|g)?\b", " ", text, flags=re.I)
     for pat in _NOISE_PHRASES:
         text = re.sub(rf"(?<!\w){pat}(?!\w)", " ", text, flags=re.I)
+    text = re.sub(r"\b(includes|each)\b", " ", text, flags=re.I)
     text = re.sub(r"\([^)]*\)", " ", text)
     text = re.sub(r"[^\w\s'-]", " ", text)
     text = re.sub(r"\b(\d+)\s+(pm|am)\b", r"\1\2", text, flags=re.I)
@@ -116,7 +122,13 @@ def clean_perfume_name_for_trends(name, brand=""):
         if deduped and deduped[-1].lower() == w.lower():
             continue
         deduped.append(w)
-    return " ".join(deduped)
+    # Google Trends rejects overly long queries (>100 chars) with HTTP 400; cap to 6 words / 80 chars
+    deduped = deduped[:6]
+    result = " ".join(deduped)
+    while len(result) > 80 and len(deduped) > 2:
+        deduped.pop()
+        result = " ".join(deduped)
+    return result
 
 
 _FLANKER_WORDS = {
