@@ -5406,5 +5406,1344 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T13:10:08.881637+00:00"
+  },
+  "al wataniah amnia": {
+    "query": "al wataniah amnia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:36.395254+00:00"
+  },
+  "lattafa yara moi": {
+    "query": "lattafa yara moi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:37.616206+00:00"
+  },
+  "lattafa yara moi pure": {
+    "query": "lattafa yara moi pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:42.688699+00:00"
+  },
+  "lattafa afeef": {
+    "query": "lattafa afeef",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 1
+    },
+    "avg": 0.25,
+    "max": 1,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:43.967896+00:00"
+  },
+  "lattafa atheeri": {
+    "query": "lattafa atheeri",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:49.221729+00:00"
+  },
+  "lattafa mayar": {
+    "query": "lattafa mayar",
+    "scores": {
+      "BG": 0,
+      "RO": 1,
+      "GR": 0,
+      "HU": 12
+    },
+    "avg": 3.25,
+    "max": 12,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:50.545358+00:00"
+  },
+  "lattafa bade'e al oud amethyst": {
+    "query": "lattafa bade'e al oud amethyst",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:51.871309+00:00"
+  },
+  "lattafa pride nebras": {
+    "query": "lattafa pride nebras",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:53.043102+00:00"
+  },
+  "lattafa pride nebras elixir": {
+    "query": "lattafa pride nebras elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:54.218474+00:00"
+  },
+  "lattafa pride art of universe": {
+    "query": "lattafa pride art of universe",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:55.512525+00:00"
+  },
+  "armaf odyssey mandarin sky": {
+    "query": "armaf odyssey mandarin sky",
+    "scores": {
+      "BG": 1,
+      "RO": 10,
+      "GR": 0,
+      "HU": 1
+    },
+    "avg": 3.0,
+    "max": 10,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:56.601002+00:00"
+  },
+  "armaf odyssey mandarin sky elixir": {
+    "query": "armaf odyssey mandarin sky elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:57.822337+00:00"
+  },
+  "armaf club de nuit": {
+    "query": "armaf club de nuit",
+    "scores": {
+      "BG": 45,
+      "RO": 32,
+      "GR": 18,
+      "HU": 33
+    },
+    "avg": 32.0,
+    "max": 45,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:11:59.808191+00:00"
+  },
+  "armaf club de nuit man": {
+    "query": "armaf club de nuit man",
+    "scores": {
+      "BG": 72,
+      "RO": 63,
+      "GR": 19,
+      "HU": 51
+    },
+    "avg": 51.25,
+    "max": 72,
+    "passed": true,
+    "checkedAt": "2026-11-19T13:12:00.985498+00:00"
+  },
+  "armaf club de nuit urban": {
+    "query": "armaf club de nuit urban",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:08.547873+00:00"
+  },
+  "armaf club de nuit urban man": {
+    "query": "armaf club de nuit urban man",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:09.781777+00:00"
+  },
+  "armaf yum yum": {
+    "query": "armaf yum yum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:11.342675+00:00"
+  },
+  "armaf odyssey limoni": {
+    "query": "armaf odyssey limoni",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:12.584523+00:00"
+  },
+  "armaf odyssey limoni fresh edition": {
+    "query": "armaf odyssey limoni fresh edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:13.820558+00:00"
+  },
+  "armaf odyssey mega": {
+    "query": "armaf odyssey mega",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 5
+    },
+    "avg": 1.25,
+    "max": 5,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:15.252062+00:00"
+  },
+  "armaf odyssey mega limited edition": {
+    "query": "armaf odyssey mega limited edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:16.467405+00:00"
+  },
+  "armaf club de nuit maleka": {
+    "query": "armaf club de nuit maleka",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:17.825716+00:00"
+  },
+  "armaf odyssey": {
+    "query": "armaf odyssey",
+    "scores": {
+      "BG": 25,
+      "RO": 26,
+      "GR": 8,
+      "HU": 35
+    },
+    "avg": 23.5,
+    "max": 35,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:18.971862+00:00"
+  },
+  "armaf odyssey homme": {
+    "query": "armaf odyssey homme",
+    "scores": {
+      "BG": 0,
+      "RO": 4,
+      "GR": 0,
+      "HU": 37
+    },
+    "avg": 10.25,
+    "max": 37,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:20.119541+00:00"
+  },
+  "armaf club de nuit iconic": {
+    "query": "armaf club de nuit iconic",
+    "scores": {
+      "BG": 0,
+      "RO": 45,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 11.25,
+    "max": 45,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:22.532432+00:00"
+  },
+  "armaf odyssey candee special": {
+    "query": "armaf odyssey candee special",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:23.700770+00:00"
+  },
+  "armaf odyssey candee special edition": {
+    "query": "armaf odyssey candee special edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:25.138795+00:00"
+  },
+  "armaf odyssey toffee coffee": {
+    "query": "armaf odyssey toffee coffee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:26.419628+00:00"
+  },
+  "armaf club de nuit bling": {
+    "query": "armaf club de nuit bling",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:27.537563+00:00"
+  },
+  "armaf odyssey dubai chocolat gourmand": {
+    "query": "armaf odyssey dubai chocolat gourmand",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:28.774823+00:00"
+  },
+  "armaf odyssey dubai chocolat gourmand edition": {
+    "query": "armaf odyssey dubai chocolat gourmand edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:29.960545+00:00"
+  },
+  "armaf odyssey spectra rainbow": {
+    "query": "armaf odyssey spectra rainbow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:31.218179+00:00"
+  },
+  "armaf odyssey spectra rainbow edition": {
+    "query": "armaf odyssey spectra rainbow edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:32.439204+00:00"
+  },
+  "armaf odyssey marshmallow gourmand": {
+    "query": "armaf odyssey marshmallow gourmand",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:33.913592+00:00"
+  },
+  "armaf odyssey marshmallow gourmand edition": {
+    "query": "armaf odyssey marshmallow gourmand edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:34.999286+00:00"
+  },
+  "armaf delights island bliss": {
+    "query": "armaf delights island bliss",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:36.295939+00:00"
+  },
+  "armaf odyssey ba ha mas": {
+    "query": "armaf odyssey ba ha mas",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:37.804333+00:00"
+  },
+  "armaf club de nuit precieux i": {
+    "query": "armaf club de nuit precieux i",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:39.039570+00:00"
+  },
+  "armaf odyssey wild one": {
+    "query": "armaf odyssey wild one",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:40.586530+00:00"
+  },
+  "armaf odyssey wild one gold edition": {
+    "query": "armaf odyssey wild one gold edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:41.849668+00:00"
+  },
+  "armaf odyssey go mango tropical": {
+    "query": "armaf odyssey go mango tropical",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:43.549505+00:00"
+  },
+  "armaf odyssey go mango tropical edition": {
+    "query": "armaf odyssey go mango tropical edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:44.487325+00:00"
+  },
+  "armaf ombre d'or free bag": {
+    "query": "armaf ombre d'or free bag",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:45.830694+00:00"
+  },
+  "armaf odyssey aoud": {
+    "query": "armaf odyssey aoud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:47.243161+00:00"
+  },
+  "armaf club de nuit oud": {
+    "query": "armaf club de nuit oud",
+    "scores": {
+      "BG": 14,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 3.5,
+    "max": 14,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:48.734721+00:00"
+  },
+  "armaf odyssey revolution": {
+    "query": "armaf odyssey revolution",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:50.111137+00:00"
+  },
+  "armaf odyssey revolution ultra edition": {
+    "query": "armaf odyssey revolution ultra edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:51.110995+00:00"
+  },
+  "armaf delights bon bon": {
+    "query": "armaf delights bon bon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:52.517273+00:00"
+  },
+  "armaf odyssey black forest": {
+    "query": "armaf odyssey black forest",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:53.891652+00:00"
+  },
+  "armaf heritage lionheart": {
+    "query": "armaf heritage lionheart",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:55.479005+00:00"
+  },
+  "armaf club de nuit overdose": {
+    "query": "armaf club de nuit overdose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:56.997233+00:00"
+  },
+  "armaf red": {
+    "query": "armaf red",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:58.318871+00:00"
+  },
+  "armaf red velvet": {
+    "query": "armaf red velvet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:12:59.300714+00:00"
+  },
+  "armaf dubai nights umbra": {
+    "query": "armaf dubai nights umbra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:01.091519+00:00"
+  },
+  "armaf odyssey mandarin sky vintage": {
+    "query": "armaf odyssey mandarin sky vintage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:02.249795+00:00"
+  },
+  "armaf odyssey mandarin sky vintage edition": {
+    "query": "armaf odyssey mandarin sky vintage edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:04.016604+00:00"
+  },
+  "armaf scentasy matcha magix": {
+    "query": "armaf scentasy matcha magix",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:05.384124+00:00"
+  },
+  "armaf ventana": {
+    "query": "armaf ventana",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:06.623406+00:00"
+  },
+  "armaf odyssey tyrant special": {
+    "query": "armaf odyssey tyrant special",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:08.055848+00:00"
+  },
+  "armaf odyssey tyrant special edition": {
+    "query": "armaf odyssey tyrant special edition",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:09.139759+00:00"
+  },
+  "armaf miss grandeur": {
+    "query": "armaf miss grandeur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:12.200627+00:00"
+  },
+  "armaf club de nuit lionheart": {
+    "query": "armaf club de nuit lionheart",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:13.451941+00:00"
+  },
+  "armaf club de nuit lionheart man": {
+    "query": "armaf club de nuit lionheart man",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:14.476115+00:00"
+  },
+  "armaf club de nuit white imperiale": {
+    "query": "armaf club de nuit white imperiale",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:15.804666+00:00"
+  },
+  "armaf ego exotic": {
+    "query": "armaf ego exotic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:17.037732+00:00"
+  },
+  "armaf odyssey soda": {
+    "query": "armaf odyssey soda",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:18.408561+00:00"
+  },
+  "armaf cotton candy": {
+    "query": "armaf cotton candy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:19.395854+00:00"
+  },
+  "al haramain amber oud aqua dubai": {
+    "query": "al haramain amber oud aqua dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:20.665730+00:00"
+  },
+  "al haramain amber oud dubai": {
+    "query": "al haramain amber oud dubai",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 37,
+      "HU": 0
+    },
+    "avg": 9.25,
+    "max": 37,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:21.984167+00:00"
+  },
+  "al haramain amber oud dubai night": {
+    "query": "al haramain amber oud dubai night",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:23.196190+00:00"
+  },
+  "al haramain signature": {
+    "query": "al haramain signature",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:24.401533+00:00"
+  },
+  "al haramain signature blue": {
+    "query": "al haramain signature blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:25.653089+00:00"
+  },
+  "al haramain belle rouge - luxurious arabian": {
+    "query": "al haramain belle rouge - luxurious arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:27.402102+00:00"
+  },
+  "al haramain noir french collection arabic - long lasting": {
+    "query": "al haramain noir french collection arabic - long lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:28.598425+00:00"
+  },
+  "al haramain detour eco": {
+    "query": "al haramain detour eco",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:29.694791+00:00"
+  },
+  "al haramain natural amber": {
+    "query": "al haramain natural amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:30.941579+00:00"
+  },
+  "al haramain portfolio euphoric roots": {
+    "query": "al haramain portfolio euphoric roots",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:32.110215+00:00"
+  },
+  "al haramain sheikh luxury": {
+    "query": "al haramain sheikh luxury",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:33.223278+00:00"
+  },
+  "al haramain story of my life": {
+    "query": "al haramain story of my life",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:34.619893+00:00"
+  },
+  "al haramain loulou joy": {
+    "query": "al haramain loulou joy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:35.887081+00:00"
+  },
+  "al haramain xplore sapphire": {
+    "query": "al haramain xplore sapphire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:37.047411+00:00"
+  },
+  "al haramain bon cherie violette": {
+    "query": "al haramain bon cherie violette",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:38.255324+00:00"
+  },
+  "al haramain loulou love": {
+    "query": "al haramain loulou love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:39.539006+00:00"
+  },
+  "al haramain black oud": {
+    "query": "al haramain black oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:40.756445+00:00"
+  },
+  "al haramain la lune": {
+    "query": "al haramain la lune",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:41.881481+00:00"
+  },
+  "al haramain la lune noir": {
+    "query": "al haramain la lune noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:43.149145+00:00"
+  },
+  "al haramain perfumes urbanist": {
+    "query": "al haramain perfumes urbanist",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:44.551580+00:00"
+  },
+  "al haramain perfumes urbanist femme": {
+    "query": "al haramain perfumes urbanist femme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:45.719520+00:00"
+  },
+  "al haramain oyuny": {
+    "query": "al haramain oyuny",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:46.820046+00:00"
+  },
+  "al haramain areej al oud": {
+    "query": "al haramain areej al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:47.989893+00:00"
+  },
+  "al haramain belle swim adult": {
+    "query": "al haramain belle swim adult",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:49.219446+00:00"
+  },
+  "ard al zaafaran yara": {
+    "query": "ard al zaafaran yara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:50.330935+00:00"
+  },
+  "ard al zaafaran riqqa": {
+    "query": "ard al zaafaran riqqa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:52.517949+00:00"
+  },
+  "ard al zaafaran meethaq": {
+    "query": "ard al zaafaran meethaq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:53.694808+00:00"
+  },
+  "ard al zaafaran qidwah": {
+    "query": "ard al zaafaran qidwah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:54.923950+00:00"
+  },
+  "ard al zaafaran forever": {
+    "query": "ard al zaafaran forever",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:56.831747+00:00"
+  },
+  "ard al zaafaran forever gold": {
+    "query": "ard al zaafaran forever gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:57.729440+00:00"
+  },
+  "ard al zaafaran manasib": {
+    "query": "ard al zaafaran manasib",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:13:59.437026+00:00"
+  },
+  "ard al zaafaran meethaq de": {
+    "query": "ard al zaafaran meethaq de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:14:00.658560+00:00"
+  },
+  "ard al zaafaran meethaq de rouge": {
+    "query": "ard al zaafaran meethaq de rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:14:02.011522+00:00"
+  },
+  "ard al zaafaran thara al oud supreme intense for": {
+    "query": "ard al zaafaran thara al oud supreme intense for",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:14:03.256284+00:00"
+  },
+  "ard al zaafaran dirham wardi": {
+    "query": "ard al zaafaran dirham wardi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:14:04.284997+00:00"
+  },
+  "ard al zaafaran alora": {
+    "query": "ard al zaafaran alora",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:14:05.784645+00:00"
   }
 }
