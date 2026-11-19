@@ -6745,5 +6745,1240 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T13:14:05.784645+00:00"
+  },
+  "ard al zaafaran dirham": {
+    "query": "ard al zaafaran dirham",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:28.701264+00:00"
+  },
+  "ard al zaafaran dirham gold": {
+    "query": "ard al zaafaran dirham gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:29.973175+00:00"
+  },
+  "ard al zaafaran teef al hub": {
+    "query": "ard al zaafaran teef al hub",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:31.836093+00:00"
+  },
+  "ard al zaafaran shams al emarat khususi": {
+    "query": "ard al zaafaran shams al emarat khususi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:32.916658+00:00"
+  },
+  "ard al zaafaran bareq mirage": {
+    "query": "ard al zaafaran bareq mirage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:34.677870+00:00"
+  },
+  "ard al zaafaran bareq": {
+    "query": "ard al zaafaran bareq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:35.688935+00:00"
+  },
+  "ard al zaafaran lil shabaab faqat": {
+    "query": "ard al zaafaran lil shabaab faqat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:36.914308+00:00"
+  },
+  "ard al zaafaran sultan al shabab": {
+    "query": "ard al zaafaran sultan al shabab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:38.138665+00:00"
+  },
+  "ard al zaafaran shahrazad": {
+    "query": "ard al zaafaran shahrazad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:39.834623+00:00"
+  },
+  "ard al zaafaran ana abiyedh": {
+    "query": "ard al zaafaran ana abiyedh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:41.358356+00:00"
+  },
+  "ard al zaafaran ahlam al khaleej": {
+    "query": "ard al zaafaran ahlam al khaleej",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:42.883283+00:00"
+  },
+  "ard al zaafaran satwa": {
+    "query": "ard al zaafaran satwa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:44.337084+00:00"
+  },
+  "ard al zaafaran oud 24 hours majestic": {
+    "query": "ard al zaafaran oud 24 hours majestic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:45.383667+00:00"
+  },
+  "ard al zaafaran oud 24 hours majestic gold": {
+    "query": "ard al zaafaran oud 24 hours majestic gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:46.647153+00:00"
+  },
+  "silk mood ard al zaafaran": {
+    "query": "silk mood ard al zaafaran",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:48.176103+00:00"
+  },
+  "ard al zaafaran safeer al hub everlasting": {
+    "query": "ard al zaafaran safeer al hub everlasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:49.315232+00:00"
+  },
+  "ard al zaafaran bab al hamra": {
+    "query": "ard al zaafaran bab al hamra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:50.641006+00:00"
+  },
+  "ard al zaafaran barez": {
+    "query": "ard al zaafaran barez",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:51.785363+00:00"
+  },
+  "ard al zaafaran majd al shabab": {
+    "query": "ard al zaafaran majd al shabab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:53.182020+00:00"
+  },
+  "ard al zaafaran safeer al ward": {
+    "query": "ard al zaafaran safeer al ward",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:54.465630+00:00"
+  },
+  "ard al zaafaran heibah": {
+    "query": "ard al zaafaran heibah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:55.625830+00:00"
+  },
+  "maison alhambra jean lowe azure": {
+    "query": "maison alhambra jean lowe azure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:57.267567+00:00"
+  },
+  "maison alhambra jean lowe vibe": {
+    "query": "maison alhambra jean lowe vibe",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:58.441158+00:00"
+  },
+  "maison alhambra jean lowe immortal": {
+    "query": "maison alhambra jean lowe immortal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:17:59.702611+00:00"
+  },
+  "maison alhambra kismet magic": {
+    "query": "maison alhambra kismet magic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:01.311381+00:00"
+  },
+  "maison alhambra kismet": {
+    "query": "maison alhambra kismet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:02.709942+00:00"
+  },
+  "maison alhambra jean lowe fraiche": {
+    "query": "maison alhambra jean lowe fraiche",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:04.266692+00:00"
+  },
+  "maison alhambra delilah blanc": {
+    "query": "maison alhambra delilah blanc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:05.824555+00:00"
+  },
+  "maison alhambra dark door": {
+    "query": "maison alhambra dark door",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:07.325650+00:00"
+  },
+  "maison alhambra dark door sport": {
+    "query": "maison alhambra dark door sport",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:08.713902+00:00"
+  },
+  "maison alhambra la charmante": {
+    "query": "maison alhambra la charmante",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:10.194071+00:00"
+  },
+  "maison alhambra jean lowe maitre": {
+    "query": "maison alhambra jean lowe maitre",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:11.932757+00:00"
+  },
+  "maison alhambra jean lowe": {
+    "query": "maison alhambra jean lowe",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 39,
+      "HU": 4
+    },
+    "avg": 10.75,
+    "max": 39,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:13.404483+00:00"
+  },
+  "maison alhambra jean lowe noir": {
+    "query": "maison alhambra jean lowe noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:14.681022+00:00"
+  },
+  "maison alhambra your touch": {
+    "query": "maison alhambra your touch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 42
+    },
+    "avg": 10.5,
+    "max": 42,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:16.084566+00:00"
+  },
+  "maison alhambra salvo": {
+    "query": "maison alhambra salvo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 42
+    },
+    "avg": 10.5,
+    "max": 42,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:17.490649+00:00"
+  },
+  "maison alhambra salvo intense": {
+    "query": "maison alhambra salvo intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:18.732054+00:00"
+  },
+  "maison alhambra delilah": {
+    "query": "maison alhambra delilah",
+    "scores": {
+      "BG": 0,
+      "RO": 44,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 11.0,
+    "max": 44,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:20.366681+00:00"
+  },
+  "maison alhambra mia dolcezza": {
+    "query": "maison alhambra mia dolcezza",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:21.767532+00:00"
+  },
+  "maison alhambra narissa et moi": {
+    "query": "maison alhambra narissa et moi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:23.158981+00:00"
+  },
+  "maison alhambra narissa peach": {
+    "query": "maison alhambra narissa peach",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:24.552767+00:00"
+  },
+  "maison alhambra mysterious amber": {
+    "query": "maison alhambra mysterious amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:25.966730+00:00"
+  },
+  "maison alhambra flaming": {
+    "query": "maison alhambra flaming",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:27.385419+00:00"
+  },
+  "maison alhambra flaming elixir": {
+    "query": "maison alhambra flaming elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:28.571807+00:00"
+  },
+  "maison alhambra exclusif": {
+    "query": "maison alhambra exclusif",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:29.946006+00:00"
+  },
+  "maison alhambra exclusif rose collection": {
+    "query": "maison alhambra exclusif rose collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:31.158878+00:00"
+  },
+  "maison alhambra imperium": {
+    "query": "maison alhambra imperium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:32.544617+00:00"
+  },
+  "maison alhambra galatea": {
+    "query": "maison alhambra galatea",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:34.039896+00:00"
+  },
+  "maison alhambra ebene": {
+    "query": "maison alhambra ebene",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:35.420538+00:00"
+  },
+  "maison alhambra pink": {
+    "query": "maison alhambra pink",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:36.424544+00:00"
+  },
+  "maison alhambra pink velvet": {
+    "query": "maison alhambra pink velvet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:37.791484+00:00"
+  },
+  "maison alhambra glacier le": {
+    "query": "maison alhambra glacier le",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:39.387903+00:00"
+  },
+  "maison alhambra glacier le noir": {
+    "query": "maison alhambra glacier le noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:40.600834+00:00"
+  },
+  "maison alhambra incense ebony": {
+    "query": "maison alhambra incense ebony",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:42.072858+00:00"
+  },
+  "maison alhambra lava": {
+    "query": "maison alhambra lava",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:43.473593+00:00"
+  },
+  "maison alhambra eternal touch": {
+    "query": "maison alhambra eternal touch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:45.037058+00:00"
+  },
+  "maison alhambra smoky touch": {
+    "query": "maison alhambra smoky touch",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:46.446946+00:00"
+  },
+  "maison alhambra toro glace": {
+    "query": "maison alhambra toro glace",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:47.499523+00:00"
+  },
+  "maison alhambra winsome": {
+    "query": "maison alhambra winsome",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:48.633114+00:00"
+  },
+  "maison alhambra eclat de lune": {
+    "query": "maison alhambra eclat de lune",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:49.940954+00:00"
+  },
+  "maison alhambra vogue": {
+    "query": "maison alhambra vogue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:51.026233+00:00"
+  },
+  "maison alhambra vogue rouge": {
+    "query": "maison alhambra vogue rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:52.238823+00:00"
+  },
+  "maison alhambra glacier bella": {
+    "query": "maison alhambra glacier bella",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:53.445212+00:00"
+  },
+  "maison alhambra karat": {
+    "query": "maison alhambra karat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:54.665687+00:00"
+  },
+  "maison alhambra vogue party": {
+    "query": "maison alhambra vogue party",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:56.262796+00:00"
+  },
+  "maison alhambra encode mountain": {
+    "query": "maison alhambra encode mountain",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:57.282467+00:00"
+  },
+  "afnan 9pm": {
+    "query": "afnan 9pm",
+    "scores": {
+      "BG": 10,
+      "RO": 28,
+      "GR": 10,
+      "HU": 27
+    },
+    "avg": 18.75,
+    "max": 28,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:18:58.534756+00:00"
+  },
+  "afnan 9pm rebel": {
+    "query": "afnan 9pm rebel",
+    "scores": {
+      "BG": 0,
+      "RO": 22,
+      "GR": 0,
+      "HU": 33
+    },
+    "avg": 13.75,
+    "max": 33,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:00.050344+00:00"
+  },
+  "afnan supremacy collector's": {
+    "query": "afnan supremacy collector's",
+    "scores": {
+      "BG": 29,
+      "RO": 39,
+      "GR": 10,
+      "HU": 31
+    },
+    "avg": 27.25,
+    "max": 39,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:02.460314+00:00"
+  },
+  "afnan supremacy collector's edition": {
+    "query": "afnan supremacy collector's edition",
+    "scores": {
+      "BG": 26,
+      "RO": 32,
+      "GR": 14,
+      "HU": 25
+    },
+    "avg": 24.25,
+    "max": 32,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:03.678254+00:00"
+  },
+  "afnan 9pm night out": {
+    "query": "afnan 9pm night out",
+    "scores": {
+      "BG": 0,
+      "RO": 41,
+      "GR": 0,
+      "HU": 58
+    },
+    "avg": 24.75,
+    "max": 58,
+    "passed": true,
+    "checkedAt": "2026-11-19T13:19:05.344645+00:00"
+  },
+  "afnan tobacco rush": {
+    "query": "afnan tobacco rush",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:06.724609+00:00"
+  },
+  "afnan turathi brown": {
+    "query": "afnan turathi brown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:07.766094+00:00"
+  },
+  "afnan souvenir floral bouquet 's": {
+    "query": "afnan souvenir floral bouquet 's",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:09.351594+00:00"
+  },
+  "afnan abiyad sandal": {
+    "query": "afnan abiyad sandal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:10.614910+00:00"
+  },
+  "afnan turathi": {
+    "query": "afnan turathi",
+    "scores": {
+      "BG": 51,
+      "RO": 41,
+      "GR": 0,
+      "HU": 35
+    },
+    "avg": 31.75,
+    "max": 51,
+    "passed": true,
+    "checkedAt": "2026-11-19T13:19:11.817246+00:00"
+  },
+  "afnan mukhallat abiyad": {
+    "query": "afnan mukhallat abiyad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:13.442283+00:00"
+  },
+  "afnan 's hooked azure": {
+    "query": "afnan 's hooked azure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:15.123138+00:00"
+  },
+  "afnan inara": {
+    "query": "afnan inara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:16.560438+00:00"
+  },
+  "afnan inara black": {
+    "query": "afnan inara black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:17.772278+00:00"
+  },
+  "afnan pure musk": {
+    "query": "afnan pure musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:19.472273+00:00"
+  },
+  "afnan zimaya embratur": {
+    "query": "afnan zimaya embratur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:20.885649+00:00"
+  },
+  "afnan zimaya embratur elixir": {
+    "query": "afnan zimaya embratur elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:22.125987+00:00"
+  },
+  "afnan dehn al oudh abiyad": {
+    "query": "afnan dehn al oudh abiyad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:23.630195+00:00"
+  },
+  "afnan supremacy": {
+    "query": "afnan supremacy",
+    "scores": {
+      "BG": 43,
+      "RO": 41,
+      "GR": 18,
+      "HU": 35
+    },
+    "avg": 34.25,
+    "max": 43,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:25.027473+00:00"
+  },
+  "afnan supremacy silver": {
+    "query": "afnan supremacy silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:26.290867+00:00"
+  },
+  "afnan mirsaal love": {
+    "query": "afnan mirsaal love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:27.901056+00:00"
+  },
+  "afnan historic doria": {
+    "query": "afnan historic doria",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:29.329364+00:00"
+  },
+  "afnan tribute": {
+    "query": "afnan tribute",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:30.733227+00:00"
+  },
+  "afnan tribute blue": {
+    "query": "afnan tribute blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:31.935145+00:00"
+  },
+  "afnan 9am": {
+    "query": "afnan 9am",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:33.800878+00:00"
+  },
+  "afnan 9am dive": {
+    "query": "afnan 9am dive",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:35.012841+00:00"
+  },
+  "afnan zimaya 's modesh aura": {
+    "query": "afnan zimaya 's modesh aura",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:37.168781+00:00"
+  },
+  "afnan zimaya 's abadi opulent": {
+    "query": "afnan zimaya 's abadi opulent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:38.606279+00:00"
+  },
+  "afnan kiaana angel": {
+    "query": "afnan kiaana angel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:19:40.176695+00:00"
   }
 }
