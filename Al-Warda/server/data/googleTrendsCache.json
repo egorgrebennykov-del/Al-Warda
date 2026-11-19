@@ -42989,5 +42989,486 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:59:23.154011+00:00"
+  },
+  "lattafa emaan": {
+    "query": "lattafa emaan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:01:40.749095+00:00"
+  },
+  "lattafa emaan air freshener": {
+    "query": "lattafa emaan air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:01:45.315885+00:00"
+  },
+  "lattafa ramz": {
+    "query": "lattafa ramz",
+    "scores": {
+      "BG": 0,
+      "RO": 21,
+      "GR": 0,
+      "HU": 21
+    },
+    "avg": 10.5,
+    "max": 21,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:01:46.739101+00:00"
+  },
+  "lattafa ramz gold air freshener": {
+    "query": "lattafa ramz gold air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:01:48.118524+00:00"
+  },
+  "lattafa ramz gold": {
+    "query": "lattafa ramz gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:01:52.803400+00:00"
+  },
+  "lattafa ramz silver": {
+    "query": "lattafa ramz silver",
+    "scores": {
+      "BG": 0,
+      "RO": 62,
+      "GR": 0,
+      "HU": 12
+    },
+    "avg": 18.5,
+    "max": 62,
+    "passed": true,
+    "checkedAt": "2026-11-19T17:01:54.182270+00:00"
+  },
+  "lattafa mishlah": {
+    "query": "lattafa mishlah",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:01.223605+00:00"
+  },
+  "lattafa pride brioche vanille": {
+    "query": "lattafa pride brioche vanille",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:06.281630+00:00"
+  },
+  "lattafa pride brioche vanille fragnance": {
+    "query": "lattafa pride brioche vanille fragnance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:07.679503+00:00"
+  },
+  "lattafa whipped pleasure": {
+    "query": "lattafa whipped pleasure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:09.266810+00:00"
+  },
+  "lattafa rave now": {
+    "query": "lattafa rave now",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:10.744898+00:00"
+  },
+  "lattafa rave now perfumed": {
+    "query": "lattafa rave now perfumed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:11.973966+00:00"
+  },
+  "lattafa pride al qiam": {
+    "query": "lattafa pride al qiam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:14.515344+00:00"
+  },
+  "lattafa pride al qiam gold": {
+    "query": "lattafa pride al qiam gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:15.772036+00:00"
+  },
+  "lattafa pride al qiam gold air freshener": {
+    "query": "lattafa pride al qiam gold air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:16.920550+00:00"
+  },
+  "lattafa pride al qiam gold fragnance": {
+    "query": "lattafa pride al qiam gold fragnance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:18.154723+00:00"
+  },
+  "lattafa berry on top": {
+    "query": "lattafa berry on top",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:20.574797+00:00"
+  },
+  "lattafa gourmand vanilla freak": {
+    "query": "lattafa gourmand vanilla freak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:21.838570+00:00"
+  },
+  "lattafa cookie crave": {
+    "query": "lattafa cookie crave",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:23.090239+00:00"
+  },
+  "lattafa reminiscence oud mood": {
+    "query": "lattafa reminiscence oud mood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:24.867924+00:00"
+  },
+  "lattafa pride la african drummer": {
+    "query": "lattafa pride la african drummer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:26.350819+00:00"
+  },
+  "lattafa gourmand choco overdose": {
+    "query": "lattafa gourmand choco overdose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:27.574450+00:00"
+  },
+  "lattafa al noble wazeer": {
+    "query": "lattafa al noble wazeer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:28.771183+00:00"
+  },
+  "lattafa fire": {
+    "query": "lattafa fire",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 33
+    },
+    "avg": 33.25,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T17:02:30.191768+00:00"
+  },
+  "lattafa pride art of nature": {
+    "query": "lattafa pride art of nature",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:31.435421+00:00"
+  },
+  "lattafa pride art of nature i": {
+    "query": "lattafa pride art of nature i",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:32.673617+00:00"
+  },
+  "lattafa pride art of nature ii air freshener": {
+    "query": "lattafa pride art of nature ii air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:33.967309+00:00"
+  },
+  "lattafa pride art of nature ii": {
+    "query": "lattafa pride art of nature ii",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:35.086375+00:00"
+  },
+  "lattafa al noble ameer": {
+    "query": "lattafa al noble ameer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:37.752883+00:00"
+  },
+  "lattafa haya": {
+    "query": "lattafa haya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:38.901517+00:00"
+  },
+  "lattafa haya air freshener": {
+    "query": "lattafa haya air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:40.174820+00:00"
+  },
+  "lattafa haya mai frash room": {
+    "query": "lattafa haya mai frash room",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:41.442175+00:00"
+  },
+  "lattafa haya all over": {
+    "query": "lattafa haya all over",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:42.538966+00:00"
+  },
+  "lattafa oud mood": {
+    "query": "lattafa oud mood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:45.218689+00:00"
+  },
+  "lattafa oud mood elixir": {
+    "query": "lattafa oud mood elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:46.421106+00:00"
+  },
+  "lattafa oud mood perfumed": {
+    "query": "lattafa oud mood perfumed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:47.706275+00:00"
+  },
+  "lattafa oud mood air freshener": {
+    "query": "lattafa oud mood air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:02:48.843824+00:00"
   }
 }
