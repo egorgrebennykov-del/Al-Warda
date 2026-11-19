@@ -36151,5 +36151,1110 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:26:16.243542+00:00"
+  },
+  "grandeur material": {
+    "query": "grandeur material",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:34.580967+00:00"
+  },
+  "grandeur musk rouge eau de parfume": {
+    "query": "grandeur musk rouge eau de parfume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:35.862824+00:00"
+  },
+  "grandeur elite serpentine": {
+    "query": "grandeur elite serpentine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:37.978888+00:00"
+  },
+  "grandeur elite serpentine noir": {
+    "query": "grandeur elite serpentine noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:39.199835+00:00"
+  },
+  "hamidi millennium": {
+    "query": "hamidi millennium",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:41.226906+00:00"
+  },
+  "hamidi lost paradise utopian leather": {
+    "query": "hamidi lost paradise utopian leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:43.856431+00:00"
+  },
+  "hamidi addicted enigma": {
+    "query": "hamidi addicted enigma",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:44.999067+00:00"
+  },
+  "hamidi legacy hatshepsut": {
+    "query": "hamidi legacy hatshepsut",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:46.578016+00:00"
+  },
+  "hamidi insignia argent": {
+    "query": "hamidi insignia argent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:47.953728+00:00"
+  },
+  "hamidi majestic aristocratic oud volume": {
+    "query": "hamidi majestic aristocratic oud volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:49.401775+00:00"
+  },
+  "hamidi al mukhmal - a harmonious blend of refreshing": {
+    "query": "hamidi al mukhmal - a harmonious blend of refreshing",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:53.245779+00:00"
+  },
+  "hamidi ishq": {
+    "query": "hamidi ishq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:58.026763+00:00"
+  },
+  "hamidi ishq forever": {
+    "query": "hamidi ishq forever",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:28:58.974907+00:00"
+  },
+  "hamidi ishq absolute": {
+    "query": "hamidi ishq absolute",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:00.194101+00:00"
+  },
+  "hamidi lost paradise exquisite": {
+    "query": "hamidi lost paradise exquisite",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:02.601731+00:00"
+  },
+  "hamidi lost paradise sublime cherry": {
+    "query": "hamidi lost paradise sublime cherry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:03.876066+00:00"
+  },
+  "hamidi the dome taj": {
+    "query": "hamidi the dome taj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:05.160526+00:00"
+  },
+  "hamidi prestige honor volume": {
+    "query": "hamidi prestige honor volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:07.114837+00:00"
+  },
+  "hamidi lost paradise celestial wood": {
+    "query": "hamidi lost paradise celestial wood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:08.536152+00:00"
+  },
+  "hamidi envy": {
+    "query": "hamidi envy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:10.258740+00:00"
+  },
+  "hamidi envy gold": {
+    "query": "hamidi envy gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:11.350586+00:00"
+  },
+  "hamidi envy rose gold": {
+    "query": "hamidi envy rose gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:12.640289+00:00"
+  },
+  "hamidi prestige status volume": {
+    "query": "hamidi prestige status volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:14.251321+00:00"
+  },
+  "hamidi the dome astrodome": {
+    "query": "hamidi the dome astrodome",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:15.625401+00:00"
+  },
+  "hamidi lost paradise heavenly bliss": {
+    "query": "hamidi lost paradise heavenly bliss",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:17.118149+00:00"
+  },
+  "addicted silver - hamidi": {
+    "query": "addicted silver - hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:18.973693+00:00"
+  },
+  "hamidi kunouz al hub": {
+    "query": "hamidi kunouz al hub",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:20.161629+00:00"
+  },
+  "hamidi prestige fame": {
+    "query": "hamidi prestige fame",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:21.996385+00:00"
+  },
+  "hamidi prestige esteem volume": {
+    "query": "hamidi prestige esteem volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:23.202246+00:00"
+  },
+  "hamidi kunouz al i'ter": {
+    "query": "hamidi kunouz al i'ter",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:24.618213+00:00"
+  },
+  "hamidi junoon": {
+    "query": "hamidi junoon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:25.914652+00:00"
+  },
+  "hamidi fusion concord volume": {
+    "query": "hamidi fusion concord volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:27.294069+00:00"
+  },
+  "hamidi midnight amber": {
+    "query": "hamidi midnight amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:28.780860+00:00"
+  },
+  "tuleen by hamidi": {
+    "query": "tuleen by hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:30.436579+00:00"
+  },
+  "hamidi fusion accord volume": {
+    "query": "hamidi fusion accord volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:31.988184+00:00"
+  },
+  "hamidi lost paradise divine cherry": {
+    "query": "hamidi lost paradise divine cherry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:33.191332+00:00"
+  },
+  "hamidi sukoon": {
+    "query": "hamidi sukoon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:34.756046+00:00"
+  },
+  "thuraya by hamidi": {
+    "query": "thuraya by hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:36.192612+00:00"
+  },
+  "hamidi enchanted": {
+    "query": "hamidi enchanted",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:37.732785+00:00"
+  },
+  "hamidi musk tahara without alcohol": {
+    "query": "hamidi musk tahara without alcohol",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:39.307417+00:00"
+  },
+  "hamidi legacy merneith": {
+    "query": "hamidi legacy merneith",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:40.498708+00:00"
+  },
+  "hamidi legacy collection - a harmonious blend": {
+    "query": "hamidi legacy collection - a harmonious blend",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:41.715814+00:00"
+  },
+  "hamidi ilham": {
+    "query": "hamidi ilham",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:44.921041+00:00"
+  },
+  "hamidi ilham gold": {
+    "query": "hamidi ilham gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:45.890145+00:00"
+  },
+  "hamidi shirin": {
+    "query": "hamidi shirin",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:48.478697+00:00"
+  },
+  "hamidi fondue tropical": {
+    "query": "hamidi fondue tropical",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:49.688752+00:00"
+  },
+  "lateen by hamidi": {
+    "query": "lateen by hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:50.936529+00:00"
+  },
+  "hamidi fondue exotic": {
+    "query": "hamidi fondue exotic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:53.872506+00:00"
+  },
+  "hamidi fusion amity volume": {
+    "query": "hamidi fusion amity volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:55.205611+00:00"
+  },
+  "hamidi addicted imperial": {
+    "query": "hamidi addicted imperial",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:56.692361+00:00"
+  },
+  "hamidi al aqeed": {
+    "query": "hamidi al aqeed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:58.152759+00:00"
+  },
+  "hamidi majestic heavenly santal": {
+    "query": "hamidi majestic heavenly santal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:29:59.738086+00:00"
+  },
+  "hamidi majestic sublime": {
+    "query": "hamidi majestic sublime",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:01.305373+00:00"
+  },
+  "hamidi majestic sublime incense": {
+    "query": "hamidi majestic sublime incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:02.529623+00:00"
+  },
+  "hamidi majestic royal amber": {
+    "query": "hamidi majestic royal amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:03.847757+00:00"
+  },
+  "hamidi by armaf addicted": {
+    "query": "hamidi by armaf addicted",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:04.958876+00:00"
+  },
+  "hamidi by armaf addicted intense black": {
+    "query": "hamidi by armaf addicted intense black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:06.187456+00:00"
+  },
+  "hamidi majd al oud": {
+    "query": "hamidi majd al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:07.367045+00:00"
+  },
+  "hamidi shaheen": {
+    "query": "hamidi shaheen",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:08.592335+00:00"
+  },
+  "hamidi shams ambre l'eau de": {
+    "query": "hamidi shams ambre l'eau de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:10.029005+00:00"
+  },
+  "hamidi shams ambre l'eau de aqua": {
+    "query": "hamidi shams ambre l'eau de aqua",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:11.286021+00:00"
+  },
+  "hamidi shams edition vanilla water": {
+    "query": "hamidi shams edition vanilla water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:13.382526+00:00"
+  },
+  "hamidi dahab": {
+    "query": "hamidi dahab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:14.474636+00:00"
+  },
+  "hamidi maison luxe woody delight": {
+    "query": "hamidi maison luxe woody delight",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:15.698928+00:00"
+  },
+  "hamidi qamar al sama": {
+    "query": "hamidi qamar al sama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:16.979765+00:00"
+  },
+  "hamidi raa'ed": {
+    "query": "hamidi raa'ed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:18.192241+00:00"
+  },
+  "alhan by hamidi": {
+    "query": "alhan by hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:19.804857+00:00"
+  },
+  "hamidi zahra": {
+    "query": "hamidi zahra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:21.045702+00:00"
+  },
+  "hamidi astral": {
+    "query": "hamidi astral",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:26.137272+00:00"
+  },
+  "hamidi delyn": {
+    "query": "hamidi delyn",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:27.315581+00:00"
+  },
+  "hamidi desire": {
+    "query": "hamidi desire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:28.582669+00:00"
+  },
+  "hamidi autograph non-alcoholic": {
+    "query": "hamidi autograph non-alcoholic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:29.899188+00:00"
+  },
+  "hamidi shams aoud l'eau de": {
+    "query": "hamidi shams aoud l'eau de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:31.249989+00:00"
+  },
+  "hamidi shams aoud l'eau de aqua": {
+    "query": "hamidi shams aoud l'eau de aqua",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:32.468803+00:00"
+  },
+  "hamidi addiction": {
+    "query": "hamidi addiction",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:33.810905+00:00"
+  },
+  "hamidi irreverant - long-lasting": {
+    "query": "hamidi irreverant - long-lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:35.145647+00:00"
+  },
+  "hamidi qamar al lail": {
+    "query": "hamidi qamar al lail",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:40.287641+00:00"
+  },
+  "hamidi musk al tahara solo": {
+    "query": "hamidi musk al tahara solo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:46.013116+00:00"
+  },
+  "hamidi musk al tahara solo collection": {
+    "query": "hamidi musk al tahara solo collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:51.100518+00:00"
+  },
+  "hamidi afraa hamidi": {
+    "query": "hamidi afraa hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:30:52.295071+00:00"
+  },
+  "hamidi addicted red devine": {
+    "query": "hamidi addicted red devine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:31:06.703169+00:00"
+  },
+  "hamidi al mukhmal enjezab": {
+    "query": "hamidi al mukhmal enjezab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:31:07.928281+00:00"
+  },
+  "hamidi maison luxe intimate musc": {
+    "query": "hamidi maison luxe intimate musc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:31:09.062778+00:00"
+  },
+  "hamidi adel - long lasting": {
+    "query": "hamidi adel - long lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:31:10.458096+00:00"
+  },
+  "hamidi fusion harmony": {
+    "query": "hamidi fusion harmony",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:31:11.714813+00:00"
   }
 }
