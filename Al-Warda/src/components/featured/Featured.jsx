@@ -1255,6 +1255,16 @@ export default function Featured() {
             </div>
           </div>
 
+          {!loading && perfumes.length > 0 && (
+            <div className="warda-catalog-progress-bar" style={{ marginTop: "0.85rem", marginBottom: "0.85rem" }}>
+              <div className="warda-progress-meta">
+                <span className="warda-catalog-count-text">
+                  {`${t("featured.showing")} ${filteredPerfumes.length} / ${perfumes.length} ${t("featured.fragrancesCount")}`}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* ACTIVE FILTER CHIPS ROW */}
           {totalActiveFilters > 0 && (
             <div className="warda-active-chips">
