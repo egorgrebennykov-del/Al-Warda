@@ -36,7 +36,12 @@ _NOISE_PHRASES = (
     r"fragrance\s*set",
     r"perfume\s*set",
     r"discovery\s*set",
+    r"discovery\s*collection",
     r"travel\s*set",
+    r"mini\s*gift",
+    r"pack\s*of\s*\d+",
+    r"\b\d+\s*(?:pc|pcs|piece|pieces|unit|units)\b",
+    r"\bx\s*\d+\b",
     r"alcohol\s*-?\s*free",
     r"roll\s*-?\s*on",
     r"rollon",
@@ -46,6 +51,7 @@ _NOISE_PHRASES = (
     r"for\s+women",
     r"for\s+him",
     r"for\s+her",
+    r"for\s+adult",
     r"original\s+fragrance\s+from\s+dubai",
     r"\bedp\b",
     r"\bedt\b",
@@ -53,6 +59,8 @@ _NOISE_PHRASES = (
     r"\bextrait\b",
     r"\bparfum\b",
     r"\bperfume\b",
+    r"\bperfumery\b",
+    r"\bfragrances\b",
     r"\bfragrance\b",
     r"\bcologne\b",
     r"\bspray\b",
@@ -60,6 +68,8 @@ _NOISE_PHRASES = (
     r"\bunisex\b",
     r"\bmen\b",
     r"\bwomen\b",
+    r"\badult\b",
+    r"\bfor\b",
     r"\bconcentrated\b",
     r"\battar\b",
     r"\bittar\b",
@@ -68,6 +78,13 @@ _NOISE_PHRASES = (
     r"\btester\b",
     r"\bdeo\b",
     r"\bdeodorant\b",
+    r"\bhydrating\b",
+    r"\bluxury\b",
+    r"\bminiature\b",
+    r"\bmini\b",
+    r"\bseries\b",
+    r"\bmist\b",
+    r"\boil\b",
     r"\bset\b",
     r"\bwith\b",
     r"\band\b",
@@ -75,7 +92,7 @@ _NOISE_PHRASES = (
 
 
 def clean_perfume_name_for_trends(name, brand=""):
-    """Strip ml/fl.oz, gender, perfume type/concentration, and filler words."""
+    """Strip ml/fl.oz, gender, perfume type/concentration, set/piece tags, and filler words."""
     text = str(name or "").strip()
     if not text:
         return ""
@@ -85,14 +102,21 @@ def clean_perfume_name_for_trends(name, brand=""):
     for pat in _NOISE_PHRASES:
         text = re.sub(rf"(?<!\w){pat}(?!\w)", " ", text, flags=re.I)
     text = re.sub(r"\([^)]*\)", " ", text)
-    text = re.sub(r"[^\w\s'&-]", " ", text)
+    text = re.sub(r"[^\w\s'-]", " ", text)
     text = re.sub(r"\b(\d+)\s+(pm|am)\b", r"\1\2", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" -,&")
 
     brand_clean = str(brand or "").strip()
     if brand_clean and brand_clean.lower() not in ("al-warda", "unknown") and brand_clean.lower() not in text.lower():
         text = f"{brand_clean} {text}".strip()
-    return text
+    # Collapse duplicate consecutive words (e.g. 'Al Haramain Haramain Amber Oud')
+    words = text.split()
+    deduped = []
+    for w in words:
+        if deduped and deduped[-1].lower() == w.lower():
+            continue
+        deduped.append(w)
+    return " ".join(deduped)
 
 
 _FLANKER_WORDS = {
