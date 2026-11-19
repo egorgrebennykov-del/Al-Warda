@@ -11048,5 +11048,148 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T13:43:10.656277+00:00"
+  },
+  "arabian oud fairouz": {
+    "query": "arabian oud fairouz",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:05.053020+00:00"
+  },
+  "arabian oud pink moon": {
+    "query": "arabian oud pink moon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:06.422495+00:00"
+  },
+  "sultani original by arabian oud": {
+    "query": "sultani original by arabian oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:07.504708+00:00"
+  },
+  "arabian oud signature": {
+    "query": "arabian oud signature",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:08.847745+00:00"
+  },
+  "arabian oud vanilla": {
+    "query": "arabian oud vanilla",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:09.923475+00:00"
+  },
+  "arabian oud vanilla rose": {
+    "query": "arabian oud vanilla rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:11.209252+00:00"
+  },
+  "arabian oud arabella citrus woody notes musk oriental": {
+    "query": "arabian oud arabella citrus woody notes musk oriental",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:12.454474+00:00"
+  },
+  "arabian oud kalemat": {
+    "query": "arabian oud kalemat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:13.604303+00:00"
+  },
+  "arabian oud kalemat black": {
+    "query": "arabian oud kalemat black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:14.825745+00:00"
+  },
+  "arabian oud resala": {
+    "query": "arabian oud resala",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:16.734707+00:00"
+  },
+  "arabian oud taraf": {
+    "query": "arabian oud taraf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T13:45:17.798902+00:00"
   }
 }
