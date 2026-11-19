@@ -51,6 +51,7 @@ import {
   deleteAdminProducts,
   getSiteSettings,
   saveSiteSettings,
+  requirePrivilegedUser,
 } from "./productImageQueueAdmin.js";
 import { handleProductImageActions } from "./productImageActions.js";
 import {
@@ -396,8 +397,58 @@ const server = createServer(async (req, res) => {
   if (pathname === "/api/admin/product-images/actions") {
     try {
       const request = await localWebRequest(req, readRawBody);
+      let parsedBody = null;
+      if (req.method === "POST") {
+        try {
+          parsedBody = await request.clone().json();
+        } catch {}
+        if (parsedBody?.action === "stop" || parsedBody?.action === "stop-global") {
+          stopGpuGeneration();
+        }
+        if (parsedBody?.action === "start" && (!parsedBody.account || parsedBody.account === "local")) {
+          const auth = await requirePrivilegedUser(request, process.env);
+          if (auth.response) {
+            respond(res, auth.response.status, await auth.response.json(), req);
+            return;
+          }
+          const gpuRes = startGpuGeneration({
+            count: parsedBody.count || "all",
+            coolingDelay: 0.8,
+          });
+          respond(res, gpuRes.ok ? 202 : 409, {
+            message: gpuRes.message || "Local GPU generation started",
+            globalHalted: false,
+            localGpu: true,
+            job: gpuRes.job,
+          }, req);
+          return;
+        }
+      }
       const response = await handleProductImageActions(request, process.env);
-      respond(res, response.status, await response.json(), req);
+      const data = await response.json();
+      if (req.method === "POST" && response.status >= 400 && parsedBody?.action === "start") {
+        const gpuRes = startGpuGeneration({
+          count: parsedBody.count || "all",
+          coolingDelay: 0.8,
+        });
+        respond(res, gpuRes.ok ? 202 : 409, {
+          message: gpuRes.message || "Local GPU generation started",
+          globalHalted: false,
+          localGpu: true,
+          job: gpuRes.job,
+        }, req);
+        return;
+      }
+      if (req.method === "GET" && response.ok) {
+        const gpuStatus = getGpuGenerationStatus();
+        if (gpuStatus.isRunning) {
+          data.runs = [
+            { id: "local-gpu", status: "in_progress", url: "#local-gpu" },
+            ...(Array.isArray(data.runs) ? data.runs : []),
+          ];
+        }
+      }
+      respond(res, response.status, data, req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);
     }
