@@ -31601,5 +31601,421 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:03:27.205408+00:00"
+  },
+  "world mocha": {
+    "query": "world mocha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:05:53.406395+00:00"
+  },
+  "world mocha wood by world": {
+    "query": "world mocha wood by world",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:05:54.702546+00:00"
+  },
+  "world al emir": {
+    "query": "world al emir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:05:56.402776+00:00"
+  },
+  "world extremely unique pista": {
+    "query": "world extremely unique pista",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:05:57.770727+00:00"
+  },
+  "world pur classique": {
+    "query": "world pur classique",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:05:59.524933+00:00"
+  },
+  "world flora by flora arabic perfumed water": {
+    "query": "world flora by flora arabic perfumed water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:01.130342+00:00"
+  },
+  "world mythical gryphon": {
+    "query": "world mythical gryphon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:02.364344+00:00"
+  },
+  "world spectre perfumed water arabic": {
+    "query": "world spectre perfumed water arabic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:04.118431+00:00"
+  },
+  "world just wardi": {
+    "query": "world just wardi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:05.373826+00:00"
+  },
+  "world varakh": {
+    "query": "world varakh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:06.569958+00:00"
+  },
+  "world varakh gold": {
+    "query": "world varakh gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:07.869729+00:00"
+  },
+  "world varakh silver": {
+    "query": "world varakh silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:09.081551+00:00"
+  },
+  "world happiness oud": {
+    "query": "world happiness oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:11.175712+00:00"
+  },
+  "world intro paramount": {
+    "query": "world intro paramount",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:12.358264+00:00"
+  },
+  "world just choco": {
+    "query": "world just choco",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:13.658097+00:00"
+  },
+  "world sui generis": {
+    "query": "world sui generis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:14.766652+00:00"
+  },
+  "world vie brise - arabic perfumed water": {
+    "query": "world vie brise - arabic perfumed water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:16.002585+00:00"
+  },
+  "world elysia sweet banana": {
+    "query": "world elysia sweet banana",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:17.254350+00:00"
+  },
+  "world francique 107 9 by world": {
+    "query": "world francique 107 9 by world",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:18.296517+00:00"
+  },
+  "world chic unique": {
+    "query": "world chic unique",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:19.494622+00:00"
+  },
+  "world king": {
+    "query": "world king",
+    "scores": {
+      "BG": 0,
+      "RO": 14,
+      "GR": 11,
+      "HU": 13
+    },
+    "avg": 9.5,
+    "max": 14,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:20.894911+00:00"
+  },
+  "world vie feu - arabic citrus scented water": {
+    "query": "world vie feu - arabic citrus scented water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:22.042981+00:00"
+  },
+  "world optimystic": {
+    "query": "world optimystic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:23.163845+00:00"
+  },
+  "world optimystic black": {
+    "query": "world optimystic black",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:24.428990+00:00"
+  },
+  "world optimystic her": {
+    "query": "world optimystic her",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:25.570913+00:00"
+  },
+  "world optimystic le beau": {
+    "query": "world optimystic le beau",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:26.826999+00:00"
+  },
+  "world soir by world": {
+    "query": "world soir by world",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:28.767417+00:00"
+  },
+  "world exotic": {
+    "query": "world exotic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:29.978882+00:00"
+  },
+  "world exotic rose": {
+    "query": "world exotic rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:31.618995+00:00"
+  },
+  "world taj 1": {
+    "query": "world taj 1",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:32.643373+00:00"
+  },
+  "world taj 1 green": {
+    "query": "world taj 1 green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:33.966046+00:00"
+  },
+  "world soleil": {
+    "query": "world soleil",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:06:38.705938+00:00"
   }
 }
