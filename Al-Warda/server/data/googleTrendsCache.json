@@ -37256,5 +37256,954 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:31:11.714813+00:00"
+  },
+  "saji by hamidi": {
+    "query": "saji by hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:33:53.019464+00:00"
+  },
+  "hamidi joud hamidi": {
+    "query": "hamidi joud hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:33:54.377777+00:00"
+  },
+  "hamidi oud admire": {
+    "query": "hamidi oud admire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:33:56.513650+00:00"
+  },
+  "hamidi faris": {
+    "query": "hamidi faris",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:33:58.714828+00:00"
+  },
+  "hamidi oud suyufi": {
+    "query": "hamidi oud suyufi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:00.336137+00:00"
+  },
+  "hamidi gulnar": {
+    "query": "hamidi gulnar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:01.916341+00:00"
+  },
+  "hamidi gulnar intense": {
+    "query": "hamidi gulnar intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:03.214752+00:00"
+  },
+  "hamidi gulnar - long-lasting based": {
+    "query": "hamidi gulnar - long-lasting based",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:04.481533+00:00"
+  },
+  "hamidi maison luxe exotic amber": {
+    "query": "hamidi maison luxe exotic amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:06.217672+00:00"
+  },
+  "hamidi new york life": {
+    "query": "hamidi new york life",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:08.035454+00:00"
+  },
+  "hamidi najah oriental": {
+    "query": "hamidi najah oriental",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:09.541923+00:00"
+  },
+  "hamidi aventus": {
+    "query": "hamidi aventus",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:10.997804+00:00"
+  },
+  "hamidi shine": {
+    "query": "hamidi shine",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:12.504239+00:00"
+  },
+  "hamidi amiri ghalya - fruity floral": {
+    "query": "hamidi amiri ghalya - fruity floral",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:14.066774+00:00"
+  },
+  "hamidi serenity - longlasting": {
+    "query": "hamidi serenity - longlasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:15.494808+00:00"
+  },
+  "hamidi alyssa": {
+    "query": "hamidi alyssa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:16.916891+00:00"
+  },
+  "hamidi tabassum oud elixir nonalcoholic": {
+    "query": "hamidi tabassum oud elixir nonalcoholic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:18.446674+00:00"
+  },
+  "hamidi rose rush": {
+    "query": "hamidi rose rush",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:19.926898+00:00"
+  },
+  "hamidi sundown": {
+    "query": "hamidi sundown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:21.497888+00:00"
+  },
+  "hamidi alya - floral fruity": {
+    "query": "hamidi alya - floral fruity",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:23.058132+00:00"
+  },
+  "hamidi ghaya": {
+    "query": "hamidi ghaya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:27.852118+00:00"
+  },
+  "hamidi ghaya long-lasting": {
+    "query": "hamidi ghaya long-lasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:33.279037+00:00"
+  },
+  "hamidi sukar hamidi": {
+    "query": "hamidi sukar hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:35.044892+00:00"
+  },
+  "hamidi rouh hamidi": {
+    "query": "hamidi rouh hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:36.638292+00:00"
+  },
+  "hamidi maysara - fruity-spicy floral": {
+    "query": "hamidi maysara - fruity-spicy floral",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:34:47.190605+00:00"
+  },
+  "hamidi marj": {
+    "query": "hamidi marj",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:02.033672+00:00"
+  },
+  "hamidi samaa": {
+    "query": "hamidi samaa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:03.290479+00:00"
+  },
+  "hamidi exotic amber": {
+    "query": "hamidi exotic amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:04.983940+00:00"
+  },
+  "hamidi khashab al oud air fabric freshener - deluxe": {
+    "query": "hamidi khashab al oud air fabric freshener - deluxe",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:06.201907+00:00"
+  },
+  "hamidi khashab al oud air fabric freshener - deluxe collection": {
+    "query": "hamidi khashab al oud air fabric freshener - deluxe collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:07.980245+00:00"
+  },
+  "hamidi natural black musk non-alcoholic": {
+    "query": "hamidi natural black musk non-alcoholic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:09.729990+00:00"
+  },
+  "hamidi oud nakshi": {
+    "query": "hamidi oud nakshi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:10.810412+00:00"
+  },
+  "hamidi admire - longlasting": {
+    "query": "hamidi admire - longlasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:12.016061+00:00"
+  },
+  "hamidi natural vanilla elixir water": {
+    "query": "hamidi natural vanilla elixir water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:13.344473+00:00"
+  },
+  "hamidi special diffusion - hamidi": {
+    "query": "hamidi special diffusion - hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:18.145460+00:00"
+  },
+  "hamidi obsidian bloom": {
+    "query": "hamidi obsidian bloom",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:19.473398+00:00"
+  },
+  "hamidi onyx aoud": {
+    "query": "hamidi onyx aoud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:20.676183+00:00"
+  },
+  "hamidi glam rock": {
+    "query": "hamidi glam rock",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:21.831078+00:00"
+  },
+  "hamidi dimash": {
+    "query": "hamidi dimash",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:23.012567+00:00"
+  },
+  "hamidi maya - longlasting": {
+    "query": "hamidi maya - longlasting",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:24.750088+00:00"
+  },
+  "hamidi my direction": {
+    "query": "hamidi my direction",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:26.318228+00:00"
+  },
+  "hamidi s natural silk musk water": {
+    "query": "hamidi s natural silk musk water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:27.928080+00:00"
+  },
+  "hamidi 's natural silk musk water": {
+    "query": "hamidi 's natural silk musk water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:29.334842+00:00"
+  },
+  "hamidi rouge": {
+    "query": "hamidi rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:30.848293+00:00"
+  },
+  "hamidi mera hamidi": {
+    "query": "hamidi mera hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:32.381145+00:00"
+  },
+  "hamidi zayn from hamidi": {
+    "query": "hamidi zayn from hamidi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:33.887765+00:00"
+  },
+  "hamidi addicted absolutely": {
+    "query": "hamidi addicted absolutely",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:35.460759+00:00"
+  },
+  "hamidi addicted absolutely intense": {
+    "query": "hamidi addicted absolutely intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:36.759367+00:00"
+  },
+  "hamidi sabeel": {
+    "query": "hamidi sabeel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:38.284896+00:00"
+  },
+  "hamidi black oud perfumed water volume": {
+    "query": "hamidi black oud perfumed water volume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:39.860125+00:00"
+  },
+  "hekayat honeyash - warm honey tobacco scent": {
+    "query": "hekayat honeyash - warm honey tobacco scent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:45.147249+00:00"
+  },
+  "hekayat lorène": {
+    "query": "hekayat lorène",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:46.669984+00:00"
+  },
+  "hekayat musk tahara pomegranate": {
+    "query": "hekayat musk tahara pomegranate",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:48.263331+00:00"
+  },
+  "senteur by jenny glow": {
+    "query": "senteur by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:49.780969+00:00"
+  },
+  "etoile by jenny glow": {
+    "query": "etoile by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:51.297472+00:00"
+  },
+  "soleil by jenny glow": {
+    "query": "soleil by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:52.657929+00:00"
+  },
+  "jenny glow coeur": {
+    "query": "jenny glow coeur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:54.260538+00:00"
+  },
+  "jenny glow femiluxe by jenny glow bellis": {
+    "query": "jenny glow femiluxe by jenny glow bellis",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:55.743232+00:00"
+  },
+  "jenny glow femiluxe by jenny glow bellis collection": {
+    "query": "jenny glow femiluxe by jenny glow bellis collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:57.055593+00:00"
+  },
+  "jenny glow perle": {
+    "query": "jenny glow perle",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:35:58.581503+00:00"
+  },
+  "jenny glow bellis collection meraki": {
+    "query": "jenny glow bellis collection meraki",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:00.023381+00:00"
+  },
+  "reve by jenny glow": {
+    "query": "reve by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:01.541331+00:00"
+  },
+  "the ten enchantments by jenny glow": {
+    "query": "the ten enchantments by jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:02.955574+00:00"
+  },
+  "jenny glow lure": {
+    "query": "jenny glow lure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:04.072307+00:00"
+  },
+  "jenny glow peony": {
+    "query": "jenny glow peony",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:05.756212+00:00"
+  },
+  "jenny glow peony blush suede": {
+    "query": "jenny glow peony blush suede",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:07.070883+00:00"
+  },
+  "jenny glow oak berries": {
+    "query": "jenny glow oak berries",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:08.919572+00:00"
+  },
+  "jenny glow u4a": {
+    "query": "jenny glow u4a",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:10.048651+00:00"
+  },
+  "jenny glow black cedar": {
+    "query": "jenny glow black cedar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:11.362432+00:00"
+  },
+  "jenny glow yours truly once upon a time": {
+    "query": "jenny glow yours truly once upon a time",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:12.737024+00:00"
+  },
+  "jenny glow aurore": {
+    "query": "jenny glow aurore",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:13.790434+00:00"
+  },
+  "jenny glow convicted": {
+    "query": "jenny glow convicted",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:15.026136+00:00"
+  },
+  "jenny glow french lime leaves": {
+    "query": "jenny glow french lime leaves",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:36:16.429677+00:00"
   }
 }
