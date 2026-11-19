@@ -363,6 +363,34 @@ def check_perfume_trends(name, brand="", client=None, cache=None):
     return entry
 
 
+def patch_with_retry(session, url, row_id, payload, max_retries=4):
+    """PATCH stocks row with retries on transient RemoteDisconnected / 5xx errors."""
+    last_err = None
+    for attempt in range(max_retries + 1):
+        try:
+            resp = session.patch(
+                url,
+                params={"id": f"eq.{row_id}"},
+                json=payload,
+                headers={"Content-Type": "application/json", "Prefer": "return=minimal", "Connection": "close"},
+                timeout=30,
+            )
+            if resp.status_code >= 500 and attempt < max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            if not resp.ok:
+                raise RuntimeError(f"Could not update stock {row_id} ({resp.status_code}): {resp.text[:200]}")
+            return
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            last_err = exc
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+    if last_err:
+        raise last_err
+
+
 def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
     """Update stocks row with Google Trends result and in_stock visibility (never deletes)."""
     base = (supabase_url or "").rstrip("/")
@@ -383,15 +411,7 @@ def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
         "in_stock": bool(visible),
         "info": info,
     }
-    resp = session.patch(
-        url,
-        params={"id": f"eq.{row['id']}"},
-        json=payload,
-        headers={"Content-Type": "application/json", "Prefer": "return=minimal"},
-        timeout=30,
-    )
-    if not resp.ok:
-        raise RuntimeError(f"Could not update stock {row['id']} ({resp.status_code}): {resp.text[:200]}")
+    patch_with_retry(session, url, row["id"], payload)
 
 
 def filter_all_db_products(dry_run=False, force=False, completed_first=True, max_series=0):
@@ -460,7 +480,7 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
                     if not dry_run:
                         base_u = (supabase_url or "").rstrip("/")
                         u = f"{base_u}/api/rest/v1/stocks" if ("workers.dev" in base_u and "/api" not in base_u) else f"{base_u}/rest/v1/stocks"
-                        db_session.patch(u, params={"id": f"eq.{r['id']}"}, json={"info": r_info}, headers={"Content-Type": "application/json", "Prefer": "return=minimal"}, timeout=30)
+                        patch_with_retry(db_session, u, r["id"], {"info": r_info})
                     reconciled_reset += 1
     if reconciled_passed or reconciled_reset:
         print(f"Reconciled changed groups: auto-kept={reconciled_passed}, queued-for-recheck={reconciled_reset}", flush=True)
