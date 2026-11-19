@@ -267,11 +267,11 @@ def build_series_groups(rows):
 
 
 def passes_trends_threshold(scores):
-    """Return (passed, avg_score, max_score) using avg >= 35 or max >= 50."""
+    """Return (passed, avg_score, max_score) using avg >= 30 or max >= 50."""
     vals = [float(scores.get(c, 0) or 0) for c in REGIONS]
     avg_val = sum(vals) / len(REGIONS)
     max_val = max(vals)
-    return (avg_val >= 35.0 or max_val >= 50.0), round(avg_val, 2), int(max_val)
+    return (avg_val >= 30.0 or max_val >= 50.0), round(avg_val, 2), int(max_val)
 
 
 def load_trends_cache():
@@ -833,7 +833,12 @@ def verify_whitelisted_products(dry_run=False):
     series_groups = build_series_groups(all_rows)
     passing_series_keys = {
         s_key for s_key, grp in series_groups.items()
-        if any(((r.get("info") or {}).get("googleTrends") or {}).get("passed") is True for r in grp)
+        if any(
+            float(((r.get("info") or {}).get("googleTrends") or {}).get("avg") or 0) >= 30.0
+            or int(((r.get("info") or {}).get("googleTrends") or {}).get("max") or 0) >= 50
+            or ((r.get("info") or {}).get("googleTrends") or {}).get("passed") is True
+            for r in grp
+        )
     }
 
     stats = {
@@ -869,11 +874,29 @@ def verify_whitelisted_products(dry_run=False):
 
             avg_s = float(gt.get("avg") or 0)
             max_s = int(gt.get("max") or 0)
-            passed_trends = (avg_s >= 35.0 or max_s >= 50) or (s_key in passing_series_keys and gt.get("filterStatus") != "whitelist_admitted")
+            passed_trends = (avg_s >= 30.0 or max_s >= 50) or (s_key in passing_series_keys and gt.get("filterStatus") != "whitelist_admitted")
+            was_hidden = (r.get("in_stock") is False) or (gt.get("hiddenFromSite") is True)
 
             if passed_trends and gt.get("filterStatus") != "whitelist_admitted":
                 stats["trends_passed"] += 1
                 b_stat["trends_passed"] += 1
+                if was_hidden or gt.get("passed") is not True or gt.get("filterStatus") != "trends_passed":
+                    new_meta = {
+                        **gt,
+                        "seriesKey": s_key,
+                        "passed": True,
+                        "filterStatus": "trends_passed",
+                        "filterReason": f"google_trends_passed: avg={avg_s} max={max_s} (series '{s_key}')",
+                        "verifiedAt": datetime.now(timezone.utc).isoformat(),
+                    }
+                    if was_hidden:
+                        stats["restored_count"] += 1
+                        print(f"  RESTORE TRENDS {r['id']} ({r.get('name')}) -> avg={avg_s} max={max_s} series='{s_key}'", flush=True)
+                    if not dry_run:
+                        try:
+                            patch_stock_trends(db_session, supabase_url, r, new_meta, visible=True)
+                        except Exception as exc:
+                            print(f"Warning patching {r.get('id')}: {exc}", flush=True)
                 continue
 
             if priority == 0:
