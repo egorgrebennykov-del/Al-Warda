@@ -41884,5 +41884,1110 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:55:10.315666+00:00"
+  },
+  "khalis andra khalis dama": {
+    "query": "khalis andra khalis dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:22.396377+00:00"
+  },
+  "khalis isra dama": {
+    "query": "khalis isra dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:23.568547+00:00"
+  },
+  "khalis voyage barbatesc": {
+    "query": "khalis voyage barbatesc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:25.127616+00:00"
+  },
+  "khalis asad al emarat": {
+    "query": "khalis asad al emarat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:26.369444+00:00"
+  },
+  "khalis black zaafaran": {
+    "query": "khalis black zaafaran",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:27.731616+00:00"
+  },
+  "khalis mrs noir dama": {
+    "query": "khalis mrs noir dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:29.192318+00:00"
+  },
+  "khalis very sweet sapphire": {
+    "query": "khalis very sweet sapphire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:30.543232+00:00"
+  },
+  "khalis the rhythm": {
+    "query": "khalis the rhythm",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:31.728704+00:00"
+  },
+  "khalis mashael dama": {
+    "query": "khalis mashael dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:32.928810+00:00"
+  },
+  "khalis gloaming": {
+    "query": "khalis gloaming",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:34.247253+00:00"
+  },
+  "khalis black niche": {
+    "query": "khalis black niche",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:35.362302+00:00"
+  },
+  "khalis ghali": {
+    "query": "khalis ghali",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:36.549931+00:00"
+  },
+  "khalis resolute": {
+    "query": "khalis resolute",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:37.753842+00:00"
+  },
+  "khalis resolute brown": {
+    "query": "khalis resolute brown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:39.009881+00:00"
+  },
+  "khalis resolute silver": {
+    "query": "khalis resolute silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:40.252212+00:00"
+  },
+  "khalis resolute gold barbatesc": {
+    "query": "khalis resolute gold barbatesc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:41.400798+00:00"
+  },
+  "khalis inspire me": {
+    "query": "khalis inspire me",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:43.414968+00:00"
+  },
+  "khalis qalbi lak": {
+    "query": "khalis qalbi lak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:44.803664+00:00"
+  },
+  "khalis silver": {
+    "query": "khalis silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:46.085542+00:00"
+  },
+  "khalis silver royal": {
+    "query": "khalis silver royal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:47.319281+00:00"
+  },
+  "khalis aroob al hub": {
+    "query": "khalis aroob al hub",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:48.747944+00:00"
+  },
+  "khalis majestic": {
+    "query": "khalis majestic",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:49.963845+00:00"
+  },
+  "khalis shaghaf dama": {
+    "query": "khalis shaghaf dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:51.302365+00:00"
+  },
+  "khalis red niche": {
+    "query": "khalis red niche",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:52.532806+00:00"
+  },
+  "khalis love all the way": {
+    "query": "khalis love all the way",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:54.177188+00:00"
+  },
+  "khalis jawad al layl gold room": {
+    "query": "khalis jawad al layl gold room",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:55.397058+00:00"
+  },
+  "khalis marsa style": {
+    "query": "khalis marsa style",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:57.117333+00:00"
+  },
+  "khalis fabulous dama": {
+    "query": "khalis fabulous dama",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:57:58.428492+00:00"
+  },
+  "khalis musk al emarat": {
+    "query": "khalis musk al emarat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:00.042908+00:00"
+  },
+  "khalis ombre de souvenirs": {
+    "query": "khalis ombre de souvenirs",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:01.717124+00:00"
+  },
+  "khalis oud hindi": {
+    "query": "khalis oud hindi",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:02.782592+00:00"
+  },
+  "khalis laya": {
+    "query": "khalis laya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:04.006329+00:00"
+  },
+  "la fede magnum wild": {
+    "query": "la fede magnum wild",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:05.850025+00:00"
+  },
+  "la fede magnum wild green": {
+    "query": "la fede magnum wild green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:06.840245+00:00"
+  },
+  "la fede aura pista desert": {
+    "query": "la fede aura pista desert",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:08.707402+00:00"
+  },
+  "la fede crystallia imperio": {
+    "query": "la fede crystallia imperio",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:10.082214+00:00"
+  },
+  "la fede symbol of love": {
+    "query": "la fede symbol of love",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:11.440353+00:00"
+  },
+  "la fede aura manga splash": {
+    "query": "la fede aura manga splash",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:12.784923+00:00"
+  },
+  "la fede aura crisp flower": {
+    "query": "la fede aura crisp flower",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:13.893456+00:00"
+  },
+  "la fede aura kiss": {
+    "query": "la fede aura kiss",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:14.963554+00:00"
+  },
+  "la fede aura kiss of rose": {
+    "query": "la fede aura kiss of rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:16.164663+00:00"
+  },
+  "la fede symbol of power": {
+    "query": "la fede symbol of power",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:17.434652+00:00"
+  },
+  "la fede code rouge amour": {
+    "query": "la fede code rouge amour",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:18.640785+00:00"
+  },
+  "la fede choco brown": {
+    "query": "la fede choco brown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:19.781225+00:00"
+  },
+  "la fede opera noir l'or": {
+    "query": "la fede opera noir l'or",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:20.951928+00:00"
+  },
+  "la fede white forest strawberry": {
+    "query": "la fede white forest strawberry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:22.173827+00:00"
+  },
+  "la fede intoxicate": {
+    "query": "la fede intoxicate",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 50
+    },
+    "avg": 12.5,
+    "max": 50,
+    "passed": true,
+    "checkedAt": "2026-11-19T16:58:23.266685+00:00"
+  },
+  "la fede celeste": {
+    "query": "la fede celeste",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:24.527469+00:00"
+  },
+  "la fede celeste toffee": {
+    "query": "la fede celeste toffee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:25.793764+00:00"
+  },
+  "la fede celeste aqua": {
+    "query": "la fede celeste aqua",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:27.010768+00:00"
+  },
+  "la fede celeste fleur": {
+    "query": "la fede celeste fleur",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:28.228068+00:00"
+  },
+  "la fede coveted": {
+    "query": "la fede coveted",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:30.229712+00:00"
+  },
+  "la fede coveted shades": {
+    "query": "la fede coveted shades",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:31.224177+00:00"
+  },
+  "la fede coveted diamond": {
+    "query": "la fede coveted diamond",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:32.489660+00:00"
+  },
+  "la fede le fede bella reve segreto viola": {
+    "query": "la fede le fede bella reve segreto viola",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:33.992701+00:00"
+  },
+  "la fede code viola nectar": {
+    "query": "la fede code viola nectar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:35.189866+00:00"
+  },
+  "la fede pink lace": {
+    "query": "la fede pink lace",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:36.335957+00:00"
+  },
+  "la fede code marron oud": {
+    "query": "la fede code marron oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:37.673370+00:00"
+  },
+  "la fede code verde sublime": {
+    "query": "la fede code verde sublime",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:38.896469+00:00"
+  },
+  "la fede uno lusso": {
+    "query": "la fede uno lusso",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:40.001980+00:00"
+  },
+  "la fede uno intimo": {
+    "query": "la fede uno intimo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:41.197954+00:00"
+  },
+  "la fede oud kings": {
+    "query": "la fede oud kings",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:42.332533+00:00"
+  },
+  "lattafa my yara": {
+    "query": "lattafa my yara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:43.720230+00:00"
+  },
+  "lattafa my yara collection": {
+    "query": "lattafa my yara collection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:44.777118+00:00"
+  },
+  "lattafa confidential": {
+    "query": "lattafa confidential",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:45.958304+00:00"
+  },
+  "lattafa confidential private gold": {
+    "query": "lattafa confidential private gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:47.418277+00:00"
+  },
+  "lattafa confidential private gold mai frash room": {
+    "query": "lattafa confidential private gold mai frash room",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:48.608925+00:00"
+  },
+  "lattafa confidential platinum": {
+    "query": "lattafa confidential platinum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:49.856708+00:00"
+  },
+  "lattafa layaan": {
+    "query": "lattafa layaan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:52.090459+00:00"
+  },
+  "lattafa pride queen of arabia": {
+    "query": "lattafa pride queen of arabia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:54.997865+00:00"
+  },
+  "lattafa pride queen of arabia air freshener": {
+    "query": "lattafa pride queen of arabia air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:56.323942+00:00"
+  },
+  "lattafa bade'e al oud sublime": {
+    "query": "lattafa bade'e al oud sublime",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:57.742930+00:00"
+  },
+  "lattafa sehr": {
+    "query": "lattafa sehr",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:58:59.015343+00:00"
+  },
+  "lattafa dalal": {
+    "query": "lattafa dalal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 31
+    },
+    "avg": 7.75,
+    "max": 31,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:00.254591+00:00"
+  },
+  "lattafa mashrabya": {
+    "query": "lattafa mashrabya",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T16:59:01.416277+00:00"
+  },
+  "lattafa ajwad": {
+    "query": "lattafa ajwad",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 92
+    },
+    "avg": 23.0,
+    "max": 92,
+    "passed": true,
+    "checkedAt": "2026-11-19T16:59:02.871671+00:00"
+  },
+  "lattafa sakeena": {
+    "query": "lattafa sakeena",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:04.883967+00:00"
+  },
+  "lattafa sakeena air freshener": {
+    "query": "lattafa sakeena air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:06.125823+00:00"
+  },
+  "lattafa pride vintage radio": {
+    "query": "lattafa pride vintage radio",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:07.731344+00:00"
+  },
+  "lattafa pride vintage radio air freshener": {
+    "query": "lattafa pride vintage radio air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:08.807235+00:00"
+  },
+  "lattafa pride vintage radio fragnance": {
+    "query": "lattafa pride vintage radio fragnance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:09.966298+00:00"
+  },
+  "lattafa nasmaat": {
+    "query": "lattafa nasmaat",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T16:59:11.577555+00:00"
+  },
+  "lattafa jasoor": {
+    "query": "lattafa jasoor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 14
+    },
+    "avg": 3.5,
+    "max": 14,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:16.406343+00:00"
+  },
+  "lattafa jasoor 's": {
+    "query": "lattafa jasoor 's",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:21.391688+00:00"
+  },
+  "lattafa mallow madness": {
+    "query": "lattafa mallow madness",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:59:23.154011+00:00"
   }
 }
