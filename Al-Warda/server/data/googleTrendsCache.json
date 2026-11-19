@@ -32017,5 +32017,1201 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:06:38.705938+00:00"
+  },
+  "world soleil rose": {
+    "query": "world soleil rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:06.049892+00:00"
+  },
+  "world le bois": {
+    "query": "world le bois",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:07.068797+00:00"
+  },
+  "world le bois noir": {
+    "query": "world le bois noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:08.732151+00:00"
+  },
+  "world le bois blanc": {
+    "query": "world le bois blanc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:09.617340+00:00"
+  },
+  "world essence de noir by fa paris": {
+    "query": "world essence de noir by fa paris",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:12.288112+00:00"
+  },
+  "world divin asylum": {
+    "query": "world divin asylum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:13.444452+00:00"
+  },
+  "world colosseum": {
+    "query": "world colosseum",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:14.601920+00:00"
+  },
+  "world glorious oud royal blanc musk": {
+    "query": "world glorious oud royal blanc musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:15.808084+00:00"
+  },
+  "world b": {
+    "query": "world b",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:17.271353+00:00"
+  },
+  "world b rouge": {
+    "query": "world b rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:18.366047+00:00"
+  },
+  "world b gentle gold": {
+    "query": "world b gentle gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:19.667811+00:00"
+  },
+  "world champion sugar": {
+    "query": "world champion sugar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:21.231187+00:00"
+  },
+  "world olfactory bonfire": {
+    "query": "world olfactory bonfire",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:22.536804+00:00"
+  },
+  "world the promise": {
+    "query": "world the promise",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:23.683805+00:00"
+  },
+  "world street origins auckland craze": {
+    "query": "world street origins auckland craze",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:24.928913+00:00"
+  },
+  "world avant": {
+    "query": "world avant",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:26.084120+00:00"
+  },
+  "world avant intense": {
+    "query": "world avant intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:27.298549+00:00"
+  },
+  "world pepper so spicy by world maison alhambra": {
+    "query": "world pepper so spicy by world maison alhambra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:28.714441+00:00"
+  },
+  "world supreme l'homme": {
+    "query": "world supreme l'homme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:29.837187+00:00"
+  },
+  "world supreme l'homme extreme": {
+    "query": "world supreme l'homme extreme",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:31.111895+00:00"
+  },
+  "world champion money": {
+    "query": "world champion money",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:32.261850+00:00"
+  },
+  "world athoor al alam pride": {
+    "query": "world athoor al alam pride",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:34.004900+00:00"
+  },
+  "world knight": {
+    "query": "world knight",
+    "scores": {
+      "BG": 39,
+      "RO": 32,
+      "GR": 13,
+      "HU": 36
+    },
+    "avg": 30.0,
+    "max": 39,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:35.113775+00:00"
+  },
+  "world queen": {
+    "query": "world queen",
+    "scores": {
+      "BG": 0,
+      "RO": 12,
+      "GR": 9,
+      "HU": 0
+    },
+    "avg": 5.25,
+    "max": 12,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:36.350156+00:00"
+  },
+  "world queen of hearts q": {
+    "query": "world queen of hearts q",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:37.619596+00:00"
+  },
+  "world queen of red": {
+    "query": "world queen of red",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:38.765303+00:00"
+  },
+  "world caramel macchiato": {
+    "query": "world caramel macchiato",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:40.120565+00:00"
+  },
+  "world al qamar": {
+    "query": "world al qamar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:41.320741+00:00"
+  },
+  "world lush cherry": {
+    "query": "world lush cherry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:42.510367+00:00"
+  },
+  "world lush cherry niche made in uae": {
+    "query": "world lush cherry niche made in uae",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:43.752347+00:00"
+  },
+  "world nectar of ecstasy": {
+    "query": "world nectar of ecstasy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:45.496131+00:00"
+  },
+  "world irish coffee": {
+    "query": "world irish coffee",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:47.071908+00:00"
+  },
+  "world champion g o a t": {
+    "query": "world champion g o a t",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:48.329498+00:00"
+  },
+  "world qahwa": {
+    "query": "world qahwa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:49.481197+00:00"
+  },
+  "world eau de spice extreme mark victor": {
+    "query": "world eau de spice extreme mark victor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:50.988477+00:00"
+  },
+  "world kopi luwak": {
+    "query": "world kopi luwak",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:52.075781+00:00"
+  },
+  "world barakkat": {
+    "query": "world barakkat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:53.256135+00:00"
+  },
+  "world barakkat gentle gold world": {
+    "query": "world barakkat gentle gold world",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:54.564345+00:00"
+  },
+  "world barakkat by world": {
+    "query": "world barakkat by world",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:55.672035+00:00"
+  },
+  "world barakkat rouge": {
+    "query": "world barakkat rouge",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:56.905176+00:00"
+  },
+  "world venti": {
+    "query": "world venti",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:10:58.939979+00:00"
+  },
+  "world venti absolu": {
+    "query": "world venti absolu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:00.118552+00:00"
+  },
+  "world venti sublime": {
+    "query": "world venti sublime",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:01.355486+00:00"
+  },
+  "world venti charisma": {
+    "query": "world venti charisma",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:02.564140+00:00"
+  },
+  "world invicto": {
+    "query": "world invicto",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:05.628584+00:00"
+  },
+  "world invicto victorious absolu": {
+    "query": "world invicto victorious absolu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:06.880971+00:00"
+  },
+  "world invicto intense - perfumed water": {
+    "query": "world invicto intense - perfumed water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:08.142068+00:00"
+  },
+  "world invicto victorious elixir": {
+    "query": "world invicto victorious elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:09.263892+00:00"
+  },
+  "world rose midnight": {
+    "query": "world rose midnight",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:11.201940+00:00"
+  },
+  "world bois de bois": {
+    "query": "world bois de bois",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:12.399008+00:00"
+  },
+  "world one self": {
+    "query": "world one self",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:13.567311+00:00"
+  },
+  "world artisan salted caramel": {
+    "query": "world artisan salted caramel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:14.867861+00:00"
+  },
+  "world aoud alchemy": {
+    "query": "world aoud alchemy",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:16.007264+00:00"
+  },
+  "world velvet donna": {
+    "query": "world velvet donna",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:17.230080+00:00"
+  },
+  "world bouquet of euphoria": {
+    "query": "world bouquet of euphoria",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:18.417955+00:00"
+  },
+  "world night club": {
+    "query": "world night club",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:19.899915+00:00"
+  },
+  "world night club silver": {
+    "query": "world night club silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:21.064227+00:00"
+  },
+  "world night club absolute": {
+    "query": "world night club absolute",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:22.258945+00:00"
+  },
+  "world night club green tweed": {
+    "query": "world night club green tweed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:23.551392+00:00"
+  },
+  "world d'hommes": {
+    "query": "world d'hommes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:25.898670+00:00"
+  },
+  "world d'hommes intense": {
+    "query": "world d'hommes intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:27.106696+00:00"
+  },
+  "world john gustav homme scandant": {
+    "query": "world john gustav homme scandant",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:28.559431+00:00"
+  },
+  "world john gustav homme scandant le": {
+    "query": "world john gustav homme scandant le",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:29.860688+00:00"
+  },
+  "world nuit": {
+    "query": "world nuit",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:31.285396+00:00"
+  },
+  "world just azraq": {
+    "query": "world just azraq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:41.044173+00:00"
+  },
+  "world sedley - perfumed water": {
+    "query": "world sedley - perfumed water",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:47.430104+00:00"
+  },
+  "world terro pura": {
+    "query": "world terro pura",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:52.426079+00:00"
+  },
+  "world ebony smoke": {
+    "query": "world ebony smoke",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:53.985107+00:00"
+  },
+  "world ebony fume": {
+    "query": "world ebony fume",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:11:55.411881+00:00"
+  },
+  "world italian leather": {
+    "query": "world italian leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:00.568016+00:00"
+  },
+  "world historic cedar": {
+    "query": "world historic cedar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:05.784152+00:00"
+  },
+  "world azara": {
+    "query": "world azara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:07.313616+00:00"
+  },
+  "world is": {
+    "query": "world is",
+    "scores": {
+      "BG": 0,
+      "RO": 9,
+      "GR": 9,
+      "HU": 0
+    },
+    "avg": 4.5,
+    "max": 9,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:09.280339+00:00"
+  },
+  "world is intense": {
+    "query": "world is intense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:10.565795+00:00"
+  },
+  "world is by world": {
+    "query": "world is by world",
+    "scores": {
+      "BG": 0,
+      "RO": 8,
+      "GR": 8,
+      "HU": 0
+    },
+    "avg": 4.0,
+    "max": 8,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:11.551287+00:00"
+  },
+  "world athoor al alam zakariyat": {
+    "query": "world athoor al alam zakariyat",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:12.904942+00:00"
+  },
+  "world pink fame": {
+    "query": "world pink fame",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:14.117977+00:00"
+  },
+  "world paradox tribute": {
+    "query": "world paradox tribute",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:15.272518+00:00"
+  },
+  "world nudo green iris": {
+    "query": "world nudo green iris",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:16.544951+00:00"
+  },
+  "world rose seduction secret sunkissed": {
+    "query": "world rose seduction secret sunkissed",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:17.794492+00:00"
+  },
+  "world feroce": {
+    "query": "world feroce",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:18.956231+00:00"
+  },
+  "world velocity": {
+    "query": "world velocity",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:20.173753+00:00"
+  },
+  "world tobacco d'feu": {
+    "query": "world tobacco d'feu",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:21.400489+00:00"
+  },
+  "world enigma trois": {
+    "query": "world enigma trois",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:23.064835+00:00"
+  },
+  "world artisan arabian": {
+    "query": "world artisan arabian",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:24.699427+00:00"
+  },
+  "world artisan arabian incense": {
+    "query": "world artisan arabian incense",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:26.059286+00:00"
+  },
+  "world aqua de classic profumo": {
+    "query": "world aqua de classic profumo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:27.677132+00:00"
+  },
+  "world intro greatness oud": {
+    "query": "world intro greatness oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:29.364152+00:00"
+  },
+  "world intro aftermath": {
+    "query": "world intro aftermath",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:34.209357+00:00"
+  },
+  "world enigma une by world inspired by suvage": {
+    "query": "world enigma une by world inspired by suvage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:35.582886+00:00"
+  },
+  "world enigma une by world inspired by suvage elixir": {
+    "query": "world enigma une by world inspired by suvage elixir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:36.827457+00:00"
+  },
+  "world brown sugar": {
+    "query": "world brown sugar",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:12:37.908984+00:00"
   }
 }
