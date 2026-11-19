@@ -39141,5 +39141,1162 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T16:40:58.767870+00:00"
+  },
+  "jenny glow": {
+    "query": "jenny glow",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 2,
+      "HU": 0
+    },
+    "avg": 0.5,
+    "max": 2,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:46.431358+00:00"
+  },
+  "jenny glow magnolia": {
+    "query": "jenny glow magnolia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:47.719101+00:00"
+  },
+  "just jack homme noir 's": {
+    "query": "just jack homme noir 's",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:48.847232+00:00"
+  },
+  "just jacks vetiver": {
+    "query": "just jacks vetiver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:50.186065+00:00"
+  },
+  "just jack london eye": {
+    "query": "just jack london eye",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:51.452835+00:00"
+  },
+  "just jack ironwood": {
+    "query": "just jack ironwood",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:53.011509+00:00"
+  },
+  "just jack western": {
+    "query": "just jack western",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:54.912435+00:00"
+  },
+  "just jack rustler": {
+    "query": "just jack rustler",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:56.010693+00:00"
+  },
+  "just jack frontier": {
+    "query": "just jack frontier",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:57.209847+00:00"
+  },
+  "just jack s oud oak eau da": {
+    "query": "just jack s oud oak eau da",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:58.472677+00:00"
+  },
+  "just jack s noir endurance eau dn": {
+    "query": "just jack s noir endurance eau dn",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:44:59.693237+00:00"
+  },
+  "khadlaj ameer al arab": {
+    "query": "khadlaj ameer al arab",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:00.852064+00:00"
+  },
+  "khadlaj perfumes aaliya extract": {
+    "query": "khadlaj perfumes aaliya extract",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:02.004222+00:00"
+  },
+  "khadlaj shamookh": {
+    "query": "khadlaj shamookh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:03.199416+00:00"
+  },
+  "khadlaj shamookh gold": {
+    "query": "khadlaj shamookh gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:04.402138+00:00"
+  },
+  "khadlaj shamookh silver without alcohol": {
+    "query": "khadlaj shamookh silver without alcohol",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:05.649142+00:00"
+  },
+  "khadlaj pure musk": {
+    "query": "khadlaj pure musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:07.033403+00:00"
+  },
+  "khadlaj infini": {
+    "query": "khadlaj infini",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:08.226513+00:00"
+  },
+  "khadlaj rasayel shagaf": {
+    "query": "khadlaj rasayel shagaf",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:09.407429+00:00"
+  },
+  "celebrity fame la fede by khadlaj perfumes": {
+    "query": "celebrity fame la fede by khadlaj perfumes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:10.884618+00:00"
+  },
+  "khadlaj farasha": {
+    "query": "khadlaj farasha",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:11.942381+00:00"
+  },
+  "khadlaj ghadeer": {
+    "query": "khadlaj ghadeer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:13.137816+00:00"
+  },
+  "khadlaj ghadeer gold": {
+    "query": "khadlaj ghadeer gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:14.366520+00:00"
+  },
+  "khadlaj ghadeer silver": {
+    "query": "khadlaj ghadeer silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:19.614186+00:00"
+  },
+  "khadlaj ria": {
+    "query": "khadlaj ria",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:21.296258+00:00"
+  },
+  "khadlaj panache angel dust - creamy fruity musk": {
+    "query": "khadlaj panache angel dust - creamy fruity musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:22.841362+00:00"
+  },
+  "khadlaj hareem sultan blue without alcohol": {
+    "query": "khadlaj hareem sultan blue without alcohol",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:32.688303+00:00"
+  },
+  "khadlaj azure velvet extract de": {
+    "query": "khadlaj azure velvet extract de",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:34.041680+00:00"
+  },
+  "khadlaj ombre notes": {
+    "query": "khadlaj ombre notes",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:35.253931+00:00"
+  },
+  "khadlaj cashmere sunshine musk": {
+    "query": "khadlaj cashmere sunshine musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:36.446313+00:00"
+  },
+  "khadlaj musk pour narcissus": {
+    "query": "khadlaj musk pour narcissus",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:37.669237+00:00"
+  },
+  "khadlaj malika": {
+    "query": "khadlaj malika",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:38.798068+00:00"
+  },
+  "khadlaj malika red": {
+    "query": "khadlaj malika red",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:40.460738+00:00"
+  },
+  "khadlaj malika green": {
+    "query": "khadlaj malika green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:41.333634+00:00"
+  },
+  "khadlaj empire regent": {
+    "query": "khadlaj empire regent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:42.687150+00:00"
+  },
+  "khadlaj maison l'or": {
+    "query": "khadlaj maison l'or",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:43.912599+00:00"
+  },
+  "khadlaj maison l'or noir": {
+    "query": "khadlaj maison l'or noir",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:45.115363+00:00"
+  },
+  "khadlaj valor chivalry": {
+    "query": "khadlaj valor chivalry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:46.282138+00:00"
+  },
+  "khadlaj nafais magrib": {
+    "query": "khadlaj nafais magrib",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:47.496833+00:00"
+  },
+  "khadlaj musk pour amber": {
+    "query": "khadlaj musk pour amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:48.705808+00:00"
+  },
+  "khadlaj icon": {
+    "query": "khadlaj icon",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:49.900692+00:00"
+  },
+  "khadlaj sawaar vanille blanc": {
+    "query": "khadlaj sawaar vanille blanc",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:51.473210+00:00"
+  },
+  "khadlaj hareem al sultan": {
+    "query": "khadlaj hareem al sultan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:52.575720+00:00"
+  },
+  "nafais sharq khadlaj - pear gardenia amber": {
+    "query": "nafais sharq khadlaj - pear gardenia amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:54.042883+00:00"
+  },
+  "khadlaj perfumes khadlaj our pour klassik": {
+    "query": "khadlaj perfumes khadlaj our pour klassik",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:55.202297+00:00"
+  },
+  "khadlaj peach": {
+    "query": "khadlaj peach",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:56.324558+00:00"
+  },
+  "khadlaj peach velvet": {
+    "query": "khadlaj peach velvet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:57.595129+00:00"
+  },
+  "khadlaj opera rose lor": {
+    "query": "khadlaj opera rose lor",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:58.748695+00:00"
+  },
+  "khadlaj the proposal special occasion": {
+    "query": "khadlaj the proposal special occasion",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:45:59.974816+00:00"
+  },
+  "khadlaj the proposal date": {
+    "query": "khadlaj the proposal date",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:01.169243+00:00"
+  },
+  "khadlaj the proposal date night": {
+    "query": "khadlaj the proposal date night",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:02.628797+00:00"
+  },
+  "khadlaj flor oud": {
+    "query": "khadlaj flor oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:03.801695+00:00"
+  },
+  "khadlaj karus secret musk": {
+    "query": "khadlaj karus secret musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:04.934824+00:00"
+  },
+  "khadlaj karus amber": {
+    "query": "khadlaj karus amber",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:06.177116+00:00"
+  },
+  "khadlaj karus amber gold": {
+    "query": "khadlaj karus amber gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:07.403515+00:00"
+  },
+  "khadlaj 25 heritage": {
+    "query": "khadlaj 25 heritage",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:09.014012+00:00"
+  },
+  "khadlaj empire crown": {
+    "query": "khadlaj empire crown",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:10.140618+00:00"
+  },
+  "khadlaj maison creation de reve": {
+    "query": "khadlaj maison creation de reve",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:11.933786+00:00"
+  },
+  "khadlaj strawberry shake floral fruity": {
+    "query": "khadlaj strawberry shake floral fruity",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:13.181990+00:00"
+  },
+  "khadlaj desert rose": {
+    "query": "khadlaj desert rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:14.322910+00:00"
+  },
+  "khadlaj bleu glace par m": {
+    "query": "khadlaj bleu glace par m",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:19.282638+00:00"
+  },
+  "khadlaj oud pour leather": {
+    "query": "khadlaj oud pour leather",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:20.583121+00:00"
+  },
+  "khadlaj oud pour noble": {
+    "query": "khadlaj oud pour noble",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:35.636279+00:00"
+  },
+  "khadlaj raniya": {
+    "query": "khadlaj raniya",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:36.930279+00:00"
+  },
+  "khadlaj 25 integrity": {
+    "query": "khadlaj 25 integrity",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:38.629289+00:00"
+  },
+  "khadlaj johayna": {
+    "query": "khadlaj johayna",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:40.200737+00:00"
+  },
+  "khadlaj johayna purple": {
+    "query": "khadlaj johayna purple",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:41.350800+00:00"
+  },
+  "khadlaj johayna green": {
+    "query": "khadlaj johayna green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:42.280210+00:00"
+  },
+  "khadlaj oud pour blueberry": {
+    "query": "khadlaj oud pour blueberry",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:43.658877+00:00"
+  },
+  "khadlaj wow oud": {
+    "query": "khadlaj wow oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:44.805066+00:00"
+  },
+  "khadlaj lara": {
+    "query": "khadlaj lara",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:46.015417+00:00"
+  },
+  "khadlaj lara green": {
+    "query": "khadlaj lara green",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:47.288510+00:00"
+  },
+  "khadlaj lara purple": {
+    "query": "khadlaj lara purple",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:48.444458+00:00"
+  },
+  "khadlaj haneen gold without alcohol": {
+    "query": "khadlaj haneen gold without alcohol",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:49.909818+00:00"
+  },
+  "khadlaj 25 experience": {
+    "query": "khadlaj 25 experience",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:51.010173+00:00"
+  },
+  "khadlaj arabian treasure": {
+    "query": "khadlaj arabian treasure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:52.263330+00:00"
+  },
+  "khadlaj sensuous": {
+    "query": "khadlaj sensuous",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:53.531889+00:00"
+  },
+  "khadlaj rose romance": {
+    "query": "khadlaj rose romance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:55.403845+00:00"
+  },
+  "khadlaj anabia": {
+    "query": "khadlaj anabia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:57.609480+00:00"
+  },
+  "khadlaj anabia red": {
+    "query": "khadlaj anabia red",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:46:58.826569+00:00"
+  },
+  "khadlaj anabia blue": {
+    "query": "khadlaj anabia blue",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:00.018482+00:00"
+  },
+  "khadlaj ana wa anta olio profumato": {
+    "query": "khadlaj ana wa anta olio profumato",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:01.401791+00:00"
+  },
+  "khadlaj magical thai cpo": {
+    "query": "khadlaj magical thai cpo",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:02.675963+00:00"
+  },
+  "khadlaj amber pure": {
+    "query": "khadlaj amber pure",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:03.713135+00:00"
+  },
+  "celebrity crush khadlaj warm sweet lavender scent": {
+    "query": "celebrity crush khadlaj warm sweet lavender scent",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:04.957015+00:00"
+  },
+  "khadlaj jameel": {
+    "query": "khadlaj jameel",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:06.157339+00:00"
+  },
+  "khadlaj stellar oud": {
+    "query": "khadlaj stellar oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:07.511256+00:00"
+  },
+  "khadlaj aseel al oud": {
+    "query": "khadlaj aseel al oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:08.748243+00:00"
+  },
+  "khadlaj rasayel vid": {
+    "query": "khadlaj rasayel vid",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T16:47:09.953467+00:00"
   }
 }
