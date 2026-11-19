@@ -43470,5 +43470,590 @@
     "max": 0,
     "passed": false,
     "checkedAt": "2026-11-19T17:02:48.843824+00:00"
+  },
+  "lattafa opulent": {
+    "query": "lattafa opulent",
+    "scores": {
+      "BG": 1,
+      "RO": 100,
+      "GR": 10,
+      "HU": 17
+    },
+    "avg": 32.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T17:05:03.159944+00:00"
+  },
+  "lattafa sherif": {
+    "query": "lattafa sherif",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:06.763173+00:00"
+  },
+  "lattafa pride pure crystal": {
+    "query": "lattafa pride pure crystal",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:08.181717+00:00"
+  },
+  "lattafa al noble safeer": {
+    "query": "lattafa al noble safeer",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:09.560811+00:00"
+  },
+  "lattafa pride eternal vanille": {
+    "query": "lattafa pride eternal vanille",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:11.654750+00:00"
+  },
+  "lattafa collection x gs box 03": {
+    "query": "lattafa collection x gs box 03",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:13.229905+00:00"
+  },
+  "lattafa pride art of arabia": {
+    "query": "lattafa pride art of arabia",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:14.863778+00:00"
+  },
+  "lattafa pride art of arabia i": {
+    "query": "lattafa pride art of arabia i",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:16.122783+00:00"
+  },
+  "lattafa pride art of arabia i air freshener": {
+    "query": "lattafa pride art of arabia i air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:17.306487+00:00"
+  },
+  "lattafa pride art of arabia ii": {
+    "query": "lattafa pride art of arabia ii",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:18.480343+00:00"
+  },
+  "lattafa pride eternal oud": {
+    "query": "lattafa pride eternal oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:21.197415+00:00"
+  },
+  "lattafa pride eternal oud air freshener": {
+    "query": "lattafa pride eternal oud air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:22.556880+00:00"
+  },
+  "lattafa pride eternal oud fragnance": {
+    "query": "lattafa pride eternal oud fragnance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:23.578633+00:00"
+  },
+  "lattafa pride shaheen": {
+    "query": "lattafa pride shaheen",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:26.631408+00:00"
+  },
+  "lattafa pride shaheen silver": {
+    "query": "lattafa pride shaheen silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:27.956659+00:00"
+  },
+  "lattafa pride shaheen gold air freshener": {
+    "query": "lattafa pride shaheen gold air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:29.155212+00:00"
+  },
+  "lattafa pride shaheen gold": {
+    "query": "lattafa pride shaheen gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:30.326431+00:00"
+  },
+  "lattafa pride natural oud": {
+    "query": "lattafa pride natural oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:33.087516+00:00"
+  },
+  "lattafa velvet": {
+    "query": "lattafa velvet",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:34.603203+00:00"
+  },
+  "lattafa velvet musk": {
+    "query": "lattafa velvet musk",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:35.722575+00:00"
+  },
+  "lattafa velvet rose": {
+    "query": "lattafa velvet rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:36.905131+00:00"
+  },
+  "lattafa velvet oud": {
+    "query": "lattafa velvet oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:38.077525+00:00"
+  },
+  "lattafa collection x box 01": {
+    "query": "lattafa collection x box 01",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:40.667797+00:00"
+  },
+  "lattafa ajwaa": {
+    "query": "lattafa ajwaa",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:41.799800+00:00"
+  },
+  "lattafa mohra": {
+    "query": "lattafa mohra",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:43.074252+00:00"
+  },
+  "lattafa mohra silky rose": {
+    "query": "lattafa mohra silky rose",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:44.486752+00:00"
+  },
+  "lattafa mohra silky rose mai frash room": {
+    "query": "lattafa mohra silky rose mai frash room",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:45.846896+00:00"
+  },
+  "lattafa pride no 4 - art of arabia iii ajwaa al qiam gold masa brioche vanille": {
+    "query": "lattafa pride no 4 - art of arabia iii ajwaa al qiam gold masa brioche vanille",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:48.462387+00:00"
+  },
+  "lattafa pride affection": {
+    "query": "lattafa pride affection",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:50.119017+00:00"
+  },
+  "lattafa pride affection air freshener": {
+    "query": "lattafa pride affection air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:51.301258+00:00"
+  },
+  "lattafa niche emarati hayaam": {
+    "query": "lattafa niche emarati hayaam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:53.968018+00:00"
+  },
+  "lattafa pride afaq": {
+    "query": "lattafa pride afaq",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:55.648812+00:00"
+  },
+  "lattafa artisan ethnique": {
+    "query": "lattafa artisan ethnique",
+    "scores": {
+      "BG": 0,
+      "RO": 100,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 25.0,
+    "max": 100,
+    "passed": true,
+    "checkedAt": "2026-11-19T17:05:57.019400+00:00"
+  },
+  "lattafa pride ishq al shuyukh": {
+    "query": "lattafa pride ishq al shuyukh",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:58.528175+00:00"
+  },
+  "lattafa pride ishq al shuyukh silver air freshener": {
+    "query": "lattafa pride ishq al shuyukh silver air freshener",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:05:59.808891+00:00"
+  },
+  "lattafa pride ishq al shuyukh silver": {
+    "query": "lattafa pride ishq al shuyukh silver",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:00.915047+00:00"
+  },
+  "lattafa pride ishq al shuyukh gold": {
+    "query": "lattafa pride ishq al shuyukh gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:02.159021+00:00"
+  },
+  "lattafa khalid": {
+    "query": "lattafa khalid",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:06.376204+00:00"
+  },
+  "lattafa maharjan": {
+    "query": "lattafa maharjan",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:07.510168+00:00"
+  },
+  "lattafa maharjan gold": {
+    "query": "lattafa maharjan gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:08.705705+00:00"
+  },
+  "lattafa niche emarati mughal fort": {
+    "query": "lattafa niche emarati mughal fort",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:10.166477+00:00"
+  },
+  "lattafa pride ansaam": {
+    "query": "lattafa pride ansaam",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:11.695103+00:00"
+  },
+  "lattafa pride ansaam gold": {
+    "query": "lattafa pride ansaam gold",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:12.913699+00:00"
+  },
+  "lattafa pride ansaam fragnance": {
+    "query": "lattafa pride ansaam fragnance",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:14.120221+00:00"
+  },
+  "lattafa safwaan l'autre oud": {
+    "query": "lattafa safwaan l'autre oud",
+    "scores": {
+      "BG": 0,
+      "RO": 0,
+      "GR": 0,
+      "HU": 0
+    },
+    "avg": 0.0,
+    "max": 0,
+    "passed": false,
+    "checkedAt": "2026-11-19T17:06:19.878212+00:00"
   }
 }
