@@ -610,7 +610,6 @@ export async function getProductImageQueueStatus(request, env) {
         }
         const isExplicitFailed =
           job.status === "failed" || replacementJob.status === "failed";
-        if (!hasRawImage(info) && !isExplicitFailed) continue;
         eligible++;
         const status =
           job.status === "publishing"

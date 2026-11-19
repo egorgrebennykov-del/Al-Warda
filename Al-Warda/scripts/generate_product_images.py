@@ -2683,8 +2683,6 @@ def select_candidates(rows, now, regenerate_completed=False):
     eligible = []
     attempts_today = 0
     for row in rows:
-        if not product_source(row):
-            continue
         info = row.get("info") or {}
         gt = info.get("googleTrends") or {}
         if row.get("in_stock") is False or gt.get("passed") is False or gt.get("hiddenFromSite") is True:
@@ -3159,9 +3157,18 @@ def process_product(
                 source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
                 source_url = best_small_studio[3]["sourceUrl"]
                 source_name = best_small_studio[3]["sourceName"]
-                source_type = "official_studio"
+                source_type = best_small_studio[3].get("sourceType") or "official_studio"
             else:
-                raise ValueError("No valid catalog photo found and no official studio photo found")
+                local_rel = str(row.get("image") or "").split("?")[0].lstrip("/")
+                local_path = (ROOT_DIR / "public" / local_rel) if local_rel.startswith("assets/img/dropship/") else None
+                if local_path and local_path.is_file():
+                    source_bytes = local_path.read_bytes()
+                    source_quality = measure_source_quality(source_bytes)
+                    source_url = str(row.get("image") or "")
+                    source_name = "Local Catalog Archive"
+                    source_type = "qogita_set" if is_set else "qogita_catalog"
+                else:
+                    raise ValueError("No valid catalog photo found and no official studio photo found")
 
         output = None
         original_size = None
