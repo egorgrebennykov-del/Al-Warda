@@ -1,4 +1,6 @@
-.warda-perfume-card.ornate-card {
+.warda-perfume-card.ornate-card,
+.warda-perfume-card.ornate-card:hover,
+.warda-perfume-card:hover {
   padding: 0 0 1.25rem !important;
   border-color: transparent !important;
   min-width: 0 !important;
@@ -118,9 +120,10 @@
   }
 }
 
-.search__card.search__card {
+.search__card.search__card,
+.search__card.search__card:hover {
   padding: 0 0 1rem;
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 .search__card .search__card-img-wrap {
