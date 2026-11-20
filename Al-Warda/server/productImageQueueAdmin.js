@@ -1,4 +1,4 @@
-import { supabaseFetch } from "./hasuraProxy.js";
+import { supabaseFetch, hasuraGraphQL, getHasuraConfig } from "./hasuraProxy.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 
 class MissingServiceKeyError extends Error {
@@ -1457,6 +1457,53 @@ export async function syncCommittedPublishedStocks(env) {
   }
 }
 
+async function bulkUpdateStocks(env, key, baseUrl, entries) {
+  if (!entries.length) return 0;
+  const { adminSecret } = getHasuraConfig(env);
+  if (adminSecret) {
+    const mutation =
+      "mutation($updates: [stocks_updates!]!) { update_stocks_many(updates: $updates) { affected_rows } }";
+    let updated = 0;
+    for (let i = 0; i < entries.length; i += 200) {
+      const chunk = entries.slice(i, i + 200).map((item) => ({
+        where: { id: { _eq: item.id } },
+        _set: { image: item.image, info: item.info },
+      }));
+      const res = await hasuraGraphQL(env, mutation, { updates: chunk });
+      const results = Array.isArray(res?.update_stocks_many) ? res.update_stocks_many : [];
+      updated += results.reduce((sum, r) => sum + (Number(r?.affected_rows) || 0), 0) || chunk.length;
+    }
+    return updated;
+  }
+
+  let updated = 0;
+  for (let i = 0; i < entries.length; i += 20) {
+    const chunk = entries.slice(i, i + 20);
+    await Promise.all(
+      chunk.map(async (item) => {
+        const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+        patchUrl.searchParams.set("id", `eq.${item.id}`);
+        try {
+          const patchRes = await supabaseFetch(env, patchUrl, {
+            method: "PATCH",
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              "Content-Type": "application/json; charset=utf-8",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ image: item.image, info: item.info }),
+          });
+          if (patchRes.ok) updated++;
+        } catch (err) {
+          console.warn(`Could not update stock ${item.id}:`, err.message);
+        }
+      }),
+    );
+  }
+  return updated;
+}
+
 export async function softDeleteAllProductImages(env) {
   const key = getServiceKey(env);
   const baseUrl = getSupabaseUrl(env);
@@ -1486,8 +1533,7 @@ export async function softDeleteAllProductImages(env) {
     return { ok: true, trashedCount: 0, restoreUntil };
   }
 
-  let trashedCount = 0;
-  for (const row of toSoftDelete) {
+  const entries = toSoftDelete.map((row) => {
     const info = structuredClone(row.info && typeof row.info === "object" ? row.info : {});
     const existingJob = info.imageGeneration || {};
     const imgUrl = row.image || existingJob.imageUrl || "";
@@ -1504,29 +1550,10 @@ export async function softDeleteAllProductImages(env) {
       status: "pending",
     };
     delete info.imageGenerationReplacement;
+    return { id: row.id, image: "", info };
+  });
 
-    const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
-    patchUrl.searchParams.set("id", `eq.${row.id}`);
-    try {
-      const patchRes = await supabaseFetch(env, patchUrl, {
-        method: "PATCH",
-        headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json; charset=utf-8",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({
-          image: "",
-          info,
-        }),
-      });
-      if (patchRes.ok) trashedCount++;
-    } catch (err) {
-      console.warn(`Could not soft delete stock ${row.id}:`, err.message);
-    }
-  }
-
+  const trashedCount = await bulkUpdateStocks(env, key, baseUrl, entries);
   invalidateProductImageQueueCache();
   return { ok: true, trashedCount, restoreUntil };
 }
@@ -1550,8 +1577,7 @@ export async function restoreAllProductImages(env) {
     return { ok: true, restoredCount: 0 };
   }
 
-  let restoredCount = 0;
-  for (const row of toRestore) {
+  const entries = toRestore.map((row) => {
     const info = structuredClone(row.info && typeof row.info === "object" ? row.info : {});
     const trashed = info.trashedImageGeneration || {};
     const restoredImage = trashed.image || trashed.imageUrl || "";
@@ -1565,29 +1591,10 @@ export async function restoreAllProductImages(env) {
     }
     info.imageGeneration = restoredJob;
     delete info.trashedImageGeneration;
+    return { id: row.id, image: restoredImage, info };
+  });
 
-    const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
-    patchUrl.searchParams.set("id", `eq.${row.id}`);
-    try {
-      const patchRes = await supabaseFetch(env, patchUrl, {
-        method: "PATCH",
-        headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json; charset=utf-8",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({
-          image: restoredImage,
-          info,
-        }),
-      });
-      if (patchRes.ok) restoredCount++;
-    } catch (err) {
-      console.warn(`Could not restore stock ${row.id}:`, err.message);
-    }
-  }
-
+  const restoredCount = await bulkUpdateStocks(env, key, baseUrl, entries);
   invalidateProductImageQueueCache();
   return { ok: true, restoredCount };
 }

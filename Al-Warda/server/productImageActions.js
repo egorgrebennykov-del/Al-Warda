@@ -215,10 +215,14 @@ export async function handleProductImageActions(request, env) {
         if ((await activeRuns(env)).length || (await deletionRuns(env)).some((run) => ACTIVE_STATUSES.has(run.status))) {
           return json({ error: "Image generation or deletion is already running; wait for it to finish" }, 409);
         }
-        let softDeleteResult = { ok: true, trashedCount: 0 };
+        let softDeleteResult = { ok: false, trashedCount: 0 };
+        let softDeleteError = null;
+        let githubDispatched = false;
+        let githubError = null;
         try {
           softDeleteResult = await softDeleteAllProductImages(env);
         } catch (err) {
+          softDeleteError = err;
           console.warn("softDeleteAllProductImages warning:", err.message);
         }
         try {
@@ -226,8 +230,13 @@ export async function handleProductImageActions(request, env) {
             method: "POST",
             body: JSON.stringify({ ref: "main", inputs: { images: "all" } }),
           });
+          githubDispatched = true;
         } catch (err) {
+          githubError = err;
           console.warn("GitHub dispatch warning for delete-all:", err.message);
+        }
+        if (softDeleteError && !githubDispatched) {
+          return json({ error: softDeleteError.message || githubError?.message || "Could not delete all images" }, 502);
         }
         invalidateActionsCache();
         return json({

@@ -404,7 +404,7 @@ export function getHasuraConfig(env = {}) {
   return { adminSecret, graphqlUrl };
 }
 
-export async function hasuraGraphQL(env, gql) {
+export async function hasuraGraphQL(env, gql, variables = undefined) {
   const { adminSecret, graphqlUrl } = getHasuraConfig(env);
   if (!adminSecret) {
     throw new Error("NHOST_ADMIN_SECRET is not configured");
@@ -415,7 +415,7 @@ export async function hasuraGraphQL(env, gql) {
       "Content-Type": "application/json",
       "x-hasura-admin-secret": adminSecret,
     },
-    body: JSON.stringify({ query: gql }),
+    body: JSON.stringify(variables ? { query: gql, variables } : { query: gql }),
   });
   const json = await res.json().catch(() => ({}));
   if (json.errors && json.errors.length) {
