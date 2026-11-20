@@ -247,7 +247,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 12px;
+  padding-top: 24px;
   z-index: 2;
 }
 
@@ -308,16 +308,16 @@
   justify-content: center;
   width: 100%;
   max-width: 586px;
-  height: 500px;
+  height: 460px;
   z-index: 4;
 }
 
 .warda-details-img {
   display: block;
   max-width: 100%;
-  max-height: none;
+  max-height: 100%;
   width: auto;
-  height: calc(475px * var(--flacon-scale, 1));
+  height: calc(445px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   position: relative;
@@ -337,7 +337,8 @@
 }
 
 .warda-details-img-wrap:hover .warda-details-img {
-  height: calc(485px * var(--flacon-scale, 1));
+  height: calc(455px * var(--flacon-scale, 1));
+  max-height: 470px;
   filter:
     brightness(1.13)
     contrast(1.1)
@@ -350,7 +351,7 @@
 
 @media (hover: none) {
   .warda-details-img-wrap:hover .warda-details-img {
-    height: calc(475px * var(--flacon-scale, 1));
+    height: calc(445px * var(--flacon-scale, 1));
   }
 }
 
@@ -494,7 +495,7 @@
   display: block;
   max-width: 100%;
   width: auto;
-  height: calc(475px * var(--flacon-scale, 1));
+  height: calc(445px * var(--flacon-scale, 1));
   object-fit: contain;
   object-position: bottom center;
   transform-origin: center center;

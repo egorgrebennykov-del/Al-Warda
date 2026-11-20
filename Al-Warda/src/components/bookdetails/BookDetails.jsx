@@ -364,15 +364,19 @@ export default function BookDetails() {
           const fgW = Math.max(0.15, (lastCol - firstCol + 1) / sampleSize);
           const visibleGroundH = Math.max(0.15, (groundRow - firstRow + 1) / sampleSize);
           const containerW = img.parentElement?.clientWidth || 586;
-          const photoH = img.parentElement?.clientHeight || 500;
-          const renderedH = img.offsetHeight || 475;
-          const renderedW = img.offsetWidth || 475;
-          const visiblePxH = visibleGroundH * renderedH;
-          const targetScaleH = (photoH - 4) / Math.max(1, visiblePxH);
-          const maxScaleW = (containerW * 0.96) / Math.max(1, renderedW * fgW);
+          const photoH = img.parentElement?.clientHeight || 460;
+          const baseH = 445;
+          const aspectRatio =
+            img.naturalWidth && img.naturalHeight
+              ? img.naturalWidth / img.naturalHeight
+              : 1;
+          const baseW = baseH * aspectRatio;
+          const visiblePxH = visibleGroundH * baseH;
+          const targetScaleH = (photoH - 6) / Math.max(1, visiblePxH);
+          const maxScaleW = (containerW * 0.82) / Math.max(1, baseW * fgW);
           computedScale = Math.max(
             1,
-            Math.min(1.28, targetScaleH, maxScaleW),
+            Math.min(1.14, targetScaleH, maxScaleW),
           );
         }
       }
