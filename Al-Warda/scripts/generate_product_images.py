@@ -725,7 +725,40 @@ def search_official_studio_candidates(name, brand="", is_set=False):
         _query_shopify_domains(TRUSTED_RETAILER_DOMAINS, include_brand_in_query=True, require_brand_match=True, source_tag="verified_retailer")
 
     all_matches.sort(key=lambda item: item[0], reverse=True)
-    return [item[1] for item in all_matches[:4]]
+    top_candidates = [item[1] for item in all_matches[:4]]
+
+    # For single bottles (not sets), also expand gallery images from top Shopify matches
+    # so bottle-only shots (often 2nd/3rd gallery image) are available alongside promo/box thumbnails.
+    if not is_set and top_candidates:
+        expanded = []
+        seen_expanded = set()
+        for cand in top_candidates:
+            c_url = cand.get("imageUrl")
+            if c_url and c_url not in seen_expanded:
+                seen_expanded.add(c_url)
+                expanded.append(cand)
+            s_url = str(cand.get("sourceUrl") or "").split("?")[0]
+            if "/products/" in s_url and len(expanded) < 8:
+                try:
+                    p_resp = requests.get(f"{s_url}.json", headers=headers, timeout=5)
+                    if p_resp.ok:
+                        imgs = (p_resp.json().get("product") or {}).get("images") or []
+                        for g_img in imgs[:5]:
+                            g_src = upgrade_shopify_image_url(g_img.get("src"))
+                            if not g_src or g_src in seen_expanded:
+                                continue
+                            seen_expanded.add(g_src)
+                            expanded.append({
+                                **cand,
+                                "imageUrl": g_src,
+                            })
+                            if len(expanded) >= 8:
+                                break
+                except Exception:
+                    pass
+        return expanded[:8]
+
+    return top_candidates
 
 
 def make_session():
@@ -2546,6 +2579,72 @@ def clean_floating_text_and_haze(cutout, is_set=False):
     return Image.fromarray(arr, mode="RGBA")
 
 
+def remove_clean_gap_box_local(cutout):
+    """For single bottles (is_set=False), detect and remove a packaging box
+    when there is a clean background gap between the rectangular box and the bottle."""
+    if "A" not in cutout.getbands():
+        return cutout, False
+    import numpy as np
+
+    arr = np.array(cutout.convert("RGBA")).copy()
+    alpha = arr[:, :, 3]
+    ys, xs = np.where(alpha > 28)
+    if len(ys) == 0:
+        return cutout, False
+    y1, y2 = int(ys.min()), int(ys.max()) + 1
+    x1, x2 = int(xs.min()), int(xs.max()) + 1
+    fg_h, fg_w = y2 - y1, x2 - x1
+    if fg_h < 60 or fg_w / max(1, fg_h) < 0.78:
+        return cutout, False
+
+    roi_a = alpha[y1:y2, x1:x2]
+    col_counts = (roi_a > 40).sum(axis=0)
+    s_lo, s_hi = int(fg_w * 0.25), int(fg_w * 0.75)
+
+    def _box_score(sub_a):
+        sh, sw = sub_a.shape
+        if sw < 20 or sh < 40:
+            return 0.0
+        sy, sx = np.where(sub_a > 40)
+        if len(sy) == 0:
+            return 0.0
+        bh = int(sy.max()) - int(sy.min()) + 1
+        bw = int(sx.max()) - int(sx.min()) + 1
+        fill = len(sy) / max(1, bh * bw)
+        top_band = sub_a[int(sy.min()):int(sy.min()) + max(3, int(bh * 0.08)), :] > 40
+        mid_band = sub_a[int(sy.min()) + int(bh * 0.45):int(sy.min()) + int(bh * 0.60), :] > 40
+        top_w = top_band.any(axis=0).sum()
+        mid_w = max(1, mid_band.any(axis=0).sum())
+        return fill * 0.55 + min(1.0, top_w / mid_w) * 0.45
+
+    best_split = None
+    best_diff = 0.0
+    best_keep_side = None
+    for split_x in range(s_lo, s_hi, 4):
+        left_s = _box_score(roi_a[:, :split_x])
+        right_s = _box_score(roi_a[:, split_x:])
+        diff = abs(left_s - right_s)
+        if max(left_s, right_s) > 0.80 and min(left_s, right_s) < 0.76 and diff > best_diff:
+            best_diff = diff
+            best_split = split_x
+            best_keep_side = "right" if left_s > right_s else "left"
+
+    if best_split is None:
+        return cutout, False
+
+    w_lo = max(s_lo, best_split - 24)
+    w_hi = min(s_hi, best_split + 24)
+    refined_split = w_lo + int(np.argmin(col_counts[w_lo:w_hi]))
+    if col_counts[refined_split] > fg_h * 0.10:
+        return cutout, False
+
+    if best_keep_side == "right":
+        arr[y1:y2, x1:x1 + refined_split, 3] = 0
+    else:
+        arr[y1:y2, x1 + refined_split:x2, 3] = 0
+    return Image.fromarray(arr, mode="RGBA"), True
+
+
 def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True, is_set=False):
     if "A" not in cutout.getbands():
         return cutout
@@ -2553,6 +2652,8 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
 
     cutout = strip_baked_reflection(cutout)
     cutout = clean_floating_text_and_haze(cutout, is_set=is_set)
+    if not is_set:
+        cutout, _ = remove_clean_gap_box_local(cutout)
 
     # 1. Clean invisible/faint ghost residue (alpha < 18)
     arr = np.array(cutout)
