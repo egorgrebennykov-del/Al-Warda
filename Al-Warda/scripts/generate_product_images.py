@@ -1893,6 +1893,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         target_max_w=880,
         canvas_size=canvas_size,
         allow_upscale=allow_upscale,
+        is_set=is_set,
     )
 
     cutout, removed_props = remove_extraneous_props_from_cutout(cutout, is_set=is_set)
@@ -1904,6 +1905,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
             target_max_w=880,
             canvas_size=canvas_size,
             allow_upscale=allow_upscale,
+            is_set=is_set,
         )
 
     # Stage-aware studio photometry & lighting harmonization for bottom_glow_stage.webp
@@ -2484,12 +2486,69 @@ def strip_baked_reflection(cutout):
         return cutout
 
 
-def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True):
+def clean_floating_text_and_haze(cutout, is_set=False):
+    """Remove detached floating calligraphy/text/watermarks above, below, or beside
+    the main bottle, as well as detached semi-transparent smoke/mist/reflection clouds."""
+    if "A" not in cutout.getbands():
+        return cutout
+    import numpy as np
+    try:
+        import cv2
+    except Exception:
+        return cutout
+
+    arr = np.array(cutout.convert("RGBA")).copy()
+    alpha = arr[:, :, 3]
+    H, W = alpha.shape
+
+    solid_mask = (alpha >= 170).astype(np.uint8)
+    n_sol, lbl_sol, st_sol, _ = cv2.connectedComponentsWithStats(solid_mask)
+    if n_sol <= 1:
+        return cutout
+
+    sol_areas = [st_sol[i, cv2.CC_STAT_AREA] for i in range(1, n_sol)]
+    main_lbl = 1 + int(np.argmax(sol_areas))
+    max_area = sol_areas[main_lbl - 1]
+    mx = int(st_sol[main_lbl, cv2.CC_STAT_LEFT])
+    my = int(st_sol[main_lbl, cv2.CC_STAT_TOP])
+    mw = int(st_sol[main_lbl, cv2.CC_STAT_WIDTH])
+    mh = int(st_sol[main_lbl, cv2.CC_STAT_HEIGHT])
+    mx2, my2 = mx + mw, my + mh
+
+    keep_solid = np.zeros_like(solid_mask)
+    for lbl in range(1, n_sol):
+        a_i = st_sol[lbl, cv2.CC_STAT_AREA]
+        x = int(st_sol[lbl, cv2.CC_STAT_LEFT])
+        y = int(st_sol[lbl, cv2.CC_STAT_TOP])
+        w = int(st_sol[lbl, cv2.CC_STAT_WIDTH])
+        h = int(st_sol[lbl, cv2.CC_STAT_HEIGHT])
+        x2, y2 = x + w, y + h
+
+        if lbl == main_lbl:
+            keep_solid[lbl_sol == lbl] = 1
+            continue
+
+        is_floating_above = (y2 < my - max(12, int(mh * 0.04))) and (a_i < max_area * 0.25)
+        is_floating_below = (y > my2 - max(4, int(mh * 0.02))) and (a_i < max_area * 0.30)
+        is_side_debris = (not is_set) and (a_i < max_area * 0.15) and (x2 < mx - int(W * 0.03) or x > mx2 + int(W * 0.03))
+        is_tiny_speck = a_i < min(250, max_area * 0.008)
+
+        if is_floating_above or is_floating_below or is_side_debris or is_tiny_speck:
+            continue
+        keep_solid[lbl_sol == lbl] = 1
+
+    keep_zone = cv2.dilate(keep_solid, np.ones((9, 9), np.uint8), iterations=1) > 0
+    arr[:, :, 3] = np.where(keep_zone, alpha, 0).astype(np.uint8)
+    return Image.fromarray(arr, mode="RGBA")
+
+
+def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_size=(1024, 1024), allow_upscale=True, is_set=False):
     if "A" not in cutout.getbands():
         return cutout
     import numpy as np
 
     cutout = strip_baked_reflection(cutout)
+    cutout = clean_floating_text_and_haze(cutout, is_set=is_set)
 
     # 1. Clean invisible/faint ghost residue (alpha < 18)
     arr = np.array(cutout)
