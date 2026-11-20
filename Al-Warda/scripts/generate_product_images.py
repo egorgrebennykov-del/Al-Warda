@@ -2228,7 +2228,7 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
             p_low = float(np.percentile(fg_l, 1.5))
             p_high = float(np.percentile(fg_l, 99.2))
             if p_high > p_low + 20.0:
-                L_toned = np.clip((L - p_low) / (p_high - p_low) * 0.94 + 0.03, 0.0, 1.0)
+                L_toned = np.clip((L - p_low) / (p_high - p_low) * 0.96, 0.0, 1.0)
             else:
                 L_toned = L_norm
 
@@ -2240,7 +2240,10 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
 
         clahe = cv2.createCLAHE(clipLimit=1.15, tileGridSize=(8, 8))
         L_clahe = clahe.apply(L_3d)
-        L_mix = 0.55 * L_3d.astype(np.float32) + 0.45 * L_clahe.astype(np.float32)
+        # Protect deep blacks / dark caps (L < 55) from CLAHE shadow lifting
+        dark_protect = np.clip((L_3d.astype(np.float32) - 22.0) / 48.0, 0.0, 1.0)
+        clahe_w = 0.45 * dark_protect
+        L_mix = (1.0 - clahe_w) * L_3d.astype(np.float32) + clahe_w * L_clahe.astype(np.float32)
         blur_l = cv2.GaussianBlur(L_mix, (0, 0), 1.0)
         L_sharp = np.clip(L_mix * 1.18 - blur_l * 0.18, 0, 255)
 
@@ -2274,8 +2277,8 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
             (v_norm - 0.22) / 0.78, 0.0, 1.0
         )
 
-        bounce_str = (bounce_zone * (0.14 + 0.12 * bright_factor))[:, :, np.newaxis]
-        rim_str = (rim_zone * (0.12 + 0.14 * bright_factor))[:, :, np.newaxis]
+        bounce_str = (bounce_zone * (0.08 + 0.14 * bright_factor) * (0.25 + 0.75 * dark_protect))[:, :, np.newaxis]
+        rim_str = (rim_zone * (0.08 + 0.14 * bright_factor) * (0.25 + 0.75 * dark_protect))[:, :, np.newaxis]
 
         h_col = stage_horizon_rgb[np.newaxis, np.newaxis, :]
         a_col = stage_aura_rgb[np.newaxis, np.newaxis, :]
@@ -2288,7 +2291,7 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
             * 255.0
             * (0.5 * rim_str)
         )
-        rgb_stage = rgb_stage + h_col * (bounce_str * 0.22)
+        rgb_stage = rgb_stage + h_col * (bounce_str * 0.10)
 
         # Subtle 3px ground-contact AO at very bottom edge
         ao_zone = np.clip((v_norm - 0.985) / 0.015, 0.0, 1.0)[:, :, np.newaxis]
@@ -2334,11 +2337,12 @@ def enhance_luxury_color(cutout):
         p50 = float(np.percentile(fg_l, 50.0))
         p95 = float(np.percentile(fg_l, 95.0))
 
-        # Gently lift dim midtones if the cutout was previously over-darkened
+        # Preserve deep blacks/dark purples while keeping midtone clarity
         L_adj = L.copy()
         if p50 < 95.0 and p95 < 225.0:
-            lift = min(1.14, 102.0 / max(45.0, p50))
-            L_adj = np.clip(L * (0.35 + 0.65 * lift), 0.0, 255.0)
+            lift = min(1.08, 102.0 / max(45.0, p50))
+            dark_keep = np.clip((L - 25.0) / 50.0, 0.0, 1.0)
+            L_adj = np.clip(L * (1.0 + (lift - 1.0) * 0.65 * dark_keep), 0.0, 255.0)
 
         # Gentle micro-contrast in L
         clahe = cv2.createCLAHE(clipLimit=1.08, tileGridSize=(8, 8))
