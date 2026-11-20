@@ -1836,7 +1836,7 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
         return image
 
 
-def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024), allow_upscale=True):
+def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1024, 1024), allow_upscale=True, is_set=False):
     """Segment the ORIGINAL photo and place it on a transparent canvas WITHOUT
     redrawing the bottle. Applies AI Super-Resolution (Upscayl / UltraSharp) on compressed/low-res inputs,
     and studio lighting enhancement (CLAHE, percentile auto-levels, edge-preserving clarity)
@@ -1885,6 +1885,8 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         cutout = raw_cutout
         processed_size = original_size
 
+    cutout = strip_dark_studio_backdrop(cutout)
+
     cutout = normalize_flacon_cutout(
         cutout,
         target_max_h=880,
@@ -1893,7 +1895,7 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         allow_upscale=allow_upscale,
     )
 
-    cutout, removed_props = remove_extraneous_props_from_cutout(cutout)
+    cutout, removed_props = remove_extraneous_props_from_cutout(cutout, is_set=is_set)
     if removed_props:
         print(f"Removed extraneous props from cutout: {removed_props}", flush=True)
         cutout = normalize_flacon_cutout(
@@ -1912,9 +1914,60 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
     return output.getvalue(), canvas_size, original_size
 
 
-def remove_extraneous_props_from_cutout(cutout):
+def strip_dark_studio_backdrop(cutout):
+    """Remove unsegmented dark/black studio backdrop rectangles around the foreground."""
+    if "A" not in cutout.getbands():
+        return cutout
+    import numpy as np
+    try:
+        import cv2
+    except Exception:
+        return cutout
+
+    arr = np.array(cutout.convert("RGBA")).copy()
+    alpha = arr[:, :, 3]
+    ys, xs = np.where(alpha > 28)
+    if len(ys) == 0:
+        return cutout
+    y1, y2 = int(ys.min()), int(ys.max()) + 1
+    x1, x2 = int(xs.min()), int(xs.max()) + 1
+    roi_a = alpha[y1:y2, x1:x2]
+    roi_rgb = arr[y1:y2, x1:x2, :3]
+    rh, rw = roi_a.shape
+    if rh < 40 or rw < 40:
+        return cutout
+
+    rim = np.zeros_like(roi_a, dtype=bool)
+    rim[:5, :] = True
+    rim[-5:, :] = True
+    rim[:, :5] = True
+    rim[:, -5:] = True
+    rim_opaque = rim & (roi_a > 40)
+    if rim_opaque.sum() == 0:
+        return cutout
+
+    roi_max = roi_rgb.max(axis=2)
+    dark_rim = rim_opaque & (roi_max < 38)
+    if dark_rim.sum() / max(1, rim_opaque.sum()) < 0.25:
+        return cutout
+
+    dark_mask = ((roi_a > 20) & (roi_max < 42)).astype(np.uint8)
+    _, labels, _, _ = cv2.connectedComponentsWithStats(dark_mask)
+    rim_labels = set(np.unique(labels[dark_rim])) - {0}
+    if not rim_labels:
+        return cutout
+
+    bg_dark = np.isin(labels, list(rim_labels))
+    bg_u8 = cv2.dilate(bg_dark.astype(np.uint8) * 255, np.ones((3, 3), np.uint8), iterations=1)
+    soft = cv2.GaussianBlur(bg_u8.astype(np.float32) / 255.0, (5, 5), 1.0)
+    arr[y1:y2, x1:x2, 3] = np.clip(np.round(roi_a.astype(np.float32) * (1.0 - soft)), 0, 255).astype(np.uint8)
+    return Image.fromarray(arr, mode="RGBA")
+
+
+def remove_extraneous_props_from_cutout(cutout, is_set=False):
     """Use Gemini Vision to detect and cleanly erase extraneous non-product props
-    (e.g. lemons, fruits, flowers, leaves, wood chips, splashes) from a cutout."""
+    (e.g. lemons, fruits, flowers, leaves, wood chips, splashes) and, for single
+    perfumes (is_set=False), outer packaging/boxes next to the bottle."""
     if "A" not in cutout.getbands():
         return cutout, []
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
@@ -1931,16 +1984,25 @@ def remove_extraneous_props_from_cutout(cutout):
         comp.save(buf, format="JPEG", quality=90)
         b64 = base64.b64encode(buf.getvalue()).decode("ascii")
 
+        box_clause = (
+            ""
+            if is_set
+            else (
+                "ALSO detect any outer cardboard packaging / perfume box next to the bottle "
+                "(label it 'packaging box', ONLY when a perfume bottle is also visible in the image). "
+            )
+        )
         prompt = (
             "Inspect this perfume product cutout. Detect ONLY extraneous decorative props or ingredients "
             "placed around or next to the product that are NOT part of the perfume bottle, cap, spray nozzle, "
             "sculpted bottle ornaments (such as metallic snakes, crowns, wings, medallions, or charms attached to the bottle/cap), "
-            "label, gift box, or miniature vials — "
-            "such as fruits (lemons, oranges, apples, berries), flowers, petals, leaves, branches, wood chips, "
-            "cinnamon sticks, coffee beans, spices, ice cubes, stones, water splashes, or hands.\n"
+            "or bottle label — "
+            "such as fruits (lemons, oranges, apples, berries, lychees), flowers, petals, leaves, branches, wood chips, "
+            "cinnamon sticks, coffee beans, spices, ice cubes, stones, water splashes, or hands. "
+            f"{box_clause}"
             'Return ONLY JSON: {"hasProps": true/false, "props": [{"label": "short name", "box_2d": [ymin, xmin, ymax, xmax]}]} '
-            "where box_2d is in 0..1000 normalized coordinates tightly enclosing each extraneous prop.\n"
-            "NEVER include perfume bottles, caps, sculpted bottle ornaments, boxes, or vials inside box_2d."
+            "where box_2d is in 0..1000 normalized coordinates tightly enclosing each extraneous prop or packaging box.\n"
+            "NEVER include the perfume bottle, cap, or sculpted bottle ornaments inside box_2d."
         )
 
         payload_json = None
@@ -2004,10 +2066,15 @@ def remove_extraneous_props_from_cutout(cutout):
             bw, bh = x2 - x1, y2 - y1
             if bw <= 4 or bh <= 4:
                 continue
-            if bw > W * 0.45 or bh > H * 0.55:
+            label_str = str(prop.get("label") or "prop").lower()
+            is_box_prop = (not is_set) and any(k in label_str for k in ("box", "pack", "carton", "короб"))
+            max_w_ratio = 0.72 if is_box_prop else 0.45
+            max_h_ratio = 0.85 if is_box_prop else 0.55
+            max_area_ratio = 0.65 if is_box_prop else 0.22
+            if bw > W * max_w_ratio or bh > H * max_h_ratio:
                 continue
             box_fg = int((arr[y1:y2, x1:x2, 3] > 28).sum())
-            if box_fg == 0 or box_fg > fg_area * 0.22:
+            if box_fg == 0 or box_fg > fg_area * max_area_ratio:
                 continue
 
             if has_cv2:
@@ -3428,7 +3495,7 @@ def process_product(
                 text_restore_reason = "authentic_original_cutout"
         else:
             output, processed_size, original_size = preserve_original_product(
-                source_bytes, segmentation_session, allow_upscale=True
+                source_bytes, segmentation_session, allow_upscale=True, is_set=is_set
             )
             processing_method = "local_studio_photometry"
             whether_upscaled = processed_size != original_size
