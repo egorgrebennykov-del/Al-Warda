@@ -2009,15 +2009,119 @@ def strip_dark_studio_backdrop(cutout):
     return Image.fromarray(arr, mode="RGBA")
 
 
+def strip_packaging_box_geometry(cutout):
+    """Deterministically detect and erase an outer cardboard packaging box placed
+    beside a perfume bottle (0 API cost, works even when Gemini Vision quota is 429)."""
+    if "A" not in cutout.getbands():
+        return cutout, False
+    try:
+        import numpy as np
+    except Exception:
+        return cutout, False
+
+    arr = np.array(cutout.convert("RGBA")).copy()
+    alpha = arr[:, :, 3]
+    fg = alpha > 60
+    ys, xs = np.where(fg)
+    if len(xs) < 200:
+        return cutout, False
+
+    x1, x2, y1, y2 = int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
+    bw, bh = x2 - x1 + 1, y2 - y1 + 1
+    if bw < 60 or bh < 60 or (bw / float(bh)) < 0.65:
+        return cutout, False
+
+    # Look for a vertical gap in the upper 45% of the foreground separating box vs bottle
+    top_zone = fg[y1:y1 + max(10, int(bh * 0.45)), :]
+    margin = max(12, int(bw * 0.16))
+    if x1 + margin >= x2 - margin:
+        return cutout, False
+
+    col_empty_top = ~np.any(top_zone, axis=0)
+    best_gap = None
+    cur_start = None
+    for x in range(x1 + margin, x2 - margin + 1):
+        if col_empty_top[x]:
+            if cur_start is None:
+                cur_start = x
+        else:
+            if cur_start is not None:
+                if best_gap is None or (x - cur_start) > (best_gap[1] - best_gap[0]):
+                    best_gap = (cur_start, x - 1)
+                cur_start = None
+    if cur_start is not None:
+        end_x = x2 - margin
+        if best_gap is None or (end_x - cur_start + 1) > (best_gap[1] - best_gap[0]):
+            best_gap = (cur_start, end_x)
+
+    if not best_gap or (best_gap[1] - best_gap[0] + 1) < 3:
+        return cutout, False
+
+    s_l = max(x1 + 4, best_gap[0] - 2)
+    s_r = min(x2 - 4, best_gap[1] + 2)
+    col_counts = fg[y1:y2 + 1, s_l:s_r + 1].sum(axis=0)
+    split_x = s_l + int(np.argmin(col_counts))
+
+    total_fg = int(fg.sum())
+
+    def _side_metrics(sx1, sx2):
+        sub = fg[y1:y2 + 1, sx1:sx2 + 1]
+        sy, sx = np.where(sub)
+        if len(sx) == 0:
+            return None
+        ox1, ox2 = int(sx.min()), int(sx.max())
+        oy1, oy2 = int(sy.min()), int(sy.max())
+        ow, oh = ox2 - ox1 + 1, oy2 - oy1 + 1
+        area = int(len(sx))
+        if ow < 20 or oh < 40 or area < total_fg * 0.10:
+            return None
+        fill = area / float(ow * oh)
+        top_h = max(4, int(oh * 0.14))
+        top_band = sub[oy1:oy1 + top_h, ox1:ox2 + 1]
+        top_cols = np.any(top_band, axis=0)
+        top_ratio = float(top_cols.mean()) if top_cols.size else 0.0
+        return {"area": area, "fill": fill, "top_ratio": top_ratio, "is_box": (fill >= 0.78 and top_ratio >= 0.76), "is_bottle": (top_ratio < 0.78 or fill < 0.80)}
+
+    left_m = _side_metrics(x1, split_x)
+    right_m = _side_metrics(split_x + 1, x2)
+    if not left_m or not right_m:
+        return cutout, False
+
+    erase_side = None
+    if left_m["is_box"] and right_m["is_bottle"]:
+        erase_side = "left"
+    elif right_m["is_box"] and left_m["is_bottle"]:
+        erase_side = "right"
+
+    if not erase_side:
+        return cutout, False
+
+    if erase_side == "left":
+        cut_x = max(split_x, best_gap[1])
+        arr[:, :cut_x + 1, 3] = 0
+    else:
+        cut_x = min(split_x, best_gap[0])
+        arr[:, cut_x:, 3] = 0
+
+    return Image.fromarray(arr, mode="RGBA"), True
+
+
 def remove_extraneous_props_from_cutout(cutout, is_set=False):
-    """Use Gemini Vision to detect and cleanly erase extraneous non-product props
-    (e.g. lemons, fruits, flowers, leaves, wood chips, splashes) and, for single
-    perfumes (is_set=False), outer packaging/boxes next to the bottle."""
+    """Use deterministic geometry + Gemini Vision to detect and cleanly erase extraneous
+    non-product props (e.g. lemons, fruits, flowers, leaves) and, for single perfumes
+    (is_set=False), outer packaging/boxes next to the bottle."""
     if "A" not in cutout.getbands():
         return cutout, []
+
+    removed_labels = []
+    if not is_set:
+        cutout, removed_box = strip_packaging_box_geometry(cutout)
+        if removed_box:
+            removed_labels.append("packaging box")
+
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
     if not gemini_key or requests is None:
-        return cutout, []
+        return cutout, removed_labels
 
     import base64
     import numpy as np
@@ -2073,20 +2177,19 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
                     break
 
         if not isinstance(payload_json, dict) or not payload_json.get("hasProps"):
-            return cutout, []
+            return cutout, removed_labels
 
         props = payload_json.get("props") or []
         if not isinstance(props, list) or not props:
-            return cutout, []
+            return cutout, removed_labels
 
         arr = np.array(cutout).copy()
         H, W = arr.shape[:2]
         fg_area = int((arr[:, :, 3] > 28).sum())
         if fg_area <= 0:
-            return cutout, []
+            return cutout, removed_labels
 
         erase_mask = np.zeros((H, W), dtype=np.uint8)
-        removed_labels = []
         try:
             import cv2
             has_cv2 = True
@@ -2113,13 +2216,13 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
                 continue
             label_str = str(prop.get("label") or "prop").lower()
             is_box_prop = (not is_set) and any(k in label_str for k in ("box", "pack", "carton", "короб"))
-            max_w_ratio = 0.72 if is_box_prop else 0.45
-            max_h_ratio = 0.85 if is_box_prop else 0.55
-            max_area_ratio = 0.65 if is_box_prop else 0.22
+            max_w_ratio = 0.82 if is_box_prop else 0.45
+            max_h_ratio = 0.96 if is_box_prop else 0.55
+            max_area_ratio = 0.85 if is_box_prop else 0.22
             if bw > W * max_w_ratio or bh > H * max_h_ratio:
                 continue
             box_fg = int((arr[y1:y2, x1:x2, 3] > 28).sum())
-            if box_fg == 0 or box_fg > fg_area * max_area_ratio:
+            if box_fg == 0 or box_fg > fg_area * max_area_ratio or (is_box_prop and (fg_area - box_fg) < fg_area * 0.12):
                 continue
 
             if has_cv2:
@@ -2169,7 +2272,7 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
 
         return Image.fromarray(arr, mode="RGBA"), removed_labels
     except Exception:
-        return cutout, []
+        return cutout, removed_labels
 
 
 def harmonize_cutout_for_stage(cutout, stage_path=None):
