@@ -1893,12 +1893,171 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
         allow_upscale=allow_upscale,
     )
 
+    cutout, removed_props = remove_extraneous_props_from_cutout(cutout)
+    if removed_props:
+        print(f"Removed extraneous props from cutout: {removed_props}", flush=True)
+        cutout = normalize_flacon_cutout(
+            cutout,
+            target_max_h=880,
+            target_max_w=880,
+            canvas_size=canvas_size,
+            allow_upscale=allow_upscale,
+        )
+
     # Stage-aware studio photometry & lighting harmonization for bottom_glow_stage.webp
     cutout = harmonize_cutout_for_stage(cutout)
 
     output = io.BytesIO()
     cutout.save(output, format="PNG", optimize=True, compress_level=9)
     return output.getvalue(), canvas_size, original_size
+
+
+def remove_extraneous_props_from_cutout(cutout):
+    """Use Gemini Vision to detect and cleanly erase extraneous non-product props
+    (e.g. lemons, fruits, flowers, leaves, wood chips, splashes) from a cutout."""
+    if "A" not in cutout.getbands():
+        return cutout, []
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
+    if not gemini_key or requests is None:
+        return cutout, []
+
+    import base64
+    import numpy as np
+
+    try:
+        bg = Image.new("RGBA", cutout.size, (18, 16, 14, 255))
+        comp = Image.alpha_composite(bg, cutout).convert("RGB").resize((512, 512), Image.Resampling.LANCZOS)
+        buf = io.BytesIO()
+        comp.save(buf, format="JPEG", quality=90)
+        b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+        prompt = (
+            "Inspect this perfume product cutout. Detect ONLY extraneous decorative props or ingredients "
+            "placed around or next to the product that are NOT part of the perfume bottle, cap, spray nozzle, "
+            "sculpted bottle ornaments (such as metallic snakes, crowns, wings, medallions, or charms attached to the bottle/cap), "
+            "label, gift box, or miniature vials — "
+            "such as fruits (lemons, oranges, apples, berries), flowers, petals, leaves, branches, wood chips, "
+            "cinnamon sticks, coffee beans, spices, ice cubes, stones, water splashes, or hands.\n"
+            'Return ONLY JSON: {"hasProps": true/false, "props": [{"label": "short name", "box_2d": [ymin, xmin, ymax, xmax]}]} '
+            "where box_2d is in 0..1000 normalized coordinates tightly enclosing each extraneous prop.\n"
+            "NEVER include perfume bottles, caps, sculpted bottle ornaments, boxes, or vials inside box_2d."
+        )
+
+        payload_json = None
+        for model in ("gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-2.0-flash"):
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
+            resp = requests.post(
+                url,
+                json={
+                    "contents": [{"parts": [{"text": prompt}, {"inlineData": {"mimeType": "image/jpeg", "data": b64}}]}],
+                    "generationConfig": {"temperature": 0.0, "responseMimeType": "application/json"},
+                },
+                timeout=25,
+            )
+            if resp.ok:
+                data = resp.json()
+                text = (
+                    ((data.get("candidates") or [{}])[0].get("content") or {})
+                    .get("parts", [{}])[0]
+                    .get("text", "")
+                )
+                if text:
+                    payload_json = json.loads(text)
+                    break
+
+        if not isinstance(payload_json, dict) or not payload_json.get("hasProps"):
+            return cutout, []
+
+        props = payload_json.get("props") or []
+        if not isinstance(props, list) or not props:
+            return cutout, []
+
+        arr = np.array(cutout).copy()
+        H, W = arr.shape[:2]
+        fg_area = int((arr[:, :, 3] > 28).sum())
+        if fg_area <= 0:
+            return cutout, []
+
+        erase_mask = np.zeros((H, W), dtype=np.uint8)
+        removed_labels = []
+        try:
+            import cv2
+            has_cv2 = True
+        except Exception:
+            cv2 = None
+            has_cv2 = False
+
+        for prop in props:
+            if not isinstance(prop, dict):
+                continue
+            box = prop.get("box_2d")
+            if not isinstance(box, (list, tuple)) or len(box) != 4:
+                continue
+            try:
+                ymin, xmin, ymax, xmax = [float(v) for v in box]
+            except (TypeError, ValueError):
+                continue
+            y1 = max(0, int(round((ymin / 1000.0) * H)) - 3)
+            x1 = max(0, int(round((xmin / 1000.0) * W)) - 3)
+            y2 = min(H, int(round((ymax / 1000.0) * H)) + 3)
+            x2 = min(W, int(round((xmax / 1000.0) * W)) + 3)
+            bw, bh = x2 - x1, y2 - y1
+            if bw <= 4 or bh <= 4:
+                continue
+            if bw > W * 0.45 or bh > H * 0.55:
+                continue
+            box_fg = int((arr[y1:y2, x1:x2, 3] > 28).sum())
+            if box_fg == 0 or box_fg > fg_area * 0.22:
+                continue
+
+            if has_cv2:
+                try:
+                    pad = 40
+                    ry1, rx1 = max(0, y1 - pad), max(0, x1 - pad)
+                    ry2, rx2 = min(H, y2 + pad), min(W, x2 + pad)
+                    roi_rgb = arr[ry1:ry2, rx1:rx2, :3]
+                    roi_alpha = arr[ry1:ry2, rx1:rx2, 3]
+                    gc_mask = np.full(roi_rgb.shape[:2], cv2.GC_BGD, dtype=np.uint8)
+                    by1, bx1 = y1 - ry1, x1 - rx1
+                    by2, bx2 = y2 - ry1, x2 - rx1
+                    box_opaque = roi_alpha[by1:by2, bx1:bx2] > 28
+                    gc_mask[by1:by2, bx1:bx2][box_opaque] = cv2.GC_PR_FGD
+
+                    box_cx = (x1 + x2) / 2.0
+                    if box_cx < W / 2.0:
+                        def_x2 = bx1 + max(1, int((bx2 - bx1) * 0.45))
+                        gc_mask[by1:by2, bx1:def_x2][roi_alpha[by1:by2, bx1:def_x2] > 28] = cv2.GC_FGD
+                    else:
+                        def_x1 = bx2 - max(1, int((bx2 - bx1) * 0.45))
+                        gc_mask[by1:by2, def_x1:bx2][roi_alpha[by1:by2, def_x1:bx2] > 28] = cv2.GC_FGD
+
+                    if (gc_mask == cv2.GC_FGD).any() and (gc_mask == cv2.GC_BGD).any():
+                        bgd_model = np.zeros((1, 65), np.float64)
+                        fgd_model = np.zeros((1, 65), np.float64)
+                        cv2.grabCut(roi_rgb, gc_mask, None, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_MASK)
+                        prop_roi = np.where((gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
+                        erase_mask[y1:y2, x1:x2] = np.maximum(erase_mask[y1:y2, x1:x2], prop_roi[by1:by2, bx1:bx2])
+                    else:
+                        erase_mask[y1:y2, x1:x2] = 255
+                except Exception:
+                    erase_mask[y1:y2, x1:x2] = 255
+            else:
+                erase_mask[y1:y2, x1:x2] = 255
+
+            removed_labels.append(str(prop.get("label") or "prop"))
+
+        if not removed_labels:
+            return cutout, []
+
+        if has_cv2:
+            soft_erase = cv2.GaussianBlur(erase_mask.astype(np.float32) / 255.0, (5, 5), 1.0)
+            arr[:, :, 3] = np.clip(np.round(arr[:, :, 3].astype(np.float32) * (1.0 - soft_erase)), 0, 255).astype(np.uint8)
+        else:
+            arr[erase_mask > 0, 3] = 0
+
+        return Image.fromarray(arr, mode="RGBA"), removed_labels
+    except Exception:
+        return cutout, []
 
 
 def harmonize_cutout_for_stage(cutout, stage_path=None):
