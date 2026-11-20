@@ -527,6 +527,188 @@ function getPerfumeMl(p) {
   );
 }
 
+function buildPerfumeNotesText(p) {
+  return [
+    ...(p.topNotes || []),
+    ...(p.heartNotes || []),
+    ...(p.baseNotes || []),
+    ...(p.topNotesEn || []),
+    ...(p.heartNotesEn || []),
+    ...(p.baseNotesEn || []),
+    p.notesSummary || "",
+    p.notesSummaryEn || "",
+    p.description || "",
+    p.descriptionEn || "",
+    p.categoryRu || "",
+    p.categoryEn || "",
+    p.name || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+function matchesCategoryKey(p, catKey, allNotesText) {
+  const pCat = (p.category || "").toLowerCase();
+  const pInfoCat =
+    `${p.info?.category || ""} ${p.categoryName || ""} ${p.categoryRu || ""} ${p.categoryEn || ""}`.toLowerCase();
+  if (catKey === "fresh" || catKey === "aquatic") {
+    return (
+      pCat === "fresh" ||
+      pCat === "aquatic" ||
+      pInfoCat.includes("свеж") ||
+      pInfoCat.includes("морск") ||
+      pInfoCat.includes("акват") ||
+      allNotesText.includes("морск") ||
+      allNotesText.includes("мят")
+    );
+  }
+  if (catKey === "fougere" || catKey === "woody-fougere") {
+    return (
+      pCat === "fougere" ||
+      pCat === "woody-fougere" ||
+      pInfoCat.includes("фужер") ||
+      allNotesText.includes("лаванд") ||
+      allNotesText.includes("мох")
+    );
+  }
+  if (catKey === "citrus" || catKey === "citrus-fresh") {
+    return (
+      pCat === "citrus" ||
+      pCat === "citrus-fresh" ||
+      pInfoCat.includes("цитрус") ||
+      allNotesText.includes("грейпфрут") ||
+      allNotesText.includes("лимон")
+    );
+  }
+  if (catKey === "spicy" || catKey === "spices") {
+    return (
+      pCat === "spicy" ||
+      pCat === "spices" ||
+      pInfoCat.includes("прян") ||
+      pInfoCat.includes("специ") ||
+      allNotesText.includes("кардамон") ||
+      allNotesText.includes("шафран") ||
+      allNotesText.includes("кориц")
+    );
+  }
+  if (catKey === "gourmand") {
+    return (
+      pCat === "gourmand" ||
+      pInfoCat.includes("гурман") ||
+      allNotesText.includes("карамел") ||
+      allNotesText.includes("ванил") ||
+      allNotesText.includes("миндал") ||
+      allNotesText.includes("вишн")
+    );
+  }
+  if (catKey === "floral") {
+    return (
+      pCat === "floral" ||
+      pInfoCat.includes("цвет") ||
+      pInfoCat.includes("роз") ||
+      allNotesText.includes("дамасская роза") ||
+      allNotesText.includes("таифская роза") ||
+      allNotesText.includes("жасмин")
+    );
+  }
+  if (catKey === "oud" || catKey === "wood") {
+    return (
+      pCat === "oud" ||
+      pCat === "wood" ||
+      pInfoCat.includes("уд") ||
+      pInfoCat.includes("древ") ||
+      allNotesText.includes("благородный уд") ||
+      allNotesText.includes("дымный ладан")
+    );
+  }
+  if (catKey === "oriental") {
+    return (
+      pCat === "spicy" ||
+      pCat === "oud" ||
+      pCat === "gourmand" ||
+      pInfoCat.includes("восточ") ||
+      pInfoCat.includes("амбр") ||
+      allNotesText.includes("амбр")
+    );
+  }
+  if (catKey === "woody") {
+    return (
+      pCat === "oud" ||
+      pCat === "fougere" ||
+      pInfoCat.includes("древ") ||
+      allNotesText.includes("сандал") ||
+      allNotesText.includes("кедр") ||
+      allNotesText.includes("ветивер") ||
+      allNotesText.includes("пачул")
+    );
+  }
+  if (catKey === "fruity") {
+    return (
+      pInfoCat.includes("фрукт") ||
+      pInfoCat.includes("ягод") ||
+      pInfoCat.includes("вишн") ||
+      allNotesText.includes("персик") ||
+      allNotesText.includes("груш") ||
+      allNotesText.includes("вишн") ||
+      allNotesText.includes("малин") ||
+      allNotesText.includes("смородин") ||
+      allNotesText.includes("яблок")
+    );
+  }
+  if (catKey === "leather") {
+    return (
+      pInfoCat.includes("кож") ||
+      allNotesText.includes("кожа") ||
+      allNotesText.includes("leather")
+    );
+  }
+  if (catKey === "musky") {
+    return (
+      pInfoCat.includes("мускус") ||
+      pInfoCat.includes("пудр") ||
+      allNotesText.includes("белый мускус") ||
+      allNotesText.includes("ирис")
+    );
+  }
+  return (
+    pCat === catKey ||
+    pCat.replace(/[^a-z0-9]/g, "") === catKey.replace(/[^a-z0-9]/g, "")
+  );
+}
+
+function matchesNoteKey(noteKey, allNotesText) {
+  const cleanKey = noteKey.toLowerCase();
+  const noteObj = POPULAR_NOTES.find(
+    (n) =>
+      n.id === cleanKey ||
+      n.nameRu.toLowerCase() === cleanKey ||
+      n.nameEn.toLowerCase() === cleanKey,
+  );
+  if (!noteObj) {
+    return allNotesText.includes(cleanKey);
+  }
+  if (typeof NOTE_MATCHERS[noteObj.id] === "function") {
+    return NOTE_MATCHERS[noteObj.id](allNotesText);
+  }
+  if (Array.isArray(noteObj.keywords)) {
+    return noteObj.keywords.some((kw) => {
+      const kwLower = kw.toLowerCase();
+      if (kwLower.length <= 4) {
+        const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp(
+          `(?:^|[^\\p{L}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{N}])`,
+          "iu",
+        ).test(allNotesText);
+      }
+      return allNotesText.includes(kwLower);
+    });
+  }
+  return (
+    allNotesText.includes(noteObj.nameRu.toLowerCase()) ||
+    allNotesText.includes(noteObj.nameEn.toLowerCase())
+  );
+}
+
 // Always 4 items per row -> page size multiple of 4 (e.g. 24 = 6 full rows)
 const PAGE_SIZE = 24;
 
@@ -791,6 +973,62 @@ export default function Featured() {
     selectedLongevities.length +
     (selectedFormat !== "all" ? 1 : 0);
 
+  const perfumeNotesTexts = useMemo(
+    () => (perfumes || []).map((p) => buildPerfumeNotesText(p)),
+    [perfumes],
+  );
+
+  // Synced filter options: only show brands, scent categories, and notes actually present on the site
+  const availableBrands = useMemo(() => {
+    if (!perfumes || perfumes.length === 0) return [];
+    const matched = [];
+    const seenLower = new Set();
+    for (const brand of POPULAR_ARABIAN_BRANDS) {
+      const bLower = brand.toLowerCase();
+      const exists = perfumes.some((p) => {
+        const pb = (p.brand || "").toLowerCase();
+        const pn = (p.name || "").toLowerCase();
+        return pb.includes(bLower) || pn.includes(bLower);
+      });
+      if (exists && !seenLower.has(bLower)) {
+        seenLower.add(bLower);
+        matched.push(brand);
+      }
+    }
+    const extras = [];
+    for (const p of perfumes) {
+      const rawBrand = String(p.brand || "").trim();
+      if (!rawBrand) continue;
+      const bLower = rawBrand.toLowerCase();
+      const alreadyCovered = [...seenLower].some(
+        (known) => bLower.includes(known) || known.includes(bLower),
+      );
+      if (!alreadyCovered) {
+        seenLower.add(bLower);
+        extras.push(rawBrand);
+      }
+    }
+    extras.sort((a, b) => a.localeCompare(b));
+    return [...matched, ...extras];
+  }, [perfumes]);
+
+  const availableCategories = useMemo(() => {
+    if (!perfumes || perfumes.length === 0) return categories;
+    return categories.filter((cat) => {
+      const catKey = (cat.slug || cat.id || "").toLowerCase();
+      return perfumes.some((p, idx) =>
+        matchesCategoryKey(p, catKey, perfumeNotesTexts[idx] || ""),
+      );
+    });
+  }, [categories, perfumes, perfumeNotesTexts]);
+
+  const availableNotes = useMemo(() => {
+    if (!perfumes || perfumes.length === 0) return [];
+    return POPULAR_NOTES.filter((note) =>
+      perfumeNotesTexts.some((txt) => matchesNoteKey(note.id, txt)),
+    );
+  }, [perfumes, perfumeNotesTexts]);
+
   // Deterministic shuffled collection for default assortment (вразброс)
   const shuffledPerfumes = useMemo(() => {
     if (!perfumes || perfumes.length === 0) return [];
@@ -840,155 +1078,13 @@ export default function Featured() {
           if (!matchesLongevity) return false;
         }
 
-        const allNotesText = [
-          ...(p.topNotes || []),
-          ...(p.heartNotes || []),
-          ...(p.baseNotes || []),
-          ...(p.topNotesEn || []),
-          ...(p.heartNotesEn || []),
-          ...(p.baseNotesEn || []),
-          p.notesSummary || "",
-          p.notesSummaryEn || "",
-          p.description || "",
-          p.descriptionEn || "",
-          p.categoryRu || "",
-          p.categoryEn || "",
-          p.name || "",
-        ]
-          .join(" ")
-          .toLowerCase();
+        const allNotesText = buildPerfumeNotesText(p);
 
         // 1. Categories filter (OR within categories)
         if (selectedCategories.length > 0) {
-          const pCat = (p.category || "").toLowerCase();
-          const pInfoCat =
-            `${p.info?.category || ""} ${p.categoryName || ""} ${p.categoryRu || ""} ${p.categoryEn || ""}`.toLowerCase();
-          const matchesAnyCat = selectedCategories.some((catKey) => {
-            if (catKey === "fresh" || catKey === "aquatic") {
-              return (
-                pCat === "fresh" ||
-                pCat === "aquatic" ||
-                pInfoCat.includes("свеж") ||
-                pInfoCat.includes("морск") ||
-                pInfoCat.includes("акват") ||
-                allNotesText.includes("морск") ||
-                allNotesText.includes("мят")
-              );
-            }
-            if (catKey === "fougere" || catKey === "woody-fougere") {
-              return (
-                pCat === "fougere" ||
-                pCat === "woody-fougere" ||
-                pInfoCat.includes("фужер") ||
-                allNotesText.includes("лаванд") ||
-                allNotesText.includes("мох")
-              );
-            }
-            if (catKey === "citrus" || catKey === "citrus-fresh") {
-              return (
-                pCat === "citrus" ||
-                pCat === "citrus-fresh" ||
-                pInfoCat.includes("цитрус") ||
-                allNotesText.includes("грейпфрут") ||
-                allNotesText.includes("лимон")
-              );
-            }
-            if (catKey === "spicy" || catKey === "spices") {
-              return (
-                pCat === "spicy" ||
-                pCat === "spices" ||
-                pInfoCat.includes("прян") ||
-                pInfoCat.includes("специ") ||
-                allNotesText.includes("кардамон") ||
-                allNotesText.includes("шафран") ||
-                allNotesText.includes("кориц")
-              );
-            }
-            if (catKey === "gourmand") {
-              return (
-                pCat === "gourmand" ||
-                pInfoCat.includes("гурман") ||
-                allNotesText.includes("карамел") ||
-                allNotesText.includes("ванил") ||
-                allNotesText.includes("миндал") ||
-                allNotesText.includes("вишн")
-              );
-            }
-            if (catKey === "floral") {
-              return (
-                pCat === "floral" ||
-                pInfoCat.includes("цвет") ||
-                pInfoCat.includes("роз") ||
-                allNotesText.includes("дамасская роза") ||
-                allNotesText.includes("таифская роза") ||
-                allNotesText.includes("жасмин")
-              );
-            }
-            if (catKey === "oud" || catKey === "wood") {
-              return (
-                pCat === "oud" ||
-                pCat === "wood" ||
-                pInfoCat.includes("уд") ||
-                pInfoCat.includes("древ") ||
-                allNotesText.includes("благородный уд") ||
-                allNotesText.includes("дымный ладан")
-              );
-            }
-            if (catKey === "oriental") {
-              return (
-                pCat === "spicy" ||
-                pCat === "oud" ||
-                pCat === "gourmand" ||
-                pInfoCat.includes("восточ") ||
-                pInfoCat.includes("амбр") ||
-                allNotesText.includes("амбр")
-              );
-            }
-            if (catKey === "woody") {
-              return (
-                pCat === "oud" ||
-                pCat === "fougere" ||
-                pInfoCat.includes("древ") ||
-                allNotesText.includes("сандал") ||
-                allNotesText.includes("кедр") ||
-                allNotesText.includes("ветивер") ||
-                allNotesText.includes("пачул")
-              );
-            }
-            if (catKey === "fruity") {
-              return (
-                pInfoCat.includes("фрукт") ||
-                pInfoCat.includes("ягод") ||
-                pInfoCat.includes("вишн") ||
-                allNotesText.includes("персик") ||
-                allNotesText.includes("груш") ||
-                allNotesText.includes("вишн") ||
-                allNotesText.includes("малин") ||
-                allNotesText.includes("смородин") ||
-                allNotesText.includes("яблок")
-              );
-            }
-            if (catKey === "leather") {
-              return (
-                pInfoCat.includes("кож") ||
-                allNotesText.includes("кожа") ||
-                allNotesText.includes("leather")
-              );
-            }
-            if (catKey === "musky") {
-              return (
-                pInfoCat.includes("мускус") ||
-                pInfoCat.includes("пудр") ||
-                allNotesText.includes("белый мускус") ||
-                allNotesText.includes("ирис")
-              );
-            }
-            return (
-              pCat === catKey ||
-              pCat.replace(/[^a-z0-9]/g, "") ===
-                catKey.replace(/[^a-z0-9]/g, "")
-            );
-          });
+          const matchesAnyCat = selectedCategories.some((catKey) =>
+            matchesCategoryKey(p, catKey, allNotesText),
+          );
           if (!matchesAnyCat) return false;
         }
 
@@ -1023,41 +1119,8 @@ export default function Featured() {
         //    - Unchecked ("Комбинация" off): OR logic — matches any selected note
         //    - Checked ("Комбинация" on): AND logic — must contain ALL selected notes simultaneously
         if (selectedNotes.length > 0) {
-          const checkSingleNote = (noteKey) => {
-            const cleanKey = noteKey.toLowerCase();
-            const noteObj = POPULAR_NOTES.find(
-              (n) =>
-                n.id === cleanKey ||
-                n.nameRu.toLowerCase() === cleanKey ||
-                n.nameEn.toLowerCase() === cleanKey,
-            );
-            if (!noteObj) {
-              return allNotesText.includes(cleanKey);
-            }
-            if (typeof NOTE_MATCHERS[noteObj.id] === "function") {
-              return NOTE_MATCHERS[noteObj.id](allNotesText);
-            }
-            if (Array.isArray(noteObj.keywords)) {
-              return noteObj.keywords.some((kw) => {
-                const kwLower = kw.toLowerCase();
-                if (kwLower.length <= 4) {
-                  const escaped = kwLower.replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&",
-                  );
-                  return new RegExp(
-                    `(?:^|[^\\p{L}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{N}])`,
-                    "iu",
-                  ).test(allNotesText);
-                }
-                return allNotesText.includes(kwLower);
-              });
-            }
-            return (
-              allNotesText.includes(noteObj.nameRu.toLowerCase()) ||
-              allNotesText.includes(noteObj.nameEn.toLowerCase())
-            );
-          };
+          const checkSingleNote = (noteKey) =>
+            matchesNoteKey(noteKey, allNotesText);
 
           const matchesNotes = notesCombination
             ? selectedNotes.every(checkSingleNote)
@@ -1519,7 +1582,7 @@ export default function Featured() {
                   )}
                 </div>
                 <div className="warda-pills-wrap">
-                  {categories.map((cat) => {
+                  {availableCategories.map((cat) => {
                     const isActive =
                       selectedCategories.includes(cat.id.toLowerCase()) ||
                       selectedCategories.includes(
@@ -1600,7 +1663,7 @@ export default function Featured() {
                   )}
                 </div>
                 <div className="warda-pills-wrap">
-                  {POPULAR_ARABIAN_BRANDS.map((brand) => {
+                  {availableBrands.map((brand) => {
                     const isActive = selectedBrands.includes(brand);
                     return (
                       <button
@@ -1660,7 +1723,7 @@ export default function Featured() {
                   </label>
                 </div>
                 <div className="warda-pills-wrap">
-                  {POPULAR_NOTES.map((note) => {
+                  {availableNotes.map((note) => {
                     const isActive = selectedNotes.includes(note.id);
                     return (
                       <button

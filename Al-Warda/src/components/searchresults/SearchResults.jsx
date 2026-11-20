@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import {
   getPerfumes,
@@ -94,6 +94,40 @@ export default function SearchResults() {
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const sentinelRef = useRef(null);
+
+  const availableBrands = useMemo(() => {
+    if (!allPerfumes || allPerfumes.length === 0) return ["All"];
+    const matched = ["All"];
+    const seenLower = new Set(["all"]);
+    for (const brand of POPULAR_ARABIAN_BRANDS) {
+      if (brand === "All") continue;
+      const bLower = brand.toLowerCase();
+      const exists = allPerfumes.some((p) => {
+        const pb = (p.brand || "").toLowerCase();
+        const pn = (p.name || "").toLowerCase();
+        return pb.includes(bLower) || pn.includes(bLower);
+      });
+      if (exists && !seenLower.has(bLower)) {
+        seenLower.add(bLower);
+        matched.push(brand);
+      }
+    }
+    const extras = [];
+    for (const p of allPerfumes) {
+      const rawBrand = String(p.brand || "").trim();
+      if (!rawBrand) continue;
+      const bLower = rawBrand.toLowerCase();
+      const alreadyCovered = [...seenLower].some(
+        (known) => known !== "all" && (bLower.includes(known) || known.includes(bLower)),
+      );
+      if (!alreadyCovered) {
+        seenLower.add(bLower);
+        extras.push(rawBrand);
+      }
+    }
+    extras.sort((a, b) => a.localeCompare(b));
+    return [...matched, ...extras];
+  }, [allPerfumes]);
 
   useEffect(() => {
     setVisibleLimit(PAGE_SIZE);
@@ -254,7 +288,7 @@ export default function SearchResults() {
 
           {/* Brand chips */}
           <div className="warda-filter-group">
-            {POPULAR_ARABIAN_BRANDS.map((brand) => (
+            {availableBrands.map((brand) => (
               <button
                 key={brand}
                 type="button"
