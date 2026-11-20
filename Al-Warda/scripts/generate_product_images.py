@@ -562,9 +562,9 @@ def clean_product_name_for_search(name, brand=""):
     clean = name or ""
     if brand:
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
-    clean = re.sub(r"\s*[-–|]\s*long\s+lasting.*$", "", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"\s+[-–|]\s+.*$", "", clean)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|natural spray|concentrated|attar|ittar|luxury|arabic|perfume)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne)\b",
         "",
         clean,
         flags=re.IGNORECASE,
