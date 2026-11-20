@@ -83,22 +83,20 @@
   image-rendering: auto;
   transition: filter 0.3s ease, transform 0.3s ease;
   filter:
-    brightness(1.01)
-    contrast(1.12)
-    saturate(1.22)
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
-    drop-shadow(0 0 18px rgba(212, 175, 55, 0.26))
-    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72)) !important;
+    brightness(1.02)
+    contrast(1.05)
+    saturate(1.10)
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.16))
+    drop-shadow(0 12px 24px rgba(0, 0, 0, 0.68)) !important;
 }
 
 .warda-perfume-card:hover .warda-perfume-card__img {
   filter:
-    brightness(1.04)
-    contrast(1.15)
-    saturate(1.26)
-    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.52))
-    drop-shadow(0 0 22px rgba(212, 175, 55, 0.34))
-    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.78)) !important;
+    brightness(1.05)
+    contrast(1.07)
+    saturate(1.14)
+    drop-shadow(0 0 26px rgba(212, 175, 55, 0.24))
+    drop-shadow(0 14px 26px rgba(0, 0, 0, 0.74)) !important;
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
@@ -150,23 +148,21 @@
   image-rendering: auto;
   transition: filter 0.3s ease, transform 0.3s ease;
   filter:
-    brightness(1.01)
-    contrast(1.12)
-    saturate(1.22)
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
-    drop-shadow(0 0 18px rgba(212, 175, 55, 0.26))
-    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72)) !important;
+    brightness(1.02)
+    contrast(1.05)
+    saturate(1.10)
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.16))
+    drop-shadow(0 12px 24px rgba(0, 0, 0, 0.68)) !important;
 }
 
 .search__card:hover .search__card-img {
   animation: none;
   filter:
-    brightness(1.04)
-    contrast(1.15)
-    saturate(1.26)
-    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.52))
-    drop-shadow(0 0 22px rgba(212, 175, 55, 0.34))
-    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.78)) !important;
+    brightness(1.05)
+    contrast(1.07)
+    saturate(1.14)
+    drop-shadow(0 0 26px rgba(212, 175, 55, 0.24))
+    drop-shadow(0 14px 26px rgba(0, 0, 0, 0.74)) !important;
 }
 
 .search__card .search__card-body {

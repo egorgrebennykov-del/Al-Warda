@@ -562,8 +562,9 @@ def clean_product_name_for_search(name, brand=""):
     clean = name or ""
     if brand:
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"\s*[-–|]\s*long\s+lasting.*$", "", clean, flags=re.IGNORECASE)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|natural spray|concentrated|attar|ittar)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|natural spray|concentrated|attar|ittar|luxury|arabic|perfume)\b",
         "",
         clean,
         flags=re.IGNORECASE,
@@ -701,7 +702,8 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                             overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
                             img_lower = img_url.lower()
                             tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
-                            score = tier_bonus + overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                            bottle_bonus = 6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0
+                            score = tier_bonus + bottle_bonus + overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
                             all_matches.append((
                                 score,
                                 {
@@ -1663,9 +1665,9 @@ def validate_cutout_quality(source_quality, out_bytes):
     except Exception as exc:
         return False, None, f"Ошибка чтения итогового изображения: {exc}"
 
-    if qstatus == "low_sharpness" and (final_sharpness is None or final_sharpness < 45.0):
+    if qstatus == "low_sharpness" and (final_sharpness is None or final_sharpness < 35.0):
         return False, final_sharpness, "Размытое или нечёткое фото (низкая резкость)"
-    if final_sharpness is not None and final_sharpness < 25.0:
+    if final_sharpness is not None and final_sharpness < 15.0:
         return False, final_sharpness, f"Слишком низкая резкость после обработки ({final_sharpness:.1f})"
 
     alpha = arr[:, :, 3]
@@ -1699,7 +1701,7 @@ def validate_cutout_quality(source_quality, out_bytes):
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
         top_band = alpha[y1:min(y2 + 1, y1 + max(2, int((y2 - y1) * 0.03))), x1:x2 + 1]
         top_cov = float(np.mean(top_band > 120)) if top_band.size > 0 else 0.0
-        if 0.78 <= bbox_fill < 0.93 and fg_ratio > 0.50 and top_cov > 0.55:
+        if 0.82 <= bbox_fill < 0.95 and fg_ratio > 0.60 and top_cov > 0.75:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
 
     return True, final_sharpness, None
@@ -1847,24 +1849,11 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
         except Exception as e:
             print(f"AI Super-Resolution execution note: {e}", flush=True)
 
-    # Built-in edge-preserving super-resolution fallback
+    # Clean Lanczos resize fallback (preserves natural bottle texture without cartoon/oil-paint smearing)
     try:
-        import cv2
-        import numpy as np
         target_w = max(1024, int(w * 2))
         target_h = max(1024, int(h * 2))
-        arr = np.array(image.convert("RGB"))
-        denoised = cv2.bilateralFilter(arr, d=5, sigmaColor=20, sigmaSpace=20)
-        resized = cv2.resize(denoised, (target_w, target_h), interpolation=cv2.INTER_LANCZOS4)
-        lab = cv2.cvtColor(resized, cv2.COLOR_RGB2LAB)
-        l, a, b = cv2.split(lab)
-        clahe = cv2.createCLAHE(clipLimit=1.2, tileGridSize=(8, 8))
-        l_clahe = clahe.apply(l)
-        blur_l = cv2.GaussianBlur(l_clahe, (0, 0), 1.0)
-        l_sharp = cv2.addWeighted(l_clahe, 1.25, blur_l, -0.25, 0)
-        enhanced_lab = cv2.merge([l_sharp, a, b])
-        enhanced_rgb = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2RGB)
-        return Image.fromarray(enhanced_rgb)
+        return image.convert("RGB").resize((target_w, target_h), Image.Resampling.LANCZOS)
     except Exception:
         return image
 
@@ -1889,8 +1878,9 @@ def preserve_original_product(source_bytes, segmentation_session, canvas_size=(1
     raw_cutout = segment_source(source, segmentation_session)
     raw_alpha = np.array(raw_cutout)[:, :, 3]
 
-    # Step 2: Apply AI Super-Resolution (Vulkan GPU Upscayl / UltraSharp) if resolution is low
-    if allow_upscale and max(original_size) < 1200:
+    # Step 2: Apply AI Super-Resolution (Vulkan GPU Upscayl / UltraSharp) only on truly low-res inputs (< 420px)
+    # so crisp >= 420px authentic photos keep their natural glass/matte texture without oil-paint smearing.
+    if allow_upscale and min(original_size) < 420:
         sr_source = super_resolve_product_image_if_needed(source)
         if sr_source.size != source.size:
             sw, sh = sr_source.size
@@ -2265,20 +2255,15 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
             else:
                 L_toned = L_norm
 
-        # 3. Subtle 3D Cylindrical Curvature Falloff
+        # 3. Gentle 3D Curvature & Natural Micro-Clarity (no heavy CLAHE blotching)
         bright_factor = max(0.35, min(1.0, (p50_l - 40.0) / 110.0))
-        cyl_shade = 1.0 - (0.12 * bright_factor) * np.power(u_abs, 2.2)
-        vert_shade = (1.0 - 0.06 * bright_factor) + (0.06 * bright_factor) * np.power(v_norm, 0.85)
-        L_3d = np.clip(L_toned * cyl_shade * vert_shade * 255.0, 0, 255).astype(np.uint8)
+        cyl_shade = 1.0 - (0.06 * bright_factor) * np.power(u_abs, 2.2)
+        vert_shade = (1.0 - 0.03 * bright_factor) + (0.03 * bright_factor) * np.power(v_norm, 0.85)
+        L_3d = np.clip(L_toned * cyl_shade * vert_shade * 255.0, 0, 255).astype(np.float32)
 
-        clahe = cv2.createCLAHE(clipLimit=1.15, tileGridSize=(8, 8))
-        L_clahe = clahe.apply(L_3d)
-        # Protect deep blacks / dark caps (L < 55) from CLAHE shadow lifting
-        dark_protect = np.clip((L_3d.astype(np.float32) - 22.0) / 48.0, 0.0, 1.0)
-        clahe_w = 0.45 * dark_protect
-        L_mix = (1.0 - clahe_w) * L_3d.astype(np.float32) + clahe_w * L_clahe.astype(np.float32)
-        blur_l = cv2.GaussianBlur(L_mix, (0, 0), 1.0)
-        L_sharp = np.clip(L_mix * 1.18 - blur_l * 0.18, 0, 255)
+        dark_protect = np.clip((L_3d - 22.0) / 48.0, 0.0, 1.0)
+        blur_l = cv2.GaussianBlur(L_3d, (0, 0), 0.9)
+        L_sharp = np.clip(L_3d * 1.05 - blur_l * 0.05, 0, 255)
 
         # 4. Natural Vibrance + Subtle Champagne Specular Polish
         chroma = np.sqrt((A - 128.0) ** 2 + (B - 128.0) ** 2)
@@ -2330,16 +2315,17 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
         ao_zone = np.clip((v_norm - 0.985) / 0.015, 0.0, 1.0)[:, :, np.newaxis]
         rgb_stage = rgb_stage * (1.0 - 0.22 * ao_zone)
 
-        # 6. White-matte edge decontamination against dark background
-        a_f = (alpha / 255.0)[:, :, np.newaxis]
-        unpremult = (rgb_stage - (1.0 - a_f) * 245.0) / np.maximum(a_f, 0.04)
-        clean_rgb = np.clip(unpremult, 0.0, 255.0)
-        edge_zone = (alpha > 0) & (alpha < 252)
-        final_rgb = np.where(
-            edge_zone[:, :, np.newaxis], clean_rgb, np.clip(rgb_stage, 0.0, 255.0)
-        ).astype(np.uint8)
-
-        out_arr = np.dstack((final_rgb, alpha.astype(np.uint8)))
+        # 6. Soft pure-white fringe cleanup only (never darken colored/pink/gold edges to black)
+        rgb_clipped = np.clip(rgb_stage, 0.0, 255.0)
+        is_white_fringe = (
+            (alpha > 0)
+            & (alpha < 95)
+            & (rgb_clipped[:, :, 0] > 235)
+            & (rgb_clipped[:, :, 1] > 235)
+            & (rgb_clipped[:, :, 2] > 235)
+        )
+        clean_alpha = np.where(is_white_fringe, (alpha * 0.35), alpha).astype(np.uint8)
+        out_arr = np.dstack((rgb_clipped.astype(np.uint8), clean_alpha))
         return Image.fromarray(out_arr, mode="RGBA")
     except Exception:
         return cutout
@@ -2998,10 +2984,10 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     l_deg = float(np.degrees(np.arctan(ml)))
     r_deg = float(np.degrees(np.arctan(mr)))
     # Both sides must lean in the same direction (true camera roll, not tapered bottle or 3/4 cube)
-    if l_deg * r_deg <= 0 or abs(l_deg - r_deg) > 2.5:
+    if l_deg * r_deg <= 0 or abs(l_deg - r_deg) > 4.0:
         return canvas
     v_deg = (l_deg + r_deg) / 2.0
-    if not (2.0 <= abs(v_deg) <= 8.0):
+    if not (2.0 <= abs(v_deg) <= 45.0):
         return canvas
 
     # Also verify bottom edge tilts in the matching direction
@@ -3022,7 +3008,7 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     if abs(vx) < 1e-6:
         return canvas
     b_deg = float(np.degrees(np.arctan(vy / vx)))
-    if abs(b_deg - (-v_deg)) > 2.5:
+    if abs(v_deg) < 10.0 and abs(b_deg - (-v_deg)) > 4.5:
         return canvas
 
     # Pure rigid rotation (no shear/stretching)
