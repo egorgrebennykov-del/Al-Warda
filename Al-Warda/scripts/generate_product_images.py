@@ -633,12 +633,15 @@ def search_official_studio_candidates(name, brand="", is_set=False):
 
     clean_tokens = set(re.findall(r"[a-z0-9]+", cleaned.lower())) - GENERIC_STOPWORDS
     brand_tokens = set(re.findall(r"[a-z0-9]+", brand_key)) - GENERIC_STOPWORDS
+    name_lower = (name or "").lower()
     query_is_deo_or_body = bool(
         re.search(
-            r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
-            (name or "").lower(),
+            r"\b(deo|deodorant|deospray|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+            name_lower,
         )
     )
+    query_is_men = bool(re.search(r"\b(for\s+men|for\s+him|pour\s+homme|\bmen\b|\bman\b)\b", name_lower))
+    query_is_women = bool(re.search(r"\b(for\s+women|for\s+her|pour\s+femme|\bwomen\b|\bwoman\b)\b", name_lower))
 
     all_matches = []
     seen_urls = set()
@@ -669,16 +672,33 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                         )
                         p_is_deo_or_body = bool(
                             re.search(
-                                r"\b(deo|deodorant|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+                                r"\b(deo|deodorant|deospray|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
                                 f"{title_lower} {page_url_raw}",
                             )
                         )
+                        p_is_non_perfume = bool(
+                            re.search(
+                                r"\b(watch|watches|bracelet|necklace|earring|wallet|handbag|sunglasses|smartwatch|chronograph|quartz|guess|casio|seiko|fossil|tissot)\b",
+                                f"{title_lower} {page_url_raw} {str(p.get('type') or '').lower()}",
+                            )
+                        )
+                        if p_is_non_perfume and not any(w in (brand_key or "") for w in ("guess", "watch")):
+                            continue
 
                         if is_set and not p_is_set:
                             continue
                         if not is_set and p_is_set:
                             continue
+                        if query_is_deo_or_body and not p_is_deo_or_body:
+                            continue
                         if not query_is_deo_or_body and p_is_deo_or_body:
+                            continue
+
+                        p_is_men = bool(re.search(r"\b(for\s+men|for\s+him|pour\s+homme|\bmen\b|\bman\b)\b", title_lower))
+                        p_is_women = bool(re.search(r"\b(for\s+women|for\s+her|pour\s+femme|\bwomen\b|\bwoman\b)\b", title_lower))
+                        if query_is_men and p_is_women and not p_is_men:
+                            continue
+                        if query_is_women and p_is_men and not p_is_women:
                             continue
 
                         title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
