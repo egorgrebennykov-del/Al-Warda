@@ -51,6 +51,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No exchange rate changes to commit."
           else
-            git commit -m "chore(currency): sync HUF exchange rate (Hungarian Forint) [skip ci]"
+            git commit -m "chore(currency): sync HUF exchange rate (Hungarian Forint)"
             git push origin main
           fi
