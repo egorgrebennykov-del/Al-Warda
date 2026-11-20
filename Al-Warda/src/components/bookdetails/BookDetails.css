@@ -326,10 +326,9 @@
   transform-origin: bottom center;
   transform: translateY(var(--flacon-pad-pct, 7.4%));
   filter:
-    brightness(1.09)
-    contrast(1.08)
+    brightness(1.01)
+    contrast(1.12)
     saturate(1.22)
-    sepia(0.05)
     drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.46))
     drop-shadow(0 0 22px rgba(212, 175, 55, 0.32))
     drop-shadow(0 12px 26px rgba(0, 0, 0, 0.72));
@@ -340,10 +339,9 @@
   height: calc(455px * var(--flacon-scale, 1));
   max-height: 470px;
   filter:
-    brightness(1.13)
-    contrast(1.1)
+    brightness(1.04)
+    contrast(1.15)
     saturate(1.26)
-    sepia(0.05)
     drop-shadow(0 0 2.5px rgba(255, 224, 155, 0.52))
     drop-shadow(0 0 30px rgba(212, 175, 55, 0.4))
     drop-shadow(0 16px 32px rgba(0, 0, 0, 0.78));
