@@ -646,6 +646,12 @@ export async function getProductImageQueueStatus(request, env) {
         }
         if (status === "failed" || replacementJob.status === "failed") {
           const activeFail = status === "failed" ? job : replacementJob;
+          const failedGeneratedUrl =
+            (typeof activeFail.imageUrl === "string" && activeFail.imageUrl) ||
+            (typeof activeFail.previousImageUrl === "string" &&
+              activeFail.previousImageUrl) ||
+            (typeof row.image === "string" && row.image) ||
+            null;
           failedItems.push({
             id: row.id,
             name: row.name || "",
@@ -654,12 +660,22 @@ export async function getProductImageQueueStatus(request, env) {
               Number(row.price) || (info.price ? Number(info.price) : 29.99),
             currency: row.currency || info.currency || "EUR",
             image: row.image || null,
+            imageUrl: failedGeneratedUrl,
             rawImage:
               (typeof info.rawImage === "string" && info.rawImage) ||
               (typeof activeFail.previousImageUrl === "string" &&
                 activeFail.previousImageUrl) ||
               (typeof row.image === "string" && row.image) ||
               null,
+            sourceUrl:
+              activeFail.sourceUrl ||
+              info.imageSourceUrl ||
+              info.sourceUrl ||
+              null,
+            sourceName:
+              activeFail.sourceName || info.imageSourceName || null,
+            sourceType:
+              activeFail.sourceType || info.imageSourceType || null,
             info,
             error:
               typeof activeFail.error === "string" && activeFail.error.trim()

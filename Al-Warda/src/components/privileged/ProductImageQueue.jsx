@@ -2219,6 +2219,20 @@ export default function ProductImageQueue({
                             type="button"
                             className="product-image-queue__failed-manual-one"
                             disabled={busy || deletingFailed}
+                            onClick={() => setCompareItem(item)}
+                            title={
+                              isRussian
+                                ? "Сравнить сгенерированное фото с оригиналом"
+                                : "Compare generated photo with original"
+                            }
+                          >
+                            <i className="ri-split-cells-horizontal" />
+                            {isRussian ? "Сравнить с оригиналом" : "Compare with original"}
+                          </button>
+                          <button
+                            type="button"
+                            className="product-image-queue__failed-manual-one"
+                            disabled={busy || deletingFailed}
                             onClick={() => setManualConfigItem(item)}
                             title={
                               isRussian

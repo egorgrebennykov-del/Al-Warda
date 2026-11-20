@@ -105,10 +105,21 @@ export default function ProductManualConfigModal({
       descriptionRu: enriched.descriptionRu || enriched.description || "",
       descriptionEn: enriched.descriptionEn || "",
       image:
-        (isGeneratedProductImage(item?.image) ? item?.image : "") ||
-        (isGeneratedProductImage(item?.info?.imageGeneration?.imageUrl)
-          ? item?.info?.imageGeneration?.imageUrl
-          : ""),
+        [
+          item?.imageUrl,
+          item?.image,
+          item?.info?.imageGeneration?.imageUrl,
+          item?.info?.imageGeneration?.previousImageUrl,
+          item?.info?.imageGenerationReplacement?.imageUrl,
+        ].find((url) => isGeneratedProductImage(url)) ||
+        [
+          item?.imageUrl,
+          item?.info?.imageGeneration?.imageUrl,
+          item?.info?.imageGeneration?.previousImageUrl,
+          item?.info?.imageGenerationReplacement?.imageUrl,
+          item?.image,
+        ].find((url) => typeof url === "string" && url.trim()) ||
+        "",
     };
   });
 
