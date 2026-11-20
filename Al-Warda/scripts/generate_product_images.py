@@ -2009,6 +2009,56 @@ def strip_dark_studio_backdrop(cutout):
     return Image.fromarray(arr, mode="RGBA")
 
 
+def is_three_quarter_cube_cutout(cutout):
+    """Return True when a single bottle cutout shows a 3/4 isometric corner-forward
+    cube/prism (V-shaped bottom edge with both left/right halves sloping toward
+    a central bottom corner), so front-facing photos can be preferred."""
+    if "A" not in cutout.getbands():
+        return False
+    try:
+        import numpy as np
+        arr = np.array(cutout.convert("RGBA"))
+        fg = arr[:, :, 3] > 80
+        ys, xs = np.where(fg)
+        if len(xs) < 200:
+            return False
+        x1, x2, y1, y2 = int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
+        bw, bh = x2 - x1 + 1, y2 - y1 + 1
+        if bw < 60 or bh < 60 or (bw / float(bh)) < 0.58:
+            return False
+        by = {}
+        for x in range(x1 + int(bw * 0.08), x2 - int(bw * 0.08)):
+            col = np.where(fg[:, x])[0]
+            if len(col):
+                by[x] = int(col.max())
+        if len(by) < 30:
+            return False
+        kx = sorted(by.keys())
+        inner = kx[max(1, len(kx) // 5):max(2, (len(kx) * 4) // 5)]
+        mid = max(inner, key=lambda x: by[x]) if inner else kx[len(kx) // 2]
+        lx = [x for x in kx if x < mid]
+        rx = [x for x in kx if x > mid]
+        if len(lx) < 10 or len(rx) < 10:
+            return False
+        lm = float(np.polyfit(lx, [by[x] for x in lx], 1)[0])
+        rm = float(np.polyfit(rx, [by[x] for x in rx], 1)[0])
+        ldeg = float(np.degrees(np.arctan(lm)))
+        rdeg = float(np.degrees(np.arctan(rm)))
+        v_drop = (max(by.values()) - min(by[kx[0]], by[kx[-1]])) / float(bh)
+        return ldeg > 7.0 and rdeg < -7.0 and v_drop >= 0.05
+    except Exception:
+        return False
+
+
+def is_three_quarter_cube_source(source_bytes, segmentation_session):
+    try:
+        src = decode_source(source_bytes)
+        cut = segment_source(src, segmentation_session)
+        return is_three_quarter_cube_cutout(cut)
+    except Exception:
+        return False
+
+
 def strip_packaging_box_geometry(cutout):
     """Deterministically detect and erase an outer cardboard packaging box placed
     beside a perfume bottle (0 API cost, works even when Gemini Vision quota is 429)."""
@@ -3618,7 +3668,8 @@ def process_product(
             row.get("brand") or "",
             is_set=is_set,
         )
-        for studio_asset in studio_candidates:
+        angled_studio_fallback = None
+        for idx_cand, studio_asset in enumerate(studio_candidates):
             fetch_url = studio_asset.get("imageUrl")
             if not fetch_url:
                 continue
@@ -3647,6 +3698,12 @@ def process_product(
                 cand_min = min(cand_w, cand_h)
                 cand_low_sharp = (cand_q.get("qualityStatus") == "low_sharpness") or bool(cand_q.get("low_sharpness"))
                 if cand_min >= 500 and not cand_low_sharp:
+                    has_more = (idx_cand + 1 < len(studio_candidates)) or bool(product_source(row))
+                    if not is_set and has_more and is_three_quarter_cube_source(cand_bytes, segmentation_session):
+                        print(f"[{row['id']}] Candidate is 3/4 angled cube; checking for front-facing photo...", flush=True)
+                        if angled_studio_fallback is None:
+                            angled_studio_fallback = (cand_bytes, cand_q, studio_asset)
+                        continue
                     source_bytes = cand_bytes
                     source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
@@ -3676,7 +3733,12 @@ def process_product(
                     raw_bytes = raw_buf.getvalue()
                     raw_q = measure_source_quality(raw_bytes)
                     raw_area = (raw_q.get("originalWidth") or raw_q.get("width") or 0) * (raw_q.get("originalHeight") or raw_q.get("height") or 0)
-                    if best_small_studio is not None:
+                    if angled_studio_fallback is not None and is_three_quarter_cube_source(raw_bytes, segmentation_session):
+                        source_bytes, source_quality = angled_studio_fallback[0], angled_studio_fallback[1]
+                        source_url = angled_studio_fallback[2]["sourceUrl"]
+                        source_name = angled_studio_fallback[2]["sourceName"]
+                        source_type = angled_studio_fallback[2].get("sourceType") or "official_studio"
+                    elif best_small_studio is not None:
                         st_q = best_small_studio[2]
                         st_area = (st_q.get("originalWidth") or st_q.get("width") or 0) * (st_q.get("originalHeight") or st_q.get("height") or 0)
                         if st_area >= raw_area:
@@ -3690,6 +3752,11 @@ def process_product(
                         source_url = raw_url
                         source_name = "Qogita Wholesale Catalog"
                         source_type = "qogita_set" if is_set else "qogita_catalog"
+                elif angled_studio_fallback is not None:
+                    source_bytes, source_quality = angled_studio_fallback[0], angled_studio_fallback[1]
+                    source_url = angled_studio_fallback[2]["sourceUrl"]
+                    source_name = angled_studio_fallback[2]["sourceName"]
+                    source_type = angled_studio_fallback[2].get("sourceType") or "official_studio"
                 elif best_small_studio is not None:
                     source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
                     source_url = best_small_studio[3]["sourceUrl"]
@@ -3697,6 +3764,11 @@ def process_product(
                     source_type = best_small_studio[3].get("sourceType") or "official_studio"
                 else:
                     raise RuntimeError(f"Qogita image fetch failed ({raw_resp.status_code})")
+            elif angled_studio_fallback is not None:
+                source_bytes, source_quality = angled_studio_fallback[0], angled_studio_fallback[1]
+                source_url = angled_studio_fallback[2]["sourceUrl"]
+                source_name = angled_studio_fallback[2]["sourceName"]
+                source_type = angled_studio_fallback[2].get("sourceType") or "official_studio"
             elif best_small_studio is not None:
                 source_bytes, source_quality = best_small_studio[1], best_small_studio[2]
                 source_url = best_small_studio[3]["sourceUrl"]
