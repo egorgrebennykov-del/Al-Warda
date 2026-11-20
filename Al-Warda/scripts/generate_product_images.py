@@ -488,6 +488,12 @@ def product_source(row):
     source = info.get("rawImage")
     if not isinstance(source, str):
         return None
+    if info.get("manualSourceImage") or (info.get("imageGeneration") or {}).get("manualSource"):
+        if source.startswith("data:image/") and ";base64," in source:
+            return source
+        parsed_manual = urlparse(source)
+        if parsed_manual.scheme == "https" and parsed_manual.hostname:
+            return source
     parsed = urlparse(source)
     if parsed.scheme != "https" or not parsed.hostname or not parsed.hostname.endswith(".qogita.com"):
         return None
@@ -3068,20 +3074,51 @@ def process_product(
         # Detect whether product is a fragrance set / gift set
         is_set = is_perfume_set(row.get("name") or "", info)
 
-        # Requirement: Search for high-res official studio photo FIRST (even for sets!)
-        studio_candidates = search_official_studio_candidates(
-            row.get("name") or "",
-            row.get("brand") or "",
-            is_set=is_set,
-        )
-
         source_bytes = None
         source_quality = None
         source_url = None
         source_name = None
         source_type = None
-
         best_small_studio = None
+
+        manual_source_flag = bool(
+            info.get("manualSourceImage")
+            or (info.get("imageGeneration") or {}).get("manualSource")
+        )
+        if manual_source_flag and isinstance(info.get("rawImage"), str) and info.get("rawImage").strip():
+            manual_src = info["rawImage"].strip()
+            if manual_src.startswith("data:image/") and ";base64," in manual_src:
+                import base64 as _b64
+                source_bytes = _b64.b64decode(manual_src.split(";base64,", 1)[1])
+                source_quality = measure_source_quality(source_bytes)
+                source_url = "manual_upload"
+                source_name = "Ручная загрузка"
+                source_type = "manual_upload"
+            elif manual_src.startswith("https://"):
+                m_resp = requests.get(
+                    manual_src,
+                    headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
+                    timeout=(15, 60),
+                    stream=True,
+                )
+                m_resp.raise_for_status()
+                m_buf = io.BytesIO()
+                for chunk in m_resp.iter_content(chunk_size=64 * 1024):
+                    m_buf.write(chunk)
+                    if m_buf.tell() > MAX_SOURCE_BYTES:
+                        raise ValueError("Original product photo exceeds the 20 MB processing limit")
+                source_bytes = m_buf.getvalue()
+                source_quality = measure_source_quality(source_bytes)
+                source_url = manual_src
+                source_name = "Ручная загрузка"
+                source_type = "manual_upload"
+
+        # Requirement: Search for high-res official studio photo FIRST (unless admin uploaded a manual photo)
+        studio_candidates = [] if source_bytes is not None else search_official_studio_candidates(
+            row.get("name") or "",
+            row.get("brand") or "",
+            is_set=is_set,
+        )
         for studio_asset in studio_candidates:
             fetch_url = studio_asset.get("imageUrl")
             if not fetch_url:

@@ -1676,6 +1676,30 @@ export async function saveManualProductItem(request, env) {
       );
     }
 
+    let queuedNewSourceImage = false;
+    const rawNewSource =
+      typeof body.newSourceImage === "string" ? body.newSourceImage.trim() : "";
+    if (rawNewSource) {
+      const isHttpsUrl = /^https:\/\/\S+$/i.test(rawNewSource);
+      const isBase64DataUrl = /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i.test(
+        rawNewSource,
+      );
+      if (!isHttpsUrl && !isBase64DataUrl) {
+        return json(
+          { error: "New photo must be an https:// URL or PNG/JPEG/WEBP file" },
+          400,
+        );
+      }
+      if (rawNewSource.length > 10 * 1024 * 1024) {
+        return json(
+          { error: "Uploaded photo is too large (max 10 MB)" },
+          400,
+        );
+      }
+      queuedNewSourceImage = true;
+      finalImageUrl = "";
+    }
+
     if (!finalImageUrl) {
       // No image to set. Save product metadata without changing image/generation.
       finalImageUrl = "";
@@ -1833,16 +1857,30 @@ export async function saveManualProductItem(request, env) {
       minOrderQuantity: 1,
       inStock: body.inStock !== false,
       manual: true,
-      imageGeneration: finalImageUrl
+      ...(queuedNewSourceImage
         ? {
-            status: "completed",
-            imageUrl: finalImageUrl,
-            completedAt: new Date().toISOString(),
-            manual: true,
-            failed: false,
-            published: true,
+            rawImage: rawNewSource,
+            manualSourceImage: true,
+            imageSourceType: "manual_upload",
+            imageSourceName: "Ручная загрузка",
           }
-        : undefined,
+        : {}),
+      imageGeneration: queuedNewSourceImage
+        ? {
+            status: "pending",
+            manualSource: true,
+            queuedAt: new Date().toISOString(),
+          }
+        : finalImageUrl
+          ? {
+              status: "completed",
+              imageUrl: finalImageUrl,
+              completedAt: new Date().toISOString(),
+              manual: true,
+              failed: false,
+              published: true,
+            }
+          : undefined,
     };
 
     delete updatedInfo.imageGenerationReplacement;
@@ -1867,7 +1905,9 @@ export async function saveManualProductItem(request, env) {
       currency,
       info: updatedInfo,
     };
-    if (finalImageUrl) {
+    if (queuedNewSourceImage) {
+      patchPayload.image = null;
+    } else if (finalImageUrl) {
       patchPayload.image = finalImageUrl;
     }
 
@@ -1893,6 +1933,7 @@ export async function saveManualProductItem(request, env) {
         id: created.id,
         product: created,
         isNew: true,
+        imageQueued: queuedNewSourceImage,
       });
     }
 
@@ -1916,6 +1957,7 @@ export async function saveManualProductItem(request, env) {
       ok: true,
       id,
       product: updatedRows[0] || { id, ...patchPayload },
+      imageQueued: queuedNewSourceImage,
     });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {

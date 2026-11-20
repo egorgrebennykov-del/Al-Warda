@@ -2686,11 +2686,42 @@ export default function ProductImageQueue({
           onClose={() => setManualConfigItem(null)}
           onSaved={async (result) => {
             setManualConfigItem(null);
-            setActionMessage(
-              isRussian
-                ? `Товар #${result.id} успешно настроен вручную, отправлен в базу данных и опубликован!`
-                : `Product #${result.id} manually configured, saved to database, and published!`,
-            );
+            if (result?.imageQueued) {
+              const isLocal =
+                typeof window !== "undefined" &&
+                (window.location.hostname === "localhost" ||
+                  window.location.hostname === "127.0.0.1");
+              try {
+                if (isLocal) {
+                  await fetch("/api/admin/gpu-generation/start", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ count: "all" }),
+                  });
+                } else {
+                  await fetch("/api/admin/product-images/actions", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "generate" }),
+                  });
+                }
+              } catch {
+                // Keep queued in DB even if trigger request hits a busy worker
+              }
+              setActionMessage(
+                isRussian
+                  ? `Товар #${result.id}: новое фото сохранено, запущена генерация под сайт!`
+                  : `Product #${result.id}: new photo saved, site image generation started!`,
+              );
+            } else {
+              setActionMessage(
+                isRussian
+                  ? `Товар #${result.id} успешно настроен вручную, отправлен в базу данных и опубликован!`
+                  : `Product #${result.id} manually configured, saved to database, and published!`,
+              );
+            }
             await loadStatus({ force: true });
           }}
         />

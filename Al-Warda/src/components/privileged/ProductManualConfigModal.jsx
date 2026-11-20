@@ -150,6 +150,8 @@ export default function ProductManualConfigModal({
   const [descriptionEn, setDescriptionEn] = useState(initialData.descriptionEn);
 
   const [image, setImage] = useState(initialData.image);
+  const [newSourceImage, setNewSourceImage] = useState("");
+  const [newSourceUrlInput, setNewSourceUrlInput] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -384,6 +386,7 @@ export default function ProductManualConfigModal({
         descriptionRu: descriptionRu.trim(),
         descriptionEn: descriptionEn.trim(),
         image: image || "",
+        newSourceImage: newSourceImage.trim() || undefined,
         inStock: true,
         minOrderQuantity: 1,
       };
@@ -495,12 +498,83 @@ export default function ProductManualConfigModal({
                   <button
                     type="button"
                     className="product-manual-modal__clear-btn"
-                    onClick={() => setImage("")}
+                    onClick={() => {
+                      setImage("");
+                      setNewSourceImage("");
+                      setNewSourceUrlInput("");
+                    }}
                     title={isRussian ? "Удалить фото" : "Clear image"}
                   >
                     <i className="ri-delete-bin-line" />
                     {isRussian ? "Удалить фото" : "Clear image"}
                   </button>
+                )}
+              </div>
+
+              <div className="product-manual-modal__image-controls" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <div className="product-manual-modal__field">
+                  <label>
+                    {isRussian
+                      ? "Загрузить новое фото (запустит перегенерацию под сайт)"
+                      : "Upload new photo (triggers site regeneration)"}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 7 * 1024 * 1024) {
+                        setError(
+                          isRussian
+                            ? "Файл слишком большой (максимум 7 МБ)"
+                            : "File is too large (max 7 MB)",
+                        );
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        if (typeof reader.result === "string") {
+                          setError("");
+                          setNewSourceImage(reader.result);
+                          setNewSourceUrlInput("");
+                          setImage(reader.result);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </div>
+
+                <div className="product-manual-modal__field">
+                  <label>
+                    {isRussian
+                      ? "Или URL нового фото (https://...)"
+                      : "Or new photo URL (https://...)"}
+                  </label>
+                  <input
+                    type="url"
+                    value={newSourceUrlInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNewSourceUrlInput(val);
+                      const trimmed = val.trim();
+                      setNewSourceImage(trimmed);
+                      if (/^https:\/\/\S+$/i.test(trimmed)) {
+                        setImage(trimmed);
+                      }
+                    }}
+                    placeholder="https://example.com/bottle.png"
+                  />
+                </div>
+
+                {newSourceImage && (
+                  <div style={{ fontSize: "0.8rem", color: "#d4af37" }}>
+                    <i className="ri-sparkling-2-line" />{" "}
+                    {isRussian
+                      ? "Новое фото готово: после сохранения автоматически запустится вырезка и подгонка под сайт."
+                      : "New photo ready: saving will automatically start cutout & stage generation."}
+                  </div>
                 )}
               </div>
             </div>
