@@ -326,8 +326,12 @@
   transform-origin: bottom center;
   transform: translateY(var(--flacon-pad-pct, 7.4%));
   filter:
-    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.42))
-    drop-shadow(0 0 20px rgba(212, 175, 55, 0.28))
+    brightness(1.09)
+    contrast(1.08)
+    saturate(1.22)
+    sepia(0.05)
+    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.46))
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.32))
     drop-shadow(0 12px 26px rgba(0, 0, 0, 0.72));
   transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
 }
@@ -335,8 +339,12 @@
 .warda-details-img-wrap:hover .warda-details-img {
   height: calc(485px * var(--flacon-scale, 1));
   filter:
-    drop-shadow(0 0 2.5px rgba(255, 224, 155, 0.45))
-    drop-shadow(0 0 28px rgba(212, 175, 55, 0.36))
+    brightness(1.13)
+    contrast(1.1)
+    saturate(1.26)
+    sepia(0.05)
+    drop-shadow(0 0 2.5px rgba(255, 224, 155, 0.52))
+    drop-shadow(0 0 30px rgba(212, 175, 55, 0.4))
     drop-shadow(0 16px 32px rgba(0, 0, 0, 0.78));
 }
 
@@ -492,7 +500,7 @@
   transform-origin: center center;
   transform: translateY(calc(var(--flacon-pad-pct, 7.4%) - 2 * var(--flacon-last-pad-pct, 7.4%))) scaleY(-1);
   opacity: 0.48;
-  filter: blur(1.5px) brightness(0.88);
+  filter: blur(1.5px) brightness(0.95) contrast(1.06) saturate(1.18);
 }
 
 .warda-details-info {

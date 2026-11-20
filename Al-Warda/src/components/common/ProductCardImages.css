@@ -81,10 +81,26 @@
   padding: 0 !important;
   transform: scale(1.1) !important;
   image-rendering: auto;
+  transition: filter 0.3s ease, transform 0.3s ease;
   filter:
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.38))
-    drop-shadow(0 0 16px rgba(212, 175, 55, 0.22))
-    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72));
+    brightness(1.09)
+    contrast(1.08)
+    saturate(1.22)
+    sepia(0.05)
+    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
+    drop-shadow(0 0 18px rgba(212, 175, 55, 0.26))
+    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72)) !important;
+}
+
+.warda-perfume-card:hover .warda-perfume-card__img {
+  filter:
+    brightness(1.13)
+    contrast(1.1)
+    saturate(1.26)
+    sepia(0.05)
+    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.52))
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.34))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.78)) !important;
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
@@ -134,18 +150,27 @@
   padding: 0;
   transform: scale(1.1);
   image-rendering: auto;
+  transition: filter 0.3s ease, transform 0.3s ease;
   filter:
-    drop-shadow(0 0 2px rgba(255, 226, 165, 0.38))
-    drop-shadow(0 0 16px rgba(212, 175, 55, 0.22))
-    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72));
+    brightness(1.09)
+    contrast(1.08)
+    saturate(1.22)
+    sepia(0.05)
+    drop-shadow(0 0 2px rgba(255, 226, 165, 0.42))
+    drop-shadow(0 0 18px rgba(212, 175, 55, 0.26))
+    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72)) !important;
 }
 
 .search__card:hover .search__card-img {
   animation: none;
   filter:
-    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.45))
-    drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))
-    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.75));
+    brightness(1.13)
+    contrast(1.1)
+    saturate(1.26)
+    sepia(0.05)
+    drop-shadow(0 0 2.5px rgba(255, 226, 165, 0.52))
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.34))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.78)) !important;
 }
 
 .search__card .search__card-body {
