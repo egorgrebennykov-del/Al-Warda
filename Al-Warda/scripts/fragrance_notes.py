@@ -43,20 +43,32 @@ def _format_note_name(note):
     return " ".join(words)
 
 
+def _split_combined_notes(value):
+    text = str(value or "").strip()
+    if not text:
+        return []
+    return [
+        part.strip()
+        for part in re.split(r"\s+(?:and|и|&|\+|/)\s+|[,;]+", text, flags=re.IGNORECASE)
+        if part and part.strip()
+    ]
+
+
 def _clean_list(values, limit=MAX_NOTES_PER_LAYER):
     if not isinstance(values, list):
         return []
     cleaned = []
     seen = set()
     for value in values:
-        note = _format_note_name(value)
-        key = note.lower()
-        if not note or key in seen:
-            continue
-        seen.add(key)
-        cleaned.append(note)
-        if len(cleaned) >= limit:
-            break
+        for part in _split_combined_notes(value):
+            note = _format_note_name(part)
+            key = note.lower()
+            if not note or key in seen:
+                continue
+            seen.add(key)
+            cleaned.append(note)
+            if len(cleaned) >= limit:
+                return cleaned
     return cleaned
 
 

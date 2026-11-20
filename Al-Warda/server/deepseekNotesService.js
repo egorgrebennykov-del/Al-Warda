@@ -72,16 +72,27 @@ export function formatNoteName(note) {
     .join(" ");
 }
 
+function splitCombinedNotes(value) {
+  const text = String(value || "").trim();
+  if (!text) return [];
+  return text
+    .split(/\s+(?:and|и|&|\+|\/)\s+|[,;]+/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 function cleanNotes(values) {
   const seen = new Set();
   const cleaned = [];
   for (const value of Array.isArray(values) ? values : []) {
-    const note = formatNoteName(value);
-    const key = note.toLowerCase();
-    if (!note || seen.has(key)) continue;
-    seen.add(key);
-    cleaned.push(note);
-    if (cleaned.length >= MAX_NOTES_PER_LAYER) break;
+    for (const part of splitCombinedNotes(value)) {
+      const note = formatNoteName(part);
+      const key = note.toLowerCase();
+      if (!note || seen.has(key)) continue;
+      seen.add(key);
+      cleaned.push(note);
+      if (cleaned.length >= MAX_NOTES_PER_LAYER) return cleaned;
+    }
   }
   return cleaned;
 }
