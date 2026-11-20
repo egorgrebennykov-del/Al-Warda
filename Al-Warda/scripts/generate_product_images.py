@@ -722,7 +722,7 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                             overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
                             img_lower = img_url.lower()
                             tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
-                            bottle_bonus = 6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0
+                            bottle_bonus = 8.0 if (not is_set and re.search(r"[-_]bottle[-_]front\.(?:png|jpe?g|webp)", img_lower)) else (6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0)
                             score = tier_bonus + bottle_bonus + overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
                             all_matches.append((
                                 score,
@@ -743,7 +743,7 @@ def search_official_studio_candidates(name, brand="", is_set=False):
 
     if domains:
         _query_shopify_domains(domains, include_brand_in_query=False, require_brand_match=False, source_tag="official_studio")
-    if len(all_matches) < 2:
+    if len(all_matches) < 3 and not any("bottle" in (m[1].get("imageUrl") or "").lower() for m in all_matches):
         _query_shopify_domains(TRUSTED_RETAILER_DOMAINS, include_brand_in_query=True, require_brand_match=True, source_tag="verified_retailer")
 
     all_matches.sort(key=lambda item: item[0], reverse=True)
