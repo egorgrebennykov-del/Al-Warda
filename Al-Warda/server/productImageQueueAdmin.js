@@ -1991,6 +1991,8 @@ export async function getAllAdminProducts(request, env) {
     const auth = await requirePrivilegedUser(request, env);
     if (auth.response) return auth.response;
 
+    const onlySite =
+      new URL(request.url, "http://localhost").searchParams.get("onlySite") === "1";
     const key = getServiceKey(env);
     const rows = await fetchAllStocks(env, key);
     const products = rows
@@ -2001,6 +2003,15 @@ export async function getAllAdminProducts(request, env) {
         const gt = row.info && typeof row.info === "object" ? row.info.googleTrends : null;
         if (row.in_stock === false || gt?.hiddenFromSite === true || gt?.passed === false) {
           return false;
+        }
+        if (onlySite) {
+          const info = row.info && typeof row.info === "object" ? row.info : {};
+          const gen = info.imageGeneration || {};
+          const img = gen.imageUrl || row.image || "";
+          const isManual = Boolean(info.manual || gen.manual);
+          if (gen.status !== "completed" || (!isGeneratedProductImage(img) && !isManual)) {
+            return false;
+          }
         }
         return true;
       })

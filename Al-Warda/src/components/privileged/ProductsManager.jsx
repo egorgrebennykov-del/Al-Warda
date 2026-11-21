@@ -48,7 +48,7 @@ export default function ProductsManager({ language = "ru" }) {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/products", {
+      const response = await fetch("/api/admin/products?onlySite=1", {
         credentials: "same-origin",
       });
       if (!response.ok) {
