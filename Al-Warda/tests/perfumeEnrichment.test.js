@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ensurePerfumeEnrichment } from "../utils/perfumes.js";
+import { ensurePerfumeEnrichment, isAirFreshener } from "../utils/perfumes.js";
 
 const basePerfume = {
   id: "1",
@@ -66,4 +66,17 @@ test("keeps trusted top-level notes when the product is marked verified", () => 
   assert.deepEqual(enriched.topNotesRu, ["Шафран"]);
   assert.deepEqual(enriched.topNotesEn, ["Saffron"]);
   assert.deepEqual(enriched.baseNotesEn, ["Amber"]);
+});
+
+test("isAirFreshener identifies standalone air fresheners and room sprays without misclassifying EDP gift sets", () => {
+  assert.equal(isAirFreshener({ name: "Lattafa Khamrah Air Freshener 300ml" }), true);
+  assert.equal(isAirFreshener({ name: "Al Haramain Velvet Carbon Room Spray" }), true);
+  assert.equal(isAirFreshener({ name: "Lattafa Khamrah EDP 100ml" }), false);
+  assert.equal(
+    isAirFreshener({
+      name: "Lattafa Maahir Set - Edp Spray, Perfumed Spray, Air Freshener",
+      isSet: true,
+    }),
+    false,
+  );
 });

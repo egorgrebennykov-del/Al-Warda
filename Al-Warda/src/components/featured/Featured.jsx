@@ -6,6 +6,7 @@ import {
   getCategories,
   getPerfumeUrl,
   isPerfumeSet,
+  isAirFreshener,
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
   parseVolumeMl,
@@ -1039,7 +1040,13 @@ export default function Featured() {
       const j = Math.floor((seed / 233280) * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return arr;
+    const regular = [];
+    const fresheners = [];
+    for (const item of arr) {
+      if (isAirFreshener(item)) fresheners.push(item);
+      else regular.push(item);
+    }
+    return [...regular, ...fresheners];
   }, [perfumes]);
 
   // Filtered perfumes calculation
@@ -1158,7 +1165,13 @@ export default function Featured() {
       });
     }
 
-    return result;
+    const regular = [];
+    const fresheners = [];
+    for (const item of result) {
+      if (isAirFreshener(item)) fresheners.push(item);
+      else regular.push(item);
+    }
+    return [...regular, ...fresheners];
   }, [
     perfumes,
     shuffledPerfumes,

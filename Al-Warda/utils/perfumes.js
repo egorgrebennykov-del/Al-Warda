@@ -2958,6 +2958,25 @@ export function isPerfumeSet(p) {
   );
 }
 
+export function isAirFreshener(p) {
+  if (!p) return false;
+  const text = `${p.name || ""} ${p.title || ""} ${p.category || ""} ${p.categorySlug || ""}`.toLowerCase();
+  const matchesFreshener =
+    /\b(?:air\s*fresh(?:e?n)?er|room\s*spray|home\s*(?:spray|fragrance)|linen\s*spray|car\s*freshener|fabric\s*freshener|освежител[ья])\b/i.test(
+      text,
+    );
+  if (!matchesFreshener) return false;
+  if (
+    isPerfumeSet(p) &&
+    /\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait|parfum)\b/i.test(
+      text,
+    )
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export async function getPerfumeSets(options = {}) {
   const all = await getPerfumes(options);
   return all.filter((p) => isPerfumeSet(p));
