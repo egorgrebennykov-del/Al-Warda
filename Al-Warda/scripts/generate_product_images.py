@@ -564,7 +564,7 @@ def clean_product_name_for_search(name, brand=""):
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s+[-–|]\s+.*$", "", clean)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne|bor\s*[um]?|new in sealed box|package|collection|miniature|pieces?|pcs)\b",
         "",
         clean,
         flags=re.IGNORECASE,
@@ -720,10 +720,15 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                                 page_url = f"https://{domain}{page_url}"
 
                             overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
+                            extra_tokens = title_tokens - clean_tokens - brand_tokens
+                            extra_penalty = len(extra_tokens) * 1.5
+                            for fk in ("elixir", "intense", "absolu", "extreme", "limited", "caramel", "dulce"):
+                                if fk in extra_tokens:
+                                    extra_penalty += 3.0
                             img_lower = img_url.lower()
                             tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
                             bottle_bonus = 8.0 if (not is_set and re.search(r"[-_]bottle[-_]front\.(?:png|jpe?g|webp)", img_lower)) else (6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0)
-                            score = tier_bonus + bottle_bonus + overlap * 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                            score = tier_bonus + bottle_bonus + overlap * 10.0 - extra_penalty + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
                             all_matches.append((
                                 score,
                                 {
@@ -1717,11 +1722,11 @@ def validate_cutout_quality(source_quality, out_bytes):
         y1, y2 = int(ys_fg.min()), int(ys_fg.max())
         x1, x2 = int(xs_fg.min()), int(xs_fg.max())
         bbox_fill = float(np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120))
-        if bbox_fill > 0.84 and fg_ratio > 0.62:
+        if bbox_fill > 0.94 and fg_ratio > 0.78:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
         top_band = alpha[y1:min(y2 + 1, y1 + max(2, int((y2 - y1) * 0.03))), x1:x2 + 1]
         top_cov = float(np.mean(top_band > 120)) if top_band.size > 0 else 0.0
-        if 0.82 <= bbox_fill < 0.95 and fg_ratio > 0.60 and top_cov > 0.75:
+        if bbox_fill > 0.92 and fg_ratio > 0.74 and top_cov > 0.88:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
 
     try:
