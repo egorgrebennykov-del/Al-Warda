@@ -37,17 +37,16 @@ function bustImageCache(url) {
 
 function getPerfumeImageSources(perfume, retryTick = 0) {
   if (!perfume) return [];
-  const rawPrimary =
-    perfume.image ||
-    perfume.imageUrl ||
-    perfume.info?.imageGeneration?.imageUrl ||
-    "";
+  const candidates = [
+    perfume.info?.imageGeneration?.imageUrl,
+    perfume.imageUrl,
+    perfume.image,
+  ].filter(
+    (u) => typeof u === "string" && u.includes("/generated-products/"),
+  );
+  const rawPrimary = candidates[0] || "";
   // Never fall back to unprocessed raw supplier photos with white backgrounds
-  if (
-    !rawPrimary ||
-    typeof rawPrimary !== "string" ||
-    !rawPrimary.includes("/generated-products/")
-  ) {
+  if (!rawPrimary) {
     return [];
   }
   const primary = bustImageCache(rawPrimary);

@@ -493,21 +493,24 @@ def sync_to_supabase(perfumes_list):
             else {"status": "pending"}
         )
         image = raw_image or p.get("image") or ""
-        if (
-            same_source
-            and generation.get("status") == "completed"
-            and isinstance((previous or {}).get("image"), str)
-            and (
-                (previous or {}).get("image", "").startswith(
+        prev_gen_url = (previous_generation.get("imageUrl") or "").strip()
+        prev_img_url = ((previous or {}).get("image") or "").strip()
+        if generation.get("status") == "completed":
+            if re.fullmatch(
+                r"/assets/img/generated-products/[a-f0-9]{64}\.(png|webp)",
+                prev_gen_url,
+            ):
+                image = prev_gen_url
+            elif (
+                prev_img_url.startswith(
                     f"{SUPABASE_URL}/storage/v1/object/public/product-images/"
                 )
                 or re.fullmatch(
-                    r"/assets/img/generated-products/[a-f0-9]{64}\.png",
-                    (previous or {}).get("image", ""),
+                    r"/assets/img/generated-products/[a-f0-9]{64}\.(png|webp)",
+                    prev_img_url,
                 )
-            )
-        ):
-            image = previous["image"]
+            ):
+                image = prev_img_url
         rich = build_rich_bilingual_enrichment(p["name"], p.get("brand") or "Al-Warda")
         clean_perfume_name = strip_volume_from_name(p["name"])
         record = {
