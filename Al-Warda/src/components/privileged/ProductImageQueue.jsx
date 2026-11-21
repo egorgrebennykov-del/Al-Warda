@@ -1130,6 +1130,7 @@ export default function ProductImageQueue({
     setActionMessage("");
     try {
       let totalFailedCount = 0;
+      let regenAlreadyStarted = false;
       for (let i = 0; i < ids.length; i += 20) {
         const chunkIds = ids.slice(i, i + 20);
         const bodyPayload = { ids: chunkIds, chooseNewPhoto };
@@ -1150,6 +1151,14 @@ export default function ProductImageQueue({
           throw new Error(payload.error || `HTTP ${response.status}`);
         }
         totalFailedCount += Number(payload.failedCount ?? chunkIds.length);
+        if (payload.regenerationStarted) regenAlreadyStarted = true;
+      }
+      if (!regenAlreadyStarted) {
+        void callLocalGpuApi("start", {
+          productIds: ids,
+          count: ids.length,
+          coolingDelay: 0.8,
+        }).catch(() => {});
       }
       markPerfumesEvictedAsFailed(ids);
       statusEpochRef.current += 1;

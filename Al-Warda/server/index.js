@@ -58,6 +58,7 @@ import {
   getGpuGenerationStatus,
   startGpuGeneration,
   stopGpuGeneration,
+  enqueueGpuRegeneration,
 } from "./gpuGenerationService.js";
 import {
   getFragranceNotes,
@@ -316,7 +317,13 @@ const server = createServer(async (req, res) => {
     try {
       const request = await localWebRequest(req, readRawBody);
       const response = await markProductItemsFailed(request, process.env);
-      respond(res, response.status, await response.json(), req);
+      const payload = await response.json();
+      if (response.ok && Array.isArray(payload?.ids) && payload.ids.length > 0) {
+        const regen = enqueueGpuRegeneration(payload.ids);
+        payload.regenerationStarted = Boolean(regen?.ok);
+        payload.regenerationQueued = Boolean(regen?.queued);
+      }
+      respond(res, response.status, payload, req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);
     }
@@ -469,7 +476,9 @@ const server = createServer(async (req, res) => {
     try {
       const body = await readRawBody(req);
       const payload = body && body.length ? JSON.parse(body.toString("utf-8")) : {};
-      const result = startGpuGeneration(payload);
+      const result = payload?.productIds
+        ? enqueueGpuRegeneration(payload.productIds)
+        : startGpuGeneration(payload);
       respond(res, result.ok ? 200 : 400, result, req);
     } catch (error) {
       respond(res, 400, { error: error.message }, req);

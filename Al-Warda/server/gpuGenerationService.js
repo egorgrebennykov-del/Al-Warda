@@ -200,6 +200,59 @@ export function getGpuGenerationStatus() {
   };
 }
 
+const queuedProductIds = new Set();
+
+let drainTimer = null;
+
+function scheduleQueueDrain() {
+  if (drainTimer) return;
+  drainTimer = setInterval(() => {
+    if (queuedProductIds.size === 0) {
+      clearInterval(drainTimer);
+      drainTimer = null;
+      return;
+    }
+    const existing = readPersistedState();
+    if (existing?.pid && isPidAlive(existing.pid)) return;
+    if (existing?.status === "stopping") {
+      queuedProductIds.clear();
+      clearInterval(drainTimer);
+      drainTimer = null;
+      return;
+    }
+    clearInterval(drainTimer);
+    drainTimer = null;
+    const nextIds = Array.from(queuedProductIds);
+    queuedProductIds.clear();
+    startGpuGeneration({ productIds: nextIds, count: nextIds.length, coolingDelay: 0.8 });
+  }, 3000);
+}
+
+export function enqueueGpuRegeneration(productIds = []) {
+  const cleanIds = (Array.isArray(productIds) ? productIds : String(productIds || "").split(","))
+    .map((id) => String(id ?? "").trim())
+    .filter((id) => /^\d{1,20}$/.test(id));
+  if (!cleanIds.length) {
+    return { ok: false, message: "No valid product IDs to regenerate" };
+  }
+  const existing = readPersistedState();
+  if (existing?.pid && isPidAlive(existing.pid)) {
+    for (const id of cleanIds) queuedProductIds.add(id);
+    scheduleQueueDrain();
+    return {
+      ok: true,
+      queued: true,
+      queuedCount: queuedProductIds.size,
+      message: `Добавлено в очередь на повторную генерацию: ${cleanIds.length}`,
+    };
+  }
+  return startGpuGeneration({
+    productIds: cleanIds,
+    count: cleanIds.length,
+    coolingDelay: 0.8,
+  });
+}
+
 export function startGpuGeneration({ count = "all", productIds = null, coolingDelay = 0.8 } = {}) {
   const existing = readPersistedState();
   if (existing?.pid && isPidAlive(existing.pid)) {
