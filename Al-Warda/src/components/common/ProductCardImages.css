@@ -114,6 +114,15 @@
 }
 
 @media (max-width: 768px) {
+  .warda-perfume-card .warda-perfume-card__img,
+  .search__card .search__card-img {
+    padding: 6px !important;
+  }
+
+  .warda-perfume-card:hover .warda-perfume-card__img {
+    transform: scale(1) !important;
+  }
+
   .warda-perfume-card .warda-perfume-card__info,
   .warda-perfume-card .warda-perfume-card__action {
     padding-inline: 0.35rem !important;
