@@ -17,6 +17,7 @@ APP_DIR = SCRIPT_DIR.parent
 CACHE_PATH = APP_DIR / "server" / "data" / "googleTrendsCache.json"
 REGIONS = ("BG", "RO", "GR", "HU")
 CACHE_TTL_DAYS = 14
+MIN_VISIBLE_PERFUMES = 500
 
 WHITELIST_PRIORITY_1 = {
     "lattafa": ("lattafa", "lattafa perfumes", "lattafa pride"),
@@ -483,6 +484,109 @@ def patch_stock_trends(session, supabase_url, row, trends_meta, visible):
     patch_with_retry(session, url, row["id"], payload)
 
 
+def is_row_visible(row):
+    """Return True if a stocks row is currently visible on the site."""
+    gt = (row.get("info") or {}).get("googleTrends") or {}
+    if gt.get("hiddenFromSite") is True:
+        return False
+    if row.get("in_stock") is False:
+        return False
+    return True
+
+
+def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=False):
+    """If visible products < min_visible, restore hidden products in descending threshold steps
+    (avg >= 34 or max >= 49, then 33/48, 32/47, ...) until visible count reaches min_visible."""
+    visible_rows = [r for r in all_rows if is_row_visible(r)]
+    visible_count = len(visible_rows)
+    if visible_count >= min_visible:
+        print(f"[MinCatalog] Visible products: {visible_count} >= {min_visible}. No backfill needed.", flush=True)
+        return 0
+
+    needed = min_visible - visible_count
+    print(
+        f"[MinCatalog] Visible products: {visible_count} < {min_visible} (need {needed} more). "
+        f"Applying descending Google Trends thresholds (34/49, 33/48, ...)...",
+        flush=True,
+    )
+
+    hidden_pool = [
+        r for r in all_rows
+        if not is_row_visible(r)
+        and ((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt")
+    ]
+    admitted_ids = set()
+    restored = 0
+
+    def _row_sort_key(row):
+        info = row.get("info") or {}
+        gt = info.get("googleTrends") or {}
+        avg_s = float(gt.get("avg") or 0)
+        max_s = int(gt.get("max") or 0)
+        img_done = 1 if ((info.get("imageGeneration") or {}).get("status") == "completed") else 0
+        return (max(avg_s, float(max_s)), avg_s, max_s, img_done)
+
+    # Step k = 1..49 => (34, 49), (33, 48), ..., (1, 16), ..., (None, 1)
+    for step in range(1, 50):
+        if restored >= needed:
+            break
+        avg_thr = 35.0 - step
+        max_thr = 50 - step
+        tier_candidates = []
+        for r in hidden_pool:
+            if r["id"] in admitted_ids:
+                continue
+            gt = (r.get("info") or {}).get("googleTrends") or {}
+            avg_s = float(gt.get("avg") or 0)
+            max_s = int(gt.get("max") or 0)
+            matches_avg = (avg_thr >= 1.0 and avg_s >= avg_thr)
+            matches_max = (max_thr >= 1 and max_s >= max_thr)
+            if matches_avg or matches_max:
+                tier_candidates.append(r)
+
+        if not tier_candidates:
+            continue
+
+        tier_candidates.sort(key=_row_sort_key, reverse=True)
+        for r in tier_candidates:
+            if restored >= needed:
+                break
+            gt = dict((r.get("info") or {}).get("googleTrends") or {})
+            avg_s = float(gt.get("avg") or 0)
+            max_s = int(gt.get("max") or 0)
+            thr_label = f"avg>={int(avg_thr)} or max>={max_thr}" if avg_thr >= 1.0 else f"max>={max_thr}"
+            new_meta = {
+                **gt,
+                "passed": True,
+                "filterStatus": "min_catalog_backfill",
+                "filterReason": f"min_catalog_backfill(target={min_visible}): {thr_label} (avg={avg_s}, max={max_s})",
+                "backfillThreshold": {
+                    "avg": int(avg_thr) if avg_thr >= 1.0 else None,
+                    "max": max_thr,
+                },
+                "verifiedAt": datetime.now(timezone.utc).isoformat(),
+            }
+            print(
+                f"  [MinCatalog {visible_count + restored + 1}/{min_visible}] KEEP {r['id']} ({r.get('name')}) "
+                f"[tier {thr_label}] -> avg={avg_s} max={max_s}",
+                flush=True,
+            )
+            if not dry_run:
+                try:
+                    patch_stock_trends(db_session, supabase_url, r, new_meta, visible=True)
+                except Exception as exc:
+                    print(f"Warning patching backfill {r.get('id')}: {exc}", flush=True)
+                    continue
+            admitted_ids.add(r["id"])
+            restored += 1
+
+    print(
+        f"[MinCatalog] Backfill complete: restored={restored}, visible_now={visible_count + restored}",
+        flush=True,
+    )
+    return restored
+
+
 def filter_all_db_products(dry_run=False, force=False, completed_first=True, max_series=0):
     """Analyze ALL products in DB via Google Trends (series-aware) and hide failing ones without deleting."""
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -682,6 +786,9 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
     save_trends_cache(cache)
+    ensure_minimum_visible_perfumes(
+        db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=dry_run
+    )
     remaining_series = sum(
         1 for _, group_rows in ordered_groups
         if not all(((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt") for r in group_rows)
@@ -938,6 +1045,10 @@ def verify_whitelisted_products(dry_run=False):
                     except Exception as exc:
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
+    backfill_restored = ensure_minimum_visible_perfumes(
+        db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=dry_run
+    )
+    stats["min_catalog_backfill_restored"] = backfill_restored
     print("\n=== PERFUME FILTERING REPORT ===")
     print(json.dumps(stats, ensure_ascii=False, indent=2))
     return stats
@@ -949,12 +1060,26 @@ if __name__ == "__main__":
     parser.add_argument("--brand", default="", help="Brand name")
     parser.add_argument("--filter-all-db", action="store_true", help="Analyze ALL products in DB and hide failing ones (no deletion)")
     parser.add_argument("--verify-whitelisted", action="store_true", help="Run whitelist popularity verification across DB and restore admitted products")
+    parser.add_argument("--ensure-min-500", action="store_true", help="Ensure at least 500 visible products by stepping down Trends thresholds (34/49, 33/48, ...)")
     parser.add_argument("--completed-first", action="store_true", default=True, help="Prioritize completed site products first")
     parser.add_argument("--max-series", type=int, default=0, help="Max unchecked series to process per run (0 = unlimited)")
     parser.add_argument("--force", action="store_true", help="Re-check even already checked rows")
     parser.add_argument("--dry-run", action="store_true", help="Do not update DB")
     args = parser.parse_args()
-    if args.verify_whitelisted:
+    if args.ensure_min_500:
+        sys.path.insert(0, str(SCRIPT_DIR))
+        import generate_product_images as gpi
+        gpi._load_dotenv_if_needed()
+        supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+        if not supabase_url:
+            raise RuntimeError("SUPABASE_URL is not configured")
+        db_session = gpi.make_session()
+        all_rows = [
+            r for r in gpi.fetch_stock_rows(db_session, supabase_url)
+            if r.get("slug") != "site-settings" and str(r.get("id")) != "999999"
+        ]
+        ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=args.dry_run)
+    elif args.verify_whitelisted:
         verify_whitelisted_products(dry_run=args.dry_run)
     elif args.filter_all_db:
         filter_all_db_products(
