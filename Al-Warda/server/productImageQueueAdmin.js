@@ -489,7 +489,7 @@ export async function getProductImageQueueStatus(request, env) {
       return json(statusCache);
     }
 
-    if (!isTestEnv && inFlightStatusPromise) {
+    if (!isTestEnv && !force && inFlightStatusPromise) {
       return json(await inFlightStatusPromise);
     }
 

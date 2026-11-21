@@ -586,6 +586,7 @@ export default function ProductImageQueue({
   const [showGpuLogs, setShowGpuLogs] = useState(false);
   const [filterGenerated, setFilterGenerated] = useState(false);
   const [filterProcessing, setFilterProcessing] = useState(false);
+  const statusEpochRef = useRef(0);
   const confirm = useConfirm();
   const prompt = usePrompt();
   const alert = useAlert();
@@ -785,11 +786,12 @@ export default function ProductImageQueue({
     async (options = {}) => {
       const force = Boolean(options?.force);
       const isManual = Boolean(options?.manual);
+      const requestEpoch = statusEpochRef.current;
       try {
         const url = force
-          ? "/api/admin/product-images/status?force=1"
+          ? `/api/admin/product-images/status?force=1&_t=${Date.now()}`
           : "/api/admin/product-images/status";
-        const response = await fetchWithRetry(url);
+        const response = await fetchWithRetry(url, { cache: "no-store" });
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
           if ([502, 503, 504].includes(response.status)) {
@@ -806,6 +808,9 @@ export default function ProductImageQueue({
           );
         }
         const payload = await response.json();
+        if (requestEpoch !== statusEpochRef.current) {
+          return;
+        }
         if (!response.ok) {
           if (!isManual) return;
           if (payload.code === "SUPABASE_SERVICE_KEY_MISSING") {
@@ -1142,6 +1147,44 @@ export default function ProductImageQueue({
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
       markPerfumesEvictedAsFailed(ids);
+      statusEpochRef.current += 1;
+      const idSet = new Set(ids.map((id) => String(id)));
+      setStatus((current) => {
+        if (!current) return current;
+        const removedItems = (current.images || []).filter((img) =>
+          idSet.has(String(img.id)),
+        );
+        const remainingImages = (current.images || []).filter(
+          (img) => !idSet.has(String(img.id)),
+        );
+        const existingFailedIds = new Set(
+          (current.failedItems || []).map((f) => String(f.id)),
+        );
+        const newlyFailed = removedItems
+          .filter((img) => !existingFailedIds.has(String(img.id)))
+          .map((img) => ({
+            id: img.id,
+            name: img.name,
+            brand: img.brand,
+            rawImage: img.rawImage,
+            error:
+              reason && reason.trim()
+                ? reason.trim()
+                : chooseNewPhoto
+                  ? "Выбрать новое фото"
+                  : "Перенесено в ошибки вручную администратором",
+            failedAt: new Date().toISOString(),
+            manualFailed: true,
+            needsNewPhoto: chooseNewPhoto,
+          }));
+        return {
+          ...current,
+          completed: Math.max(0, (current.completed || 0) - removedItems.length),
+          failed: (current.failed || 0) + newlyFailed.length,
+          images: remainingImages,
+          failedItems: [...newlyFailed, ...(current.failedItems || [])],
+        };
+      });
       setSelectedImages((current) => {
         const next = { ...current };
         for (const id of ids) delete next[String(id)];
@@ -1152,7 +1195,7 @@ export default function ProductImageQueue({
           ? `Перенесено в список ошибок: ${payload.failedCount ?? ids.length}.`
           : `Moved to failed list: ${payload.failedCount ?? ids.length}.`,
       );
-      await loadStatus({ force: true });
+      void loadStatus({ force: true });
     } catch (err) {
       setActionError(err.message);
     } finally {
