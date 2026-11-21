@@ -18,6 +18,9 @@ CACHE_PATH = APP_DIR / "server" / "data" / "googleTrendsCache.json"
 REGIONS = ("BG", "RO", "GR", "HU")
 CACHE_TTL_DAYS = 14
 MIN_VISIBLE_PERFUMES = 500
+STRICT_AVG_THRESHOLD = 35.0
+STRICT_MAX_THRESHOLD = 50
+RETENTION_DAYS = 90
 
 WHITELIST_PRIORITY_1 = {
     "lattafa": ("lattafa", "lattafa perfumes", "lattafa pride"),
@@ -614,6 +617,109 @@ def deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=False)
     return hidden_dups
 
 
+def apply_three_month_retention_policy(db_session, supabase_url, all_rows, dry_run=False):
+    """When > 500 products pass avg >= 35 or max >= 50, keep below-threshold products
+    for 3 months (90 days) without deleting them; delete only after 90 days if they
+    never reached avg >= 35 or max >= 50 on any day during that period."""
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    strict_passing = []
+    below_rows = []
+
+    for r in all_rows:
+        gt = (r.get("info") or {}).get("googleTrends") or {}
+        if not gt.get("checkedAt"):
+            continue
+        avg_s = float(gt.get("avg") or 0)
+        max_s = int(gt.get("max") or 0)
+        if avg_s >= STRICT_AVG_THRESHOLD or max_s >= STRICT_MAX_THRESHOLD:
+            strict_passing.append(r)
+        else:
+            below_rows.append(r)
+
+    strict_count = len(strict_passing)
+    print(
+        f"[Retention] Strict passing (avg>={int(STRICT_AVG_THRESHOLD)} or max>={STRICT_MAX_THRESHOLD}): "
+        f"{strict_count} (below={len(below_rows)})",
+        flush=True,
+    )
+
+    # Refresh lastStrictPassAt / clear belowThresholdSince for all strict-passing items
+    for r in strict_passing:
+        info = dict(r.get("info") or {})
+        gt = dict(info.get("googleTrends") or {})
+        if gt.get("belowThresholdSince") or not gt.get("lastStrictPassAt"):
+            gt.pop("belowThresholdSince", None)
+            gt["lastStrictPassAt"] = now_iso
+            info["googleTrends"] = gt
+            r["info"] = info
+            if not dry_run and db_session and supabase_url:
+                try:
+                    base = (supabase_url or "").rstrip("/")
+                    ep = f"{base}/api/rest/v1/stocks" if ("workers.dev" in base and "/api" not in base) else f"{base}/rest/v1/stocks"
+                    patch_with_retry(db_session, ep, r["id"], {"info": info})
+                except Exception:
+                    pass
+
+    if strict_count <= MIN_VISIBLE_PERFUMES:
+        print(
+            f"[Retention] Strict passing count ({strict_count}) <= {MIN_VISIBLE_PERFUMES}; "
+            f"skipping 90-day deletions.",
+            flush=True,
+        )
+        return 0
+
+    deleted_count = 0
+    marked_count = 0
+    base = (supabase_url or "").rstrip("/")
+    ep = f"{base}/api/rest/v1/stocks" if ("workers.dev" in base and "/api" not in base) else f"{base}/rest/v1/stocks"
+
+    for r in below_rows:
+        info = dict(r.get("info") or {})
+        gt = dict(info.get("googleTrends") or {})
+        since_str = gt.get("belowThresholdSince")
+        if not since_str:
+            gt["belowThresholdSince"] = now_iso
+            info["googleTrends"] = gt
+            r["info"] = info
+            if not dry_run and db_session and supabase_url:
+                try:
+                    patch_with_retry(db_session, ep, r["id"], {"info": info})
+                except Exception:
+                    pass
+            marked_count += 1
+            continue
+
+        try:
+            since_dt = datetime.fromisoformat(since_str.replace("Z", "+00:00"))
+            if since_dt.tzinfo is None:
+                since_dt = since_dt.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+
+        if (now - since_dt).days >= RETENTION_DAYS:
+            print(
+                f"  [Retention] DELETE {r['id']} ({r.get('name')}) — below 35/50 since {since_str[:10]} (>= {RETENTION_DAYS} days)",
+                flush=True,
+            )
+            if not dry_run and db_session and supabase_url:
+                try:
+                    del_resp = db_session.delete(ep, params={"id": f"eq.{r['id']}"}, timeout=30)
+                    if not del_resp.ok:
+                        print(f"Warning deleting expired {r['id']}: {del_resp.status_code}", flush=True)
+                        continue
+                except Exception as exc:
+                    print(f"Warning deleting expired {r['id']}: {exc}", flush=True)
+                    continue
+            deleted_count += 1
+
+    print(
+        f"[Retention] Marked belowThresholdSince={marked_count}, deleted after {RETENTION_DAYS} days={deleted_count}",
+        flush=True,
+    )
+    return deleted_count
+
+
 def is_row_site_eligible(row):
     """Return True if a row is visible AND not failed/blocked from storefront."""
     if not is_row_visible(row):
@@ -942,6 +1048,7 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
 
     save_trends_cache(cache)
     deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=dry_run)
+    apply_three_month_retention_policy(db_session, supabase_url, all_rows, dry_run=dry_run)
     ensure_minimum_visible_perfumes(
         db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=dry_run
     )
@@ -1202,6 +1309,9 @@ def verify_whitelisted_products(dry_run=False):
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
     stats["dedupe_hidden"] = deduplicate_keep_cheapest(
+        db_session, supabase_url, all_rows, dry_run=dry_run
+    )
+    stats["retention_deleted"] = apply_three_month_retention_policy(
         db_session, supabase_url, all_rows, dry_run=dry_run
     )
     backfill_restored = ensure_minimum_visible_perfumes(

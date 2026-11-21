@@ -76,6 +76,8 @@ SUPABASE_URL = os.environ.get(
 SUPABASE_KEY = (
     os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     or os.environ.get("SUPABASE_SECRET_KEY")
+    or os.environ.get("NHOST_ADMIN_SECRET")
+    or os.environ.get("SUPABASE_ANON_KEY")
 )
 
 ARABIAN_BRANDS = [
@@ -107,6 +109,7 @@ class QogitaSyncClient:
         if not self.email or not self.password:
             raise RuntimeError("Set QOGITA_EMAIL and QOGITA_PASSWORD before starting the Qogita sync.")
         login_url = f"{self.api_url}/auth/login/"
+        self.session.headers.pop("Authorization", None)
         res = self.session.post(login_url, json={"email": self.email, "password": self.password}, timeout=15)
         if res.status_code == 200:
             data = res.json()
@@ -397,31 +400,53 @@ def sync_to_supabase(perfumes_list):
         url = f"{base}/rest/v1/stocks"
 
     existing_by_gtin = {}
+    existing_by_slug = {}
     existing_by_name = {}
+    max_id = 0
     offset = 0
-    page_size = 1000
+    page_size = 100
     while True:
-        response = requests.get(
-            url,
-            params={"select": "id,name,image,info", "order": "id.asc", "offset": offset, "limit": page_size},
-            headers=headers,
-            timeout=30,
-            verify=False,
-        )
-        if not response.ok:
+        response = None
+        for attempt in range(4):
+            try:
+                response = requests.get(
+                    url,
+                    params={"select": "id,slug,name,price,in_stock,image,info", "order": "id.asc", "offset": offset, "limit": page_size},
+                    headers=headers,
+                    timeout=30,
+                    verify=False,
+                )
+                if response.status_code >= 500 and attempt < 3:
+                    time.sleep(2 ** attempt)
+                    continue
+                break
+            except Exception:
+                if attempt == 3:
+                    raise
+                time.sleep(2 ** attempt)
+        if not response or not response.ok:
             raise RuntimeError(
                 f"Could not preserve existing product image status "
-                f"({response.status_code}): {response.text[:400]}"
+                f"({response.status_code if response else 'no-response'}): {(response.text[:400] if response else '')}"
             )
         rows = response.json()
         if not isinstance(rows, list):
             raise RuntimeError("Supabase stocks response was not a list")
         for row in rows:
+            try:
+                rid = int(row.get("id") or 0)
+                if rid > max_id:
+                    max_id = rid
+            except Exception:
+                pass
             info = row.get("info") or {}
             gtin = info.get("gtin")
+            slug_val = (row.get("slug") or "").strip().lower()
             name = (row.get("name") or "").strip().lower()
             if gtin:
                 existing_by_gtin[str(gtin)] = row
+            if slug_val:
+                existing_by_slug[slug_val] = row
             if name:
                 existing_by_name[name] = row
         if len(rows) < page_size:
@@ -433,18 +458,20 @@ def sync_to_supabase(perfumes_list):
     for p in perfumes_list:
         slug = f"dropship-{p.get('gtin') or hashlib.md5(p['name'].encode('utf-8')).hexdigest()[:12]}"
         raw_image = p.get("rawImage") or ""
-        previous = existing_by_gtin.get(str(p.get("gtin") or "")) or existing_by_name.get(
-            p["name"].strip().lower()
+        previous = (
+            existing_by_gtin.get(str(p.get("gtin") or ""))
+            or existing_by_slug.get(slug.lower())
+            or existing_by_name.get(p["name"].strip().lower())
         )
         previous_info = (previous or {}).get("info") or {}
         previous_generation = previous_info.get("imageGeneration") or {}
-        same_source = previous_info.get("rawImage") == raw_image and bool(raw_image)
+        same_source = (previous_info.get("rawImage") or "") == raw_image
         generation = (
             previous_generation
-            if same_source and previous_generation.get("status")
+            if (same_source and previous_generation.get("status")) or (not raw_image and previous_generation.get("status") == "completed")
             else {"status": "pending"}
         )
-        image = raw_image or p.get("image") or "/assets/img/perfumes/hero-perfume.png"
+        image = raw_image or p.get("image") or ""
         if (
             same_source
             and generation.get("status") == "completed"
@@ -500,6 +527,45 @@ def sync_to_supabase(perfumes_list):
                 "descriptionEn": p.get("descriptionEn") or rich["descriptionEn"],
             }
         }
+        if previous and previous.get("id") is not None:
+            unchanged = (
+                round(float(previous.get("price") or 0), 2) == round(float(record["price"]), 2)
+                and bool(previous.get("in_stock")) is True
+                and (previous_info.get("rawImage") or "") == raw_image
+                and int(previous_info.get("minOrderQuantity") or 1) == int(record["info"]["minOrderQuantity"])
+                and (previous.get("image") or "") == image
+            )
+            if unchanged:
+                synced += 1
+                continue
+            patch_res = None
+            for attempt in range(3):
+                try:
+                    patch_res = requests.patch(
+                        f"{url}?id=eq.{previous['id']}",
+                        json=record,
+                        headers=headers,
+                        timeout=20,
+                        verify=False,
+                    )
+                    if patch_res.status_code >= 500 and attempt < 2:
+                        time.sleep(1.5 * (attempt + 1))
+                        continue
+                    break
+                except Exception:
+                    if attempt == 2:
+                        raise
+                    time.sleep(1.5 * (attempt + 1))
+            if not patch_res or not patch_res.ok:
+                raise RuntimeError(
+                    f"Supabase stock update failed ({patch_res.status_code if patch_res else 'no-response'}): "
+                    f"{(patch_res.text[:400] if patch_res else '')}"
+                )
+            synced += 1
+            continue
+
+        max_id += 1
+        record["id"] = max_id
         batch.append(record)
         if len(batch) >= 20:
             res = requests.post(url, json=batch, headers=headers, timeout=20, verify=False)
@@ -637,8 +703,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
         for item in items:
             name_raw = item.get("name")
-            raw_img = item.get("imageUrl")
-            if not name_raw or not raw_img:
+            raw_img = (item.get("imageUrl") or "").strip()
+            if not name_raw:
                 continue
 
             # Skip wholesale multipacks / bundles
@@ -811,7 +877,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         "longevityEn": "10–14 hours",
                         "sillage": "Заметный, притягательный",
                         "sillageEn": "Noticeable, alluring sillage",
-                        "volume": extract_volume(p.get("name") or p.get("title") or ""),
+                        "volume": extract_volume(perfume_entry.get("name") or ""),
                         "gtin": gtin or "",
                         "minOrderQuantity": min_order,
                         "unit": min_order,
