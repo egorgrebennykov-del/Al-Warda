@@ -518,9 +518,10 @@ BRAND_DOMAINS = {
     "al wataniah": ["alwataniah.com"],
     "amouage": ["amouage.com"],
     "rasasi": ["rasasistore.com"],
-    "paris corner": ["pariscornerperfumes.com"],
-    "fragrance world": ["fragranceworld.ae"],
-    "french avenue": ["fragranceworld.ae"],
+    "paris corner": ["pariscornerperfumes.com", "aromaconcepts.com"],
+    "fragrance world": ["fragranceworld.ae", "frenchavenue.com"],
+    "french avenue": ["frenchavenue.com", "fragranceworld.ae"],
+    "khadlaj": ["khadlaj-perfumes.com"],
 }
 
 TRUSTED_RETAILER_DOMAINS = [
@@ -528,6 +529,10 @@ TRUSTED_RETAILER_DOMAINS = [
     "oudstore.com",
     "tripletraders.com",
     "fragflex.com",
+    "soghaat.co.uk",
+    "emiratesoud.co.uk",
+    "filledwithbarakah.com",
+    "aromaconcepts.com",
 ]
 
 GENERIC_STOPWORDS = {
