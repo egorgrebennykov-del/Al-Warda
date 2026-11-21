@@ -494,6 +494,126 @@ def is_row_visible(row):
     return True
 
 
+def dedupe_perfume_key(row):
+    """Canonical deduplication key (brand + normalized name + concentration/form) so identical perfumes
+    with slight wording differences (e.g. 'Pour Femme' vs 'For Women', 'Blue Iconic' vs 'Iconic')
+    are grouped together and only the cheapest one is kept visible."""
+    brand_raw = (row.get("brand") or "").strip().lower()
+    brand_key = re.sub(r"[^a-z0-9]", "", brand_raw)
+    name = (row.get("name") or "").strip().lower()
+    if brand_raw:
+        name = re.sub(re.escape(brand_raw), " ", name)
+    # Strip trailing marketing/note suffixes like ' - Cinnamon, Orange...' or ' - Long-Lasting...'
+    name = re.sub(
+        r"\s+[-–|]\s+(?:cinnamon|orange|amber|woody|floral|spicy|long[\s-]*lasting|fresh|sweet|vanilla|musk|oriental|fruity|citrus).*$",
+        "",
+        name,
+    )
+    name = re.sub(r"\b(pour\s+femme|for\s+women|for\s+her|women's|womens|women|woman)\b", " femme ", name)
+    name = re.sub(r"\b(pour\s+homme|for\s+men|for\s+him|men's|mens|men|man)\b", " homme ", name)
+    name = re.sub(r"\b(eau\s+de\s+parfum|edp)\b", " edp ", name)
+    name = re.sub(r"\b(eau\s+de\s+toilette|edt)\b", " edt ", name)
+    name = re.sub(r"\b(extrait\s+de\s+parfum|extract\s+de\s+parfum)\b", " extrait ", name)
+    name = re.sub(r"\bblue\s+iconic\b", " iconic ", name)
+    name = re.sub(r"\b(spray|vaporisateur|natural|fragrance|fragrances|perfume|arabic|luxury|unisex|bor\s*[um]?)\b", " ", name)
+    name = re.sub(r"\b\d+(?:\.\d+)?\s*(?:ml|fl\.?\s*oz|oz|g|grams)\b", " ", name)
+    tokens = sorted(set(re.findall(r"[a-z0-9]+", name)) - {"the", "a", "an", "by", "of", "and", "for", "in"})
+    if not tokens:
+        return None
+    return (brand_key, " ".join(tokens))
+
+
+def deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=False):
+    """Find visible duplicate perfumes and hide all except the cheapest one (in_stock=False, hiddenFromSite=True)."""
+    from collections import defaultdict
+
+    # Fetch lightweight price + in_stock map if rows came from fetch_stock_rows (which omits price/in_stock)
+    price_map = {}
+    if db_session and supabase_url:
+        base = (supabase_url or "").rstrip("/")
+        ep = f"{base}/api/rest/v1/stocks" if ("workers.dev" in base and "/api" not in base) else f"{base}/rest/v1/stocks"
+        start = 0
+        while True:
+            try:
+                resp = db_session.get(
+                    ep,
+                    params={"select": "id,price,in_stock", "order": "id.asc"},
+                    headers={"Range-Unit": "items", "Range": f"{start}-{start + 499}"},
+                    timeout=30,
+                )
+                if not resp.ok:
+                    break
+                page = resp.json()
+                if not page:
+                    break
+                for item in page:
+                    price_map[item["id"]] = item
+                if len(page) < 500:
+                    break
+                start += 500
+            except Exception:
+                break
+
+    for r in all_rows:
+        m = price_map.get(r["id"])
+        if m:
+            if r.get("price") is None:
+                r["price"] = m.get("price")
+            if r.get("in_stock") is None:
+                r["in_stock"] = m.get("in_stock")
+
+    groups = defaultdict(list)
+    for r in all_rows:
+        if not is_row_visible(r):
+            continue
+        k = dedupe_perfume_key(r)
+        if k:
+            groups[k].append(r)
+
+    hidden_dups = 0
+    for k, grp in groups.items():
+        if len(grp) <= 1:
+            continue
+
+        def _rank(row):
+            p_raw = row.get("price")
+            if p_raw is None:
+                p_raw = (row.get("info") or {}).get("price")
+            try:
+                price_val = float(p_raw) if p_raw is not None else 999999.0
+            except Exception:
+                price_val = 999999.0
+            img_done = 0 if (((row.get("info") or {}).get("imageGeneration") or {}).get("status") == "completed") else 1
+            return (price_val, img_done, int(row.get("id") or 0))
+
+        grp.sort(key=_rank)
+        keeper = grp[0]
+        keeper_price = _rank(keeper)[0]
+        for dup in grp[1:]:
+            dup_price = _rank(dup)[0]
+            print(
+                f"  [Dedupe] HIDE {dup['id']} ({dup.get('name')}, €{dup_price:.2f}) -> "
+                f"keeping cheapest {keeper['id']} ({keeper.get('name')}, €{keeper_price:.2f})",
+                flush=True,
+            )
+            info = dict(dup.get("info") or {})
+            gt = dict(info.get("googleTrends") or {})
+            gt["hiddenFromSite"] = True
+            info["duplicateOf"] = keeper["id"]
+            dup["info"] = info
+            dup["in_stock"] = False
+            if not dry_run:
+                try:
+                    patch_stock_trends(db_session, supabase_url, dup, gt, visible=False)
+                except Exception as exc:
+                    print(f"Warning hiding duplicate {dup.get('id')}: {exc}", flush=True)
+                    continue
+            hidden_dups += 1
+
+    print(f"[Dedupe] Duplicate cleanup complete: hidden={hidden_dups}", flush=True)
+    return hidden_dups
+
+
 def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=False):
     """If visible products < min_visible, restore hidden products in descending threshold steps
     (avg >= 34 or max >= 49, then 33/48, 32/47, ...) until visible count reaches min_visible."""
@@ -510,9 +630,13 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
         flush=True,
     )
 
+    visible_keys = {dedupe_perfume_key(r) for r in visible_rows}
+    visible_keys.discard(None)
+
     hidden_pool = [
         r for r in all_rows
         if not is_row_visible(r)
+        and not (r.get("info") or {}).get("duplicateOf")
         and ((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt")
     ]
     admitted_ids = set()
@@ -551,6 +675,9 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
         for r in tier_candidates:
             if restored >= needed:
                 break
+            d_key = dedupe_perfume_key(r)
+            if d_key and d_key in visible_keys:
+                continue
             gt = dict((r.get("info") or {}).get("googleTrends") or {})
             avg_s = float(gt.get("avg") or 0)
             max_s = int(gt.get("max") or 0)
@@ -578,6 +705,8 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
                     print(f"Warning patching backfill {r.get('id')}: {exc}", flush=True)
                     continue
             admitted_ids.add(r["id"])
+            if d_key:
+                visible_keys.add(d_key)
             restored += 1
 
     print(
@@ -786,6 +915,7 @@ def filter_all_db_products(dry_run=False, force=False, completed_first=True, max
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
     save_trends_cache(cache)
+    deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=dry_run)
     ensure_minimum_visible_perfumes(
         db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=dry_run
     )
@@ -1045,6 +1175,9 @@ def verify_whitelisted_products(dry_run=False):
                     except Exception as exc:
                         print(f"Warning patching {r.get('id')}: {exc}", flush=True)
 
+    stats["dedupe_hidden"] = deduplicate_keep_cheapest(
+        db_session, supabase_url, all_rows, dry_run=dry_run
+    )
     backfill_restored = ensure_minimum_visible_perfumes(
         db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=dry_run
     )
@@ -1060,13 +1193,28 @@ if __name__ == "__main__":
     parser.add_argument("--brand", default="", help="Brand name")
     parser.add_argument("--filter-all-db", action="store_true", help="Analyze ALL products in DB and hide failing ones (no deletion)")
     parser.add_argument("--verify-whitelisted", action="store_true", help="Run whitelist popularity verification across DB and restore admitted products")
+    parser.add_argument("--dedupe-cheapest", action="store_true", help="Hide duplicate visible perfumes, keeping only the cheapest one")
     parser.add_argument("--ensure-min-500", action="store_true", help="Ensure at least 500 visible products by stepping down Trends thresholds (34/49, 33/48, ...)")
     parser.add_argument("--completed-first", action="store_true", default=True, help="Prioritize completed site products first")
     parser.add_argument("--max-series", type=int, default=0, help="Max unchecked series to process per run (0 = unlimited)")
     parser.add_argument("--force", action="store_true", help="Re-check even already checked rows")
     parser.add_argument("--dry-run", action="store_true", help="Do not update DB")
     args = parser.parse_args()
-    if args.ensure_min_500:
+    if args.dedupe_cheapest:
+        sys.path.insert(0, str(SCRIPT_DIR))
+        import generate_product_images as gpi
+        gpi._load_dotenv_if_needed()
+        supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+        if not supabase_url:
+            raise RuntimeError("SUPABASE_URL is not configured")
+        db_session = gpi.make_session()
+        all_rows = [
+            r for r in gpi.fetch_stock_rows(db_session, supabase_url)
+            if r.get("slug") != "site-settings" and str(r.get("id")) != "999999"
+        ]
+        deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=args.dry_run)
+        ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=args.dry_run)
+    elif args.ensure_min_500:
         sys.path.insert(0, str(SCRIPT_DIR))
         import generate_product_images as gpi
         gpi._load_dotenv_if_needed()

@@ -2765,21 +2765,73 @@ export function applyMinOrderFilter(list, settings = memoryMinOrderSettings) {
   });
 }
 
+export function getPerfumeDedupeKey(perfume) {
+  if (!perfume) return "";
+  const brandRaw = String(perfume.brand || "").trim().toLowerCase();
+  const brandKey = brandRaw.replace(/[^a-z0-9]/g, "");
+  let name = String(perfume.name || perfume.title || "").trim().toLowerCase();
+  if (brandRaw) {
+    name = name.replace(
+      new RegExp(brandRaw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+      " ",
+    );
+  }
+  name = name
+    .replace(
+      /\s+[-–|]\s+(?:cinnamon|orange|amber|woody|floral|spicy|long[\s-]*lasting|fresh|sweet|vanilla|musk|oriental|fruity|citrus).*$/i,
+      "",
+    )
+    .replace(/\b(pour\s+femme|for\s+women|for\s+her|women's|womens|women|woman)\b/g, " femme ")
+    .replace(/\b(pour\s+homme|for\s+men|for\s+him|men's|mens|men|man)\b/g, " homme ")
+    .replace(/\b(eau\s+de\s+parfum|edp)\b/g, " edp ")
+    .replace(/\b(eau\s+de\s+toilette|edt)\b/g, " edt ")
+    .replace(/\b(extrait\s+de\s+parfum|extract\s+de\s+parfum)\b/g, " extrait ")
+    .replace(/\bblue\s+iconic\b/g, " iconic ")
+    .replace(/\b(spray|vaporisateur|natural|fragrance|fragrances|perfume|arabic|luxury|unisex|bor\s*[um]?)\b/g, " ")
+    .replace(/\b\d+(?:\.\d+)?\s*(?:ml|fl\.?\s*oz|oz|g|grams)\b/g, " ");
+  const stop = new Set(["the", "a", "an", "by", "of", "and", "for", "in"]);
+  const tokens = Array.from(
+    new Set((name.match(/[a-z0-9]+/g) || []).filter((t) => !stop.has(t))),
+  ).sort();
+  if (!tokens.length) return String(perfume.id || "");
+  return `${brandKey}::${tokens.join(" ")}`;
+}
+
+export function deduplicatePerfumesKeepCheapest(list) {
+  if (!Array.isArray(list) || list.length <= 1) return list;
+  const bestByKey = new Map();
+  for (const item of list) {
+    const key = getPerfumeDedupeKey(item);
+    const price = Number(item?.price);
+    const normPrice = Number.isFinite(price) && price > 0 ? price : Infinity;
+    const prev = bestByKey.get(key);
+    if (!prev || normPrice < prev.normPrice) {
+      bestByKey.set(key, { item, normPrice });
+    }
+  }
+  const keepSet = new Set(Array.from(bestByKey.values()).map((v) => v.item));
+  return list.filter((item) => keepSet.has(item));
+}
+
 export async function getPerfumes(options = {}) {
   const [list, settings] = await Promise.all([
     getPerfumesUnfiltered(options),
     fetchMinOrderSettings(Boolean(options.refresh)),
   ]);
-  return applyMinOrderFilter(list, settings).filter(
-    (p) => !isFailedImageProduct(p),
+  return deduplicatePerfumesKeepCheapest(
+    applyMinOrderFilter(list, settings).filter(
+      (p) => !isFailedImageProduct(p),
+    ),
   );
 }
 
 export function getCachedPerfumes() {
-  return applyMinOrderFilter([
-    ...(memoryPerfumesCache || []),
-    ...(memoryDropshipCache || []),
-  ]).filter((p) => !isFailedImageProduct(p));
+  return deduplicatePerfumesKeepCheapest(
+    applyMinOrderFilter([
+      ...(memoryPerfumesCache || []),
+      ...(memoryDropshipCache || []),
+    ]).filter((p) => !isFailedImageProduct(p)),
+  );
 }
 
 export async function getPerfumeById(id, options = {}) {
