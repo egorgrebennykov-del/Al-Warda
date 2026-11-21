@@ -1724,6 +1724,22 @@ def validate_cutout_quality(source_quality, out_bytes):
         if 0.82 <= bbox_fill < 0.95 and fg_ratio > 0.60 and top_cov > 0.75:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
 
+    try:
+        import cv2
+        fg_bin = (alpha > 80).astype(np.uint8)
+        fg_area = int(fg_bin.sum())
+        if fg_area > 0:
+            num_labels, _, stats, _ = cv2.connectedComponentsWithStats(fg_bin)
+            comps = [int(stats[i, cv2.CC_STAT_AREA]) for i in range(1, num_labels) if stats[i, cv2.CC_STAT_AREA] >= 25]
+            max_comp_ratio = (max(comps) / float(fg_area)) if comps else 1.0
+            fg_rgb = arr[fg_bin > 0][:, :3].astype(np.int16)
+            sat = np.max(fg_rgb, axis=1) - np.min(fg_rgb, axis=1)
+            gray_ratio = float(np.mean(sat < 20))
+            if len(comps) >= 8 and max_comp_ratio < 0.72 and gray_ratio > 0.90:
+                return False, final_sharpness, "Обнаружена заглушка «No image available» вместо фото товара"
+    except Exception:
+        pass
+
     return True, final_sharpness, None
 
 
