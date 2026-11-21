@@ -2718,13 +2718,15 @@ export function isWholesaleBundle(p) {
 export function isExcludedNonPerfume(p) {
   const name = `${p?.name || ""} ${p?.title || ""}`.trim();
   if (!name) return false;
-  const nonPerfumeRe =
-    /\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b/i;
-  if (!nonPerfumeRe.test(name)) return false;
-  const fullPerfumeSetRe =
-    /\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b.*\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b|\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b.*\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b/i;
-  if (fullPerfumeSetRe.test(name)) return false;
-  return true;
+  const alwaysExcludedRe =
+    /\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b/i;
+  if (alwaysExcludedRe.test(name)) return true;
+  const toiletryRe =
+    /\b(?:shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?)\b/i;
+  const hasFullConcentrationRe =
+    /\b(?:eau\s+de\s+parfum|edp|eau\s+de\s+toilette|edt|extrait\s+de\s+parfum|extrait)\b/i;
+  if (toiletryRe.test(name) && !hasFullConcentrationRe.test(name)) return true;
+  return false;
 }
 
 export function getPerfumeMinOrder(p) {

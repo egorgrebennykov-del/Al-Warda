@@ -3467,23 +3467,29 @@ def is_stale_processing(job, now):
     return (now - ts).total_seconds() >= limit_min * 60
 
 
-EXCLUDED_NON_PERFUME_RE = re.compile(
-    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+ALWAYS_EXCLUDED_NON_PERFUME_RE = re.compile(
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
     re.I,
 )
-_FULL_PERFUME_SET_RE = re.compile(
-    r"\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b.*\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b|\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b.*\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b",
+TOILETRY_WITHOUT_EDP_RE = re.compile(
+    r"\b(?:shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?)\b",
+    re.I,
+)
+_FULL_PERFUME_CONCENTRATION_RE = re.compile(
+    r"\b(?:eau\s+de\s+parfum|edp|eau\s+de\s+toilette|edt|extrait\s+de\s+parfum|extrait)\b",
     re.I,
 )
 
 
 def is_excluded_non_perfume(name):
     text = str(name or "").strip()
-    if not text or not EXCLUDED_NON_PERFUME_RE.search(text):
+    if not text:
         return False
-    if _FULL_PERFUME_SET_RE.search(text):
-        return False
-    return True
+    if ALWAYS_EXCLUDED_NON_PERFUME_RE.search(text):
+        return True
+    if TOILETRY_WITHOUT_EDP_RE.search(text) and not _FULL_PERFUME_CONCENTRATION_RE.search(text):
+        return True
+    return False
 
 
 def select_candidates(rows, now, regenerate_completed=False):
