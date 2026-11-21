@@ -861,7 +861,9 @@ export default function Featured() {
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
-          const valid = (items || []).filter(hasCompletedGeneratedImage);
+          const valid = (items || []).filter(
+            (p) => hasCompletedGeneratedImage(p) && !isPerfumeSet(p),
+          );
           setPerfumes(valid);
           setLoading(false);
         }
@@ -1280,18 +1282,6 @@ export default function Featured() {
                   </span>
                 )}
                 <span>{isFilterPanelOpen ? "▲" : "▼"}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`warda-sets-quick-toggle ${selectedFormat === "sets" ? "active" : ""}`}
-                onClick={toggleOnlySets}
-                title={t("featured.onlySetsTitle")}
-              >
-                <span>🎁 {t("featured.onlySets")}</span>
-                {setsCount > 0 && (
-                  <span className="warda-sets-count-badge">{setsCount}</span>
-                )}
               </button>
 
               {totalActiveFilters > 0 && (
