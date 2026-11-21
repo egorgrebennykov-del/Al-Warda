@@ -3330,7 +3330,11 @@ def select_candidates(rows, now, regenerate_completed=False):
                 continue
             eligible.append(row)
             continue
-        if job.get("status") == "completed":
+        if (
+            job.get("status") in ("completed", "failed", "segmentation_failed")
+            or job.get("manualFailed") is True
+            or job.get("failed") is True
+        ):
             continue
         if job.get("status") in ("processing", "publishing") and not is_stale_processing(job, now):
             continue
