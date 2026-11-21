@@ -290,6 +290,7 @@ export default function ProductsManager({ language = "ru" }) {
             "Не вырезан фон",
             "Неправильное отражение",
             "Лишние предметы",
+            "Видна упаковка",
             "Отсутствуют части",
             "Не тот товар",
           ]
@@ -300,6 +301,7 @@ export default function ProductsManager({ language = "ru" }) {
             "Background not removed",
             "Wrong reflection",
             "Extra objects",
+            "Packaging visible",
             "Missing parts",
             "Wrong product",
           ],
@@ -435,6 +437,7 @@ export default function ProductsManager({ language = "ru" }) {
             "Не вырезан фон",
             "Неправильное отражение",
             "Лишние предметы",
+            "Видна упаковка",
             "Отсутствуют части",
             "Не тот товар",
           ]
@@ -445,6 +448,7 @@ export default function ProductsManager({ language = "ru" }) {
             "Background not removed",
             "Wrong reflection",
             "Extra objects",
+            "Packaging visible",
             "Missing parts",
             "Wrong product",
           ],

@@ -157,6 +157,7 @@ export default function BookDetails() {
             "Не вырезан фон",
             "Неправильное отражение",
             "Лишние предметы",
+            "Видна упаковка",
             "Отсутствуют части",
             "Не тот товар",
           ]
@@ -167,6 +168,7 @@ export default function BookDetails() {
             "Background not removed",
             "Wrong reflection",
             "Extra objects",
+            "Packaging visible",
             "Missing parts",
             "Wrong product",
           ],

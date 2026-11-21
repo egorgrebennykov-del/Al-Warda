@@ -1180,6 +1180,7 @@ export default function ProductImageQueue({
             "Не вырезан фон",
             "Неправильное отражение",
             "Лишние предметы",
+            "Видна упаковка",
             "Отсутствуют части",
             "Не тот товар",
           ]
@@ -1190,6 +1191,7 @@ export default function ProductImageQueue({
             "Background not removed",
             "Wrong reflection",
             "Extra objects",
+            "Packaging visible",
             "Missing parts",
             "Wrong product",
           ],
