@@ -2600,6 +2600,7 @@ export async function fetchDropshipArabianPerfumes(query = "") {
           (p) =>
             hasCompletedGeneratedImage(p) &&
             !isWholesaleBundle(p) &&
+            !isExcludedNonPerfume(p) &&
             p.image &&
             !p.image.includes("c1b79cffa1a5fa8aab226414b9e4a063") &&
             (!p.rawImage ||
@@ -2687,13 +2688,19 @@ async function getPerfumesUnfiltered(options = {}) {
     );
     const combined = includeDropship ? [...base, ...uniqueDropship] : base;
     return combined.filter(
-      (p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p),
+      (p) =>
+        hasCompletedGeneratedImage(p) &&
+        !isWholesaleBundle(p) &&
+        !isExcludedNonPerfume(p),
     );
   }
 
   const combined = includeDropship ? [...base, ...dropship] : base;
   return combined.filter(
-    (p) => hasCompletedGeneratedImage(p) && !isWholesaleBundle(p),
+    (p) =>
+      hasCompletedGeneratedImage(p) &&
+      !isWholesaleBundle(p) &&
+      !isExcludedNonPerfume(p),
   );
 }
 
@@ -2706,6 +2713,18 @@ export function isWholesaleBundle(p) {
   return /\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b/i.test(
     name,
   );
+}
+
+export function isExcludedNonPerfume(p) {
+  const name = `${p?.name || ""} ${p?.title || ""}`.trim();
+  if (!name) return false;
+  const nonPerfumeRe =
+    /\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b/i;
+  if (!nonPerfumeRe.test(name)) return false;
+  const fullPerfumeSetRe =
+    /\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b.*\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b|\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b.*\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b/i;
+  if (fullPerfumeSetRe.test(name)) return false;
+  return true;
 }
 
 export function getPerfumeMinOrder(p) {

@@ -3467,6 +3467,25 @@ def is_stale_processing(job, now):
     return (now - ts).total_seconds() >= limit_min * 60
 
 
+EXCLUDED_NON_PERFUME_RE = re.compile(
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+    re.I,
+)
+_FULL_PERFUME_SET_RE = re.compile(
+    r"\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b.*\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b|\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b.*\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b",
+    re.I,
+)
+
+
+def is_excluded_non_perfume(name):
+    text = str(name or "").strip()
+    if not text or not EXCLUDED_NON_PERFUME_RE.search(text):
+        return False
+    if _FULL_PERFUME_SET_RE.search(text):
+        return False
+    return True
+
+
 def select_candidates(rows, now, regenerate_completed=False):
     utc_day = now.date().isoformat()
     eligible = []
@@ -3475,6 +3494,8 @@ def select_candidates(rows, now, regenerate_completed=False):
         info = row.get("info") or {}
         gt = info.get("googleTrends") or {}
         if row.get("in_stock") is False or gt.get("passed") is False or gt.get("hiddenFromSite") is True:
+            continue
+        if is_excluded_non_perfume(row.get("name") or row.get("title") or ""):
             continue
         job = image_generation(info)
         if job.get("attemptedOn") == utc_day:

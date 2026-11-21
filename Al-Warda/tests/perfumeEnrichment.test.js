@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ensurePerfumeEnrichment, isAirFreshener } from "../utils/perfumes.js";
+import { ensurePerfumeEnrichment, isAirFreshener, isExcludedNonPerfume } from "../utils/perfumes.js";
 
 const basePerfume = {
   id: "1",
@@ -76,6 +76,21 @@ test("isAirFreshener identifies standalone air fresheners and room sprays withou
     isAirFreshener({
       name: "Lattafa Maahir Set - Edp Spray, Perfumed Spray, Air Freshener",
       isSet: true,
+    }),
+    false,
+  );
+});
+
+test("isExcludedNonPerfume rejects oils, shampoos, shower gels, deodorants, and toiletries while keeping EDP/EDT and sets", () => {
+  assert.equal(isExcludedNonPerfume({ name: "Amber Musk Perfume Oil" }), true);
+  assert.equal(isExcludedNonPerfume({ name: "Al Haramain Mukhallath for Men Parfum Oil" }), true);
+  assert.equal(isExcludedNonPerfume({ name: "Argan Nourishing Shampoo 400ml" }), true);
+  assert.equal(isExcludedNonPerfume({ name: "Lattafa Khamrah Deodorant Spray 200ml" }), true);
+  assert.equal(isExcludedNonPerfume({ name: "Luxury Shower Gel 250ml" }), true);
+  assert.equal(isExcludedNonPerfume({ name: "Lattafa Khamrah EDP 100ml" }), false);
+  assert.equal(
+    isExcludedNonPerfume({
+      name: "Lattafa Yara Gift Set Eau De Parfum + Shower Gel",
     }),
     false,
   );

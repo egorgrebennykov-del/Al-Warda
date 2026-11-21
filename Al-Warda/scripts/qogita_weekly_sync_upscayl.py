@@ -197,8 +197,8 @@ class QogitaSyncClient:
                         break
                     for it in batch2:
                         name = (it.get("name") or "").lower()
-                        # Filter out non-perfume items
-                        if any(bad in name for bad in ["serum", "retinal", "mask", "cream", "booster", "sunscreen", "cleanser", "shampoo", "pad", "toner", "lotion", "peeling"]):
+                        # Filter out non-perfume items (oils, shampoos, shower gels, deodorants, creams, etc.)
+                        if is_excluded_non_perfume(name):
                             continue
                         if brand_name.lower() in name or any(frag in name for frag in ["edp", "edt", "parfum", "eau de", "perfume", "fragrance", "cologne"]):
                             items.append(it)
@@ -355,6 +355,27 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
         "descriptionRu": desc_ru,
         "descriptionEn": desc_en,
     }
+
+EXCLUDED_NON_PERFUME_RE = re.compile(
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+    re.I,
+)
+_FULL_PERFUME_SET_RE = re.compile(
+    r"\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b.*\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b|\b(?:eau\s*de\s*parfum|edp|eau\s*de\s*toilette|edt|extrait)\b.*\b(?:set|gift\s*set|fragrance\s*set|perfume\s*set|coffret)\b",
+    re.I,
+)
+
+
+def is_excluded_non_perfume(name):
+    text = str(name or "").strip()
+    if not text:
+        return False
+    if not EXCLUDED_NON_PERFUME_RE.search(text):
+        return False
+    if _FULL_PERFUME_SET_RE.search(text):
+        return False
+    return True
+
 
 def extract_volume(name):
     # Strict parser: returns "" if the Qogita title has no size (never a fake 100 ml).
@@ -707,8 +728,10 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
             if not name_raw:
                 continue
 
-            # Skip wholesale multipacks / bundles
+            # Skip wholesale multipacks / bundles and non-perfume toiletries (oils, shampoos, etc.)
             if re.search(r'\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b', name_raw, re.IGNORECASE):
+                continue
+            if is_excluded_non_perfume(name_raw):
                 continue
 
             name = strip_volume_from_name(name_raw)
