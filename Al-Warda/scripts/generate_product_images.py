@@ -3152,7 +3152,8 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
 
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     pos_x = (canvas_size[0] - new_w) // 2
-    pos_y = (canvas_size[1] - new_h) // 2
+    bottom_pad = max(36, (canvas_size[1] - target_max_h) // 2)
+    pos_y = max(12, canvas_size[1] - bottom_pad - new_h)
     canvas.paste(resized, (pos_x, pos_y), resized)
 
     # Sub-pixel anti-aliasing fine-tuning: ensure canvas flacon center is exactly canvas_size[0] // 2

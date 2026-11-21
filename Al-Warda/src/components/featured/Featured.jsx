@@ -1835,11 +1835,40 @@ export default function Featured() {
                       loading="lazy"
                       decoding="async"
                       onLoad={(e) => {
-                        const media = e.currentTarget.closest(
+                        const imgEl = e.currentTarget;
+                        const media = imgEl.closest(
                           ".warda-perfume-card__media",
                         );
                         if (media) media.classList.remove("is-processing-photo");
-                        e.currentTarget.style.opacity = "1";
+                        try {
+                          const nw = imgEl.naturalWidth || 0;
+                          const nh = imgEl.naturalHeight || 0;
+                          if (nw > 0 && nh > 0) {
+                            const s = 128;
+                            const c = document.createElement("canvas");
+                            c.width = s;
+                            c.height = s;
+                            const ctx = c.getContext("2d", { willReadFrequently: true });
+                            if (ctx) {
+                              ctx.drawImage(imgEl, 0, 0, s, s);
+                              const data = ctx.getImageData(0, 0, s, s).data;
+                              let bottomY = s - 1;
+                              outer: for (let y = s - 1; y >= 0; y--) {
+                                for (let x = 0; x < s; x++) {
+                                  if (data[(y * s + x) * 4 + 3] > 20) {
+                                    bottomY = y;
+                                    break outer;
+                                  }
+                                }
+                              }
+                              const padPct = Math.max(0, Math.min(35, ((s - 1 - bottomY) / s) * 100));
+                              imgEl.style.setProperty("--card-flacon-pad-pct", `${padPct.toFixed(2)}%`);
+                            }
+                          }
+                        } catch {
+                          // ignore cross-origin canvas scan errors
+                        }
+                        imgEl.style.opacity = "1";
                       }}
                       onError={(e) => {
                         const imgEl = e.currentTarget;
