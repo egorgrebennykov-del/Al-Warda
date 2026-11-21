@@ -72,6 +72,7 @@ export default function ProductImageCompareModal({
   );
   const [studioSourceIndex, setStudioSourceIndex] = useState(0);
   const [studioFailed, setStudioFailed] = useState(false);
+  const [originalFailed, setOriginalFailed] = useState(false);
 
   const isLocalHost =
     typeof window !== "undefined" &&
@@ -207,7 +208,7 @@ export default function ProductImageCompareModal({
                 )}
               </div>
               <div className="product-compare-card__preview product-compare-card__preview--white">
-                {originalSrc ? (
+                {originalSrc && !originalFailed ? (
                   <img
                     src={originalSrc}
                     alt={
@@ -216,6 +217,7 @@ export default function ProductImageCompareModal({
                         : (isRussian ? "Исходное фото" : "Original photo")
                     }
                     loading="lazy"
+                    onError={() => setOriginalFailed(true)}
                   />
                 ) : (
                   <div className="product-compare-card__empty">
