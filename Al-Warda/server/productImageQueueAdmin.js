@@ -893,10 +893,10 @@ export async function markProductItemsFailed(request, env) {
       "Content-Type": "application/json",
     };
     const nowIso = new Date().toISOString();
-    let failedCount = 0;
+    const updatedIds = [];
 
-    for (let i = 0; i < parsed.ids.length; i += 200) {
-      const chunk = parsed.ids.slice(i, i + 200);
+    for (let i = 0; i < parsed.ids.length; i += 20) {
+      const chunk = parsed.ids.slice(i, i + 20);
       const url = new URL(`${baseUrl}/rest/v1/stocks`);
       url.searchParams.set("select", "id,image,info");
       url.searchParams.set("id", `in.(${chunk.join(",")})`);
@@ -905,45 +905,47 @@ export async function markProductItemsFailed(request, env) {
         throw new Error(`Could not load items (${result.status})`);
       }
       const rows = await result.json();
-      for (const row of rows) {
-        const info =
-          row.info && typeof row.info === "object" ? { ...row.info } : {};
-        const prevJob =
-          info.imageGeneration && typeof info.imageGeneration === "object"
-            ? { ...info.imageGeneration }
-            : {};
-        const prevImg = row.image || prevJob.imageUrl || null;
-        info.imageGeneration = {
-          ...prevJob,
-          status: "failed",
-          failed: true,
-          manualFailed: true,
-          needsNewPhoto: chooseNewPhoto,
-          previousImageUrl: prevImg || prevJob.previousImageUrl || null,
-          error: customReason,
-          failedAt: nowIso,
-          updatedAt: nowIso,
-        };
-        delete info.imageGenerationReplacement;
+      await Promise.all(
+        rows.map(async (row) => {
+          const info =
+            row.info && typeof row.info === "object" ? { ...row.info } : {};
+          const prevJob =
+            info.imageGeneration && typeof info.imageGeneration === "object"
+              ? { ...info.imageGeneration }
+              : {};
+          const prevImg = row.image || prevJob.imageUrl || null;
+          info.imageGeneration = {
+            ...prevJob,
+            status: "failed",
+            failed: true,
+            manualFailed: true,
+            needsNewPhoto: chooseNewPhoto,
+            previousImageUrl: prevImg || prevJob.previousImageUrl || null,
+            error: customReason,
+            failedAt: nowIso,
+            updatedAt: nowIso,
+          };
+          delete info.imageGenerationReplacement;
 
-        const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
-        patchUrl.searchParams.set("id", `eq.${row.id}`);
-        const patch = await supabaseFetch(env, patchUrl, {
-          method: "PATCH",
-          headers: { ...headers, Prefer: "return=minimal" },
-          body: JSON.stringify({ image: "", info }),
-        });
-        if (!patch.ok) {
-          const details = (await patch.text()).slice(0, 300);
-          throw new Error(
-            `Could not mark item ${row.id} as failed (${patch.status}): ${details}`,
-          );
-        }
-        failedCount++;
-      }
+          const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
+          patchUrl.searchParams.set("id", `eq.${row.id}`);
+          const patch = await supabaseFetch(env, patchUrl, {
+            method: "PATCH",
+            headers: { ...headers, Prefer: "return=minimal" },
+            body: JSON.stringify({ image: "", info }),
+          });
+          if (!patch.ok) {
+            const details = (await patch.text()).slice(0, 300);
+            throw new Error(
+              `Could not mark item ${row.id} as failed (${patch.status}): ${details}`,
+            );
+          }
+          updatedIds.push(String(row.id));
+        }),
+      );
     }
     invalidateProductImageQueueCache();
-    return json({ ok: true, failedCount, ids: parsed.ids });
+    return json({ ok: true, failedCount: updatedIds.length, ids: updatedIds });
   } catch (error) {
     if (error instanceof MissingServiceKeyError) {
       return json(

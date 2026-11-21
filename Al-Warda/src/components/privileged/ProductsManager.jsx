@@ -464,17 +464,22 @@ export default function ProductsManager({ language = "ru" }) {
     setMessage("");
     setError("");
     try {
-      const payload = { ids, chooseNewPhoto };
-      if (reason && reason.trim()) payload.reason = reason.trim();
-      const res = await fetch("/api/admin/product-images/mark-failed", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || `HTTP ${res.status}`);
+      let totalFailedCount = 0;
+      for (let i = 0; i < ids.length; i += 20) {
+        const chunkIds = ids.slice(i, i + 20);
+        const payload = { ids: chunkIds, chooseNewPhoto };
+        if (reason && reason.trim()) payload.reason = reason.trim();
+        const res = await fetch("/api/admin/product-images/mark-failed", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+        totalFailedCount += Number(data.failedCount ?? chunkIds.length);
       }
       markPerfumesEvictedAsFailed(ids);
       const idSet = new Set(ids.map(String));
@@ -486,8 +491,8 @@ export default function ProductsManager({ language = "ru" }) {
       setSelectedIds({});
       setMessage(
         isRussian
-          ? `Перенесено товаров в список ошибок: ${data.failedCount ?? ids.length}.`
-          : `Moved ${data.failedCount ?? ids.length} products to failed list.`,
+          ? `Перенесено товаров в список ошибок: ${totalFailedCount}.`
+          : `Moved ${totalFailedCount} products to failed list.`,
       );
     } catch (err) {
       setError(

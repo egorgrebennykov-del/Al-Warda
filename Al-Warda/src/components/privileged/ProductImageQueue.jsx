@@ -1129,22 +1129,27 @@ export default function ProductImageQueue({
     setActionError("");
     setActionMessage("");
     try {
-      const bodyPayload = { ids, chooseNewPhoto };
-      if (reason && reason.trim()) bodyPayload.reason = reason.trim();
-      const response = await fetch("/api/admin/product-images/mark-failed", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyPayload),
-      });
-      if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
-        );
-      }
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.error || `HTTP ${response.status}`);
+      let totalFailedCount = 0;
+      for (let i = 0; i < ids.length; i += 20) {
+        const chunkIds = ids.slice(i, i + 20);
+        const bodyPayload = { ids: chunkIds, chooseNewPhoto };
+        if (reason && reason.trim()) bodyPayload.reason = reason.trim();
+        const response = await fetch("/api/admin/product-images/mark-failed", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyPayload),
+        });
+        if (!response.headers.get("content-type")?.includes("application/json")) {
+          throw new Error(
+            `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+          );
+        }
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        totalFailedCount += Number(payload.failedCount ?? chunkIds.length);
       }
       markPerfumesEvictedAsFailed(ids);
       statusEpochRef.current += 1;
@@ -1192,8 +1197,8 @@ export default function ProductImageQueue({
       });
       setActionMessage(
         isRussian
-          ? `Перенесено в список ошибок: ${payload.failedCount ?? ids.length}.`
-          : `Moved to failed list: ${payload.failedCount ?? ids.length}.`,
+          ? `Перенесено в список ошибок: ${totalFailedCount}.`
+          : `Moved to failed list: ${totalFailedCount}.`,
       );
       void loadStatus({ force: true });
     } catch (err) {
