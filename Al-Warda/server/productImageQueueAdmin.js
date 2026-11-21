@@ -578,11 +578,11 @@ export async function getProductImageQueueStatus(request, env) {
             image: row.image || null,
             imageUrl,
             rawImage:
-              typeof info.rawImage === "string"
+              typeof info.rawImage === "string" && hasRawImage(info)
                 ? info.rawImage
-                : typeof row.image === "string"
-                  ? row.image
-                  : null,
+                : null,
+            qogitaMissingPhoto: Boolean(job.qogitaMissingPhoto) || !hasRawImage(info),
+            sourceImageUrl: job.sourceImageUrl || info.imageSourceImageUrl || null,
             sourceUrl:
               job.sourceUrl ||
               info.imageSourceUrl ||

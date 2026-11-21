@@ -21,7 +21,31 @@ export default function ProductImageCompareModal({
 
   if (!item) return null;
 
-  const originalSrc = item.rawImage || item.image || item.info?.rawImage;
+  const qogitaRawCandidate =
+    (typeof item.info?.rawImage === "string" && item.info.rawImage.trim()) ||
+    (typeof item.rawImage === "string" &&
+    !item.rawImage.startsWith("/assets/img/generated-products/")
+      ? item.rawImage.trim()
+      : null);
+  const hasQogitaPhoto = Boolean(
+    qogitaRawCandidate &&
+      !/no[-_]?image|not[_-]?found|missing|46e86f1d826c199f04588f35f1fd8afe|c1b79cffa1a5fa8aab226414b9e4a063/i.test(
+        qogitaRawCandidate,
+      ),
+  );
+  const qogitaMissingPhoto = Boolean(
+    item.qogitaMissingPhoto ||
+      item.info?.imageGeneration?.qogitaMissingPhoto ||
+      !hasQogitaPhoto,
+  );
+  const sourceImageSrc =
+    item.sourceImageUrl ||
+    item.info?.imageGeneration?.sourceImageUrl ||
+    item.info?.imageSourceImageUrl ||
+    null;
+  const originalSrc = hasQogitaPhoto
+    ? qogitaRawCandidate
+    : sourceImageSrc || null;
   const primaryRowImage = item.image || item.info?.image;
   const generationImage = item.imageUrl || item.info?.imageGeneration?.imageUrl;
   const studioSrc = primaryRowImage || generationImage;
@@ -154,19 +178,31 @@ export default function ProductImageCompareModal({
             <div className="product-compare-card product-compare-card--original">
               <div className="product-compare-card__header">
                 <span className="product-compare-card__tag product-compare-card__tag--original">
-                  <i className="ri-camera-line" />
-                  {isRussian ? "Исходное фото Qogita (Оригинал)" : "Original Qogita Photo"}
+                  <i className={qogitaMissingPhoto ? "ri-search-eye-line" : "ri-camera-line"} />
+                  {qogitaMissingPhoto
+                    ? (isRussian
+                        ? `Нет фото на Qogita • Источник: ${studioSourceName}`
+                        : `Missing on Qogita • Source: ${studioSourceName}`)
+                    : (isRussian ? "Исходное фото Qogita (Оригинал)" : "Original Qogita Photo")}
                 </span>
-                {originalSrc && (
+                {(originalSrc || (qogitaMissingPhoto && studioSourceUrl)) && (
                   <a
-                    href={originalSrc}
+                    href={originalSrc || studioSourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="product-compare-card__source-link"
-                    title={isRussian ? "Открыть фото каталога в полном размере" : "Open catalog photo in full size"}
+                    title={
+                      qogitaMissingPhoto
+                        ? (isRussian ? `Открыть источник: ${studioSourceName}` : `Open source: ${studioSourceName}`)
+                        : (isRussian ? "Открыть фото каталога в полном размере" : "Open catalog photo in full size")
+                    }
                   >
                     <i className="ri-external-link-line" />
-                    <span>{isRussian ? "Источник Qogita" : "Qogita Source"}</span>
+                    <span>
+                      {qogitaMissingPhoto
+                        ? studioSourceName
+                        : (isRussian ? "Источник Qogita" : "Qogita Source")}
+                    </span>
                   </a>
                 )}
               </div>
@@ -174,27 +210,41 @@ export default function ProductImageCompareModal({
                 {originalSrc ? (
                   <img
                     src={originalSrc}
-                    alt={isRussian ? "Исходное фото" : "Original photo"}
+                    alt={
+                      qogitaMissingPhoto
+                        ? (isRussian ? `Фото из источника ${studioSourceName}` : `Photo from ${studioSourceName}`)
+                        : (isRussian ? "Исходное фото" : "Original photo")
+                    }
                     loading="lazy"
                   />
                 ) : (
                   <div className="product-compare-card__empty">
                     <i className="ri-image-line" />
-                    <span>{isRussian ? "Исходное фото недоступно" : "Original photo unavailable"}</span>
+                    <span>
+                      {qogitaMissingPhoto
+                        ? (isRussian
+                            ? `Фото в каталоге Qogita отсутствовало (источник: ${studioSourceName})`
+                            : `Missing in Qogita catalog (source: ${studioSourceName})`)
+                        : (isRussian ? "Исходное фото недоступно" : "Original photo unavailable")}
+                    </span>
                   </div>
                 )}
               </div>
               <div className="product-compare-card__footer">
                 <p>
-                  {isRussian
-                    ? "Оригинальное изображение из оптового каталога Qogita с непрозрачным фоном и заводским освещением."
-                    : "Raw catalog photograph from Qogita with opaque background and warehouse lighting."}
+                  {qogitaMissingPhoto
+                    ? (isRussian
+                        ? `Фото в каталоге Qogita отсутствовало. Исходное изображение загружено из подтверждённого источника: ${studioSourceName}.`
+                        : `No photo was available in Qogita catalog. Source image fetched from verified source: ${studioSourceName}.`)
+                    : (isRussian
+                        ? "Оригинальное изображение из оптового каталога Qogita с непрозрачным фоном и заводским освещением."
+                        : "Raw catalog photograph from Qogita with opaque background and warehouse lighting.")}
                 </p>
-                {originalSrc && (
+                {(originalSrc || (qogitaMissingPhoto && studioSourceUrl)) && (
                   <div className="product-compare-card__footer-source">
-                    <span>{isRussian ? "Прямая ссылка:" : "Direct link:"} </span>
-                    <a href={originalSrc} target="_blank" rel="noopener noreferrer">
-                      {originalSrc}
+                    <span>{isRussian ? "Источник:" : "Source:"} </span>
+                    <a href={originalSrc || studioSourceUrl} target="_blank" rel="noopener noreferrer">
+                      {originalSrc || studioSourceUrl}
                     </a>
                   </div>
                 )}

@@ -3821,6 +3821,7 @@ def process_product(
         source_bytes = None
         source_quality = None
         source_url = None
+        source_image_url = None
         source_name = None
         source_type = None
         best_small_studio = None
@@ -3902,6 +3903,7 @@ def process_product(
                     source_bytes = cand_bytes
                     source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
+                    source_image_url = fetch_url
                     source_name = studio_asset["sourceName"]
                     source_type = studio_asset.get("sourceType") or "official_studio"
                     break
@@ -4071,6 +4073,7 @@ def process_product(
                             whether_upscaled = fb_psize != fb_osize
                             sharpness_val = fb_sharp
                             source_url = raw_fallback_url
+                            source_image_url = raw_fallback_url
                             source_name = "Qogita Wholesale Catalog"
                             source_type = "qogita_set" if is_set else "qogita_catalog"
                             recovered = True
@@ -4142,6 +4145,8 @@ def process_product(
             "completedAt": now_iso if publish_immediate else job.get("completedAt"),
             "imageUrl": image_url,
             "sourceUrl": source_url,
+            "sourceImageUrl": source_image_url or source_url,
+            "qogitaMissingPhoto": not bool(product_source(row)),
             "sourceName": source_name,
             "sourceType": source_type,
             "isSet": is_set,
@@ -4170,6 +4175,7 @@ def process_product(
         })
         info[job_key] = job
         info["imageSourceUrl"] = source_url
+        info["imageSourceImageUrl"] = source_image_url or source_url
         info["imageSourceName"] = source_name
         info["imageSourceType"] = source_type
         if publish_immediate:

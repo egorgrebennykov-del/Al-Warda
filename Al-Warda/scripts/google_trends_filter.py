@@ -614,18 +614,32 @@ def deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=False)
     return hidden_dups
 
 
+def is_row_site_eligible(row):
+    """Return True if a row is visible AND not failed/blocked from storefront."""
+    if not is_row_visible(row):
+        return False
+    info = row.get("info") or {}
+    if info.get("duplicateOf"):
+        return False
+    ig_status = (info.get("imageGeneration") or {}).get("status")
+    if ig_status in ("failed", "segmentation_failed"):
+        return False
+    return True
+
+
 def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visible=MIN_VISIBLE_PERFUMES, dry_run=False):
-    """If visible products < min_visible, restore hidden products in descending threshold steps
-    (avg >= 34 or max >= 49, then 33/48, 32/47, ...) until visible count reaches min_visible."""
-    visible_rows = [r for r in all_rows if is_row_visible(r)]
+    """If site-eligible visible products (non-failed, non-duplicate) < min_visible, restore hidden products
+    in descending threshold steps (avg >= 34 or max >= 49, then 33/48, ..., down to whitelisted/rawImage 0/0)
+    until site-eligible visible count reaches min_visible."""
+    visible_rows = [r for r in all_rows if is_row_site_eligible(r)]
     visible_count = len(visible_rows)
     if visible_count >= min_visible:
-        print(f"[MinCatalog] Visible products: {visible_count} >= {min_visible}. No backfill needed.", flush=True)
+        print(f"[MinCatalog] Site-eligible visible products: {visible_count} >= {min_visible}. No backfill needed.", flush=True)
         return 0
 
     needed = min_visible - visible_count
     print(
-        f"[MinCatalog] Visible products: {visible_count} < {min_visible} (need {needed} more). "
+        f"[MinCatalog] Site-eligible visible products: {visible_count} < {min_visible} (need {needed} more). "
         f"Applying descending Google Trends thresholds (34/49, 33/48, ...)...",
         flush=True,
     )
@@ -637,6 +651,7 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
         r for r in all_rows
         if not is_row_visible(r)
         and not (r.get("info") or {}).get("duplicateOf")
+        and ((r.get("info") or {}).get("imageGeneration") or {}).get("status") not in ("failed", "segmentation_failed")
         and ((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt")
     ]
     admitted_ids = set()
@@ -648,10 +663,13 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
         avg_s = float(gt.get("avg") or 0)
         max_s = int(gt.get("max") or 0)
         img_done = 1 if ((info.get("imageGeneration") or {}).get("status") == "completed") else 0
-        return (max(avg_s, float(max_s)), avg_s, max_s, img_done)
+        has_raw = 1 if info.get("rawImage") else 0
+        _, wl_prio = get_whitelist_priority(row.get("brand") or "")
+        wl_rank = 2 if wl_prio == 1 else (1 if wl_prio == 2 else 0)
+        return (img_done, max(avg_s, float(max_s)), avg_s, max_s, wl_rank, has_raw)
 
-    # Step k = 1..49 => (34, 49), (33, 48), ..., (1, 16), ..., (None, 1)
-    for step in range(1, 50):
+    # Step k = 1..50 => (34, 49), (33, 48), ..., (None, 1), and finally (0, 0) for whitelisted/rawImage backfill
+    for step in range(1, 51):
         if restored >= needed:
             break
         avg_thr = 35.0 - step
@@ -663,10 +681,14 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
             gt = (r.get("info") or {}).get("googleTrends") or {}
             avg_s = float(gt.get("avg") or 0)
             max_s = int(gt.get("max") or 0)
-            matches_avg = (avg_thr >= 1.0 and avg_s >= avg_thr)
-            matches_max = (max_thr >= 1 and max_s >= max_thr)
-            if matches_avg or matches_max:
+            if step == 50:
+                # Final tier: admit remaining non-failed, non-duplicate items (whitelisted & rawImage prioritized)
                 tier_candidates.append(r)
+            else:
+                matches_avg = (avg_thr >= 1.0 and avg_s >= avg_thr)
+                matches_max = (max_thr >= 1 and max_s >= max_thr)
+                if matches_avg or matches_max:
+                    tier_candidates.append(r)
 
         if not tier_candidates:
             continue
@@ -681,15 +703,19 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
             gt = dict((r.get("info") or {}).get("googleTrends") or {})
             avg_s = float(gt.get("avg") or 0)
             max_s = int(gt.get("max") or 0)
-            thr_label = f"avg>={int(avg_thr)} or max>={max_thr}" if avg_thr >= 1.0 else f"max>={max_thr}"
+            thr_label = (
+                "whitelist/rawImage fallback"
+                if step == 50
+                else (f"avg>={int(avg_thr)} or max>={max_thr}" if avg_thr >= 1.0 else f"max>={max_thr}")
+            )
             new_meta = {
                 **gt,
                 "passed": True,
                 "filterStatus": "min_catalog_backfill",
                 "filterReason": f"min_catalog_backfill(target={min_visible}): {thr_label} (avg={avg_s}, max={max_s})",
                 "backfillThreshold": {
-                    "avg": int(avg_thr) if avg_thr >= 1.0 else None,
-                    "max": max_thr,
+                    "avg": int(avg_thr) if avg_thr >= 1.0 else 0,
+                    "max": max(0, max_thr),
                 },
                 "verifiedAt": datetime.now(timezone.utc).isoformat(),
             }
