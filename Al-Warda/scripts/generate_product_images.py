@@ -1800,6 +1800,96 @@ def validate_cutout_quality(source_quality, out_bytes):
     return True, final_sharpness, None
 
 
+def verify_cutout_with_vision(out_bytes, name, brand="", is_set=False):
+    """Run Gemini Vision QA on the final transparent cutout (composited on a checkerboard)
+    to catch packaging boxes, unremoved backgrounds, baked reflections, missing parts,
+    or wrong products BEFORE saving or publishing."""
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("VITE_GEMINI_API_KEY")
+    if not gemini_key or requests is None:
+        return True, None
+    try:
+        import base64
+        import numpy as np
+
+        with Image.open(io.BytesIO(out_bytes)) as im:
+            rgba = im.convert("RGBA").resize((512, 512), Image.Resampling.LANCZOS)
+        # Checkerboard background makes both dark and white unremoved backgrounds obvious
+        ys, xs = np.indices((512, 512))
+        checker = ((ys // 16 + xs // 16) % 2 == 0)
+        bg_arr = np.zeros((512, 512, 4), dtype=np.uint8)
+        bg_arr[checker] = [210, 210, 210, 255]
+        bg_arr[~checker] = [145, 145, 145, 255]
+        comp = Image.alpha_composite(Image.fromarray(bg_arr, "RGBA"), rgba).convert("RGB")
+        buf = io.BytesIO()
+        comp.save(buf, format="JPEG", quality=88)
+        b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+        packaging_rule = (
+            "is_set=True (gift/discovery set: box and multiple bottles are ALLOWED)."
+            if is_set
+            else (
+                "is_set=False (SINGLE perfume bottle ONLY): "
+                "set hasPackaging=true if ANY cardboard box, outer packaging, or sleeve is visible (even next to or behind the bottle, or box-only)."
+            )
+        )
+        prompt = (
+            f"QA inspect this product cutout on a gray checkerboard background.\n"
+            f"Expected product: Brand='{brand}', Name='{name}'. {packaging_rule}\n"
+            "Check strictly:\n"
+            "1. hasPackaging: (only when is_set=False) true if any cardboard box/packaging is visible.\n"
+            "2. hasBackground: true if solid white/black/colored studio background, floor slab, or pedestal is NOT removed (ignore the gray checkerboard itself).\n"
+            "3. hasReflection: true if a mirror/water reflection of the bottle is baked underneath the bottle.\n"
+            "4. isCroppedOrBroken: true if the cap, top, side, or bottom of the bottle is noticeably cut off or missing parts.\n"
+            "5. wrongProduct: true if the bottle/label clearly shows a DIFFERENT perfume name/flanker/product type than expected.\n"
+            'Return ONLY JSON: {"hasPackaging":false,"hasBackground":false,"hasReflection":false,"isCroppedOrBroken":false,"wrongProduct":false,"reason":""}'
+        )
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={gemini_key}"
+        for attempt in range(2):
+            resp = requests.post(
+                url,
+                json={
+                    "contents": [{"parts": [{"text": prompt}, {"inlineData": {"mimeType": "image/jpeg", "data": b64}}]}],
+                    "generationConfig": {"temperature": 0.0, "responseMimeType": "application/json"},
+                },
+                timeout=20,
+            )
+            if resp.status_code == 429 and attempt == 0:
+                time.sleep(2)
+                continue
+            if not resp.ok:
+                return True, None
+            data = resp.json()
+            text = (
+                ((data.get("candidates") or [{}])[0].get("content") or {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+            )
+            if not text:
+                return True, None
+            res = json.loads(text)
+            if not isinstance(res, dict):
+                return True, None
+            issues = []
+            if (not is_set) and res.get("hasPackaging"):
+                issues.append("упаковка")
+            if res.get("hasBackground"):
+                issues.append("не вырезан фон")
+            if res.get("hasReflection"):
+                issues.append("неправильное отражение")
+            if res.get("isCroppedOrBroken"):
+                issues.append("отсутствуют части/обрезано")
+            if res.get("wrongProduct"):
+                issues.append("не тот товар")
+            if issues:
+                detail = str(res.get("reason") or "").strip()
+                msg = ", ".join(issues) + (f" ({detail})" if detail else "")
+                return False, msg
+            return True, None
+    except Exception:
+        return True, None
+    return True, None
+
+
 def segment_source(source, segmentation_session):
     """Run background removal on a source image and return an RGBA cutout at the
     same dimensions."""
@@ -2292,7 +2382,7 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
         )
 
         payload_json = None
-        for model in ("gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-2.0-flash"):
+        for model in ("gemini-3.1-flash-lite",):
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
             resp = requests.post(
                 url,
@@ -3948,6 +4038,41 @@ def process_product(
         quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output)
         if not quality_ok:
             raise ValueError(f"Фото не прошло фильтр качества: {quality_reason}")
+
+        vision_ok, vision_reason = verify_cutout_with_vision(
+            output, row.get("name") or "", row.get("brand") or "", is_set=is_set
+        )
+        if not vision_ok:
+            # If we used a studio candidate and Qogita raw photo exists, try Qogita fallback once before failing
+            raw_fallback_url = product_source(row) if source_type in ("official_studio", "verified_retailer") else None
+            recovered = False
+            if raw_fallback_url:
+                try:
+                    print(f"[{row['id']}] Studio candidate rejected by Vision QA ({vision_reason}); trying Qogita catalog fallback...", flush=True)
+                    fb_resp = requests.get(raw_fallback_url, headers={"User-Agent": "Al-Warda product image pipeline/1.0"}, timeout=(15, 60))
+                    if fb_resp.ok:
+                        fb_bytes = fb_resp.content
+                        fb_q = measure_source_quality(fb_bytes)
+                        fb_out, fb_psize, fb_osize = preserve_original_product(
+                            fb_bytes, segmentation_session, allow_upscale=True, is_set=is_set
+                        )
+                        fb_q_ok, fb_sharp, _ = validate_cutout_quality(fb_q, fb_out)
+                        fb_v_ok, _ = verify_cutout_with_vision(fb_out, row.get("name") or "", row.get("brand") or "", is_set=is_set) if fb_q_ok else (False, None)
+                        if fb_q_ok and fb_v_ok:
+                            output = fb_out
+                            source_bytes = fb_bytes
+                            source_quality = fb_q
+                            original_size = fb_osize
+                            whether_upscaled = fb_psize != fb_osize
+                            sharpness_val = fb_sharp
+                            source_url = raw_fallback_url
+                            source_name = "Qogita Wholesale Catalog"
+                            source_type = "qogita_set" if is_set else "qogita_catalog"
+                            recovered = True
+                except Exception:
+                    pass
+            if not recovered:
+                raise ValueError(f"Фото не прошло визуальную проверку: {vision_reason}")
 
         image_url = save_generated_image(output)
 
