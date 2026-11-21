@@ -3495,6 +3495,7 @@ def is_excluded_non_perfume(name):
 
 def select_candidates(rows, now, regenerate_completed=False):
     utc_day = now.date().isoformat()
+    priority_eligible = []
     eligible = []
     attempts_today = 0
     for row in rows:
@@ -3515,16 +3516,19 @@ def select_candidates(rows, now, regenerate_completed=False):
                 continue
             eligible.append(row)
             continue
+        if job.get("status") in ("processing", "publishing") and not is_stale_processing(job, now):
+            continue
+        if job.get("autoRegenerate") is True:
+            priority_eligible.append(row)
+            continue
         if (
             job.get("status") in ("completed", "failed", "segmentation_failed")
             or job.get("manualFailed") is True
             or job.get("failed") is True
         ):
             continue
-        if job.get("status") in ("processing", "publishing") and not is_stale_processing(job, now):
-            continue
         eligible.append(row)
-    return eligible, attempts_today
+    return priority_eligible + eligible, attempts_today
 
 
 def is_global_generation_halted(rows):
@@ -4192,7 +4196,7 @@ def process_product(
         )
         new_status = "completed" if publish_immediate else "publishing"
         now_iso = utc_now().isoformat()
-        for stale_key in ("failed", "manualFailed", "needsNewPhoto", "error", "failedAt"):
+        for stale_key in ("failed", "manualFailed", "autoRegenerate", "needsNewPhoto", "error", "failedAt"):
             job.pop(stale_key, None)
         if was_error_item:
             job["recreatedFromErrorAt"] = now_iso

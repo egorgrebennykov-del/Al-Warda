@@ -926,6 +926,7 @@ export async function markProductItemsFailed(request, env) {
             status: "failed",
             failed: true,
             manualFailed: true,
+            autoRegenerate: true,
             needsNewPhoto: chooseNewPhoto,
             previousImageUrl: prevImg || prevJob.previousImageUrl || null,
             error: customReason,

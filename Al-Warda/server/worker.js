@@ -387,7 +387,44 @@ export default {
         method === "POST" &&
         pathname === "/api/admin/product-images/mark-failed"
       ) {
-        return markProductItemsFailed(request, env);
+        const res = await markProductItemsFailed(request, env);
+        if (res.ok) {
+          const payload = await res.json().catch(() => null);
+          if (payload && Array.isArray(payload.ids) && payload.ids.length > 0) {
+            const cookie = request.headers.get("cookie") || "";
+            const dispatchAction = async () => {
+              try {
+                const actionReq = new Request(
+                  new URL("/api/admin/product-images/actions", request.url),
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      ...(cookie ? { cookie } : {}),
+                    },
+                    body: JSON.stringify({
+                      action: "start",
+                      count: payload.ids.length,
+                      account: "auto",
+                      regenerateCompleted: false,
+                    }),
+                  },
+                );
+                await handleProductImageActions(actionReq, env);
+              } catch {
+                // ignore if a workflow run is already active; autoRegenerate=true queues it
+              }
+            };
+            if (ctx?.waitUntil) {
+              ctx.waitUntil(dispatchAction());
+            } else {
+              void dispatchAction();
+            }
+            return jsonResponse({ ...payload, regenerationStarted: true }, res.status);
+          }
+          return jsonResponse(payload || { ok: true }, res.status);
+        }
+        return res;
       }
       if (
         method === "POST" &&
