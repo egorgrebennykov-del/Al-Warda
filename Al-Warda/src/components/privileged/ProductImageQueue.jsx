@@ -587,6 +587,9 @@ export default function ProductImageQueue({
   const [filterGenerated, setFilterGenerated] = useState(false);
   const [filterProcessing, setFilterProcessing] = useState(false);
   const statusEpochRef = useRef(0);
+  const optimisticRemovedImagesRef = useRef(new Map());
+  const optimisticRemovedFailedRef = useRef(new Map());
+  const optimisticAddedFailedRef = useRef(new Map());
   const confirm = useConfirm();
   const prompt = usePrompt();
   const alert = useAlert();
@@ -822,8 +825,40 @@ export default function ProductImageQueue({
           }
           throw new Error(payload.error || `HTTP ${response.status}`);
         }
-        setStatus(payload);
-        setNowMs(Date.now());
+        const nowTs = Date.now();
+        for (const [k, exp] of optimisticRemovedImagesRef.current.entries()) {
+          if (exp <= nowTs) optimisticRemovedImagesRef.current.delete(k);
+        }
+        for (const [k, exp] of optimisticRemovedFailedRef.current.entries()) {
+          if (exp <= nowTs) optimisticRemovedFailedRef.current.delete(k);
+        }
+        for (const [k, entry] of optimisticAddedFailedRef.current.entries()) {
+          if (entry.expiresAt <= nowTs) optimisticAddedFailedRef.current.delete(k);
+        }
+        const filteredImages = Array.isArray(payload.images)
+          ? payload.images.filter(
+              (img) => !optimisticRemovedImagesRef.current.has(String(img.id)),
+            )
+          : [];
+        const serverFailedList = Array.isArray(payload.failedItems)
+          ? payload.failedItems.filter(
+              (item) => !optimisticRemovedFailedRef.current.has(String(item.id)),
+            )
+          : [];
+        const serverFailedIds = new Set(serverFailedList.map((f) => String(f.id)));
+        const extraOptimisticFailed = [];
+        for (const [fid, entry] of optimisticAddedFailedRef.current.entries()) {
+          if (!serverFailedIds.has(fid) && !optimisticRemovedFailedRef.current.has(fid)) {
+            extraOptimisticFailed.push(entry.item);
+          }
+        }
+        const mergedPayload = {
+          ...payload,
+          images: filteredImages,
+          failedItems: [...extraOptimisticFailed, ...serverFailedList],
+        };
+        setStatus(mergedPayload);
+        setNowMs(nowTs);
         if (typeof payload.globalHalted === "boolean") {
           setGlobalHalted(payload.globalHalted);
         }
@@ -983,46 +1018,68 @@ export default function ProductImageQueue({
     });
     if (!approved) return;
 
-    setDeletingFailed(true);
-    setBusy(true);
-    setActionError("");
-    setActionMessage("");
-    try {
-      const response = await fetch("/api/admin/product-images/failed", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
-      });
-      if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
-        );
-      }
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.error || `HTTP ${response.status}`);
-      }
-      markPerfumesEvictedAsFailed(ids);
-      setSelectedFailed((current) => {
-        const next = { ...current };
-        for (const id of ids) {
-          delete next[String(id)];
-        }
-        return next;
-      });
-      setActionMessage(
-        isRussian
-          ? `Удалено записей из базы данных: ${payload.deletedCount ?? ids.length}.`
-          : `Deleted records from database: ${payload.deletedCount ?? ids.length}.`,
-      );
-      await loadStatus({ force: true });
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setDeletingFailed(false);
-      setBusy(false);
+    const nowTs = Date.now();
+    const idSet = new Set(ids.map(String));
+    for (const id of idSet) {
+      optimisticRemovedFailedRef.current.set(id, nowTs + 15000);
+      optimisticAddedFailedRef.current.delete(id);
     }
+    statusEpochRef.current += 1;
+    setStatus((current) => {
+      if (!current) return current;
+      const nextFailed = (current.failedItems || []).filter(
+        (item) => !idSet.has(String(item.id)),
+      );
+      return {
+        ...current,
+        failed: Math.max(0, (current.failed || 0) - idSet.size),
+        failedItems: nextFailed,
+      };
+    });
+    markPerfumesEvictedAsFailed(ids);
+    setSelectedFailed((current) => {
+      const next = { ...current };
+      for (const id of ids) {
+        delete next[String(id)];
+      }
+      return next;
+    });
+    setActionError("");
+    setActionMessage(
+      isRussian
+        ? `Удаление из базы (${ids.length} поз.) запущено в фоне...`
+        : `Deleting ${ids.length} item(s) from database in background...`,
+    );
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/admin/product-images/failed", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        if (!response.headers.get("content-type")?.includes("application/json")) {
+          throw new Error(
+            `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+          );
+        }
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        setActionMessage(
+          isRussian
+            ? `Удалено записей из базы данных: ${payload.deletedCount ?? ids.length}.`
+            : `Deleted records from database: ${payload.deletedCount ?? ids.length}.`,
+        );
+        void loadStatus({ force: true });
+      } catch (err) {
+        for (const id of idSet) optimisticRemovedFailedRef.current.delete(id);
+        setActionError(err.message);
+        void loadStatus({ force: true });
+      }
+    })();
   };
 
   const requeueFailed = async (explicitIds = null) => {
@@ -1036,42 +1093,65 @@ export default function ProductImageQueue({
         return;
       }
     }
-    setDeletingFailed(true);
-    setBusy(true);
-    setActionError("");
-    setActionMessage("");
-    try {
-      const response = await fetch("/api/admin/product-images/requeue", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
-      });
-      if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-          `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
-        );
-      }
-      const payload = await response.json();
-      if (!response.ok)
-        throw new Error(payload.error || `HTTP ${response.status}`);
-      setSelectedFailed((current) => {
-        const next = { ...current };
-        for (const id of ids) delete next[String(id)];
-        return next;
-      });
-      setActionMessage(
-        isRussian
-          ? `Возвращено в ожидание: ${payload.requeuedCount ?? ids.length}.`
-          : `Returned to pending: ${payload.requeuedCount ?? ids.length}.`,
-      );
-      await loadStatus({ force: true });
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setDeletingFailed(false);
-      setBusy(false);
+    const nowTs = Date.now();
+    const idSet = new Set(ids.map(String));
+    for (const id of idSet) {
+      optimisticRemovedFailedRef.current.set(id, nowTs + 15000);
+      optimisticAddedFailedRef.current.delete(id);
     }
+    statusEpochRef.current += 1;
+    setStatus((current) => {
+      if (!current) return current;
+      const nextFailed = (current.failedItems || []).filter(
+        (item) => !idSet.has(String(item.id)),
+      );
+      return {
+        ...current,
+        failed: Math.max(0, (current.failed || 0) - idSet.size),
+        pending: (current.pending || 0) + idSet.size,
+        failedItems: nextFailed,
+      };
+    });
+    setSelectedFailed((current) => {
+      const next = { ...current };
+      for (const id of ids) delete next[String(id)];
+      return next;
+    });
+    setActionError("");
+    setActionMessage(
+      isRussian
+        ? `Возврат в очередь (${ids.length} поз.) выполняется в фоне...`
+        : `Returning ${ids.length} item(s) to pending in background...`,
+    );
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/admin/product-images/requeue", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        if (!response.headers.get("content-type")?.includes("application/json")) {
+          throw new Error(
+            `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+          );
+        }
+        const payload = await response.json();
+        if (!response.ok)
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        setActionMessage(
+          isRussian
+            ? `Возвращено в ожидание: ${payload.requeuedCount ?? ids.length}.`
+            : `Returned to pending: ${payload.requeuedCount ?? ids.length}.`,
+        );
+        void loadStatus({ force: true });
+      } catch (err) {
+        for (const id of idSet) optimisticRemovedFailedRef.current.delete(id);
+        setActionError(err.message);
+        void loadStatus({ force: true });
+      }
+    })();
   };
 
   const markItemsAsFailed = async (explicitIds = null) => {
@@ -1125,96 +1205,116 @@ export default function ProductImageQueue({
     });
     if (!confirmed) return;
 
-    setBusy(true);
-    setActionError("");
-    setActionMessage("");
-    try {
-      let totalFailedCount = 0;
-      let regenAlreadyStarted = false;
-      for (let i = 0; i < ids.length; i += 20) {
-        const chunkIds = ids.slice(i, i + 20);
-        const bodyPayload = { ids: chunkIds, chooseNewPhoto };
-        if (reason && reason.trim()) bodyPayload.reason = reason.trim();
-        const response = await fetch("/api/admin/product-images/mark-failed", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyPayload),
-        });
-        if (!response.headers.get("content-type")?.includes("application/json")) {
-          throw new Error(
-            `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
-          );
-        }
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.error || `HTTP ${response.status}`);
-        }
-        totalFailedCount += Number(payload.failedCount ?? chunkIds.length);
-        if (payload.regenerationStarted) regenAlreadyStarted = true;
-      }
-      if (!regenAlreadyStarted) {
-        void callLocalGpuApi("start", {
-          productIds: ids,
-          count: ids.length,
-          coolingDelay: 0.8,
-        }).catch(() => {});
-      }
-      markPerfumesEvictedAsFailed(ids);
-      statusEpochRef.current += 1;
-      const idSet = new Set(ids.map((id) => String(id)));
-      setStatus((current) => {
-        if (!current) return current;
-        const removedItems = (current.images || []).filter((img) =>
-          idSet.has(String(img.id)),
-        );
-        const remainingImages = (current.images || []).filter(
-          (img) => !idSet.has(String(img.id)),
-        );
-        const existingFailedIds = new Set(
-          (current.failedItems || []).map((f) => String(f.id)),
-        );
-        const newlyFailed = removedItems
-          .filter((img) => !existingFailedIds.has(String(img.id)))
-          .map((img) => ({
-            id: img.id,
-            name: img.name,
-            brand: img.brand,
-            rawImage: img.rawImage,
-            error:
-              reason && reason.trim()
-                ? reason.trim()
-                : chooseNewPhoto
-                  ? "Выбрать новое фото"
-                  : "Перенесено в ошибки вручную администратором",
-            failedAt: new Date().toISOString(),
-            manualFailed: true,
-            needsNewPhoto: chooseNewPhoto,
-          }));
-        return {
-          ...current,
-          completed: Math.max(0, (current.completed || 0) - removedItems.length),
-          failed: (current.failed || 0) + newlyFailed.length,
-          images: remainingImages,
-          failedItems: [...newlyFailed, ...(current.failedItems || [])],
-        };
-      });
-      setSelectedImages((current) => {
-        const next = { ...current };
-        for (const id of ids) delete next[String(id)];
-        return next;
-      });
-      setActionMessage(
-        isRussian
-          ? `Перенесено в список ошибок: ${totalFailedCount}.`
-          : `Moved to failed list: ${totalFailedCount}.`,
-      );
-      void loadStatus({ force: true });
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy(false);
+    const nowTs = Date.now();
+    const idSet = new Set(ids.map((id) => String(id)));
+    for (const id of idSet) {
+      optimisticRemovedImagesRef.current.set(id, nowTs + 20000);
+      optimisticRemovedFailedRef.current.delete(id);
     }
+    markPerfumesEvictedAsFailed(ids);
+    statusEpochRef.current += 1;
+    setStatus((current) => {
+      if (!current) return current;
+      const removedItems = (current.images || []).filter((img) =>
+        idSet.has(String(img.id)),
+      );
+      const remainingImages = (current.images || []).filter(
+        (img) => !idSet.has(String(img.id)),
+      );
+      const existingFailedIds = new Set(
+        (current.failedItems || []).map((f) => String(f.id)),
+      );
+      const newlyFailed = removedItems
+        .filter((img) => !existingFailedIds.has(String(img.id)))
+        .map((img) => ({
+          id: img.id,
+          name: img.name,
+          brand: img.brand,
+          rawImage: img.rawImage,
+          error:
+            reason && reason.trim()
+              ? reason.trim()
+              : chooseNewPhoto
+                ? "Выбрать новое фото"
+                : "Перенесено в ошибки вручную администратором",
+          failedAt: new Date().toISOString(),
+          manualFailed: true,
+          needsNewPhoto: chooseNewPhoto,
+        }));
+      for (const item of newlyFailed) {
+        optimisticAddedFailedRef.current.set(String(item.id), {
+          item,
+          expiresAt: nowTs + 20000,
+        });
+      }
+      return {
+        ...current,
+        completed: Math.max(0, (current.completed || 0) - removedItems.length),
+        failed: (current.failed || 0) + newlyFailed.length,
+        images: remainingImages,
+        failedItems: [...newlyFailed, ...(current.failedItems || [])],
+      };
+    });
+    setSelectedImages((current) => {
+      const next = { ...current };
+      for (const id of ids) delete next[String(id)];
+      return next;
+    });
+    setActionError("");
+    setActionMessage(
+      isRussian
+        ? `Перенесено в ошибки: ${ids.length}. Сохранение и повторная генерация идут в фоне.`
+        : `Moved to errors: ${ids.length}. Saving & regeneration running in background.`,
+    );
+
+    void (async () => {
+      try {
+        let totalFailedCount = 0;
+        let regenAlreadyStarted = false;
+        for (let i = 0; i < ids.length; i += 20) {
+          const chunkIds = ids.slice(i, i + 20);
+          const bodyPayload = { ids: chunkIds, chooseNewPhoto };
+          if (reason && reason.trim()) bodyPayload.reason = reason.trim();
+          const response = await fetch("/api/admin/product-images/mark-failed", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyPayload),
+          });
+          if (!response.headers.get("content-type")?.includes("application/json")) {
+            throw new Error(
+              `HTTP ${response.status}: ${isRussian ? "сервер вернул не JSON" : "server returned a non-JSON response"}`,
+            );
+          }
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || `HTTP ${response.status}`);
+          }
+          totalFailedCount += Number(payload.failedCount ?? chunkIds.length);
+          if (payload.regenerationStarted) regenAlreadyStarted = true;
+        }
+        if (!regenAlreadyStarted) {
+          void callLocalGpuApi("start", {
+            productIds: ids,
+            count: ids.length,
+            coolingDelay: 0.8,
+          }).catch(() => {});
+        }
+        setActionMessage(
+          isRussian
+            ? `Перенесено в список ошибок: ${totalFailedCount}.`
+            : `Moved to failed list: ${totalFailedCount}.`,
+        );
+        void loadStatus({ force: true });
+      } catch (err) {
+        for (const id of idSet) {
+          optimisticRemovedImagesRef.current.delete(id);
+          optimisticAddedFailedRef.current.delete(id);
+        }
+        setActionError(err.message);
+        void loadStatus({ force: true });
+      }
+    })();
   };
 
   const deleteImages = async () => {
@@ -1241,39 +1341,57 @@ export default function ProductImageQueue({
           : `Delete ${images.length} images? The products will leave the catalog and return to the generation queue.`,
     });
     if (!approved) return;
-    setBusy(true);
-    setDeletionSubmitting(true);
-    setActionError("");
-    setActionMessage("");
-    try {
-      const response = await fetchActions({
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isAll ? { action: "delete", all: true } : { action: "delete", images }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(actionErrorMessage(payload, response));
-      deletionRequestedAt.current = Date.now();
-      setDeletionPending(true);
-      setSelectedImages({});
-      setActionMessage(
-        isRussian
-          ? isAll
-            ? `Удаление всех ${images.length} фото запущено в GitHub Actions. Список обновится после выполнения.`
-            : "Удаление отправлено в GitHub Actions. Список обновится после выполнения."
-          : isAll
-            ? `Deletion of all ${images.length} images queued in GitHub Actions. The list will update after it runs.`
-            : "Deletion queued in GitHub Actions. The list will update after it runs.",
-      );
-      await loadStatus({ force: true });
-      await loadRuns();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setDeletionSubmitting(false);
-      setBusy(false);
+    const nowTs = Date.now();
+    const idSet = new Set(images.map((item) => String(item.id)));
+    for (const id of idSet) {
+      optimisticRemovedImagesRef.current.set(id, nowTs + 90000);
     }
+    statusEpochRef.current += 1;
+    setStatus((current) => {
+      if (!current) return current;
+      const nextImages = isAll
+        ? []
+        : (current.images || []).filter((img) => !idSet.has(String(img.id)));
+      return {
+        ...current,
+        completed: isAll
+          ? 0
+          : Math.max(0, (current.completed || 0) - idSet.size),
+        images: nextImages,
+      };
+    });
+    setSelectedImages({});
+    setActionError("");
+    setActionMessage(
+      isRussian
+        ? isAll
+          ? `Удаление всех ${images.length} фото запущено в фоне.`
+          : `Удаление ${images.length} фото запущено в фоне.`
+        : isAll
+          ? `Deletion of all ${images.length} images running in background.`
+          : `Deletion of ${images.length} image(s) running in background.`,
+    );
+
+    void (async () => {
+      try {
+        const response = await fetchActions({
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(isAll ? { action: "delete", all: true } : { action: "delete", images }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(actionErrorMessage(payload, response));
+        deletionRequestedAt.current = Date.now();
+        setDeletionPending(true);
+        void loadStatus({ force: true });
+        void loadRuns();
+      } catch (err) {
+        for (const id of idSet) optimisticRemovedImagesRef.current.delete(id);
+        setActionError(err.message);
+        void loadStatus({ force: true });
+      }
+    })();
   };
 
   const executeDeleteAllImages = async () => {
