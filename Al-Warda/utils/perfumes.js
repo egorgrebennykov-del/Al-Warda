@@ -3280,7 +3280,50 @@ export function getDefaultPerfumeVolumeOption(perfume) {
   };
 }
 
-export function getDefaultCatalogPrice(perfume) {
+let publicMarketPricesCache = {};
+let publicMarketPricesPromise = null;
+
+export function getMarketCountryForLanguage(language) {
+  const code = String(language || "").trim().toLowerCase();
+  if (code === "bg") return "BG";
+  if (code === "el" || code === "gr") return "GR";
+  if (code === "hu") return "HU";
+  if (code === "ro") return "RO";
+  return "";
+}
+
+export async function loadPublicMarketPrices() {
+  if (typeof window === "undefined") return publicMarketPricesCache;
+  if (publicMarketPricesPromise) return publicMarketPricesPromise;
+  publicMarketPricesPromise = fetch("/api/pricing/public-market-prices")
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (data && data.prices && typeof data.prices === "object") {
+        publicMarketPricesCache = data.prices;
+      }
+      return publicMarketPricesCache;
+    })
+    .catch(() => publicMarketPricesCache);
+  return publicMarketPricesPromise;
+}
+
+export function getPublishedMarketPrice(perfume, countryOrLang = "") {
+  if (!perfume) return null;
+  const sid = String(perfume.id ?? "");
+  const entry = publicMarketPricesCache?.[sid];
+  if (!entry || typeof entry !== "object") return null;
+  const upper = String(countryOrLang || "").trim().toUpperCase();
+  const country = ["BG", "GR", "HU", "RO"].includes(upper)
+    ? upper
+    : getMarketCountryForLanguage(countryOrLang);
+  if (!country) return null;
+  const val = Number(entry[country]);
+  return Number.isFinite(val) && val > 0 ? val : null;
+}
+
+export function getDefaultCatalogPrice(perfume, countryOrLang = "") {
+  const published = getPublishedMarketPrice(perfume, countryOrLang);
+  if (published !== null) return published;
   return getDefaultPerfumeVolumeOption(perfume).price;
 }
 

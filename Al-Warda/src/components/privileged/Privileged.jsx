@@ -65,6 +65,7 @@ import ProductImageQueue from "./ProductImageQueue";
 import FragranceNotesQueue from "./FragranceNotesQueue";
 import ProductsManager from "./ProductsManager";
 import DescriptionQueue from "./DescriptionQueue";
+import PricingTab from "./PricingTab";
 import "./Privileged.css";
 
 /**
@@ -2064,6 +2065,17 @@ export default function Privileged() {
         >
           <i className="ri-store-2-line" />
           <span>{language === "ru" ? "Товары" : "Products"}</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "pricing"}
+          className={`privileged__nav-btn ${activeSection === "pricing" ? "privileged__nav-btn--active" : ""}`}
+          onClick={() => setActiveSection("pricing")}
+        >
+          <i className="ri-price-tag-3-line" />
+          <span>{language === "ru" ? "Ценообразование" : "Pricing"}</span>
         </button>
 
         <button
@@ -5828,6 +5840,19 @@ export default function Privileged() {
         )}
         {activeSection === "products" && (
           <ProductsSection language={language} />
+        )}
+        {activeSection === "pricing" && (
+          <div className="privileged__panel">
+            <div className="privileged__panel-header">
+              <div>
+                <h2 className="privileged__panel-title">
+                  <i className="ri-price-tag-3-line" />
+                  {language === "ru" ? "Ценообразование (BG / GR / HU / RO)" : "Pricing (BG / GR / HU / RO)"}
+                </h2>
+              </div>
+            </div>
+            <PricingTab />
+          </div>
         )}
         {activeSection === "other" && (
           <div className="privileged__panel">

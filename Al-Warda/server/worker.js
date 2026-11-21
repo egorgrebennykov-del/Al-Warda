@@ -34,6 +34,7 @@ import {
   clearDescriptions,
 } from "./descriptionQueue.js";
 import { handleRestProxy } from "./hasuraProxy.js";
+import { handlePricingRequest } from "./pricingService.js";
 
 const actionStatuses = {
   "qogita-smart-sync": {
@@ -423,6 +424,14 @@ export default {
         pathname !== "/api/qogita/arabian-perfumes"
       ) {
         return handleQogitaWorker(request, env);
+      }
+
+      if (
+        pathname.startsWith("/api/admin/pricing") ||
+        pathname.startsWith("/api/pricing/")
+      ) {
+        const pricingResponse = await handlePricingRequest(request, env, urlObj);
+        if (pricingResponse) return pricingResponse;
       }
 
       if (method === "POST" && pathname === "/api/warmup") {

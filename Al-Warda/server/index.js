@@ -77,6 +77,7 @@ import {
 import { localRequestUrl, localWebRequest } from "./localRequest.js";
 import { isSameOrigin } from "./sameOrigin.js";
 import { handleRestProxy } from "./hasuraProxy.js";
+import { handlePricingRequest } from "./pricingService.js";
 
 const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 setHttpAdapter({
@@ -262,6 +263,24 @@ const server = createServer(async (req, res) => {
 
   // PostgREST-style data layer (Supabase /rest/v1/*) translated to Nhost Hasura.
   // Also accept /api/rest/v1/* (the /api/* route reliably reaches the server).
+  if (
+    pathname.startsWith("/api/admin/pricing") ||
+    pathname.startsWith("/api/pricing/")
+  ) {
+    try {
+      const request = await localWebRequest(req, readRawBody);
+      const urlObj = localRequestUrl(req);
+      const response = await handlePricingRequest(request, process.env, urlObj);
+      if (response) {
+        respond(res, response.status, await response.json(), req);
+        return;
+      }
+    } catch (error) {
+      respond(res, 500, { error: error.message }, req);
+      return;
+    }
+  }
+
   if (
     pathname.startsWith("/rest/v1/") ||
     pathname.startsWith("/api/rest/v1/")

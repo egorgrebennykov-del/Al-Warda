@@ -9,6 +9,7 @@ import {
   isAirFreshener,
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
+  loadPublicMarketPrices,
   parseVolumeMl,
   hasCompletedGeneratedImage,
   bustProductImageCache,
@@ -856,6 +857,7 @@ export default function Featured() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    loadPublicMarketPrices();
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
@@ -1142,12 +1144,14 @@ export default function Featured() {
     if (sortBy === "price-asc") {
       result.sort(
         (a, b) =>
-          (getDefaultCatalogPrice(a) || 0) - (getDefaultCatalogPrice(b) || 0),
+          (getDefaultCatalogPrice(a, language) || 0) -
+          (getDefaultCatalogPrice(b, language) || 0),
       );
     } else if (sortBy === "price-desc") {
       result.sort(
         (a, b) =>
-          (getDefaultCatalogPrice(b) || 0) - (getDefaultCatalogPrice(a) || 0),
+          (getDefaultCatalogPrice(b, language) || 0) -
+          (getDefaultCatalogPrice(a, language) || 0),
       );
     } else if (sortBy === "popular") {
       result.sort((a, b) => {
