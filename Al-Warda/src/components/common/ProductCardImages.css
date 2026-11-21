@@ -125,40 +125,59 @@
   .warda-perfume-card.ornate-card:hover,
   .warda-perfume-card,
   .warda-perfume-card:hover {
-    padding: 2px 2px 10px !important;
+    padding: 2px 2px 12px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .warda-perfume-card .warda-perfume-card__media {
     aspect-ratio: 10 / 10.6 !important;
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0.6rem !important;
+    overflow: visible !important;
   }
 
   .warda-perfume-card .warda-perfume-card__media::before {
     inset: 0 !important;
     background:
       radial-gradient(
-        ellipse 70% 15% at 50% 94%,
-        rgba(244, 198, 102, 0.26) 0%,
-        rgba(212, 175, 55, 0.09) 55%,
-        rgba(8, 6, 5, 0) 82%
-      ),
-      radial-gradient(
-        ellipse 68% 64% at 50% 48%,
-        rgba(250, 222, 156, 0.28) 0%,
-        rgba(212, 175, 55, 0.13) 48%,
+        ellipse 66% 58% at 50% 48%,
+        rgba(248, 214, 134, 0.24) 0%,
+        rgba(212, 175, 55, 0.11) 48%,
         rgba(8, 6, 5, 0) 78%
       ) !important;
+  }
+
+  .warda-perfume-card .warda-perfume-card__media::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    left: 6%;
+    right: 6%;
+    bottom: -4px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse 78% 55% at 50% 45%,
+      rgba(248, 206, 110, 0.42) 0%,
+      rgba(212, 175, 55, 0.16) 54%,
+      rgba(8, 6, 5, 0) 86%
+    );
+    filter: blur(2px);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .warda-perfume-card .warda-perfume-card__img,
   .search__card .search__card-img {
     padding: 2px 2px 0 !important;
     object-fit: contain !important;
+    -webkit-box-reflect: below -8px linear-gradient(to bottom, transparent 62%, rgba(255, 255, 255, 0.22));
     filter:
       brightness(1.07)
       contrast(1.10)
       saturate(1.16)
-      drop-shadow(0 0 18px rgba(212, 175, 55, 0.24))
+      drop-shadow(0 0 18px rgba(212, 175, 55, 0.22))
       drop-shadow(0 10px 18px rgba(0, 0, 0, 0.78)) !important;
   }
 

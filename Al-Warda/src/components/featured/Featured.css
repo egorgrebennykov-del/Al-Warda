@@ -700,8 +700,26 @@
   }
   .warda-sort-container .warda-sort-select {
     width: 100%;
-    font-size: 0.76rem;
-    padding: 0.45rem 1.8rem 0.45rem 0.8rem;
+    font-size: 0.78rem;
+    padding: 0.48rem 1.8rem 0.48rem 0.9rem;
+    border-radius: 999px !important;
+    border: 1px solid rgba(212, 175, 55, 0.48) !important;
+    background: rgba(12, 10, 7, 0.9) !important;
+    color: #f0dfb4 !important;
+  }
+  .warda-catalog-count-text {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    padding: 0.46rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.42);
+    background: rgba(12, 10, 7, 0.88);
+    color: #d8c38a !important;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    box-sizing: border-box;
   }
   .warda-combination-block {
     padding: 0.65rem 0.8rem;
@@ -714,15 +732,23 @@
   }
   .warda-shop-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    gap: 10px 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
+    padding: 8px 0 12px !important;
     box-sizing: border-box !important;
+    background:
+      radial-gradient(ellipse 95% 24% at 50% 18%, rgba(212, 175, 55, 0.08) 0%, transparent 72%),
+      radial-gradient(ellipse 95% 24% at 50% 56%, rgba(212, 175, 55, 0.07) 0%, transparent 72%),
+      radial-gradient(ellipse 95% 24% at 50% 88%, rgba(212, 175, 55, 0.07) 0%, transparent 72%) !important;
   }
   .warda-perfume-card {
-    padding: 2px 2px 10px !important;
+    padding: 2px 2px 12px !important;
     border-radius: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     min-width: 0 !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -733,7 +759,7 @@
     max-width: 100% !important;
     height: auto !important;
     aspect-ratio: 10 / 10.6 !important;
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0.6rem !important;
     box-sizing: border-box !important;
     overflow: visible !important;
     position: relative !important;
@@ -750,7 +776,9 @@
   .warda-perfume-card__title {
     font-size: 0.76rem !important;
     line-height: 1.35 !important;
-    letter-spacing: 0.04em !important;
+    letter-spacing: 0.06em !important;
+    color: #e6d09c !important;
+    text-transform: uppercase !important;
     min-height: 2.7em !important;
     height: auto !important;
     max-height: 4.1em !important;
@@ -773,7 +801,8 @@
     min-width: 0 !important;
   }
   .warda-perfume-card__price {
-    font-size: 0.92rem !important;
+    font-size: 1rem !important;
+    color: #e6be5a !important;
     margin-bottom: 0.45rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -781,10 +810,13 @@
     max-width: 100% !important;
   }
   .warda-btn--card {
-    padding: 0.45rem 0.35rem !important;
+    padding: 0.48rem 0.45rem !important;
     font-size: 0.7rem !important;
-    letter-spacing: 0.04em !important;
-    border-radius: 20px !important;
+    letter-spacing: 0.08em !important;
+    border-radius: 999px !important;
+    background: rgba(12, 10, 7, 0.9) !important;
+    border: 1px solid rgba(212, 175, 55, 0.52) !important;
+    color: #f0dfb4 !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
