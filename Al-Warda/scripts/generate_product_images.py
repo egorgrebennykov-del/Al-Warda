@@ -2103,11 +2103,11 @@ def strip_packaging_box_geometry(cutout):
         return cutout, False
 
     # Look for a vertical gap in the upper 45% of the foreground separating box vs bottle
-    top_zone = fg[y1:y1 + max(10, int(bh * 0.45)), :]
     margin = max(12, int(bw * 0.16))
     if x1 + margin >= x2 - margin:
         return cutout, False
 
+    top_zone = fg[y1:y1 + max(10, int(bh * 0.45)), :]
     col_empty_top = ~np.any(top_zone, axis=0)
     best_gap = None
     cur_start = None
