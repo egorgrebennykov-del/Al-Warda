@@ -3468,7 +3468,7 @@ def is_stale_processing(job, now):
 
 
 ALWAYS_EXCLUDED_NON_PERFUME_RE = re.compile(
-    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*sprays?|bodysprays?|all[\s_-]*over[\s_-]*sprays?|body\s*mists?|fragrance\s*mists?|hair\s*products?|hair\s*perfumes?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
     re.I,
 )
 TOILETRY_WITHOUT_EDP_RE = re.compile(
@@ -4037,16 +4037,7 @@ def process_product(
                 source_name = best_small_studio[3]["sourceName"]
                 source_type = best_small_studio[3].get("sourceType") or "official_studio"
             else:
-                local_rel = str(row.get("image") or "").split("?")[0].lstrip("/")
-                local_path = (Path(__file__).resolve().parents[1] / "public" / local_rel) if local_rel.startswith("assets/img/dropship/") else None
-                if local_path and local_path.is_file():
-                    source_bytes = local_path.read_bytes()
-                    source_quality = measure_source_quality(source_bytes)
-                    source_url = str(row.get("image") or "")
-                    source_name = "Local Catalog Archive"
-                    source_type = "qogita_set" if is_set else "qogita_catalog"
-                else:
-                    raise ValueError("No valid catalog photo found and no official studio photo found")
+                raise ValueError("No valid catalog photo found and no official studio photo found")
 
         output = None
         original_size = None

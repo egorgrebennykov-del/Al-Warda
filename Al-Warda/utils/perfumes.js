@@ -2719,7 +2719,7 @@ export function isExcludedNonPerfume(p) {
   const name = `${p?.name || ""} ${p?.title || ""}`.trim();
   if (!name) return false;
   const alwaysExcludedRe =
-    /\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b/i;
+    /\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*sprays?|bodysprays?|all[\s_-]*over[\s_-]*sprays?|body\s*mists?|fragrance\s*mists?|hair\s*products?|hair\s*perfumes?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b/i;
   if (alwaysExcludedRe.test(name)) return true;
   const toiletryRe =
     /\b(?:shower\s*gels?|body\s*wash(?:es)?|bath\s*gels?|hand\s*wash(?:es)?|soaps?|body\s*lotions?|body\s*milks?|body\s*butters?|body\s*creams?|hand\s*creams?|face\s*creams?|creams?|lotions?|serums?|retinal|masks?|boosters?|sunscreens?|cleansers?|toners?|peelings?|scrubs?|exfoliants?|after\s*shaves?|aftershaves?|shaving\s*(?:balm|gel|foam|cream)|hair\s*mists?|hair\s*care|lip\s*balms?|talcs?)\b/i;

@@ -357,7 +357,7 @@ def build_rich_bilingual_enrichment(name, brand="Al-Warda"):
     }
 
 ALWAYS_EXCLUDED_NON_PERFUME_RE = re.compile(
-    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*sprays?|bodysprays?|all[\s_-]*over[\s_-]*sprays?|body\s*mists?|fragrance\s*mists?|hair\s*products?|hair\s*perfumes?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
     re.I,
 )
 TOILETRY_WITHOUT_EDP_RE = re.compile(
