@@ -22,7 +22,9 @@ export default function ProductImageCompareModal({
   if (!item) return null;
 
   const originalSrc = item.rawImage || item.image || item.info?.rawImage;
-  const studioSrc = item.imageUrl || item.image || item.info?.imageGeneration?.imageUrl || item.info?.image;
+  const primaryRowImage = item.image || item.info?.image;
+  const generationImage = item.imageUrl || item.info?.imageGeneration?.imageUrl;
+  const studioSrc = primaryRowImage || generationImage;
   const studioSourceUrl =
     item.sourceUrl ||
     item.info?.imageGeneration?.sourceUrl ||
@@ -52,34 +54,29 @@ export default function ProductImageCompareModal({
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
 
-  const localApiUrl =
-    isLocalHost && typeof studioSrc === "string" && studioSrc.startsWith("/assets/")
-      ? `http://${window.location.hostname}:3001${studioSrc}`
+  const buildCandidateUrls = (src) => {
+    if (typeof src !== "string" || !src) return [];
+    const localApi =
+      isLocalHost && src.startsWith("/assets/")
+        ? `http://${window.location.hostname}:3001${src}`
+        : null;
+    const raw = /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(src)
+      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${src}`
       : null;
+    const webp = src.endsWith(".png") ? src.replace(/\.png$/, ".webp") : null;
+    const rawWebp = raw ? raw.replace(/\.png$/, ".webp") : null;
+    const cdnWorker = src.startsWith("/assets/")
+      ? `https://al-warda.egor-grebennykov.workers.dev${src}`
+      : null;
+    return [src, webp, localApi, cdnWorker, raw, rawWebp].filter(Boolean);
+  };
 
-  const rawUrl =
-    typeof studioSrc === "string" &&
-    /^\/assets\/img\/generated-products\/[a-f0-9]{64}\.png$/.test(studioSrc)
-      ? `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${studioSrc}`
-      : null;
-  const webpUrl =
-    typeof studioSrc === "string" && studioSrc.endsWith(".png")
-      ? studioSrc.replace(/\.png$/, ".webp")
-      : null;
-  const rawWebpUrl = rawUrl ? rawUrl.replace(/\.png$/, ".webp") : null;
-  const cdnWorkerUrl =
-    typeof studioSrc === "string" && studioSrc.startsWith("/assets/")
-      ? `https://al-warda.egor-grebennykov.workers.dev${studioSrc}`
-      : null;
-
-  const studioSources = [
-    studioSrc,
-    webpUrl,
-    localApiUrl,
-    cdnWorkerUrl,
-    rawUrl,
-    rawWebpUrl,
-  ].filter(Boolean);
+  const studioSources = Array.from(
+    new Set([
+      ...buildCandidateUrls(primaryRowImage),
+      ...buildCandidateUrls(generationImage),
+    ])
+  );
 
   const currentStudioSrc = studioSources[studioSourceIndex] || studioSrc;
 
