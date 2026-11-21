@@ -539,7 +539,14 @@ export async function getProductImageQueueStatus(request, env) {
           }
         }
         const gt = info.googleTrends && typeof info.googleTrends === "object" ? info.googleTrends : null;
-        if (row.in_stock === false || gt?.hiddenFromSite === true || gt?.passed === false) {
+        if (
+          String(row.slug || "") === "site-settings" ||
+          String(row.id || "") === "site-settings" ||
+          String(row.id || "") === "999999" ||
+          row.in_stock === false ||
+          gt?.hiddenFromSite === true ||
+          gt?.passed === false
+        ) {
           continue;
         }
         const job = info.imageGeneration || {};
