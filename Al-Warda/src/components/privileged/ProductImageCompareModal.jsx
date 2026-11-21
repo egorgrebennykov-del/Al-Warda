@@ -38,21 +38,28 @@ export default function ProductImageCompareModal({
       item.info?.imageGeneration?.qogitaMissingPhoto ||
       !hasQogitaPhoto,
   );
+  const studioSourceUrlRaw =
+    item.sourceUrl ||
+    item.info?.imageGeneration?.sourceUrl ||
+    item.info?.imageSourceUrl ||
+    null;
+  const isDirectImageUrl = (u) =>
+    typeof u === "string" &&
+    (/\.(?:jpg|jpeg|png|webp|gif|avif)(?:\?|$)/i.test(u) ||
+      /static\.prod\.qogita\.com\/files\/images\//i.test(u));
   const sourceImageSrc =
     item.sourceImageUrl ||
     item.info?.imageGeneration?.sourceImageUrl ||
     item.info?.imageSourceImageUrl ||
-    null;
+    (isDirectImageUrl(studioSourceUrlRaw) ? studioSourceUrlRaw : null);
   const originalSrc = hasQogitaPhoto
     ? qogitaRawCandidate
     : sourceImageSrc || null;
   const primaryRowImage = item.image || item.info?.image;
   const generationImage = item.imageUrl || item.info?.imageGeneration?.imageUrl;
-  const studioSrc = primaryRowImage || generationImage;
+  const studioSrc = generationImage || primaryRowImage;
   const studioSourceUrl =
-    item.sourceUrl ||
-    item.info?.imageGeneration?.sourceUrl ||
-    item.info?.imageSourceUrl ||
+    studioSourceUrlRaw ||
     (typeof originalSrc === "string" && !originalSrc.startsWith("/assets/") ? originalSrc : null);
   const studioSourceName =
     item.sourceName ||
