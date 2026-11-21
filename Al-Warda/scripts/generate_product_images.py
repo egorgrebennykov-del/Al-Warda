@@ -636,12 +636,48 @@ def search_official_studio_candidates(name, brand="", is_set=False):
     name_lower = (name or "").lower()
     query_is_deo_or_body = bool(
         re.search(
-            r"\b(deo|deodorant|deospray|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+            r"\b(deo|deodorant|deostick|deo\s*stick|deospray|deo\s*spray|all[\s_-]*over[\s_-]*spray|body\s*spray|bodyspray|body\s*mist|perfumed\s*spray|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
             name_lower,
         )
     )
+    query_is_oil = bool(re.search(r"\b(perfume\s*oil|attar|concentrated\s*oil|roll[\s_-]*on)\b", name_lower))
+    query_is_air = bool(re.search(r"\b(air\s*fresh(?:e)?ner|room\s*spray|home\s*spray)\b", name_lower))
     query_is_men = bool(re.search(r"\b(for\s+men|for\s+him|pour\s+homme|\bmen\b|\bman\b)\b", name_lower))
     query_is_women = bool(re.search(r"\b(for\s+women|for\s+her|pour\s+femme|\bwomen\b|\bwoman\b)\b", name_lower))
+
+    TOKEN_ALIASES = {
+        "i": "1",
+        "ii": "2",
+        "iii": "3",
+        "iv": "4",
+        "v": "5",
+        "oudh": "oud",
+        "collectors": "collector",
+        "estrait": "extrait",
+        "extract": "extrait",
+        "freshner": "freshener",
+    }
+    BENIGN_EXTRA_TOKENS = {
+        "by", "and", "the", "a", "an", "of", "in", "new", "sealed", "box",
+        "original", "authentic", "long", "lasting", "best", "scent", "impression",
+        "bottle", "flacon", "size", "travel", "mini", "miniature", "ml", "oz", "fl",
+        "grams", "g", "bor", "m", "u", "w", "s", "3", "4", "100", "50", "80", "90",
+        "85", "75", "55", "150", "200", "30", "10", "15", "20", "60", "120", "125",
+    }
+
+    def _extract_core_tokens(raw_text):
+        c_text = clean_product_name_for_search(raw_text, brand)
+        toks = set()
+        for t in re.findall(r"[a-z0-9]+", c_text.lower()):
+            t = TOKEN_ALIASES.get(t, t)
+            if t in GENERIC_STOPWORDS or t in brand_tokens or t in BENIGN_EXTRA_TOKENS:
+                continue
+            toks.add(t)
+        return toks, "".join(sorted(toks)), re.sub(r"[^a-z0-9]", "", c_text.lower())
+
+    core_tokens, _, query_flat = _extract_core_tokens(name)
+    if not core_tokens:
+        core_tokens = {TOKEN_ALIASES.get(t, t) for t in clean_tokens if t not in brand_tokens and t not in BENIGN_EXTRA_TOKENS}
 
     all_matches = []
     seen_urls = set()
@@ -664,18 +700,21 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                         title = p.get("title", "")
                         title_lower = title.lower()
                         page_url_raw = str(p.get("url") or "").lower()
+                        combined_meta = f"{title_lower} {page_url_raw}"
                         p_is_set = bool(
                             re.search(
-                                r"\b(set|gift|coffret|discovery|travel\s+set|pack\s+of)\b",
-                                title_lower,
+                                r"\b(set|giftset|gift\s*set|coffret|discovery|travel\s+set|pack\s+of|\d+\s*pcs?|\d+\s*piece|\d+\s*pc)\b",
+                                combined_meta,
                             )
                         )
                         p_is_deo_or_body = bool(
                             re.search(
-                                r"\b(deo|deodorant|deospray|body\s*spray|body\s*mist|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
-                                f"{title_lower} {page_url_raw}",
+                                r"\b(deo|deodorant|deostick|deo\s*stick|deospray|deo\s*spray|all[\s_-]*over[\s_-]*spray|body\s*spray|bodyspray|body\s*mist|perfumed\s*spray|hair\s*mist|shower\s*gel|body\s*lotion|after\s*shave)\b",
+                                combined_meta,
                             )
                         )
+                        p_is_oil = bool(re.search(r"\b(perfume\s*oil|attar|concentrated\s*oil|roll[\s_-]*on)\b", combined_meta))
+                        p_is_air = bool(re.search(r"\b(air\s*fresh(?:e)?ner|room\s*spray|home\s*spray)\b", combined_meta))
                         p_is_non_perfume = bool(
                             re.search(
                                 r"\b(watch|watches|bracelet|necklace|earring|wallet|handbag|sunglasses|smartwatch|chronograph|quartz|guess|casio|seiko|fossil|tissot)\b",
@@ -685,13 +724,13 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                         if p_is_non_perfume and not any(w in (brand_key or "") for w in ("guess", "watch")):
                             continue
 
-                        if is_set and not p_is_set:
+                        if is_set != p_is_set:
                             continue
-                        if not is_set and p_is_set:
+                        if query_is_deo_or_body != p_is_deo_or_body:
                             continue
-                        if query_is_deo_or_body and not p_is_deo_or_body:
+                        if query_is_oil != p_is_oil:
                             continue
-                        if not query_is_deo_or_body and p_is_deo_or_body:
+                        if query_is_air != p_is_air:
                             continue
 
                         p_is_men = bool(re.search(r"\b(for\s+men|for\s+him|pour\s+homme|\bmen\b|\bman\b)\b", title_lower))
@@ -700,45 +739,57 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                             continue
                         if query_is_women and p_is_men and not p_is_women:
                             continue
+                        if p_is_women and not p_is_men and not query_is_women:
+                            continue
+                        if p_is_men and not p_is_women and not query_is_men:
+                            continue
 
                         title_tokens = set(re.findall(r"[a-z0-9]+", title_lower)) - GENERIC_STOPWORDS
                         if require_brand_match and brand_tokens and not (brand_tokens & title_tokens):
                             vendor_tokens = set(re.findall(r"[a-z0-9]+", str(p.get("vendor") or "").lower()))
                             if not (brand_tokens & vendor_tokens):
                                 continue
-                        if clean_tokens and (clean_tokens.issubset(title_tokens) or len(clean_tokens & title_tokens) >= max(1, len(clean_tokens) * 0.7)):
-                            img_url = p.get("image") or (p.get("featured_image") or {}).get("url")
-                            if not img_url:
-                                continue
-                            img_url = upgrade_shopify_image_url(img_url)
-                            if img_url in seen_urls:
-                                continue
-                            seen_urls.add(img_url)
 
-                            page_url = p.get("url", "")
-                            if page_url and page_url.startswith("/"):
-                                page_url = f"https://{domain}{page_url}"
+                        title_core, _, title_flat = _extract_core_tokens(title)
+                        if not core_tokens or not title_core:
+                            continue
 
-                            overlap = len(clean_tokens & title_tokens) / max(1, len(clean_tokens))
-                            extra_tokens = title_tokens - clean_tokens - brand_tokens
-                            extra_penalty = len(extra_tokens) * 1.5
-                            for fk in ("elixir", "intense", "absolu", "extreme", "limited", "caramel", "dulce"):
-                                if fk in extra_tokens:
-                                    extra_penalty += 3.0
-                            img_lower = img_url.lower()
-                            tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
-                            bottle_bonus = 8.0 if (not is_set and re.search(r"[-_]bottle[-_]front\.(?:png|jpe?g|webp)", img_lower)) else (6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0)
-                            score = tier_bonus + bottle_bonus + overlap * 10.0 - extra_penalty + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
-                            all_matches.append((
-                                score,
-                                {
-                                    "imageUrl": img_url,
-                                    "sourceUrl": page_url or img_url,
-                                    "sourceName": f"{brand or 'Official'} ({domain})",
-                                    "sourceType": source_tag,
-                                    "title": title,
-                                },
-                            ))
+                        # Require 100% of distinctive query tokens in candidate title (allowing concatenated words like lionheart)
+                        missing_core = [t for t in core_tokens if t not in title_core and t not in title_flat]
+                        if missing_core:
+                            continue
+
+                        # Reject any candidate that introduces extra flanker/edition tokens not in our product name
+                        extra_core = [t for t in (title_core - core_tokens) if t not in query_flat]
+                        if extra_core:
+                            continue
+
+                        img_url = p.get("image") or (p.get("featured_image") or {}).get("url")
+                        if not img_url:
+                            continue
+                        img_url = upgrade_shopify_image_url(img_url)
+                        if img_url in seen_urls:
+                            continue
+                        seen_urls.add(img_url)
+
+                        page_url = p.get("url", "")
+                        if page_url and page_url.startswith("/"):
+                            page_url = f"https://{domain}{page_url}"
+
+                        img_lower = img_url.lower()
+                        tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
+                        bottle_bonus = 8.0 if (not is_set and re.search(r"[-_]bottle[-_]front\.(?:png|jpe?g|webp)", img_lower)) else (6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0)
+                        score = tier_bonus + bottle_bonus + 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                        all_matches.append((
+                            score,
+                            {
+                                "imageUrl": img_url,
+                                "sourceUrl": page_url or img_url,
+                                "sourceName": f"{brand or 'Official'} ({domain})",
+                                "sourceType": source_tag,
+                                "title": title,
+                            },
+                        ))
                     if all_matches:
                         break
                 except Exception:
@@ -1703,18 +1754,18 @@ def validate_cutout_quality(source_quality, out_bytes):
     if fg_ratio > 0.90:
         return False, final_sharpness, "Фон не удалён (объект занимает >90% кадра)"
 
-    if (
-        alpha[0, 0] > 200
-        and alpha[0, w - 1] > 200
-        and alpha[h - 1, 0] > 200
-        and alpha[h - 1, w - 1] > 200
-    ):
+    opaque_corners = sum(
+        1 for cy, cx in ((0, 0), (0, w - 1), (h - 1, 0), (h - 1, w - 1))
+        if alpha[cy, cx] > 200
+    )
+    if opaque_corners >= 2:
         return False, final_sharpness, "Сплошной фон по углам не удалён"
 
     top_clip = float(np.mean(alpha[0, :] > 180))
     left_clip = float(np.mean(alpha[:, 0] > 180))
     right_clip = float(np.mean(alpha[:, w - 1] > 180))
-    if max(top_clip, left_clip, right_clip) > 0.60:
+    bottom_clip = float(np.mean(alpha[h - 1, :] > 180))
+    if max(top_clip, left_clip, right_clip) > 0.30 or bottom_clip > 0.45:
         return False, final_sharpness, "Фотография товара сильно обрезана по краям"
 
     ys_fg, xs_fg = np.where(alpha > 120)
