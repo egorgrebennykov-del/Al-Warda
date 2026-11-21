@@ -2789,16 +2789,38 @@ def strip_baked_reflection(cutout):
             return cutout
 
         # Case A: Narrow hanging reflection tail at bottom (e.g. Al Haramain Sheikh)
+        # Never clip a solid bottle base when two objects (e.g. box + bottle) sit side-by-side
+        # or when the bottom is a solid opaque rounded bottle base.
         search_top = max(min_y + int(h_obj * 0.65), max_y - int(h_obj * 0.22))
+        rgb_a = arr[:, :, :3].astype(np.float32)
+        lum_a = 0.299 * rgb_a[:, :, 0] + 0.587 * rgb_a[:, :, 1] + 0.114 * rgb_a[:, :, 2]
         for y in range(max_y - 4, search_top, -1):
             w_below = float(np.median(row_widths[y - min_y:min(len(row_widths), y - min_y + 6)]))
             w_above = float(np.median(row_widths[max(0, y - min_y - 10):y - min_y]))
-            if w_below < main_w * 0.38 and w_above >= main_w * 0.55 and w_above >= w_below * 2.0:
+            if w_below < main_w * 0.35 and w_above >= main_w * 0.55 and w_above >= w_below * 2.2:
+                # Confirm the row above is a single contiguous body (not box + bottle side-by-side)
+                row_fg = alpha[max(min_y, y - 3), min_x:max_x + 1] > 80
+                if np.any(row_fg):
+                    fg_idx = np.where(row_fg)[0]
+                    span = int(fg_idx[-1] - fg_idx[0] + 1)
+                    if int(np.sum(row_fg)) < span * 0.72:
+                        continue
                 # Confirm bottom tail is genuinely narrow all the way to max_y
-                if float(np.max(row_widths[y - min_y + 2:])) < main_w * 0.45:
-                    out = arr.copy()
-                    out[y + 1:, :, 3] = 0
-                    return Image.fromarray(out, "RGBA")
+                if float(np.max(row_widths[y - min_y + 2:])) < main_w * 0.42:
+                    below_mask = alpha[y + 1:max_y + 1, min_x:max_x + 1] > 40
+                    above_mask = alpha[max(min_y, y - 12):y + 1, min_x:max_x + 1] > 80
+                    mean_a_below = float(np.mean(alpha[y + 1:max_y + 1, min_x:max_x + 1][below_mask])) if np.any(below_mask) else 0.0
+                    mean_l_below = float(np.mean(lum_a[y + 1:max_y + 1, min_x:max_x + 1][below_mask])) if np.any(below_mask) else 0.0
+                    mean_l_above = float(np.mean(lum_a[max(min_y, y - 12):y + 1, min_x:max_x + 1][above_mask])) if np.any(above_mask) else 128.0
+                    is_reflection_or_tail = (
+                        mean_a_below < 220.0
+                        or mean_l_below < mean_l_above * 0.85
+                        or w_below < main_w * 0.20
+                    )
+                    if is_reflection_or_tail:
+                        out = arr.copy()
+                        out[y + 1:, :, 3] = 0
+                        return Image.fromarray(out, "RGBA")
 
         # Case B: Full-width baked-in mirror reflection slab (e.g. Al Absar Hiyam)
         bot_cov = float(np.mean(alpha[max_y - 3:max_y + 1, min_x:max_x + 1] > 80))
