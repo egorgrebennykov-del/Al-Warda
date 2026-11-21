@@ -2028,12 +2028,15 @@
 }
 
 .dark-theme .product-image-queue__filter-pill {
-  color: #e8dcc8;
-  background: rgba(212, 175, 55, 0.1);
+  color: #2d261e !important;
+  border-color: rgba(168, 128, 32, 0.65) !important;
+  background: rgba(212, 175, 55, 0.16) !important;
 }
 
 .dark-theme .product-image-queue__filter-pill.is-active {
-  color: #161208;
+  color: #161208 !important;
+  background: linear-gradient(135deg, #d4af37 0%, #a47d24 100%) !important;
+  border-color: #d4af37 !important;
 }
 
 .dark-theme .product-image-queue__filter-reset {
