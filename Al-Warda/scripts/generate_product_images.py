@@ -2600,11 +2600,11 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
         if p50_l > 92.0 or p90_l > 198.0:
             shadow_floor = max(0.0, min(0.10, (p5_l - 20.0) / 255.0 * 0.45))
             L_anchored = np.clip((L_norm - shadow_floor) / max(0.2, 1.0 - shadow_floor), 0.0, 1.0)
-            knee = 0.70
+            knee = 0.76
             over = np.maximum(0.0, L_anchored - knee)
-            L_comp = np.where(L_anchored > knee, knee + 0.28 * np.tanh(over / 0.28), L_anchored)
+            L_comp = np.where(L_anchored > knee, knee + 0.24 * np.tanh(over / 0.24), L_anchored)
             excess = max(0.0, min(1.0, (p50_l - 85.0) / 100.0))
-            gamma = 1.0 + 0.14 * excess
+            gamma = 1.0 + 0.09 * excess
             L_toned = np.power(np.clip(L_comp, 0.0, 1.0), gamma)
         else:
             p_low = float(np.percentile(fg_l, 1.5))
@@ -2674,17 +2674,33 @@ def harmonize_cutout_for_stage(cutout, stage_path=None):
         ao_zone = np.clip((v_norm - 0.985) / 0.015, 0.0, 1.0)[:, :, np.newaxis]
         rgb_stage = rgb_stage * (1.0 - 0.22 * ao_zone)
 
-        # 6. Soft pure-white fringe cleanup only (never darken colored/pink/gold edges to black)
+        # 6. White-matte edge decontamination & halo cleanup (critical for clear glass/crystal caps on dark cards)
         rgb_clipped = np.clip(rgb_stage, 0.0, 255.0)
-        is_white_fringe = (
+        a_norm = np.clip(alpha / 255.0, 0.0, 1.0)
+        edge_band = (alpha > 0) & (alpha < 235)
+        if np.any(edge_band):
+            # Un-premultiply studio white (255) bleed from semi-transparent edge pixels
+            a_safe = np.maximum(a_norm, 0.32)[:, :, np.newaxis]
+            unmatted = np.clip((rgb_clipped - (1.0 - a_norm[:, :, np.newaxis]) * 255.0) / a_safe, 0.0, 255.0)
+            de_halo_w = np.clip((235.0 - alpha) / 180.0, 0.0, 1.0)[:, :, np.newaxis]
+            rgb_clipped = np.where(edge_band[:, :, np.newaxis], rgb_clipped * (1.0 - 0.65 * de_halo_w) + unmatted * (0.65 * de_halo_w), rgb_clipped)
+
+        edge_chroma = np.max(rgb_clipped, axis=2) - np.min(rgb_clipped, axis=2)
+        edge_min = np.min(rgb_clipped, axis=2)
+        is_chalky_fringe = (
             (alpha > 0)
-            & (alpha < 95)
-            & (rgb_clipped[:, :, 0] > 235)
-            & (rgb_clipped[:, :, 1] > 235)
-            & (rgb_clipped[:, :, 2] > 235)
+            & (alpha < 175)
+            & (edge_min > 200.0)
+            & (edge_chroma < 26.0)
         )
-        clean_alpha = np.where(is_white_fringe, (alpha * 0.35), alpha).astype(np.uint8)
-        out_arr = np.dstack((rgb_clipped.astype(np.uint8), clean_alpha))
+        clean_alpha = np.where(is_chalky_fringe, (alpha * 0.28), alpha)
+        is_white_fringe = (
+            (clean_alpha > 0)
+            & (clean_alpha < 95)
+            & (edge_min > 225.0)
+        )
+        clean_alpha = np.where(is_white_fringe, (clean_alpha * 0.25), clean_alpha).astype(np.uint8)
+        out_arr = np.dstack((np.clip(rgb_clipped, 0.0, 255.0).astype(np.uint8), clean_alpha))
         return Image.fromarray(out_arr, mode="RGBA")
     except Exception:
         return cutout

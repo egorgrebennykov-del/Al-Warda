@@ -49,18 +49,25 @@
   content: "";
   display: block;
   position: absolute;
-  inset: 4%;
+  inset: 2%;
   width: auto;
   height: auto;
   transform: none;
   filter: none;
   border-radius: 0;
-  background: radial-gradient(
-    ellipse 64% 62% at 50% 50%,
-    rgba(245, 215, 145, 0.16) 0%,
-    rgba(212, 175, 55, 0.08) 44%,
-    rgba(8, 6, 5, 0) 76%
-  );
+  background:
+    radial-gradient(
+      ellipse 66% 14% at 50% 93%,
+      rgba(242, 194, 96, 0.24) 0%,
+      rgba(212, 175, 55, 0.08) 52%,
+      rgba(8, 6, 5, 0) 80%
+    ),
+    radial-gradient(
+      ellipse 64% 60% at 50% 48%,
+      rgba(248, 218, 148, 0.24) 0%,
+      rgba(212, 175, 55, 0.11) 46%,
+      rgba(8, 6, 5, 0) 76%
+    );
   pointer-events: none;
   z-index: 1;
 }
@@ -80,30 +87,30 @@
   max-height: none !important;
   object-fit: contain !important;
   box-sizing: border-box !important;
-  padding: 0 !important;
+  padding: 6% 7% 3% !important;
   transform: scale(1) !important;
   image-rendering: auto;
   transition: filter 0.3s ease, transform 0.3s ease;
   filter:
-    brightness(1.02)
-    contrast(1.05)
-    saturate(1.10)
-    drop-shadow(0 0 22px rgba(212, 175, 55, 0.16))
-    drop-shadow(0 12px 24px rgba(0, 0, 0, 0.68)) !important;
+    brightness(1.03)
+    contrast(1.08)
+    saturate(1.14)
+    drop-shadow(0 0 24px rgba(212, 175, 55, 0.20))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.78)) !important;
 }
 
 .warda-perfume-card:hover .warda-perfume-card__img {
   transform: scale(1.03) !important;
   filter:
-    brightness(1.05)
-    contrast(1.07)
-    saturate(1.14)
-    drop-shadow(0 0 26px rgba(212, 175, 55, 0.24))
-    drop-shadow(0 14px 26px rgba(0, 0, 0, 0.74)) !important;
+    brightness(1.06)
+    contrast(1.10)
+    saturate(1.18)
+    drop-shadow(0 0 30px rgba(212, 175, 55, 0.28))
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.82)) !important;
 }
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img {
-  padding: 0 !important;
+  padding: 6% 7% 3% !important;
   transform: scale(1) !important;
 }
 
