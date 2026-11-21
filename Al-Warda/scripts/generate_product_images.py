@@ -779,7 +779,8 @@ def search_official_studio_candidates(name, brand="", is_set=False):
                         img_lower = img_url.lower()
                         tier_bonus = 5.0 if source_tag == "official_studio" else 0.0
                         bottle_bonus = 8.0 if (not is_set and re.search(r"[-_]bottle[-_]front\.(?:png|jpe?g|webp)", img_lower)) else (6.0 if (not is_set and re.search(r"[-_]bottle\.(?:png|jpe?g|webp)", img_lower)) else 0.0)
-                        score = tier_bonus + bottle_bonus + 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
+                        box_penalty = -12.0 if (not is_set and re.search(r"(?:packaging|with[-_]box|and[-_]box|and[-_]packaging|box[-_]only|[-_]box\.(?:png|jpe?g|webp)|carton|lifestyle|pyramid|notes)", img_lower)) else 0.0
+                        score = tier_bonus + bottle_bonus + box_penalty + 10.0 + (2.0 if ".png" in img_lower else 0.0) + (1.0 if "front" in img_lower else 0.0)
                         all_matches.append((
                             score,
                             {
@@ -2177,12 +2178,25 @@ def strip_packaging_box_geometry(cutout):
             best_gap = (cur_start, end_x)
 
     if not best_gap or (best_gap[1] - best_gap[0] + 1) < 3:
-        return cutout, False
-
-    s_l = max(x1 + 4, best_gap[0] - 2)
-    s_r = min(x2 - 4, best_gap[1] + 2)
-    col_counts = fg[y1:y2 + 1, s_l:s_r + 1].sum(axis=0)
-    split_x = s_l + int(np.argmin(col_counts))
+        # Secondary check for touching bottle + box: look for a deep silhouette valley in the upper 45%
+        split_x = None
+        if (bw / float(bh)) >= 0.72:
+            col_top_ys = []
+            for x in range(x1 + margin, x2 - margin + 1):
+                col_ys = np.where(fg[y1:y2 + 1, x])[0]
+                col_top_ys.append(int(col_ys.min()) if len(col_ys) else bh)
+            if col_top_ys:
+                best_idx = int(np.argmax(col_top_ys))
+                if col_top_ys[best_idx] >= max(10, int(bh * 0.14)):
+                    split_x = (x1 + margin) + best_idx
+        if split_x is None:
+            return cutout, False
+        best_gap = (split_x, split_x)
+    else:
+        s_l = max(x1 + 4, best_gap[0] - 2)
+        s_r = min(x2 - 4, best_gap[1] + 2)
+        col_counts = fg[y1:y2 + 1, s_l:s_r + 1].sum(axis=0)
+        split_x = s_l + int(np.argmin(col_counts))
 
     total_fg = int(fg.sum())
 
@@ -2261,6 +2275,7 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
             else (
                 "ALSO detect any outer cardboard packaging / perfume box next to the bottle "
                 "(label it 'packaging box', ONLY when a perfume bottle is also visible in the image). "
+                "If ONLY an outer cardboard box/packaging is visible with NO perfume bottle at all, set \"isBoxOnly\": true. "
             )
         )
         prompt = (
@@ -2271,7 +2286,7 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
             "such as fruits (lemons, oranges, apples, berries, lychees), flowers, petals, leaves, branches, wood chips, "
             "cinnamon sticks, coffee beans, spices, ice cubes, stones, water splashes, or hands. "
             f"{box_clause}"
-            'Return ONLY JSON: {"hasProps": true/false, "props": [{"label": "short name", "box_2d": [ymin, xmin, ymax, xmax]}]} '
+            'Return ONLY JSON: {"isBoxOnly": false, "hasProps": true/false, "props": [{"label": "short name", "box_2d": [ymin, xmin, ymax, xmax]}]} '
             "where box_2d is in 0..1000 normalized coordinates tightly enclosing each extraneous prop or packaging box.\n"
             "NEVER include the perfume bottle, cap, or sculpted bottle ornaments inside box_2d."
         )
@@ -2298,7 +2313,11 @@ def remove_extraneous_props_from_cutout(cutout, is_set=False):
                     payload_json = json.loads(text)
                     break
 
-        if not isinstance(payload_json, dict) or not payload_json.get("hasProps"):
+        if not isinstance(payload_json, dict):
+            return cutout, removed_labels
+        if (not is_set) and payload_json.get("isBoxOnly") is True:
+            raise ValueError("На фото только картонная упаковка без флакона")
+        if not payload_json.get("hasProps"):
             return cutout, removed_labels
 
         props = payload_json.get("props") or []
@@ -2677,7 +2696,7 @@ def strip_baked_reflection(cutout):
         if bot_cov >= 0.88:
             best_seam = None
             best_score = 0.0
-            lo_seam = max(min_y + int(h_obj * 0.72), max_y - int(h_obj * 0.16))
+            lo_seam = max(min_y + int(h_obj * 0.65), max_y - int(h_obj * 0.28))
             hi_seam = max_y - 12
             for y_seam in range(lo_seam, hi_seam):
                 d = min(35, max_y - y_seam, y_seam - min_y)
@@ -2796,7 +2815,12 @@ def clean_floating_text_and_haze(cutout, is_set=False):
             keep_solid[lbl_sol == lbl] = 1
             continue
 
-        is_floating_above = (y2 < my - max(12, int(mh * 0.04))) and (a_i < max_area * 0.25)
+        is_centered_cap = (
+            (x2 >= mx + int(mw * 0.15))
+            and (x <= mx2 - int(mw * 0.15))
+            and (y2 >= my - int(mh * 0.28))
+        )
+        is_floating_above = (not is_centered_cap) and (y2 < my - max(12, int(mh * 0.04))) and (a_i < max_area * 0.25)
         is_floating_below = (y > my2 - max(4, int(mh * 0.02))) and (a_i < max_area * 0.30)
         is_side_debris = (not is_set) and (a_i < max_area * 0.15) and (x2 < mx - int(W * 0.03) or x > mx2 + int(W * 0.03))
         is_tiny_speck = a_i < min(250, max_area * 0.008)
@@ -3971,10 +3995,21 @@ def process_product(
             except Exception:
                 pass
 
+        was_error_item = (
+            job.get("status") in ("failed", "segmentation_failed")
+            or job.get("manualFailed") is True
+            or job.get("failed") is True
+        )
         new_status = "completed" if publish_immediate else "publishing"
+        now_iso = utc_now().isoformat()
+        for stale_key in ("failed", "manualFailed", "needsNewPhoto", "error", "failedAt"):
+            job.pop(stale_key, None)
+        if was_error_item:
+            job["recreatedFromErrorAt"] = now_iso
         job.update({
             "status": new_status,
-            "completedAt": utc_now().isoformat() if publish_immediate else job.get("completedAt"),
+            "startedAt": now_iso,
+            "completedAt": now_iso if publish_immediate else job.get("completedAt"),
             "imageUrl": image_url,
             "sourceUrl": source_url,
             "sourceName": source_name,
