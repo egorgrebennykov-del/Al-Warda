@@ -7,6 +7,13 @@
 // and is never exposed to the browser.
 
 const PUBLIC_COLUMNS = {
+  bestsellers: [
+    "rank",
+    "stock_id",
+    "google_trends_average",
+    "google_trends_max",
+    "updated_at",
+  ],
   announcements: [
     "id",
     "created_at",

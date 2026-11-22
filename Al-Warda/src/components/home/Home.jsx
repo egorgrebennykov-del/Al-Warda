@@ -72,7 +72,7 @@ export default function Home() {
       try {
         const items = await getBestSellerPerfumes();
         if (!cancelled && Array.isArray(items) && items.length > 0) {
-          setBestSellers(items.slice(0, 3));
+          setBestSellers(items.slice(0, 5));
         }
       } catch (err) {
         console.warn("Could not load bestsellers:", err);

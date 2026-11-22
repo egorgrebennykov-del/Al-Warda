@@ -3134,11 +3134,44 @@ export const INITIAL_BEST_SELLERS = [
 export async function getBestSellerPerfumes(options = {}) {
   try {
     const all = await getPerfumes(options);
+    const byId = new Map(all.map((p) => [String(p.id), p]));
+
+    if (typeof fetch !== "undefined") {
+      try {
+        const res = await fetch(
+          `${API_REST_BASE}/bestsellers?select=rank,stock_id,google_trends_average&order=rank.asc&limit=5`,
+          {
+            headers: {
+              apikey: "",
+              Authorization: "",
+            },
+          },
+        );
+        if (res.ok) {
+          const rows = await res.json();
+          if (Array.isArray(rows) && rows.length > 0) {
+            const ordered = rows
+              .map((r) => byId.get(String(r.stock_id)))
+              .filter(Boolean);
+            if (ordered.length > 0) {
+              return ordered.slice(0, 5);
+            }
+          }
+        }
+      } catch {
+        // Fallback to sorting by googleTrendsAverage below
+      }
+    }
+
     const nonSets = all.filter((p) => !isPerfumeSet(p));
-    const pool = nonSets.length >= 3 ? nonSets : all;
-    const best = pool.filter((p) => p.isBestSeller);
-    if (best.length > 0) return best.slice(0, 3);
-    if (pool.length > 0) return pool.slice(0, 3);
+    const pool = nonSets.length >= 5 ? nonSets : all;
+    const sorted = [...pool].sort((a, b) => {
+      const gtA = Number.isFinite(a.googleTrendsAverage) ? a.googleTrendsAverage : -1;
+      const gtB = Number.isFinite(b.googleTrendsAverage) ? b.googleTrendsAverage : -1;
+      if (gtB !== gtA) return gtB - gtA;
+      return Number(a.id) - Number(b.id);
+    });
+    if (sorted.length > 0) return sorted.slice(0, 5);
   } catch (err) {
     console.warn("Could not load bestsellers:", err);
   }

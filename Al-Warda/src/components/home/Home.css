@@ -415,8 +415,8 @@
 /* 3. BEST SELLERS GRID */
 .warda-bestsellers__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.25rem;
 }
 
 .warda-perfume-card {
@@ -549,6 +549,7 @@
     height: clamp(360px, 48vh, 480px);
   }
   .warda-bestsellers__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.25rem;
   }
 }

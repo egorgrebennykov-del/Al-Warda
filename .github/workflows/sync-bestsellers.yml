@@ -1,0 +1,31 @@
+name: "Sync Top 5 Bestsellers (Google Trends)"
+
+on:
+  schedule:
+    # Every Monday at 03:00 UTC (every 7 days)
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-bestsellers
+  cancel-in-progress: false
+
+jobs:
+  sync-bestsellers:
+    name: Update Top 5 Bestsellers in DB
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync Top 5 Bestsellers by Google Trends Average
+        run: python Al-Warda/scripts/sync_bestsellers.py
+        env:
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
