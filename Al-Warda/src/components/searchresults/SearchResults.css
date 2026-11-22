@@ -582,8 +582,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  height: 1.2rem;
-  line-height: 1.2rem;
+  min-height: 1.4rem;
+  line-height: 1.4rem;
 }
 
 .warda-perfume-card__price {

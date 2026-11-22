@@ -266,9 +266,13 @@
 
 .warda-perfume-card .warda-perfume-card__notes {
   position: relative;
-  padding-top: 0.4rem;
-  color: rgba(232, 220, 196, 0.72);
-  font-size: 0.76rem;
+  padding-top: 0.45rem;
+  height: auto !important;
+  min-height: 1.55em;
+  line-height: 1.4 !important;
+  overflow: visible !important;
+  color: rgba(242, 232, 212, 0.86) !important;
+  font-size: 0.8rem !important;
 }
 
 .warda-perfume-card .warda-perfume-card__notes::before {
