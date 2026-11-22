@@ -29,3 +29,9 @@ jobs:
         env:
           NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
           NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
+
+      - name: Sync Notino competitor prices & recalculate retail prices
+        run: python Al-Warda/scripts/sync_competitor_prices.py
+        env:
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
