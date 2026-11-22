@@ -245,11 +245,13 @@
   line-height: 1.38;
   text-transform: uppercase;
   margin-bottom: 0.35rem;
-  min-height: 2.75em;
+  min-height: 2.76em;
+  max-height: 2.76em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .warda-perfume-card .warda-perfume-card__notes {
