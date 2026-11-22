@@ -1556,12 +1556,36 @@ export default function ProductImageQueue({
       (activeBatch?.startCompleted || 0) + displayItemsCompleted,
     ),
   );
-  const overallProgress = status?.total
+  const siteCatalogTotal =
+    displayOverallCompleted + (status?.processing || 0) + (status?.failed || 0);
+  const overallProgress = siteCatalogTotal
     ? Math.min(
         100,
-        Math.round((displayOverallCompleted / status.total) * 100),
+        Math.round((displayOverallCompleted / siteCatalogTotal) * 100),
       )
     : 0;
+
+  const gpuMonitorKey = gpuJobStatus
+    ? `${gpuJobStatus.startedAt || ""}_${gpuJobStatus.finishedAt || ""}_${gpuJobStatus.completedCount || 0}`
+    : "";
+  const [dismissedGpuKey, setDismissedGpuKey] = useState(() => {
+    try {
+      return sessionStorage.getItem("warda_dismissed_gpu_monitor") || "";
+    } catch {
+      return "";
+    }
+  });
+  const gpuFinishedAgeMs =
+    gpuJobStatus && !gpuJobStatus.isRunning && gpuJobStatus.finishedAt
+      ? nowMs - Date.parse(gpuJobStatus.finishedAt)
+      : 0;
+  const showGpuMonitor = Boolean(
+    gpuJobStatus &&
+      (gpuJobStatus.isRunning ||
+        (gpuJobStatus.completedCount > 0 &&
+          dismissedGpuKey !== gpuMonitorKey &&
+          (!gpuJobStatus.finishedAt || gpuFinishedAgeMs < 10 * 60 * 1000))),
+  );
 
   const selectableImages = (status?.images || []).filter(
     (image) =>
@@ -1815,7 +1839,7 @@ export default function ProductImageQueue({
           </div>
         )}
 
-        {gpuJobStatus && (gpuJobStatus.isRunning || gpuJobStatus.completedCount > 0) && (
+        {showGpuMonitor && (
           <div className="product-image-queue__gpu-monitor">
             <div className="product-image-queue__gpu-monitor-header">
               <div className="product-image-queue__gpu-monitor-title">
@@ -1839,15 +1863,34 @@ export default function ProductImageQueue({
                   </>
                 )}
               </div>
-              <span style={{ fontSize: "0.85rem", color: "#e5d8b8" }}>
-                {isRussian ? "Готово:" : "Completed:"}{" "}
-                <strong>{gpuJobStatus.completedCount}</strong>
-                {gpuJobStatus.totalCandidates > 0
-                  ? ` / ${gpuJobStatus.totalCandidates}`
-                  : gpuJobStatus.targetCount !== "unlimited"
-                  ? ` / ${gpuJobStatus.targetCount}`
-                  : " фото"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                <span style={{ fontSize: "0.85rem", color: "#e5d8b8" }}>
+                  {isRussian ? "Готово:" : "Completed:"}{" "}
+                  <strong>{gpuJobStatus.completedCount}</strong>
+                  {gpuJobStatus.isRunning && gpuJobStatus.totalCandidates > 0
+                    ? ` / ${gpuJobStatus.totalCandidates}`
+                    : gpuJobStatus.isRunning && gpuJobStatus.targetCount !== "unlimited"
+                    ? ` / ${gpuJobStatus.targetCount}`
+                    : isRussian
+                    ? " фото"
+                    : " photos"}
+                </span>
+                {!gpuJobStatus.isRunning && (
+                  <button
+                    type="button"
+                    className="product-image-queue__gpu-retest-btn"
+                    onClick={() => {
+                      setDismissedGpuKey(gpuMonitorKey);
+                      try {
+                        sessionStorage.setItem("warda_dismissed_gpu_monitor", gpuMonitorKey);
+                      } catch {}
+                    }}
+                    title={isRussian ? "Скрыть отчёт" : "Dismiss"}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="product-image-queue__gpu-progress-bar">
@@ -1855,17 +1898,18 @@ export default function ProductImageQueue({
                 className="product-image-queue__gpu-progress-fill"
                 style={{
                   width: `${
-                    gpuJobStatus.totalCandidates > 0
+                    !gpuJobStatus.isRunning
+                      ? 100
+                      : gpuJobStatus.totalCandidates > 0
                       ? Math.min(
                           100,
                           Math.round(
                             (gpuJobStatus.completedCount / gpuJobStatus.totalCandidates) * 100
                           )
                         )
-                      : gpuJobStatus.isRunning
-                      ? 50
-                      : 100
+                      : 50
                   }%`,
+                  ...(gpuJobStatus.isRunning ? {} : { background: "#4ade80" }),
                 }}
               />
             </div>
@@ -2123,10 +2167,21 @@ export default function ProductImageQueue({
           )}
 
           <div className="product-image-queue__progress-heading">
-            <strong>{isRussian ? "Общий прогресс" : "Overall progress"}</strong>
+            <strong>
+              {isRussian ? "Прогресс каталога сайта" : "Site catalog progress"}
+            </strong>
             <span>
               {displayOverallCompleted.toLocaleString()} /{" "}
-              {status.total.toLocaleString()} ({overallProgress}%)
+              {siteCatalogTotal.toLocaleString()} ({overallProgress}%)
+              {status.pending > 0 && (
+                <>
+                  {" "}
+                  ·{" "}
+                  {isRussian
+                    ? `Резерв Qogita (скрыт с сайта): ${status.pending.toLocaleString()}`
+                    : `Qogita reserve (hidden from site): ${status.pending.toLocaleString()}`}
+                </>
+              )}
             </span>
           </div>
           <progress
@@ -2137,21 +2192,25 @@ export default function ProductImageQueue({
 
           <div className="product-image-queue__cards">
             {[
-              ["pending", isRussian ? "Ожидают" : "Pending", "ri-time-line"],
+              [
+                "completed",
+                isRussian ? "Готово на сайте" : "Live on site",
+                "ri-checkbox-circle-line",
+              ],
               [
                 "processing",
                 isRussian ? "В обработке" : "Processing",
                 "ri-loader-4-line",
               ],
               [
-                "completed",
-                isRussian ? "Готово" : "Completed",
-                "ri-checkbox-circle-line",
-              ],
-              [
                 "failed",
                 isRussian ? "Ошибки" : "Failed",
                 "ri-error-warning-line",
+              ],
+              [
+                "pending",
+                isRussian ? "Резерв Qogita (без фото)" : "Qogita reserve (no photo)",
+                "ri-time-line",
               ],
             ].map(([key, label, icon]) => (
               <div

@@ -137,9 +137,17 @@ function parseLogSnapshot(baseState) {
 
   const alive = isPidAlive(baseState?.pid);
   job.isRunning = alive;
-  if (!alive && baseState?.pid && !job.finishedAt) {
-    job.finishedAt = new Date().toISOString();
-    writePersistedState({ ...baseState, finishedAt: job.finishedAt });
+  if (!alive && !job.finishedAt) {
+    if (baseState?.pid) {
+      job.finishedAt = new Date().toISOString();
+      writePersistedState({ ...baseState, finishedAt: job.finishedAt });
+    } else if (fs.existsSync(LOG_FILE)) {
+      try {
+        job.finishedAt = fs.statSync(LOG_FILE).mtime.toISOString();
+      } catch {
+        job.finishedAt = new Date(0).toISOString();
+      }
+    }
   }
   return job;
 }
