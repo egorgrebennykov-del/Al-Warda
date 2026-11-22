@@ -501,6 +501,7 @@ export async function getProductImageQueueStatus(request, env) {
       const images = [];
       const failedItems = [];
       const processingItems = [];
+      const pendingItems = [];
       const staleProcessingIds = [];
       const mergedQuotas = structuredClone(DEFAULT_ACCOUNT_QUOTAS);
       let eligible = 0;
@@ -625,6 +626,19 @@ export async function getProductImageQueueStatus(request, env) {
               ? "pending"
               : job.status;
         counts[status]++;
+        if (status === "pending") {
+          pendingItems.push({
+            id: row.id,
+            name: row.name || "",
+            brand: row.brand || "",
+            series: info.series || "",
+            price:
+              Number(row.price) || (info.price ? Number(info.price) : 29.99),
+            currency: row.currency || info.currency || "EUR",
+            rawImage: typeof info.rawImage === "string" ? info.rawImage : null,
+            filterStatus: gt?.filterStatus || "",
+          });
+        }
         if (status === "processing") {
           const tsStr = job.startedAt || job.updatedAt || job.completedAt || "";
           const tsMs = tsStr ? Date.parse(tsStr) : 0;
@@ -723,6 +737,14 @@ export async function getProductImageQueueStatus(request, env) {
       if (settingsRow?.info?.globalImageGenerationHalted) {
         globalHalted = true;
       }
+      pendingItems.sort(
+        (a, b) =>
+          (b.filterStatus === "series_complete_admit" ? 1 : 0) -
+            (a.filterStatus === "series_complete_admit" ? 1 : 0) ||
+          Number(b.id) - Number(a.id),
+      );
+      const pendingItemsSample = pendingItems.slice(0, 300);
+
       const payload = {
         total: eligible,
         ...counts,
@@ -740,6 +762,7 @@ export async function getProductImageQueueStatus(request, env) {
         schedule,
         failedItems,
         processingItems,
+        pendingItems: pendingItemsSample,
         staleProcessingIds,
         images,
         trashedImagesCount,

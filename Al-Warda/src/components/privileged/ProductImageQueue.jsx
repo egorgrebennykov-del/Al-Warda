@@ -582,6 +582,8 @@ export default function ProductImageQueue({
   const [visibleImages, setVisibleImages] = useState(24);
   const [selectedImages, setSelectedImages] = useState({});
   const [visibleFailed, setVisibleFailed] = useState(24);
+  const [visiblePending, setVisiblePending] = useState(24);
+  const [filterPending, setFilterPending] = useState(false);
   const [selectedFailed, setSelectedFailed] = useState({});
   const [deletingFailed, setDeletingFailed] = useState(false);
   const [manualConfigItem, setManualConfigItem] = useState(null);
@@ -2277,7 +2279,10 @@ export default function ProductImageQueue({
               type="button"
               className={`product-image-queue__filter-pill ${filterGenerated ? "is-active" : ""}`}
               aria-pressed={filterGenerated}
-              onClick={() => setFilterGenerated((v) => !v)}
+              onClick={() => {
+                setFilterGenerated((v) => !v);
+                setFilterPending(false);
+              }}
             >
               <i className="ri-checkbox-circle-line" />
               <span>
@@ -2289,7 +2294,10 @@ export default function ProductImageQueue({
               type="button"
               className={`product-image-queue__filter-pill ${filterProcessing ? "is-active" : ""}`}
               aria-pressed={filterProcessing}
-              onClick={() => setFilterProcessing((v) => !v)}
+              onClick={() => {
+                setFilterProcessing((v) => !v);
+                setFilterPending(false);
+              }}
             >
               <i className="ri-loader-4-line" />
               <span>
@@ -2297,13 +2305,30 @@ export default function ProductImageQueue({
                 {(status.processingItems || []).length})
               </span>
             </button>
-            {(filterGenerated || filterProcessing) && (
+            <button
+              type="button"
+              className={`product-image-queue__filter-pill ${filterPending ? "is-active" : ""}`}
+              aria-pressed={filterPending}
+              onClick={() => {
+                setFilterPending((v) => !v);
+                setFilterGenerated(false);
+                setFilterProcessing(false);
+              }}
+            >
+              <i className="ri-time-line" />
+              <span>
+                {isRussian ? "В ожидании" : "Pending"} (
+                {(status.pending ?? 0).toLocaleString()})
+              </span>
+            </button>
+            {(filterGenerated || filterProcessing || filterPending) && (
               <button
                 type="button"
                 className="product-image-queue__filter-reset"
                 onClick={() => {
                   setFilterGenerated(false);
                   setFilterProcessing(false);
+                  setFilterPending(false);
                 }}
               >
                 <i className="ri-close-circle-line" />
@@ -2312,7 +2337,67 @@ export default function ProductImageQueue({
             )}
           </div>
 
-          {(!filterGenerated && !filterProcessing) && (
+          {filterPending && (
+            <section className="product-image-queue__failed" aria-labelledby="pending-images-heading">
+              <div className="product-image-queue__failed-header">
+                <div>
+                  <h3 id="pending-images-heading">
+                    {isRussian
+                      ? "Товары в ожидании генерации"
+                      : "Pending image generation"}{" "}
+                    ({(status.pending ?? 0).toLocaleString()})
+                  </h3>
+                  <p>
+                    {isRussian
+                      ? "Показаны ближайшие 300 позиций в очереди (добавленные из серий — в начале списка)."
+                      : "Showing up to 300 items in queue (newly added series items appear first)."}
+                  </p>
+                </div>
+              </div>
+              <div className="product-image-queue__failed-list">
+                {(status.pendingItems || []).slice(0, visiblePending).map((item) => (
+                  <article key={item.id} className="product-image-queue__failed-item">
+                    <div className="product-image-queue__failed-top">
+                      <span style={{ fontWeight: 600 }}>ID #{item.id}</span>
+                      {item.series && (
+                        <span style={{ color: "#d4af37", fontSize: "0.82rem" }}>
+                          ✨ {item.series}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="product-image-queue__failed-delete-one"
+                        onClick={() => deleteFailedFromDb([String(item.id)])}
+                      >
+                        <i className="ri-delete-bin-line" />
+                        {isRussian ? "Удалить из БД" : "Delete from DB"}
+                      </button>
+                    </div>
+                    <div className="product-image-queue__failed-body">
+                      <div className="product-image-queue__failed-meta">
+                        <strong>{item.name}</strong>
+                        <span>
+                          {item.brand} · €{Number(item.price || 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {(status.pendingItems || []).length > visiblePending && (
+                <button
+                  type="button"
+                  className="product-image-queue__start"
+                  onClick={() => setVisiblePending((c) => c + 24)}
+                >
+                  {isRussian ? "Показать ещё" : "Show more"} (
+                  {(status.pendingItems || []).length - visiblePending})
+                </button>
+              )}
+            </section>
+          )}
+
+          {(!filterGenerated && !filterProcessing && !filterPending) && (
           <section
             className="product-image-queue__failed"
             aria-labelledby="failed-images-heading"
