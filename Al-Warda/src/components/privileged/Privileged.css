@@ -4664,3 +4664,65 @@ select.privileged__input {
   border-color: #ef4444;
   color: #ffffff;
 }
+
+.privileged__th-tip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: help;
+}
+
+.privileged__th-tip-label {
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.55);
+}
+
+.privileged__th-tip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #d4af37;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.privileged__th-tip-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  width: 260px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: #17120d;
+  color: #f5efe6;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.42;
+  white-space: normal;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+}
+
+.privileged__th-tip-wrap--right .privileged__th-tip-popup {
+  left: auto;
+  right: 0;
+}
+
+.privileged__th-tip-wrap:hover .privileged__th-tip-popup,
+.privileged__th-tip-wrap:focus-within .privileged__th-tip-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

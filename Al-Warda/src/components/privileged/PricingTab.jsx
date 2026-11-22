@@ -29,6 +29,59 @@ const STATUS_META = {
   },
 };
 
+const TABLE_COLUMNS = [
+  {
+    key: "product",
+    label: "Товар и объём",
+    tooltip:
+      "Название аромата, бренд, объём флакона и текущая базовая цена в каталоге.",
+  },
+  {
+    key: "cost",
+    label: "Закупка (C)",
+    tooltip:
+      "Закупочная стоимость товара на Qogita (в EUR), от которой рассчитывается себестоимость.",
+  },
+  {
+    key: "extra",
+    label: "Доп. (E)",
+    tooltip:
+      "Дополнительные расходы на единицу товара (доставка, упаковка, логистика в EUR).",
+  },
+  {
+    key: "mean",
+    label: "Среднее / N",
+    tooltip:
+      "Среднее арифметическое цен 5 продавцов (Notino, Douglas, Dubai Perfumery, AromaRay, Arabic Scents) и число найденных предложений (N). Если данных нет — используется рекомендуемая цена Qogita или Pmin.",
+  },
+  {
+    key: "pmin",
+    label: "Pmin",
+    tooltip:
+      "Минимально допустимая цена продажи: (C + E + N / (1 − налог)) / (1 − комиссия оплаты). Ниже этой цены продавать нельзя.",
+  },
+  {
+    key: "countries",
+    label: "BG / GR / HU / RO",
+    tooltip:
+      "Итоговые цены продажи для Болгарии (BG), Греции (GR), Венгрии (HU) и Румынии (RO) с учётом скидки от рынка, порога Pmin и округления.",
+  },
+  {
+    key: "profit",
+    label: "Прибыль / Маржа",
+    alignRight: true,
+    tooltip:
+      "Ожидаемая чистая прибыль (EUR) и маржа (%) с продажи после вычета закупки, доп. расходов, комиссии оплаты и налога.",
+  },
+  {
+    key: "status",
+    label: "Статус",
+    alignRight: true,
+    tooltip:
+      "Зелёный — цена рассчитана и конкурентоспособна; Жёлтый — нет данных (ни цены Qogita, ни продавцов); Красный — рыночная цена ниже минимальной Pmin.",
+  },
+];
+
 function fmtEur(val) {
   if (val === null || val === undefined || val === "") return "—";
   const num = Number(val);
@@ -886,14 +939,21 @@ export default function PricingTab() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(212,175,55,0.3)", textAlign: "left" }}>
-                    <th style={{ padding: "0.6rem" }}>Товар и объём</th>
-                    <th style={{ padding: "0.6rem" }}>Закупка (C)</th>
-                    <th style={{ padding: "0.6rem" }}>Доп. (E)</th>
-                    <th style={{ padding: "0.6rem" }}>Среднее / N</th>
-                    <th style={{ padding: "0.6rem" }}>Pmin</th>
-                    <th style={{ padding: "0.6rem" }}>BG / GR / HU / RO</th>
-                    <th style={{ padding: "0.6rem" }}>Прибыль / Маржа</th>
-                    <th style={{ padding: "0.6rem" }}>Статус</th>
+                    {TABLE_COLUMNS.map((col) => (
+                      <th key={col.key} style={{ padding: "0.6rem" }}>
+                        <span
+                          tabIndex={0}
+                          title={col.tooltip}
+                          className={`privileged__th-tip-wrap ${col.alignRight ? "privileged__th-tip-wrap--right" : ""}`}
+                        >
+                          <span className="privileged__th-tip-label">{col.label}</span>
+                          <span className="privileged__th-tip-icon" aria-hidden="true">?</span>
+                          <span className="privileged__th-tip-popup" role="tooltip">
+                            {col.tooltip}
+                          </span>
+                        </span>
+                      </th>
+                    ))}
                     <th style={{ padding: "0.6rem" }}></th>
                   </tr>
                 </thead>
