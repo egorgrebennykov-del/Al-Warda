@@ -15,6 +15,7 @@ import datetime as dt
 import json
 import re
 import sys
+import unicodedata
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -162,7 +163,8 @@ def fetch_all_stocks(env: dict[str, str]) -> list[dict[str, Any]]:
 
 
 def normalize_text(text: str) -> str:
-    s = str(text or "").lower()
+    s = unicodedata.normalize("NFKD", str(text or ""))
+    s = "".join(ch for ch in s if not unicodedata.combining(ch)).lower()
     s = re.sub(r"['’`´]", "", s)
     s = re.sub(r"[^a-z0-9]+", " ", s)
     return re.sub(r"\s+", " ", s).strip()
@@ -432,6 +434,7 @@ def main() -> int:
                     (
                         int(s["id"]),
                         {
+                            "in_stock": False,
                             "info": info,
                         },
                     )
