@@ -15,6 +15,7 @@ import { useCurrency } from "../../context/currencyContext";
 import { formatVolume, getLocalizedSampleDesc } from "../../utils/localization";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
+import QogitaPriceBadge from "../common/QogitaPriceBadge";
 import "../featured/Featured.css";
 import "../common/ProductCardImages.css";
 import "./Sets.css";
@@ -542,7 +543,8 @@ export default function Sets() {
                     </p>
 
                     <div className="warda-perfume-card__price">
-                      {formatPrice(perfume.price)}
+                      <span>{formatPrice(perfume.price)}</span>
+                      <QogitaPriceBadge perfume={perfume} variant="card" />
                     </div>
                   </div>
 

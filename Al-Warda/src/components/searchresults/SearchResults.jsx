@@ -15,6 +15,7 @@ import { useCurrency } from "../../context/currencyContext";
 import { formatVolume } from "../../utils/localization";
 import { OrnateCard } from "../common/OrnateCard";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
+import QogitaPriceBadge from "../common/QogitaPriceBadge";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
 
@@ -390,7 +391,8 @@ export default function SearchResults() {
                       )}
                     </p>
                     <div className="warda-perfume-card__price">
-                      {formatPrice(displayPrice)}
+                      <span>{formatPrice(displayPrice)}</span>
+                      <QogitaPriceBadge perfume={perfume} variant="card" />
                     </div>
                   </div>
 

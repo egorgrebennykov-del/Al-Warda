@@ -567,12 +567,28 @@
 
 .warda-details-price-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   padding: 1rem 0;
   border-top: 1px solid rgba(197, 160, 89, 0.2);
   border-bottom: 1px solid rgba(197, 160, 89, 0.2);
   margin-bottom: 1.5rem;
+}
+
+.warda-qogita-price-badge--details {
+  display: inline-flex;
+  align-items: center;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.14);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #f3d78a;
+  white-space: nowrap;
 }
 
 .warda-details-price {

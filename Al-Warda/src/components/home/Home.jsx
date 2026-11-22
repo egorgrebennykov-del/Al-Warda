@@ -16,6 +16,7 @@ import LargeAnnouncementRoulette from "../announcements/LargeAnnouncementRoulett
 import { fetchActiveAnnouncements } from "../../../utils/announcements";
 import CategoryCinematicMotion from "./CategoryCinematicMotion";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
+import QogitaPriceBadge from "../common/QogitaPriceBadge";
 import "./Home.css";
 import "../common/ProductCardImages.css";
 
@@ -336,7 +337,8 @@ export default function Home() {
                     )}
                   </p>
                   <div className="warda-perfume-card__price">
-                    {formatPrice(displayPrice)}
+                    <span>{formatPrice(displayPrice)}</span>
+                    <QogitaPriceBadge perfume={perfume} variant="card" />
                   </div>
                 </div>
 

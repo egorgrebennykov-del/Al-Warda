@@ -14,6 +14,7 @@ import {
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
+import QogitaPriceBadge from "../common/QogitaPriceBadge";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -1859,7 +1860,8 @@ export default function Featured() {
                       )}
                     </p>
                     <div className="warda-perfume-card__price">
-                      {formatPrice(displayPrice)}
+                      <span>{formatPrice(displayPrice)}</span>
+                      <QogitaPriceBadge perfume={perfume} variant="card" />
                     </div>
                   </div>
 

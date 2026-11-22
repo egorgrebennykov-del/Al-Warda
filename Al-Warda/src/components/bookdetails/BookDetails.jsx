@@ -13,6 +13,7 @@ import {
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
+import QogitaPriceBadge from "../common/QogitaPriceBadge";
 import { useConfirm, usePrompt } from "../../context/ConfirmContext";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -1103,6 +1104,7 @@ export default function BookDetails() {
               <span className="warda-details-price">
                 {formatPrice(displayPrice)}
               </span>
+              <QogitaPriceBadge perfume={perfume} variant="details" />
               {perfume.inStock === false && (
                 <span className="warda-stock-status">
                   {t("details.preorder")}
