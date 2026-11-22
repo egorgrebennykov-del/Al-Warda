@@ -4329,6 +4329,7 @@ def process_product(
                 (source_url or product_source(row) or "").encode("utf-8")
             ).hexdigest()[:16],
         })
+        job.pop("autoRegenerate", None)
         info[job_key] = job
         info["imageSourceUrl"] = source_url
         info["imageSourceImageUrl"] = source_image_url or source_url
@@ -4347,6 +4348,7 @@ def process_product(
             "updatedAt": utc_now().isoformat(),
         })
         job.pop("startedAt", None)
+        job.pop("autoRegenerate", None)
         info[job_key] = job
         if account_pool and getattr(account_pool, "persist_quotas", False):
             info["imageGenerationAccountQuotas"] = account_pool.export_quotas()
@@ -4362,6 +4364,7 @@ def process_product(
             "processingMethod": "segmentation_failed",
             "whetherUpscaled": False,
         })
+        job.pop("autoRegenerate", None)
         info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         raise
@@ -4371,6 +4374,7 @@ def process_product(
             "error": str(error)[:500],
             "failedAt": utc_now().isoformat(),
         })
+        job.pop("autoRegenerate", None)
         info[job_key] = job
         patch_stock(session, supabase_url, row, info)
         raise
