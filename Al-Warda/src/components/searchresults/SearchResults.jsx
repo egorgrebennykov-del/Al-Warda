@@ -10,6 +10,7 @@ import {
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { matchesPerfumeSearch } from "../../../utils/searchNormalize";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
@@ -190,18 +191,9 @@ export default function SearchResults() {
   useEffect(() => {
     let filtered = [...allPerfumes];
 
-    // Filter by search query
+    // Filter by search query (case-, space-, and punctuation-insensitive)
     if (query) {
-      const q = query.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          (p.series && p.series.toLowerCase().includes(q)) ||
-          p.notesSummary.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.description && p.description.toLowerCase().includes(q))
-      );
+      filtered = filtered.filter((p) => matchesPerfumeSearch(p, query));
     }
 
     // Filter by Dropship / Stock

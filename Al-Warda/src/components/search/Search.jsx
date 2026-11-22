@@ -8,6 +8,7 @@ import {
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
+import { matchesPerfumeSearch } from "../../../utils/searchNormalize";
 import "./Search.css";
 import "../common/ProductCardImages.css";
 
@@ -80,24 +81,7 @@ export default function Search({ show, onClose }) {
 
     const filtered = allPerfumes.filter((p) => {
       if (q === "bestseller") return p.isBestSeller;
-      const name = (p.name || "").toLowerCase();
-      const brand = (p.brand || "").toLowerCase();
-      const series = (p.series || "").toLowerCase();
-      const cat = (p.category || "").toLowerCase();
-      const notes = (p.notesSummary || "").toLowerCase();
-      const desc = (p.description || "").toLowerCase();
-
-      return (
-        name.includes(q) ||
-        brand.includes(q) ||
-        series.includes(q) ||
-        cat.includes(q) ||
-        notes.includes(q) ||
-        desc.includes(q) ||
-        (p.topNotes && p.topNotes.some((n) => n.toLowerCase().includes(q))) ||
-        (p.heartNotes && p.heartNotes.some((n) => n.toLowerCase().includes(q))) ||
-        (p.baseNotes && p.baseNotes.some((n) => n.toLowerCase().includes(q)))
-      );
+      return matchesPerfumeSearch(p, query);
     });
 
     setMatchingPerfumes(filtered);
