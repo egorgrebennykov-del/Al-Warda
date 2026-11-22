@@ -2210,9 +2210,9 @@ export default function ProductImageQueue({
           <div className="product-image-queue__cards">
             {[
               [
-                "completed",
-                isRussian ? "Готово на сайте" : "Live on site",
-                "ri-checkbox-circle-line",
+                "pending",
+                isRussian ? "В ожидании" : "Pending",
+                "ri-time-line",
               ],
               [
                 "processing",
@@ -2225,9 +2225,9 @@ export default function ProductImageQueue({
                 "ri-error-warning-line",
               ],
               [
-                "pending",
-                isRussian ? "В ожидании" : "Pending",
-                "ri-time-line",
+                "completed",
+                isRussian ? "Готово на сайте" : "Live on site",
+                "ri-checkbox-circle-line",
               ],
             ].map(([key, label, icon]) => (
               <div
