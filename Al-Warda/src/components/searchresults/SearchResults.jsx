@@ -197,6 +197,7 @@ export default function SearchResults() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.brand.toLowerCase().includes(q) ||
+          (p.series && p.series.toLowerCase().includes(q)) ||
           p.notesSummary.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q) ||
           (p.description && p.description.toLowerCase().includes(q))

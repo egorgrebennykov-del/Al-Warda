@@ -1820,6 +1820,36 @@ export function stripVolumeFromName(name, preserveSetMultiplier = false) {
   return s;
 }
 
+const CURATED_SERIES_PATTERNS = [
+  [/french\s*avenue|fragrance\s*world/i, /\bliquid\s*brun\b|\bsweet\s*pleasure\b/i, "Sweet Pleasure Collection"],
+  [/french\s*avenue/i, /\broyal\s*blend\b/i, "Royal Blend"],
+  [/french\s*avenue/i, /\bspectre\b/i, "Spectre"],
+  [/lattafa/i, /\bkhamrah\b/i, "Khamrah"],
+  [/lattafa/i, /\bbade['’]?e\s*al\s*oud\b|\bbadee\s*al\s*oud\b|\boud\s*for\s*glory\b|\bhonor\s*&\s*glory\b|\bnoble\s*blush\b/i, "Bade'e Al Oud"],
+  [/lattafa|ard\s*al\s*zaafaran/i, /\byara\b/i, "Yara"],
+  [/lattafa/i, /\basad\b/i, "Asad"],
+  [/lattafa/i, /\beclaire\b/i, "Eclaire"],
+  [/armaf/i, /\bclub\s*de\s*nuit\b|\bcdn\b/i, "Club De Nuit"],
+  [/armaf/i, /\bodyssey\b/i, "Odyssey"],
+  [/al\s*haramain/i, /\bamber\s*oud\b/i, "Amber Oud"],
+  [/al\s*haramain/i, /\bl['’]?\s*aventure\b/i, "L'Aventure"],
+  [/afnan/i, /\b(?:9\s*pm|9pm|9\s*am|9am)\b/i, "9PM / 9AM"],
+  [/afnan/i, /\bsupremacy\b/i, "Supremacy"],
+  [/rasasi/i, /\bhawas\b/i, "Hawas"],
+  [/swiss\s*arabian/i, /\bshaghaf\b/i, "Shaghaf"],
+  [/paris\s*corner/i, /\bkhair\b/i, "Khair"],
+];
+
+export function extractPerfumeSeriesFallback(p) {
+  const combined = `${p?.brand || ""} ${p?.name || p?.title || ""}`.trim();
+  if (!combined) return "";
+  for (const [bRe, nRe, series] of CURATED_SERIES_PATTERNS) {
+    if (bRe && !bRe.test(combined)) continue;
+    if (nRe.test(combined)) return series;
+  }
+  return "";
+}
+
 export function ensurePerfumeEnrichment(p) {
   if (!p) return p;
   const isSet = isPerfumeSet(p);
@@ -2011,11 +2041,15 @@ export function ensurePerfumeEnrichment(p) {
     : p.concentration || "Eau De Parfum";
 
   const cleanName = isSet ? name : stripVolumeFromName(name);
+  const series = String(
+    p.series || info.series || extractPerfumeSeriesFallback(p) || "",
+  ).trim();
 
   return {
     ...p,
     name: cleanName,
     title: cleanName,
+    series,
     isSet,
     setItems,
     volume: resolvedVolume,

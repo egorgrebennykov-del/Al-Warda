@@ -958,7 +958,29 @@ export default function BookDetails() {
             </div>
 
             <h1 className="warda-details-title">{perfume.name}</h1>
-            <p className="warda-details-subtitle">{perfume.brand}</p>
+            <p className="warda-details-subtitle">
+              {perfume.brand}
+              {perfume.series && (
+                <>
+                  {" · "}
+                  <Link
+                    to={`/featured?series=${encodeURIComponent(perfume.series)}`}
+                    style={{
+                      color: "#d4af37",
+                      textDecoration: "none",
+                      borderBottom: "1px dashed rgba(212,175,55,0.5)",
+                    }}
+                    title={
+                      language === "ru"
+                        ? `Показать все ароматы серии «${perfume.series}»`
+                        : `View all fragrances in ${perfume.series}`
+                    }
+                  >
+                    {language === "ru" ? "Серия:" : "Series:"} {perfume.series}
+                  </Link>
+                </>
+              )}
+            </p>
 
             <div className="warda-details-rating">
               <div className="warda-stars">★★★★★</div>

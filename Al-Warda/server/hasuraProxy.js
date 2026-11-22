@@ -356,7 +356,15 @@ export function translatePostgrest({
   const aggregateRoot = aggregateRootField(table);
 
   if (methodUpper === "GET") {
-    const fields = resolveSelectColumns(table, select).join(" ");
+    const colList = resolveSelectColumns(table, select);
+    if (
+      table === "stocks" &&
+      !colList.includes("info") &&
+      colList.includes("name")
+    ) {
+      colList.push('series: info(path: "series")');
+    }
+    const fields = colList.join(" ");
     const root = rootField(table, "select");
     const args = argClause([
       ["where", where],

@@ -82,6 +82,7 @@ export default function Search({ show, onClose }) {
       if (q === "bestseller") return p.isBestSeller;
       const name = (p.name || "").toLowerCase();
       const brand = (p.brand || "").toLowerCase();
+      const series = (p.series || "").toLowerCase();
       const cat = (p.category || "").toLowerCase();
       const notes = (p.notesSummary || "").toLowerCase();
       const desc = (p.description || "").toLowerCase();
@@ -89,6 +90,7 @@ export default function Search({ show, onClose }) {
       return (
         name.includes(q) ||
         brand.includes(q) ||
+        series.includes(q) ||
         cat.includes(q) ||
         notes.includes(q) ||
         desc.includes(q) ||

@@ -708,6 +708,17 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
         save_trends_cache,
         verify_whitelist_popularity,
     )
+    from perfume_series import detect_series, load_series_cache
+    series_cache = load_series_cache()
+    deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    passed_collection_series = set()
+    for r in list(existing_by_gtin.values()) + list(existing_by_name.values()):
+        s_val = (r.get("info") or {}).get("series") or detect_series(
+            r.get("name") or "", brand=r.get("brand") or "", cache=series_cache
+        )
+        if s_val:
+            passed_collection_series.add(s_val)
+
     trends_client = GoogleTrendsClient()
     trends_cache = load_trends_cache()
     bestseller_catalog = fetch_brand_bestsellers()
@@ -751,10 +762,15 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
 
             # Delta / incremental check
             existing_item = existing_by_gtin.get(gtin) or existing_by_name.get(name_clean)
+            collection_series = detect_series(
+                name_raw, brand=brand, cache=series_cache, api_key=deepseek_api_key
+            )
 
             if not existing_item:
                 series_key = extract_perfume_series_key(name_raw, brand=brand)
-                if series_key and series_key in passed_series_keys:
+                if collection_series and collection_series in passed_collection_series:
+                    trends_res = {"passed": True, "query": collection_series, "seriesMatch": True}
+                elif series_key and series_key in passed_series_keys:
                     trends_res = {"passed": True, "query": series_key, "seriesMatch": True}
                 else:
                     trends_res = check_perfume_trends(
@@ -778,6 +794,8 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                         trends_checks_since_save = 0
                     if trends_res.get("passed") is True and series_key:
                         passed_series_keys.add(series_key)
+                    if trends_res.get("passed") is True and collection_series:
+                        passed_collection_series.add(collection_series)
                 if trends_res.get("passed") is False:
                     w_status, w_reason, _ = verify_whitelist_popularity(
                         {"brand": brand, "name": name_raw, "info": {}},
@@ -868,6 +886,7 @@ def run_weekly_sync(limit_per_brand=None, cloud_mode=False, force=False, brands_
                 "rawImage": raw_img,
                 "imageGeneration": {"status": "pending"},
                 "gtin": gtin,
+                "series": collection_series,
                 "minOrderQuantity": min_order,
                 "category": rich["category"],
                 "categoryEn": rich["categoryEn"],

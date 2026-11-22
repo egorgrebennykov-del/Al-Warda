@@ -742,6 +742,15 @@ export default function Featured() {
           .filter(Boolean)
       : [];
   });
+  const [selectedSeries, setSelectedSeries] = useState(() => {
+    const raw = searchParams.get("series");
+    return raw
+      ? raw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+  });
   const [selectedGenders, setSelectedGenders] = useState(() => {
     const raw = searchParams.get("gender");
     return raw
@@ -808,6 +817,8 @@ export default function Featured() {
       params.set("category", selectedCategories.join(","));
     if (selectedBrands.length > 0)
       params.set("brand", selectedBrands.join(","));
+    if (selectedSeries.length > 0)
+      params.set("series", selectedSeries.join(","));
     if (selectedGenders.length > 0)
       params.set("gender", selectedGenders.join(","));
     if (selectedNotes.length > 0) params.set("notes", selectedNotes.join(","));
@@ -823,6 +834,7 @@ export default function Featured() {
   }, [
     selectedCategories,
     selectedBrands,
+    selectedSeries,
     selectedGenders,
     selectedNotes,
     selectedVolumes,
@@ -953,6 +965,15 @@ export default function Featured() {
     setSelectedFormat(formatId);
   };
 
+  const toggleSeries = (series) => {
+    setVisibleLimit(PAGE_SIZE);
+    setSelectedSeries((prev) =>
+      prev.includes(series)
+        ? prev.filter((item) => item !== series)
+        : [...prev, series],
+    );
+  };
+
   const toggleOnlySets = () => {
     setVisibleLimit(PAGE_SIZE);
     setSelectedFormat((prev) => (prev === "sets" ? "all" : "sets"));
@@ -961,6 +982,7 @@ export default function Featured() {
   const resetAllFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
+    setSelectedSeries([]);
     setSelectedGenders([]);
     setSelectedNotes([]);
     setSelectedVolumes([]);
@@ -976,6 +998,7 @@ export default function Featured() {
   const totalActiveFilters =
     selectedCategories.length +
     selectedBrands.length +
+    selectedSeries.length +
     selectedGenders.length +
     selectedNotes.length +
     selectedVolumes.length +
@@ -1019,6 +1042,16 @@ export default function Featured() {
     }
     extras.sort((a, b) => a.localeCompare(b));
     return [...matched, ...extras];
+  }, [perfumes]);
+
+  const availableSeries = useMemo(() => {
+    if (!perfumes || perfumes.length === 0) return [];
+    const set = new Set();
+    for (const p of perfumes) {
+      const s = String(p?.series || "").trim();
+      if (s) set.add(s);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [perfumes]);
 
   const availableCategories = useMemo(() => {
@@ -1114,6 +1147,15 @@ export default function Featured() {
           if (!matchesBrand) return false;
         }
 
+        // 2.5 Series / Collection filter (OR within series)
+        if (selectedSeries.length > 0) {
+          const pSeries = (p.series || "").toLowerCase();
+          const matchesSeries = selectedSeries.some(
+            (s) => pSeries === s.toLowerCase(),
+          );
+          if (!matchesSeries) return false;
+        }
+
         // 3. Gender filter (OR within gender)
         if (selectedGenders.length > 0) {
           const pGender = (p.gender || p.info?.gender || "").toLowerCase();
@@ -1188,6 +1230,7 @@ export default function Featured() {
     totalActiveFilters,
     selectedCategories,
     selectedBrands,
+    selectedSeries,
     selectedGenders,
     selectedNotes,
     selectedVolumes,
@@ -1412,6 +1455,19 @@ export default function Featured() {
                     type="button"
                     className="warda-chip-remove"
                     onClick={() => toggleBrand(b)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {selectedSeries.map((s) => (
+                <span key={`chip-s-${s}`} className="warda-chip">
+                  {s}
+                  <button
+                    type="button"
+                    className="warda-chip-remove"
+                    onClick={() => toggleSeries(s)}
                   >
                     ×
                   </button>
@@ -1690,6 +1746,46 @@ export default function Featured() {
                   })}
                 </div>
               </div>
+
+              {/* Series / Collections section */}
+              {availableSeries.length > 0 && (
+                <div className="warda-filter-section">
+                  <div className="warda-filter-section-header">
+                    <div className="warda-filter-section-title">
+                      ✨ {language === "ru" ? "Серия / Коллекция" : "Series / Collection"}
+                    </div>
+                    {selectedSeries.length > 0 && (
+                      <button
+                        type="button"
+                        className="warda-filter-section-clear-btn"
+                        onClick={() => {
+                          setVisibleLimit(PAGE_SIZE);
+                          setSelectedSeries([]);
+                        }}
+                        title={t("featured.clear")}
+                      >
+                        ✕ {t("featured.clear")}
+                      </button>
+                    )}
+                  </div>
+                  <div className="warda-pills-wrap">
+                    {availableSeries.map((series) => {
+                      const isActive = selectedSeries.includes(series);
+                      return (
+                        <button
+                          key={series}
+                          type="button"
+                          className={`warda-filter-pill ${isActive ? "active" : ""}`}
+                          onClick={() => toggleSeries(series)}
+                        >
+                          {isActive && "✓ "}
+                          {series}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Notes section */}
               <div className="warda-filter-notes-section">
