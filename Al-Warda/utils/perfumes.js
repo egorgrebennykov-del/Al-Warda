@@ -3360,6 +3360,7 @@ export function getDefaultCatalogPrice(perfume, countryOrLang = "") {
   const published = getPublishedMarketPrice(perfume, countryOrLang);
   if (published !== null) return published;
   const basePrice = getDefaultPerfumeVolumeOption(perfume).price;
+  if (typeof window === "undefined") return basePrice;
   return calculateDefaultRetailPriceEur(basePrice) || basePrice;
 }
 

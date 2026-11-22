@@ -57,12 +57,6 @@ export default function Home() {
     };
   }, []);
 
-  const [, setMarketPricesTick] = useState(0);
-
-  useEffect(() => {
-    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
     let getBestSellerPerfumes;
