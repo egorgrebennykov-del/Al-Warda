@@ -1747,9 +1747,9 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
     except Exception as exc:
         return False, None, f"Ошибка чтения итогового изображения: {exc}"
 
-    if qstatus == "low_sharpness" and (final_sharpness is None or final_sharpness < 35.0):
+    if qstatus == "low_sharpness" and (final_sharpness is None or final_sharpness < 65.0):
         return False, final_sharpness, "Размытое или нечёткое фото (низкая резкость)"
-    if final_sharpness is not None and final_sharpness < 15.0:
+    if final_sharpness is not None and final_sharpness < 55.0:
         return False, final_sharpness, f"Слишком низкая резкость после обработки ({final_sharpness:.1f})"
 
     alpha = arr[:, :, 3]
@@ -1785,6 +1785,12 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
         top_cov = float(np.mean(top_band > 120)) if top_band.size > 0 else 0.0
         if bbox_fill > 0.92 and fg_ratio > 0.74 and top_cov > 0.88:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
+        if not is_set:
+            bw_seg = x2 - x1 + 1
+            bh_seg = y2 - y1 + 1
+            aspect_seg = bw_seg / float(max(1, bh_seg))
+            if aspect_seg >= 0.85 and bbox_fill >= 0.65:
+                return False, final_sharpness, f"Широкий силуэт упаковки/коробки рядом с флаконом (aspect={aspect_seg:.2f}, fill={bbox_fill:.2f})"
         if not is_set and (x2 - x1 + 1) >= 60:
             bw_seg = x2 - x1 + 1
             col_cov = np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120, axis=0)
@@ -1820,6 +1826,18 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
             gray_ratio = float(np.mean(sat < 20))
             if len(comps) >= 8 and max_comp_ratio < 0.72 and gray_ratio > 0.90:
                 return False, final_sharpness, "Обнаружена заглушка «No image available» вместо фото товара"
+            if not is_set:
+                large_comps = [c for c in comps if c >= fg_area * 0.03]
+                if len(large_comps) >= 2:
+                    return False, final_sharpness, f"На фото несколько отдельных объектов ({len(large_comps)} крупных фрагмента — вероятно коробка и флакон)"
+                if len(xs_fg) > 0:
+                    body_y1 = y1 + int((y2 - y1 + 1) * 0.35)
+                    inv_bin = (alpha <= 24).astype(np.uint8)
+                    ff = inv_bin.copy()
+                    cv2.floodFill(ff, np.zeros((h + 2, w + 2), np.uint8), (0, 0), 2)
+                    body_holes = int((ff[body_y1:y2 + 1, x1:x2 + 1] == 1).sum())
+                    if body_holes > fg_area * 0.045:
+                        return False, final_sharpness, f"Дырки в вырезке тела флакона ({body_holes}px)"
     except Exception:
         pass
 
@@ -4209,19 +4227,18 @@ def process_product(
             whether_upscaled = processed_size != original_size
 
         quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output, is_set=is_set)
-        if not quality_ok:
-            raise ValueError(f"Фото не прошло фильтр качества: {quality_reason}")
-
-        vision_ok, vision_reason = verify_cutout_with_vision(
-            output, row.get("name") or "", row.get("brand") or "", is_set=is_set
+        vision_ok, vision_reason = (
+            verify_cutout_with_vision(output, row.get("name") or "", row.get("brand") or "", is_set=is_set)
+            if quality_ok
+            else (False, quality_reason)
         )
-        if not vision_ok:
-            # If we used a studio candidate and Qogita raw photo exists, try Qogita fallback once before failing
+        if not quality_ok or not vision_ok:
+            # If we used a studio candidate and catalog raw photo exists (e.g. aromadeal.de), try fallback once before failing
             raw_fallback_url = product_source(row) if source_type in ("official_studio", "verified_retailer") else None
             recovered = False
             if raw_fallback_url:
                 try:
-                    print(f"[{row['id']}] Studio candidate rejected by Vision QA ({vision_reason}); trying Qogita catalog fallback...", flush=True)
+                    print(f"[{row['id']}] Studio candidate rejected ({quality_reason if not quality_ok else vision_reason}); trying catalog fallback...", flush=True)
                     fb_resp = requests.get(raw_fallback_url, headers={"User-Agent": "Al-Warda product image pipeline/1.0"}, timeout=(15, 60))
                     if fb_resp.ok:
                         fb_bytes = fb_resp.content
@@ -4240,12 +4257,14 @@ def process_product(
                             sharpness_val = fb_sharp
                             source_url = raw_fallback_url
                             source_image_url = raw_fallback_url
-                            source_name = "Qogita Wholesale Catalog"
-                            source_type = "qogita_set" if is_set else "qogita_catalog"
+                            source_name = "Aromadeal Catalog"
+                            source_type = "aromadeal_set" if is_set else "aromadeal_catalog"
                             recovered = True
                 except Exception:
                     pass
             if not recovered:
+                if not quality_ok:
+                    raise ValueError(f"Фото не прошло фильтр качества: {quality_reason}")
                 raise ValueError(f"Фото не прошло визуальную проверку: {vision_reason}")
 
         image_url = save_generated_image(output)
