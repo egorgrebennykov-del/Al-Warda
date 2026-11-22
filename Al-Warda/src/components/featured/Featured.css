@@ -744,11 +744,6 @@
       radial-gradient(ellipse 95% 24% at 50% 88%, rgba(212, 175, 55, 0.07) 0%, transparent 72%) !important;
   }
   .warda-perfume-card {
-    padding: 2px 2px 12px !important;
-    border-radius: 12px !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
     min-width: 0 !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -757,21 +752,8 @@
   .warda-perfume-card__media {
     width: 100% !important;
     max-width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 10 / 10.6 !important;
-    margin-bottom: 0.6rem !important;
     box-sizing: border-box !important;
-    overflow: visible !important;
     position: relative !important;
-  }
-  .warda-perfume-card__img {
-    height: 100% !important;
-    max-height: none !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    object-fit: contain !important;
-    transform: none !important;
-    box-sizing: border-box !important;
   }
   .warda-perfume-card__title {
     font-size: 0.76rem !important;

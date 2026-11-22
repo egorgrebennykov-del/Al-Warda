@@ -14,6 +14,7 @@ import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import { formatVolume } from "../../utils/localization";
 import { OrnateCard } from "../common/OrnateCard";
+import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
 
@@ -362,21 +363,10 @@ export default function SearchResults() {
                     }
                   }}
                 >
-                  <div className="warda-perfume-card__media">
+                  <PerfumeCardMedia src={perfume.image} alt={perfume.name}>
                     <div className="warda-perfume-card__aura" />
-                    <img
-                      src={perfume.image}
-                      alt={perfume.name}
-                      className="warda-perfume-card__img"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        const card = e.currentTarget.closest(".warda-perfume-card");
-                        if (card) card.style.display = "none";
-                      }}
-                    />
                     <div className="warda-perfume-card__sheen" />
-                  </div>
+                  </PerfumeCardMedia>
 
                   <div className="warda-perfume-card__info">
                     <span

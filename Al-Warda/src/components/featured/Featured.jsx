@@ -12,8 +12,8 @@ import {
   loadPublicMarketPrices,
   parseVolumeMl,
   hasCompletedGeneratedImage,
-  bustProductImageCache,
 } from "../../../utils/perfumes";
+import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -1822,73 +1822,20 @@ export default function Featured() {
                     }
                   }}
                 >
-                  <div className="warda-perfume-card__media">
+                  <PerfumeCardMedia
+                    src={perfume.image}
+                    alt={perfume.name}
+                    onMissingImage={() =>
+                      setPerfumes((prev) =>
+                        prev.filter(
+                          (item) => String(item.id) !== String(perfume.id),
+                        ),
+                      )
+                    }
+                  >
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
-                    <div className="warda-perfume-card__processing" aria-hidden="true">
-                      <span className="warda-perfume-card__processing-ring" />
-                    </div>
-                    <img
-                      src={bustProductImageCache(perfume.image)}
-                      alt={perfume.name}
-                      className="warda-perfume-card__img"
-                      loading="lazy"
-                      decoding="async"
-                      onLoad={(e) => {
-                        const imgEl = e.currentTarget;
-                        const media = imgEl.closest(
-                          ".warda-perfume-card__media",
-                        );
-                        if (media) media.classList.remove("is-processing-photo");
-                        try {
-                          const nw = imgEl.naturalWidth || 0;
-                          const nh = imgEl.naturalHeight || 0;
-                          if (nw > 0 && nh > 0) {
-                            const s = 128;
-                            const c = document.createElement("canvas");
-                            c.width = s;
-                            c.height = s;
-                            const ctx = c.getContext("2d", { willReadFrequently: true });
-                            if (ctx) {
-                              ctx.drawImage(imgEl, 0, 0, s, s);
-                              const data = ctx.getImageData(0, 0, s, s).data;
-                              let bottomY = s - 1;
-                              outer: for (let y = s - 1; y >= 0; y--) {
-                                for (let x = 0; x < s; x++) {
-                                  if (data[(y * s + x) * 4 + 3] > 20) {
-                                    bottomY = y;
-                                    break outer;
-                                  }
-                                }
-                              }
-                              const padPct = Math.max(0, Math.min(35, ((s - 1 - bottomY) / s) * 100));
-                              imgEl.style.setProperty("--card-flacon-pad-pct", `${padPct.toFixed(2)}%`);
-                            }
-                          }
-                        } catch {
-                          // ignore cross-origin canvas scan errors
-                        }
-                        imgEl.style.opacity = "1";
-                      }}
-                      onError={(e) => {
-                        const imgEl = e.currentTarget;
-                        const cleanPath = String(perfume.image || "").split("?")[0];
-                        if (
-                          !imgEl.dataset.triedGh &&
-                          cleanPath.startsWith("/assets/img/generated-products/")
-                        ) {
-                          imgEl.dataset.triedGh = "1";
-                          imgEl.src = `https://raw.githubusercontent.com/egorgrebennykov-del/Al-Warda/main/Al-Warda/public${cleanPath.replace(/\.webp$/, ".png")}`;
-                          return;
-                        }
-                        setPerfumes((prev) =>
-                          prev.filter(
-                            (item) => String(item.id) !== String(perfume.id),
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
+                  </PerfumeCardMedia>
 
                   <div className="warda-perfume-card__info">
                     <h3

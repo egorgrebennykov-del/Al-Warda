@@ -14,6 +14,7 @@ import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import { formatVolume, getLocalizedSampleDesc } from "../../utils/localization";
 import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
+import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import "../featured/Featured.css";
 import "../common/ProductCardImages.css";
 import "./Sets.css";
@@ -524,25 +525,10 @@ export default function Sets() {
                     e.key === "Enter" && handleCardClick(perfume)
                   }
                 >
-                  <div className="warda-perfume-card__media">
+                  <PerfumeCardMedia src={perfume.image} alt={perfume.name}>
                     <span className="warda-perfume-card__aura" />
                     <span className="warda-perfume-card__sheen" />
-                    {perfume.image && (
-                      <img
-                        src={perfume.image}
-                        alt={perfume.name}
-                        className="warda-perfume-card__img"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          const card = e.currentTarget.closest(
-                            ".warda-perfume-card",
-                          );
-                          if (card) card.style.display = "none";
-                        }}
-                      />
-                    )}
-                  </div>
+                  </PerfumeCardMedia>
 
                   <div className="warda-perfume-card__info">
                     <h3

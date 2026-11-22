@@ -15,6 +15,7 @@ import { OrnateCard, SectionDivider, SensesMotif } from "../common/OrnateCard";
 import LargeAnnouncementRoulette from "../announcements/LargeAnnouncementRoulette";
 import { fetchActiveAnnouncements } from "../../../utils/announcements";
 import CategoryCinematicMotion from "./CategoryCinematicMotion";
+import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import "./Home.css";
 import "../common/ProductCardImages.css";
 
@@ -322,18 +323,7 @@ export default function Home() {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && handleProductClick(perfume)}
               >
-                <div className="warda-perfume-card__media">
-                  <img
-                    src={perfume.image}
-                    alt={perfume.name}
-                    className="warda-perfume-card__img"
-                    loading="lazy" decoding="async"
-                    onError={(e) => {
-                      const card = e.currentTarget.closest(".warda-perfume-card");
-                      if (card) card.style.display = "none";
-                    }}
-                  />
-                </div>
+                <PerfumeCardMedia src={perfume.image} alt={perfume.name} />
 
                 <div className="warda-perfume-card__info">
                   <h3 className="warda-perfume-card__title">{perfume.name}</h3>
