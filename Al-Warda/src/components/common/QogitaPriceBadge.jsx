@@ -8,8 +8,9 @@ import {
 export function resolveQogitaPrice(perfume) {
   if (!perfume) return null;
   const candidates = [
-    perfume.info?.movPrice,
+    perfume.info?.aromadealPrice,
     perfume.info?.unitPrice,
+    perfume.info?.movPrice,
     perfume.qogitaPrice,
     perfume.price,
   ];
@@ -25,7 +26,7 @@ export function resolveQogitaPrice(perfume) {
 }
 
 /**
- * Displays the Qogita wholesale price badge next to the customer price
+ * Displays the supplier price badge (Aromadeal) next to the customer price
  * strictly for privileged users (admin / developer / privileged).
  */
 export default function QogitaPriceBadge({ perfume, variant = "card" }) {
@@ -40,15 +41,15 @@ export default function QogitaPriceBadge({ perfume, variant = "card" }) {
 
   if (!isPrivilegedUser) return null;
 
-  const qogitaPrice = resolveQogitaPrice(perfume);
-  if (!qogitaPrice) return null;
+  const supplierPrice = resolveQogitaPrice(perfume);
+  if (!supplierPrice) return null;
 
   return (
     <span
       className={`warda-qogita-price-badge warda-qogita-price-badge--${variant}`}
-      title={`Qogita: €${qogitaPrice.toFixed(2)}`}
+      title={`Aromadeal: €${supplierPrice.toFixed(2)}`}
     >
-      Qogita: {formatPrice(qogitaPrice)}
+      Aromadeal: {formatPrice(supplierPrice)}
     </span>
   );
 }

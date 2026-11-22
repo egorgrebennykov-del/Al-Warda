@@ -558,9 +558,9 @@ export default function BookDetails() {
       return undefined;
     }
     let cancelled = false;
-    import("../../../utils/qogitaProductUrls")
-      .then(({ getQogitaProductUrl }) => {
-        if (!cancelled) setQogitaUrl(getQogitaProductUrl(target));
+    import("../../../utils/aromadealProductUrls")
+      .then(({ getAromadealProductUrl }) => {
+        if (!cancelled) setQogitaUrl(getAromadealProductUrl(target));
       })
       .catch(() => {
         if (!cancelled) setQogitaUrl(null);
@@ -787,7 +787,7 @@ export default function BookDetails() {
               title={t("details.qogitaView")}
             >
               <i className="ri-shield-star-line" />
-              <span>Qogita ↗</span>
+              <span>Aromadeal ↗</span>
               {perfumeGtin && (
                 <span className="warda-privileged-gtin-label">
                   {perfumeGtin}
@@ -1021,22 +1021,22 @@ export default function BookDetails() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="warda-privileged-qogita-btn"
-                      title={t("details.qogitaView")}
+                      title="Открыть товар на aromadeal.de"
                     >
                       <i className="ri-external-link-line" />
-                      <span>{t("details.qogitaView")}</span>
+                      <span>Aromadeal ↗</span>
                     </a>
                   )}
-                  {perfumeGtin && (
+                  {(perfume?.name || perfumeGtin) && (
                     <a
-                      href={`https://www.qogita.com/account/catalog/?search=${encodeURIComponent(perfumeGtin)}`}
+                      href={`https://aromadeal.de/search?q=${encodeURIComponent(perfume?.name || perfumeGtin)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="warda-privileged-panel-btn"
-                      title={t("details.qogitaPortal")}
+                      title="Поиск на aromadeal.de"
                     >
                       <i className="ri-search-line" />
-                      <span>{t("details.qogitaPortal")}</span>
+                      <span>Поиск Aromadeal</span>
                     </a>
                   )}
                   <Link

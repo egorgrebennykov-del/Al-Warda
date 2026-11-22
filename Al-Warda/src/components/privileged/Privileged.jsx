@@ -2053,7 +2053,7 @@ export default function Privileged() {
           onClick={() => setActiveSection("qogita")}
         >
           <i className="ri-shopping-bag-3-line" />
-          <span>Qogita B2B</span>
+          <span>Aromadeal</span>
         </button>
 
         <button

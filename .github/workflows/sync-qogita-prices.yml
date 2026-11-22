@@ -1,8 +1,8 @@
-name: "Sync Qogita Prices & Retail Pricing"
+name: "Sync Aromadeal Prices & Stock"
 
 on:
   schedule:
-    # Sync live Qogita MOV <= 500 EUR prices every 6 hours
+    # Sync live aromadeal.de prices & availability every 6 hours
     - cron: "0 */6 * * *"
   workflow_dispatch:
 
@@ -12,27 +12,20 @@ concurrency:
 
 jobs:
   sync-prices:
-    name: Sync Qogita MOV <= 500 Prices
+    name: Sync Aromadeal Prices & Stock
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: Al-Warda/package.json
+          python-version: "3.11"
 
-      - name: Install Node Dependencies
-        run: npm --prefix Al-Warda install
-
-      - name: Sync live Qogita prices & recalculate retail pricing
-        run: node --use-system-ca Al-Warda/scripts/sync_qogita_prices.mjs
+      - name: Sync live aromadeal.de prices & availability
+        run: python Al-Warda/scripts/aromadeal_sync.py --prices
         env:
-          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
-          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
           NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
           NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
