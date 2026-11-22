@@ -1721,7 +1721,7 @@ def measure_source_quality(source_bytes):
     }
 
 
-def validate_cutout_quality(source_quality, out_bytes):
+def validate_cutout_quality(source_quality, out_bytes, is_set=False):
     """Gatekeeper that rejects low-resolution, blurry, unsegmented, or severely
     cropped cutouts before they can be saved or published into the catalog."""
     import numpy as np
@@ -1801,6 +1801,31 @@ def validate_cutout_quality(source_quality, out_bytes):
                 return False, final_sharpness, "Обнаружена заглушка «No image available» вместо фото товара"
     except Exception:
         pass
+
+    if not is_set and len(xs_fg) > 0:
+        bw_fg = x2 - x1 + 1
+        bh_fg = y2 - y1 + 1
+        if bw_fg >= 60 and bh_fg >= 120:
+            fg_mask = alpha > 120
+            cap_xs = np.where(fg_mask[y1:y1 + max(4, int(bh_fg * 0.20)), :])[1]
+            cap_cx = float(cap_xs.mean()) if len(cap_xs) > 0 else (x1 + x2) / 2.0
+            body_cx = (x1 + x2) / 2.0
+            cx_offset = abs(cap_cx - body_cx) / float(bw_fg)
+            bot_y1 = y1 + int(bh_fg * 0.40)
+            bot_y2 = y2 - max(2, int(bh_fg * 0.02))
+            if bot_y2 > bot_y1 + 20:
+                l_xs = [int(np.where(fg_mask[y, :])[0].min()) for y in range(bot_y1, bot_y2) if np.any(fg_mask[y, :])]
+                r_xs = [int(np.where(fg_mask[y, :])[0].max()) for y in range(bot_y1, bot_y2) if np.any(fg_mask[y, :])]
+                if len(l_xs) >= 20 and len(r_xs) >= 20:
+                    l_flat = sum(1 for x in l_xs if x <= x1 + 1) / float(len(l_xs))
+                    r_flat = sum(1 for x in r_xs if x >= x2 - 1) / float(len(r_xs))
+                    l_rng = max(l_xs) - min(l_xs)
+                    r_rng = max(r_xs) - min(r_xs)
+                    if cx_offset >= 0.06 and (
+                        (l_flat >= 0.96 and l_rng <= 1 and r_rng >= 8)
+                        or (r_flat >= 0.96 and r_rng <= 1 and l_rng >= 8)
+                    ):
+                        return False, final_sharpness, "Флакон обрезан по вертикали (перекрытие упаковкой)"
 
     return True, final_sharpness, None
 
@@ -2326,6 +2351,10 @@ def strip_packaging_box_geometry(cutout):
 
     if not erase_side:
         return cutout, False
+
+    col_overlap = int(fg[y1:y2 + 1, split_x].sum())
+    if col_overlap > max(3, int(bh * 0.03)):
+        raise ValueError("На фото видна картонная упаковка вплотную к флакону")
 
     if erase_side == "left":
         cut_x = max(split_x, best_gap[1])
@@ -4103,7 +4132,7 @@ def process_product(
             processing_method = "local_studio_photometry"
             whether_upscaled = processed_size != original_size
 
-        quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output)
+        quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output, is_set=is_set)
         if not quality_ok:
             raise ValueError(f"Фото не прошло фильтр качества: {quality_reason}")
 
@@ -4124,7 +4153,7 @@ def process_product(
                         fb_out, fb_psize, fb_osize = preserve_original_product(
                             fb_bytes, segmentation_session, allow_upscale=True, is_set=is_set
                         )
-                        fb_q_ok, fb_sharp, _ = validate_cutout_quality(fb_q, fb_out)
+                        fb_q_ok, fb_sharp, _ = validate_cutout_quality(fb_q, fb_out, is_set=is_set)
                         fb_v_ok, _ = verify_cutout_with_vision(fb_out, row.get("name") or "", row.get("brand") or "", is_set=is_set) if fb_q_ok else (False, None)
                         if fb_q_ok and fb_v_ok:
                             output = fb_out
