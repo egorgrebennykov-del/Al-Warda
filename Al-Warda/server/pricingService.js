@@ -37,6 +37,7 @@ function formatSettingsRow(row) {
 
 async function fetchGlobalSettings(env) {
   const data = await hasuraGraphQL(
+    env,
     `query GetPricingSettings {
       pricing_settings(where: { id: { _eq: 1 } }, limit: 1) {
         id
@@ -52,7 +53,6 @@ async function fetchGlobalSettings(env) {
         updated_by
       }
     }`,
-    env,
   );
   const row = data?.pricing_settings?.[0] || null;
   return {
@@ -84,7 +84,7 @@ function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
         publishedPrices: pricingRow.published_prices || {},
       }
     : {
-        purchaseCostEur: 0,
+        purchaseCostEur: round2(Number(stock.price || 0)),
         extraCostEur: 0,
         desiredNetProfitEur: null,
         manualPrices: {},
@@ -171,6 +171,7 @@ export async function handleSavePricingSettings(request, env) {
 
   try {
     await hasuraGraphQL(
+      env,
       `mutation UpsertPricingSettings(
         $targetDiscountPct: numeric!,
         $desiredNetProfitEur: numeric!,
@@ -215,7 +216,6 @@ export async function handleSavePricingSettings(request, env) {
           id
         }
       }`,
-      env,
       {
         targetDiscountPct: normalized.targetDiscountPct,
         desiredNetProfitEur: normalized.desiredNetProfitEur,
@@ -271,6 +271,7 @@ export async function handleListPricingProducts(request, env, urlObj) {
     const [{ settings }, stocksRes] = await Promise.all([
       fetchGlobalSettings(env),
       hasuraGraphQL(
+        env,
         `query ListStocksForPricing($where: stocks_bool_exp!, $limit: Int!, $offset: Int!) {
           stocks(where: $where, order_by: { id: asc }, limit: $limit, offset: $offset) {
             id
@@ -287,7 +288,6 @@ export async function handleListPricingProducts(request, env, urlObj) {
             }
           }
         }`,
-        env,
         { where: whereClause, limit, offset },
       ),
     ]);
@@ -301,6 +301,7 @@ export async function handleListPricingProducts(request, env, urlObj) {
 
     if (stockIds.length > 0) {
       const batchRes = await hasuraGraphQL(
+        env,
         `query BatchPricingData($ids: [Int!]!) {
           product_pricing(where: { stock_id: { _in: $ids } }) {
             stock_id
@@ -324,7 +325,6 @@ export async function handleListPricingProducts(request, env, urlObj) {
             updated_at
           }
         }`,
-        env,
         { ids: stockIds },
       );
       pricingRows = batchRes?.product_pricing || [];
@@ -371,6 +371,7 @@ export async function handleGetProductPricing(request, env, stockIdRaw) {
     const [{ settings }, res] = await Promise.all([
       fetchGlobalSettings(env),
       hasuraGraphQL(
+        env,
         `query GetSingleProductPricing($stockId: Int!) {
           stocks(where: { id: { _eq: $stockId } }, limit: 1) {
             id
@@ -403,7 +404,6 @@ export async function handleGetProductPricing(request, env, stockIdRaw) {
             updated_at
           }
         }`,
-        env,
         { stockId },
       ),
     ]);
@@ -496,6 +496,7 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
     const [{ settings }, existingRes] = await Promise.all([
       fetchGlobalSettings(env),
       hasuraGraphQL(
+        env,
         `query VerifyStockExists($stockId: Int!) {
           stocks(where: { id: { _eq: $stockId } }, limit: 1) {
             id name title brand price in_stock info
@@ -504,7 +505,6 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
             published_prices
           }
         }`,
-        env,
         { stockId },
       ),
     ]);
@@ -528,6 +528,7 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
     const updatedBy = String(auth.user?.id || "admin");
 
     await hasuraGraphQL(
+      env,
       `mutation SaveProductPricingAndCompetitors(
         $stockId: Int!,
         $purchaseCostEur: numeric!,
@@ -576,7 +577,6 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
           affected_rows
         }
       }`,
-      env,
       {
         stockId,
         purchaseCostEur,
@@ -617,6 +617,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
     const [{ settings }, res] = await Promise.all([
       fetchGlobalSettings(env),
       hasuraGraphQL(
+        env,
         `query LoadForPublish($stockId: Int!) {
           stocks(where: { id: { _eq: $stockId } }, limit: 1) {
             id price
@@ -633,7 +634,6 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
             price_eur
           }
         }`,
-        env,
         { stockId },
       ),
     ]);
@@ -661,6 +661,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
 
     const updatedBy = String(auth.user?.id || "admin");
     await hasuraGraphQL(
+      env,
       `mutation PublishPrices($stockId: Int!, $publishedPrices: jsonb!, $updatedBy: String) {
         update_product_pricing(
           where: { stock_id: { _eq: $stockId } },
@@ -669,7 +670,6 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
           affected_rows
         }
       }`,
-      env,
       { stockId, publishedPrices, updatedBy },
     );
 
@@ -678,12 +678,12 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
       if (baseVals.length > 0) {
         const basePrice = round2(baseVals[0]);
         await hasuraGraphQL(
+          env,
           `mutation UpdateStockBasePrice($stockId: Int!, $price: numeric!) {
             update_stocks(where: { id: { _eq: $stockId } }, _set: { price: $price }) {
               affected_rows
             }
           }`,
-          env,
           { stockId, price: basePrice },
         );
       }
@@ -698,6 +698,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
 export async function handlePublicMarketPrices(env) {
   try {
     const res = await hasuraGraphQL(
+      env,
       `query PublicPublishedMarketPrices {
         pricing_settings(where: { id: { _eq: 1 } }, limit: 1) {
           target_discount_pct
@@ -732,7 +733,6 @@ export async function handlePublicMarketPrices(env) {
           price
         }
       }`,
-      env,
     );
 
     const settings = formatSettingsRow(res?.pricing_settings?.[0]);
