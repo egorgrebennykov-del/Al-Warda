@@ -39,7 +39,7 @@ test("1. Product with purchase cost and multiple competitor prices computes medi
   assert.ok(res.marginPct > 0);
 });
 
-test("2. Product with no competitor prices sets Pmin, yellow status, and warning", () => {
+test("2. Product with no competitor prices sets Pmin and green status when Qogita cost is present, yellow only when no cost or market data", () => {
   const res = calculateProductCountryPricing({
     productPricing: { purchaseCostEur: 15, extraCostEur: 2 },
     competitors: [],
@@ -53,8 +53,16 @@ test("2. Product with no competitor prices sets Pmin, yellow status, and warning
   assert.equal(res.minPriceEur, 23.25);
   assert.ok(res.finalPriceEur >= res.minPriceEur);
   assert.equal(res.finalPriceEur, 22.99 < 23.25 ? 23.99 : 22.99);
-  assert.equal(res.status, "yellow");
+  assert.equal(res.status, "green");
   assert.ok(res.warnings.length > 0);
+
+  const missingData = calculateProductCountryPricing({
+    productPricing: { purchaseCostEur: 0, extraCostEur: 0 },
+    competitors: [],
+    settings: DEFAULT_PRICING_SETTINGS,
+    country: "RO",
+  });
+  assert.equal(missingData.status, "yellow");
 });
 
 test("3. Competitor prices below minimum allowable price mark product red and enforce Pmin floor", () => {
@@ -147,7 +155,7 @@ test("6. Separate competitor prices per country (BG, GR, HU, RO) and global fall
   assert.equal(calc.countries.GR.competitorMedianEur, 40);
   assert.equal(calc.countries.HU.usedFallbackMarketData, true);
   assert.equal(calc.countries.HU.competitorMedianEur, 35);
-  assert.equal(calc.countries.HU.status, "yellow");
+  assert.equal(calc.countries.HU.status, "green");
 });
 
 test("7. Manual price override updates effective price, profit, margin, and warns if below Pmin", () => {

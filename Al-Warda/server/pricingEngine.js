@@ -295,13 +295,15 @@ export function calculateProductCountryPricing({
   const warnings = [];
 
   if (localCompetitorCount === 0) {
-    status = "yellow";
     if (usedFallbackMarketData) {
-      warnings.push("Нет локальных данных по стране — использовано среднее по целевым продавцам");
+      warnings.push("Использовано среднее по целевым продавцам");
     } else if (usedQogitaRecommended) {
-      warnings.push("Нет данных целевых продавцов — использована рекомендуемая цена Qogita");
+      warnings.push("Использована рекомендуемая цена Qogita");
+    } else if (purchaseCostEur > 0) {
+      warnings.push("Расчёт по себестоимости Qogita (Pmin)");
     } else {
-      warnings.push("Недостаточно данных конкурентов — установлена минимальная цена");
+      status = "yellow";
+      warnings.push("Недостаточно данных для расчёта цены");
     }
   }
 
