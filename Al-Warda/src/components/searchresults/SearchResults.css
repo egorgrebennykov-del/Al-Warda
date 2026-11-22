@@ -387,15 +387,6 @@
   margin-top: 1.5rem;
 }
 
-/* Sibling focus pull: ONLY when an actual card is hovered on desktop (never on empty grid space or mobile) */
-@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
-  .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
-    opacity: 0.42;
-    filter: brightness(0.85);
-    transform: scale(0.985);
-  }
-}
-
 /* Card: Completely transparent without solid background */
 .warda-perfume-card {
   --tilt-x: 0deg;

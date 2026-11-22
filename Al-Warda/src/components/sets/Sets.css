@@ -339,14 +339,6 @@
   gap: 1.75rem;
 }
 
-@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
-  .warda-sets-page .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
-    opacity: 0.42;
-    filter: brightness(0.85);
-    transform: scale(0.985);
-  }
-}
-
 @media (max-width: 768px), (hover: none), (pointer: coarse) {
   .warda-sets-page .warda-shop-grid:hover .warda-perfume-card:not(:hover),
   .warda-sets-page .warda-shop-grid:has(.warda-perfume-card:hover) .warda-perfume-card:not(:hover) {
