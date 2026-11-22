@@ -61,6 +61,11 @@ function findBestBrandMatch(stock, brandItems) {
   return bestScore >= 0.7 ? best : null;
 }
 
+function extractVolumeFromTitle(title) {
+  const m = String(title || "").match(/\b(\d+(?:[.,]\d+)?\s*(?:ml|oz|fl\.?\s*oz))\b/i);
+  return m ? m[1].replace(/\s+/g, "").toLowerCase() : "";
+}
+
 function round2(n) {
   return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 }
@@ -235,8 +240,12 @@ export async function runQogitaPriceSync({ visibleOnly = false } = {}) {
   loadDotEnvIfNeeded();
   const env = process.env;
 
+  if (env.QOGITA_EMAIL && env.QOGITA_PASSWORD) {
+    qogitaClient.setCredentials(env.QOGITA_EMAIL, env.QOGITA_PASSWORD, env.QOGITA_API_URL);
+  }
+
   if (!qogitaClient.isConfigured()) {
-    throw new Error("Qogita credentials are not configured in environment");
+    throw new Error("Qogita credentials are not configured in environment (QOGITA_EMAIL / QOGITA_PASSWORD)");
   }
 
   await qogitaClient.login(true);
@@ -301,11 +310,19 @@ export async function runQogitaPriceSync({ visibleOnly = false } = {}) {
     const oldMov = round2(Number(stock.info?.movPrice || 0));
     const info = stock?.info && typeof stock.info === "object" ? { ...stock.info } : {};
     const gtinChanged = qItem.gtin && info.gtin !== qItem.gtin;
+    const detectedVol = !info.volume ? extractVolumeFromTitle(qItem.name) : "";
+    const volumeAdded = Boolean(detectedVol);
 
-    if (Math.abs(oldPrice - livePrice) >= 0.01 || Math.abs(oldMov - livePrice) >= 0.01 || gtinChanged) {
+    if (
+      Math.abs(oldPrice - livePrice) >= 0.01 ||
+      Math.abs(oldMov - livePrice) >= 0.01 ||
+      gtinChanged ||
+      volumeAdded
+    ) {
       info.price = livePrice;
       info.movPrice = livePrice;
       if (qItem.gtin) info.gtin = qItem.gtin;
+      if (detectedVol) info.volume = detectedVol;
       updates.push({
         id: Number(stock.id),
         price: livePrice,
