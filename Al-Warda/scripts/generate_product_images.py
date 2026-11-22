@@ -3595,6 +3595,9 @@ def select_candidates(rows, now, regenerate_completed=False):
             or job.get("failed") is True
         ):
             continue
+        if gt.get("filterStatus") == "series_complete_admit":
+            priority_eligible.append(row)
+            continue
         eligible.append(row)
 
     if _dedupe_key and not regenerate_completed:

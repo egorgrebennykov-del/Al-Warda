@@ -2301,9 +2301,13 @@ export default function ProductImageQueue({
               className={`product-image-queue__filter-pill ${filterPending ? "is-active" : ""}`}
               aria-pressed={filterPending}
               onClick={() => {
-                setFilterPending((v) => !v);
+                const next = !filterPending;
+                setFilterPending(next);
                 setFilterGenerated(false);
                 setFilterProcessing(false);
+                if (next && !(status.pendingItems || []).length) {
+                  loadStatus({ force: true });
+                }
               }}
             >
               <i className="ri-time-line" />
@@ -2344,7 +2348,25 @@ export default function ProductImageQueue({
                       : "Showing up to 300 items in queue (newly added series items appear first)."}
                   </p>
                 </div>
+                <div className="product-image-queue__gallery-actions">
+                  <button
+                    type="button"
+                    className="product-image-queue__gpu-btn-launch"
+                    disabled={gpuBusy}
+                    onClick={handleGpuButtonClick}
+                  >
+                    <i className="ri-flashlight-fill" />
+                    {isRussian ? "Запустить генерацию (GPU)" : "Launch GPU Generation"}
+                  </button>
+                </div>
               </div>
+              {(status.pendingItems || []).length === 0 ? (
+                <p className="product-image-queue__failed-empty">
+                  {isRussian
+                    ? "Список загружается или обновляется — нажмите «Обновить статус»."
+                    : "List is refreshing — click Refresh."}
+                </p>
+              ) : (
               <div className="product-image-queue__failed-list">
                 {(status.pendingItems || []).slice(0, visiblePending).map((item) => (
                   <article key={item.id} className="product-image-queue__failed-item">
@@ -2375,6 +2397,7 @@ export default function ProductImageQueue({
                   </article>
                 ))}
               </div>
+              )}
               {(status.pendingItems || []).length > visiblePending && (
                 <button
                   type="button"
