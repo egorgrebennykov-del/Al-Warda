@@ -2804,9 +2804,9 @@ export function getPerfumeDedupeKey(perfume) {
     )
     .replace(/\b(pour\s+femme|for\s+women|for\s+her|women's|womens|women|woman)\b/g, " femme ")
     .replace(/\b(pour\s+homme|for\s+men|for\s+him|men's|mens|men|man)\b/g, " homme ")
-    .replace(/\b(eau\s+de\s+parfum|edp)\b/g, " edp ")
     .replace(/\b(eau\s+de\s+toilette|edt)\b/g, " edt ")
-    .replace(/\b(extrait\s+de\s+parfum|extract\s+de\s+parfum)\b/g, " extrait ")
+    .replace(/\b(eau\s+de\s+cologne|edc|cologne)\b/g, " edc ")
+    .replace(/\b(eau\s+de\s+parfum|extrait\s+de\s+parfum|extract\s+de\s+parfum|edp|extrait|extract|parfum)\b/g, " ")
     .replace(/\bblue\s+iconic\b/g, " iconic ")
     .replace(/\b(spray|vaporisateur|natural|fragrance|fragrances|perfume|arabic|luxury|unisex|bor\s*[um]?)\b/g, " ")
     .replace(/\b\d+(?:\.\d+)?\s*(?:ml|fl\.?\s*oz|oz|g|grams)\b/g, " ");
