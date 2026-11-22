@@ -73,7 +73,13 @@ def sync_prices(env: dict[str, str]) -> None:
 
         new_price = matched["price"] if matched["price"] > 0 else float(s.get("price") or 0)
         hidden_by_trends = bool((info.get("googleTrends") or {}).get("hiddenFromSite"))
-        new_in_stock = False if hidden_by_trends else bool(matched["available"])
+        is_merged_secondary = bool(info.get("mergedIntoId"))
+        has_completed_img = (info.get("imageGeneration") or {}).get("status") == "completed"
+        new_in_stock = (
+            False
+            if (hidden_by_trends or is_merged_secondary)
+            else (True if has_completed_img else bool(matched["available"]))
+        )
 
         price_changed = abs(float(s.get("price") or 0) - new_price) >= 0.01
         stock_changed = bool(s.get("in_stock")) != new_in_stock
