@@ -177,6 +177,7 @@ function runPythonProcess(args, timeoutMs = 180000) {
     const py = spawn("python", ["-X", "utf8", ...args], {
       cwd: projectRoot,
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+      windowsHide: true,
     });
 
     py.stdout.on("data", (data) => {

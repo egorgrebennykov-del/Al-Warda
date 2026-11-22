@@ -2072,7 +2072,14 @@ def super_resolve_product_image_if_needed(image, min_dim=900):
                         cmd.extend(["-m", models_dir, "-n", "remacri-4x"])
                     else:
                         cmd.extend(["-m", models_dir])
-                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=120)
+                res = subprocess.run(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=120,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
                 if res.returncode == 0 and os.path.isfile(out_path):
                     upscaled = Image.open(out_path)
                     upscaled.load()
