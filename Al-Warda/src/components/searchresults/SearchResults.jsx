@@ -6,6 +6,7 @@ import {
   isPerfumeSet,
   getDefaultPerfumeVolumeOption,
   getDefaultCatalogPrice,
+  loadPublicMarketPrices,
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
@@ -130,6 +131,11 @@ export default function SearchResults() {
     extras.sort((a, b) => a.localeCompare(b));
     return [...matched, ...extras];
   }, [allPerfumes]);
+
+  const [, setMarketPricesTick] = useState(0);
+  useEffect(() => {
+    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
+  }, []);
 
   useEffect(() => {
     setVisibleLimit(PAGE_SIZE);
@@ -339,7 +345,7 @@ export default function SearchResults() {
               const productUrl = defaultOpt.isSecondLargest
                 ? (isSample ? `${getPerfumeUrl(perfume)}?sample=${defaultOpt.key}` : `${getPerfumeUrl(perfume)}?size=${defaultOpt.key}`)
                 : getPerfumeUrl(perfume);
-              const displayPrice = defaultOpt.price;
+              const displayPrice = getDefaultCatalogPrice(perfume, language);
               const displayVolume = defaultOpt.isSecondLargest
                 ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
                 : formatVolume(perfume.volume ? perfume.volume.split("/")[0].trim() : "", language);

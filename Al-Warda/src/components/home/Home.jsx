@@ -6,6 +6,7 @@ import {
   getDefaultPerfumeVolumeOption,
   INITIAL_BEST_SELLERS,
 } from "../../../utils/perfumesLite";
+import { getDefaultCatalogPrice, loadPublicMarketPrices } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -34,6 +35,12 @@ export default function Home() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  const [, setMarketPricesTick] = useState(0);
+
+  useEffect(() => {
+    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     fetchActiveAnnouncements()
@@ -48,6 +55,12 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const [, setMarketPricesTick] = useState(0);
+
+  useEffect(() => {
+    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
   }, []);
 
   useEffect(() => {
@@ -311,7 +324,7 @@ export default function Home() {
             const isAdded = Boolean(addedIds[perfume.id]);
             const defaultOpt = getDefaultPerfumeVolumeOption(perfume);
             const isSample = defaultOpt.isSecondLargest && defaultOpt.isSample;
-            const displayPrice = defaultOpt.price;
+            const displayPrice = getDefaultCatalogPrice(perfume, language);
             const displayVolume = defaultOpt.isSecondLargest
               ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
               : formatVolume(perfume.volume ? perfume.volume.split("/")[0].trim() : "", language);

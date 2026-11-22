@@ -699,26 +699,91 @@ export async function handlePublicMarketPrices(env) {
   try {
     const res = await hasuraGraphQL(
       `query PublicPublishedMarketPrices {
-        product_pricing(where: { published_prices: { _neq: {} } }) {
+        pricing_settings(where: { id: { _eq: 1 } }, limit: 1) {
+          target_discount_pct
+          desired_net_profit_eur
+          corporate_tax_pct
+          payment_fee_pct
+          rounding_mode
+          vat_mode
+          fallback_to_global_market
+          supported_countries
+        }
+        product_pricing {
           stock_id
+          purchase_cost_eur
+          extra_cost_eur
+          desired_net_profit_eur
+          manual_prices
           published_prices
+        }
+        competitor_prices {
+          stock_id
+          country
+          price_eur
+        }
+        stocks(
+          where: {
+            in_stock: { _eq: true }
+            info: { _contains: { imageGeneration: { status: "completed" } } }
+          }
+        ) {
+          id
+          price
         }
       }`,
       env,
     );
-    const prices = {};
+
+    const settings = formatSettingsRow(res?.pricing_settings?.[0]);
+    const pricingByStock = new Map();
     for (const row of res?.product_pricing || []) {
-      const sid = String(row.stock_id);
-      const raw = row.published_prices || {};
+      pricingByStock.set(String(row.stock_id), row);
+    }
+
+    const compByStock = new Map();
+    for (const c of res?.competitor_prices || []) {
+      const sid = String(c.stock_id);
+      if (!compByStock.has(sid)) compByStock.set(sid, []);
+      compByStock.get(sid).push(c);
+    }
+
+    const prices = {};
+    for (const stock of res?.stocks || []) {
+      const sid = String(stock.id);
+      const pp = pricingByStock.get(sid) || {};
+      const publishedRaw = pp.published_prices || {};
       const clean = {};
+
       for (const c of SUPPORTED_COUNTRIES) {
-        const v = Number(raw[c]);
+        const v = Number(publishedRaw[c]);
         if (Number.isFinite(v) && v > 0) clean[c] = round2(v);
       }
+
+      if (Object.keys(clean).length < settings.supportedCountries.length) {
+        const baseCost = Number(pp.purchase_cost_eur ?? stock.price);
+        if (Number.isFinite(baseCost) && baseCost > 0) {
+          const calc = calculateAllCountriesPricing({
+            productPricing: {
+              ...pp,
+              purchaseCostEur: baseCost,
+            },
+            competitors: compByStock.get(sid) || [],
+            settings,
+          });
+          for (const c of settings.supportedCountries) {
+            if (!clean[c] && Number(calc.recommendedPrices?.[c]) > 0) {
+              clean[c] = round2(calc.recommendedPrices[c]);
+            }
+          }
+        }
+      }
+
       if (Object.keys(clean).length > 0) {
         prices[sid] = clean;
       }
     }
+
     return json(
       { prices },
       200,

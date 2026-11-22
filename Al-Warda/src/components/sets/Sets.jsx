@@ -7,6 +7,8 @@ import {
   isPerfumeSet,
   hasCompletedGeneratedImage,
   parseVolumeMl,
+  getDefaultCatalogPrice,
+  loadPublicMarketPrices,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
@@ -115,6 +117,11 @@ export default function Sets() {
     const saved = Number(sessionStorage.getItem("warda_visible_sets"));
     return Number.isFinite(saved) && saved >= PAGE_SIZE ? saved : PAGE_SIZE;
   });
+
+  const [, setMarketPricesTick] = useState(0);
+  useEffect(() => {
+    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
+  }, []);
 
   useEffect(() => {
     sessionStorage.setItem("warda_visible_sets", String(visibleCount));
@@ -543,7 +550,7 @@ export default function Sets() {
                     </p>
 
                     <div className="warda-perfume-card__price">
-                      <span>{formatPrice(perfume.price)}</span>
+                      <span>{formatPrice(getDefaultCatalogPrice(perfume, language))}</span>
                       <QogitaPriceBadge perfume={perfume} variant="card" />
                     </div>
                   </div>

@@ -10,6 +10,8 @@ import {
   getPerfumeVolumeOptions,
   markPerfumesEvictedAsFailed,
   unmarkPerfumesEvictedAsFailed,
+  getDefaultCatalogPrice,
+  loadPublicMarketPrices,
 } from "../../../utils/perfumes";
 import { isPrivileged as checkIsPrivileged } from "../../../utils/auth";
 import { useAuth } from "../../context/AuthContext";
@@ -112,6 +114,10 @@ export default function BookDetails() {
   const [markingFailed, setMarkingFailed] = useState(false);
   const [markedFailedMsg, setMarkedFailedMsg] = useState("");
   const [isInErrors, setIsInErrors] = useState(false);
+  const [, setMarketPricesTick] = useState(0);
+  useEffect(() => {
+    loadPublicMarketPrices().then(() => setMarketPricesTick((v) => v + 1));
+  }, []);
   const flaconImgRef = useRef(null);
   const imageSources = useMemo(
     () => getPerfumeImageSources(perfume, imgRetryTick),
@@ -592,7 +598,7 @@ export default function BookDetails() {
     : null;
   const displayPrice = selectedSizeOpt
     ? selectedSizeOpt.price
-    : Number(perfume?.price || 0);
+    : getDefaultCatalogPrice(perfume, language);
   const displayVolume = selectedSizeOpt
     ? formatVolume(selectedSizeOpt.ml, language)
     : fullBottleVol;

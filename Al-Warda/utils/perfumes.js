@@ -3342,10 +3342,25 @@ export function getPublishedMarketPrice(perfume, countryOrLang = "") {
   return Number.isFinite(val) && val > 0 ? val : null;
 }
 
+export function calculateDefaultRetailPriceEur(costEur) {
+  const c = Number(costEur);
+  if (!Number.isFinite(c) || c <= 0) return 0;
+  // Matches server/pricingEngine.js defaults: €5 net profit, 10% tax, 2.9% payment fee, psych_99 rounding
+  const minPrice = (c + 5 / 0.9) / (1 - 0.029);
+  let candidate = Math.round(minPrice - 0.99) + 0.99;
+  if (candidate < 0.99) candidate = 0.99;
+  if (candidate + 1e-9 < minPrice) {
+    candidate = Math.ceil(minPrice - 0.99 - 1e-9) + 0.99;
+    if (candidate < 0.99) candidate = 0.99;
+  }
+  return Math.round((candidate + Number.EPSILON) * 100) / 100;
+}
+
 export function getDefaultCatalogPrice(perfume, countryOrLang = "") {
   const published = getPublishedMarketPrice(perfume, countryOrLang);
   if (published !== null) return published;
-  return getDefaultPerfumeVolumeOption(perfume).price;
+  const basePrice = getDefaultPerfumeVolumeOption(perfume).price;
+  return calculateDefaultRetailPriceEur(basePrice) || basePrice;
 }
 
 export function getPerfumeGtin(perfume) {
