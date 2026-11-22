@@ -2145,6 +2145,12 @@ function mapStockRowLight(r) {
     gtRaw !== undefined && gtRaw !== null && gtRaw !== ""
       ? Number(gtRaw)
       : NaN;
+  const gtMaxRaw =
+    r.googleTrends?.max ?? r.info?.googleTrends?.max;
+  const gtMax =
+    gtMaxRaw !== undefined && gtMaxRaw !== null && gtMaxRaw !== ""
+      ? Number(gtMaxRaw)
+      : NaN;
 
   const perfumeObj = {
     id: String(r.id),
@@ -2153,6 +2159,7 @@ function mapStockRowLight(r) {
     title: cleanPerfumeName,
     brand: r.brand || "Al-Warda",
     googleTrendsAverage: Number.isFinite(gtAvg) ? gtAvg : null,
+    googleTrendsMax: Number.isFinite(gtMax) ? gtMax : null,
     category: categorySlugFor(r.category),
     categoryRu: r.category || "Восточные",
     categoryEn: "Oriental",
@@ -2311,6 +2318,12 @@ function mapStockRowRich(r) {
     gtRaw !== undefined && gtRaw !== null && gtRaw !== ""
       ? Number(gtRaw)
       : NaN;
+  const gtMaxRaw =
+    r.googleTrends?.max ?? r.info?.googleTrends?.max;
+  const gtMax =
+    gtMaxRaw !== undefined && gtMaxRaw !== null && gtMaxRaw !== ""
+      ? Number(gtMaxRaw)
+      : NaN;
 
   const perfumeObj = {
     id: String(r.id),
@@ -2319,6 +2332,7 @@ function mapStockRowRich(r) {
     title: cleanPerfumeName,
     brand: r.brand || "Al-Warda",
     googleTrendsAverage: Number.isFinite(gtAvg) ? gtAvg : null,
+    googleTrendsMax: Number.isFinite(gtMax) ? gtMax : null,
     category: catSlug,
     categoryRu: info.category || "Восточные",
     categoryEn: info.categoryEn || "Oriental",

@@ -617,3 +617,9 @@
 .warda-competitors-popover__fallback-link:hover {
   text-decoration: underline;
 }
+
+.warda-trends-badge {
+  border-color: rgba(147, 197, 253, 0.35) !important;
+  background: rgba(30, 58, 138, 0.22) !important;
+  color: #bfdbfe !important;
+}

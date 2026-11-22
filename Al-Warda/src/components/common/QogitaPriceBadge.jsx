@@ -159,6 +159,22 @@ export default function QogitaPriceBadge({ perfume, variant = "card" }) {
   const supplierPrice = resolveQogitaPrice(perfume);
   if (!supplierPrice) return null;
 
+  const gtAvgRaw =
+    perfume?.googleTrendsAverage ??
+    perfume?.info?.googleTrends?.average ??
+    perfume?.info?.googleTrends?.avg;
+  const gtMaxRaw =
+    perfume?.googleTrendsMax ?? perfume?.info?.googleTrends?.max;
+  const gtAvg =
+    gtAvgRaw !== undefined && gtAvgRaw !== null && gtAvgRaw !== "" && Number.isFinite(Number(gtAvgRaw))
+      ? Math.round(Number(gtAvgRaw) * 10) / 10
+      : null;
+  const gtMax =
+    gtMaxRaw !== undefined && gtMaxRaw !== null && gtMaxRaw !== "" && Number.isFinite(Number(gtMaxRaw))
+      ? Math.round(Number(gtMaxRaw) * 10) / 10
+      : null;
+  const hasTrends = gtAvg !== null || gtMax !== null;
+
   const competitors = offersData?.competitors || [];
   const aromadealUrl = getAromadealProductUrl(perfume);
   const titleText =
@@ -179,6 +195,18 @@ export default function QogitaPriceBadge({ perfume, variant = "card" }) {
       >
         Aromadeal: {formatPrice(supplierPrice)}
       </span>
+      {hasTrends && (
+        <span
+          className={`warda-qogita-price-badge warda-trends-badge warda-qogita-price-badge--${variant}`}
+          title={
+            language === "ru"
+              ? `Google Trends — средний: ${gtAvg ?? "—"}, макс: ${gtMax ?? "—"}`
+              : `Google Trends — avg: ${gtAvg ?? "—"}, max: ${gtMax ?? "—"}`
+          }
+        >
+          GT: {gtAvg ?? "—"} / {gtMax ?? "—"}
+        </span>
+      )}
 
       {open &&
         typeof document !== "undefined" &&
