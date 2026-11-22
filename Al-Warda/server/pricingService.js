@@ -829,12 +829,184 @@ export async function handlePublicMarketPrices(env) {
   }
 }
 
+export async function autoCalculateAllProductPrices(
+  env,
+  { updatedBy = "auto", publish = true } = {},
+) {
+  const [{ settings }, dataRes] = await Promise.all([
+    fetchGlobalSettings(env),
+    hasuraGraphQL(
+      env,
+      `query AutoCalcLoadAll {
+        stocks(
+          where: {
+            slug: { _neq: "site-settings" }
+            in_stock: { _eq: true }
+          }
+          order_by: { id: asc }
+        ) {
+          id
+          price
+          info
+        }
+        product_pricing {
+          stock_id
+          purchase_cost_eur
+          extra_cost_eur
+          desired_net_profit_eur
+          manual_prices
+          published_prices
+          calculation_meta
+        }
+        competitor_prices {
+          stock_id
+          country
+          competitor_name
+          price_eur
+        }
+      }`,
+    ),
+  ]);
+
+  const stocks = dataRes?.stocks || [];
+  const pricingMap = new Map(
+    (dataRes?.product_pricing || []).map((r) => [Number(r.stock_id), r]),
+  );
+  const compMap = new Map();
+  for (const c of dataRes?.competitor_prices || []) {
+    const sid = Number(c.stock_id);
+    if (!compMap.has(sid)) compMap.set(sid, []);
+    compMap.get(sid).push(c);
+  }
+
+  const objects = [];
+  for (const stock of stocks) {
+    const stockId = Number(stock.id);
+    if (!Number.isFinite(stockId)) continue;
+    const existing = pricingMap.get(stockId) || null;
+    const info = stock?.info && typeof stock.info === "object" ? stock.info : {};
+
+    const purchaseCostEur =
+      existing && Number(existing.purchase_cost_eur) > 0
+        ? round2(Number(existing.purchase_cost_eur))
+        : round2(Number(stock.price || 0));
+    const extraCostEur = existing ? round2(Number(existing.extra_cost_eur || 0)) : 0;
+    const desiredNetProfitEur =
+      existing?.desired_net_profit_eur !== null &&
+      existing?.desired_net_profit_eur !== undefined
+        ? Number(existing.desired_net_profit_eur)
+        : null;
+    const manualPrices = existing?.manual_prices || {};
+    const qogitaRecRaw =
+      existing?.calculation_meta?._meta?.qogitaRecommendedPriceEur ??
+      info.qogitaRecommendedPriceEur ??
+      info.recommendedRetailPrice ??
+      null;
+    const qogitaRecommendedPriceEur =
+      qogitaRecRaw !== null &&
+      qogitaRecRaw !== undefined &&
+      Number.isFinite(Number(qogitaRecRaw)) &&
+      Number(qogitaRecRaw) > 0
+        ? round2(Number(qogitaRecRaw))
+        : null;
+
+    const calculated = calculateAllCountriesPricing({
+      productPricing: {
+        purchaseCostEur,
+        extraCostEur,
+        desiredNetProfitEur,
+        qogitaRecommendedPriceEur,
+        manualPrices,
+      },
+      competitors: compMap.get(stockId) || [],
+      settings,
+    });
+
+    const publishedPrices = publish
+      ? { ...calculated.recommendedPrices }
+      : existing?.published_prices || {};
+
+    objects.push({
+      stock_id: stockId,
+      purchase_cost_eur: purchaseCostEur,
+      extra_cost_eur: extraCostEur,
+      desired_net_profit_eur: desiredNetProfitEur,
+      market_prices: calculated.recommendedPrices,
+      manual_prices: manualPrices,
+      published_prices: publishedPrices,
+      calculation_meta: {
+        ...calculated.countries,
+        _meta: { qogitaRecommendedPriceEur },
+      },
+      updated_at: "now()",
+      updated_by: String(updatedBy || "auto"),
+    });
+  }
+
+  let affectedRows = 0;
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < objects.length; i += BATCH_SIZE) {
+    const batch = objects.slice(i, i + BATCH_SIZE);
+    const res = await hasuraGraphQL(
+      env,
+      `mutation UpsertAutoCalculatedPricing($objects: [product_pricing_insert_input!]!) {
+        insert_product_pricing(
+          objects: $objects,
+          on_conflict: {
+            constraint: product_pricing_pkey,
+            update_columns: [
+              purchase_cost_eur,
+              extra_cost_eur,
+              desired_net_profit_eur,
+              market_prices,
+              manual_prices,
+              published_prices,
+              calculation_meta,
+              updated_at,
+              updated_by
+            ]
+          }
+        ) {
+          affected_rows
+        }
+      }`,
+      { objects: batch },
+    );
+    affectedRows += Number(res?.insert_product_pricing?.affected_rows || 0);
+  }
+
+  return {
+    ok: true,
+    total: stocks.length,
+    updated: affectedRows || objects.length,
+  };
+}
+
+export async function handleAutoCalculateAllPrices(request, env) {
+  const auth = await requirePrivilegedUser(request, env);
+  if (auth.response) return auth.response;
+
+  try {
+    const result = await autoCalculateAllProductPrices(env, {
+      updatedBy: String(auth.user?.id || "admin"),
+      publish: true,
+    });
+    return json(result);
+  } catch (error) {
+    return json({ error: error.message || "Failed to auto-calculate prices" }, 500);
+  }
+}
+
 export async function handlePricingRequest(request, env, urlObj) {
   const pathname = urlObj?.pathname || new URL(request.url).pathname;
   const method = request.method.toUpperCase();
 
   if (method === "GET" && pathname === "/api/pricing/public-market-prices") {
     return handlePublicMarketPrices(env);
+  }
+
+  if (method === "POST" && pathname === "/api/admin/pricing/auto-calculate") {
+    return handleAutoCalculateAllPrices(request, env);
   }
 
   if (method === "GET" && pathname === "/api/admin/pricing/settings") {

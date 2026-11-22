@@ -4571,3 +4571,96 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Shared Inputs & Buttons (PricingTab & Admin Forms)
+   ========================================================================== */
+.privileged__input {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(18, 14, 11, 0.92);
+  color: #f5efe6;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.privileged__input::placeholder {
+  color: rgba(245, 239, 230, 0.45);
+}
+
+.privileged__input:hover {
+  border-color: rgba(212, 175, 55, 0.55);
+}
+
+.privileged__input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+  background: rgba(24, 19, 15, 0.98);
+}
+
+select.privileged__input {
+  cursor: pointer;
+}
+
+.privileged__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.48rem 0.9rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.1);
+  color: #f3e5c0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
+}
+
+.privileged__btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: #d4af37;
+  color: #ffffff;
+}
+
+.privileged__btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.privileged__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.privileged__btn--primary {
+  background: linear-gradient(135deg, #d4af37 0%, #b88c24 100%);
+  border-color: #e6c665;
+  color: #16110b;
+}
+
+.privileged__btn--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e5c351 0%, #c89b2d 100%);
+  border-color: #f4d87c;
+  color: #0d0a06;
+}
+
+.privileged__btn--danger {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.privileged__btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.26);
+  border-color: #ef4444;
+  color: #ffffff;
+}

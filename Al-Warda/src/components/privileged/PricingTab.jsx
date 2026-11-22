@@ -57,6 +57,7 @@ export default function PricingTab() {
   const [editingItem, setEditingItem] = useState(null);
   const [savingProduct, setSavingProduct] = useState(false);
   const [publishingProduct, setPublishingProduct] = useState(false);
+  const [autoCalculatingAll, setAutoCalculatingAll] = useState(false);
   const [updateBasePriceOnPublish, setUpdateBasePriceOnPublish] = useState(false);
 
   const loadProducts = useCallback(
@@ -265,6 +266,28 @@ export default function PricingTab() {
       setError(err.message || "Ошибка сохранения расчёта");
     } finally {
       setSavingProduct(false);
+    }
+  };
+
+  const handleAutoCalculateAll = async () => {
+    setAutoCalculatingAll(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/admin/pricing/auto-calculate", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      setNotice(
+        `Автоматический расчёт завершён: обновлено и опубликовано ${data.updated ?? data.total ?? 0} товаров.`,
+      );
+      await loadProducts({ nextOffset: offset, q: searchQuery, status: statusFilter });
+    } catch (err) {
+      setError(err.message || "Не удалось выполнить автоматический расчёт цен");
+    } finally {
+      setAutoCalculatingAll(false);
     }
   };
 
@@ -557,13 +580,22 @@ export default function PricingTab() {
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
               className="privileged__input"
-              style={{ minWidth: "220px" }}
+              style={{ width: "auto", minWidth: "220px" }}
             >
               <option value="all">Все статусы</option>
               <option value="green">Зелёный — Конкурентоспособна</option>
               <option value="yellow">Жёлтый — Недостаточно данных</option>
               <option value="red">Красный — Выше рынка</option>
             </select>
+
+            <button
+              type="button"
+              className="privileged__btn privileged__btn--primary"
+              disabled={autoCalculatingAll || loading}
+              onClick={handleAutoCalculateAll}
+            >
+              {autoCalculatingAll ? "Расчёт цен..." : "⚡ Авторассчёт всех цен"}
+            </button>
           </div>
 
           {editingItem && (
@@ -592,9 +624,10 @@ export default function PricingTab() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(195px, 1fr))",
                   gap: "0.85rem",
                   marginTop: "1rem",
+                  alignItems: "end",
                 }}
               >
                 <label style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
