@@ -269,7 +269,7 @@
 /* User's Golden Horizon & Rising Glow Stage (bottom_glow_stage.webp) */
 .warda-details-bottom-glow {
   position: absolute;
-  bottom: -28px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   width: 126%;
@@ -440,7 +440,7 @@
 /* Contact Shadow right on the Floor Plane */
 .warda-stage-contact-shadow {
   position: absolute;
-  bottom: 112px;
+  bottom: 170px;
   left: 50%;
   transform: translateX(-50%);
   width: 240px;
@@ -461,7 +461,7 @@
   position: relative;
   width: 100%;
   max-width: 586px;
-  height: 117px;
+  height: 175px;
   margin-top: 0;
   overflow: hidden;
   pointer-events: none;
@@ -472,18 +472,18 @@
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(0, 0, 0, 0.72) 6%,
-    rgba(0, 0, 0, 0.42) 38%,
-    rgba(0, 0, 0, 0.12) 66%,
-    transparent 88%
+    rgba(0, 0, 0, 0.85) 5%,
+    rgba(0, 0, 0, 0.56) 42%,
+    rgba(0, 0, 0, 0.22) 74%,
+    transparent 96%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(0, 0, 0, 0.72) 6%,
-    rgba(0, 0, 0, 0.42) 38%,
-    rgba(0, 0, 0, 0.12) 66%,
-    transparent 88%
+    rgba(0, 0, 0, 0.85) 5%,
+    rgba(0, 0, 0, 0.56) 42%,
+    rgba(0, 0, 0, 0.22) 74%,
+    transparent 96%
   );
 }
 
@@ -496,8 +496,8 @@
   object-position: bottom center;
   transform-origin: center center;
   transform: translateY(calc(var(--flacon-pad-pct, 7.4%) - 2 * var(--flacon-last-pad-pct, 7.4%))) scaleY(-1);
-  opacity: 0.48;
-  filter: blur(1.5px) brightness(0.95) contrast(1.06) saturate(1.18);
+  opacity: 0.65;
+  filter: blur(1.4px) brightness(0.95) contrast(1.06) saturate(1.18);
 }
 
 .warda-details-info {
@@ -795,7 +795,7 @@
   }
 
   .warda-details-bottom-glow {
-    bottom: -16px;
+    bottom: 26px;
     width: 100%;
     max-width: 420px;
     height: 460px;
@@ -842,13 +842,13 @@
   }
 
   .warda-stage-contact-shadow {
-    bottom: 78px;
+    bottom: 120px;
     width: 175px;
   }
 
   .warda-stage-reflection-container {
     max-width: 340px;
-    height: 88px;
+    height: 130px;
   }
 
   .warda-stage-reflection-img {
@@ -881,7 +881,7 @@
   }
 
   .warda-details-bottom-glow {
-    bottom: -16px;
+    bottom: 26px;
     width: 100%;
     max-width: 100%;
     height: 440px;
@@ -912,14 +912,14 @@
   }
 
   .warda-stage-contact-shadow {
-    bottom: 73px;
+    bottom: 115px;
     width: 180px;
   }
 
   .warda-stage-reflection-container {
     max-width: 100%;
     width: 100%;
-    height: 83px;
+    height: 125px;
   }
 
   .warda-stage-reflection-img {
@@ -935,7 +935,7 @@
 
 @media screen and (max-width: 390px) {
   .warda-details-bottom-glow {
-    bottom: -16px;
+    bottom: 22px;
     height: 410px;
   }
 
@@ -951,11 +951,11 @@
   }
 
   .warda-stage-reflection-container {
-    height: 76px;
+    height: 114px;
   }
 
   .warda-stage-contact-shadow {
-    bottom: 66px;
+    bottom: 104px;
     width: 165px;
   }
 }
