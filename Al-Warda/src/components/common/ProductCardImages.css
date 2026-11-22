@@ -436,12 +436,6 @@
 
 .search__card:hover .search__card-img {
   animation: none;
-  filter:
-    brightness(1.05)
-    contrast(1.07)
-    saturate(1.14)
-    drop-shadow(0 0 26px rgba(212, 175, 55, 0.24))
-    drop-shadow(0 14px 26px rgba(0, 0, 0, 0.74)) !important;
 }
 
 .search__card .search__card-body {

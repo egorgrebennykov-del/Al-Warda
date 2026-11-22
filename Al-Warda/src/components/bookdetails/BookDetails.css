@@ -337,12 +337,6 @@
 .warda-details-img-wrap:hover .warda-details-img {
   height: calc(455px * var(--flacon-scale, 1));
   max-height: 470px;
-  filter:
-    brightness(1.05)
-    contrast(1.07)
-    saturate(1.14)
-    drop-shadow(0 0 30px rgba(212, 175, 55, 0.28))
-    drop-shadow(0 16px 32px rgba(0, 0, 0, 0.78));
 }
 
 @media (hover: none) {

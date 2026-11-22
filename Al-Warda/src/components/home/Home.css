@@ -466,7 +466,6 @@
 
 .warda-perfume-card:hover .warda-perfume-card__img {
   transform: translateY(-26px) scale(1.03) translateZ(0);
-  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.9));
 }
 
 .warda-perfume-card__info {
