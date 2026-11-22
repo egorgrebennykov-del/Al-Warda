@@ -329,30 +329,36 @@ def sync_all_series_and_qogita_completeness():
 
     # Step 3: Check live Qogita API for any missing products in active_series!
     sys.path.insert(0, str(SCRIPT_DIR))
-    from qogita_weekly_sync_upscayl import QogitaApiClient, is_wholesale_bundle, is_excluded_non_perfume, make_slug
+    from qogita_weekly_sync_upscayl import QogitaSyncClient, is_excluded_non_perfume
+
+    def is_wholesale_bundle(name_str):
+        return bool(re.search(
+            r"\b(pack\s*of\s*\d+|\d+\s*pack\b|bundle\s*of\s*\d+|\bcase\s*of\s*\d+|\bcarton\s*of\s*\d+|\bwholesale\s*bundle\b|\bmultipack\b)\b",
+            str(name_str or ""),
+            re.IGNORECASE,
+        ))
+
+    def make_slug(name_str):
+        s = re.sub(r"[^a-z0-9]+", "-", str(name_str or "").lower()).strip("-")
+        return s[:80] or "perfume"
 
     q_email = os.environ.get("QOGITA_EMAIL", "").strip()
     q_pass = os.environ.get("QOGITA_PASSWORD", "").strip()
     added_from_qogita = 0
+    next_stock_id = max((int(r["id"]) for r in all_rows if r.get("id") is not None), default=10000)
 
     if q_email and q_pass and active_brands:
-        client = QogitaApiClient(q_email, q_pass)
+        client = QogitaSyncClient(q_email, q_pass)
         client.login()
         print(f"[perfume_series] Scanning Qogita API across {len(active_brands)} brands for missing series items...")
 
         q_items = []
         for brand in sorted(active_brands):
-            page = 1
-            while True:
-                try:
-                    data = client.search_products(brand_name=brand, page=page, page_size=100)
-                except Exception:
-                    break
-                results = data.get("results") or []
-                q_items.extend(results)
-                if not data.get("next") or len(results) < 100 or page >= 15:
-                    break
-                page += 1
+            try:
+                results = client.fetch_brand_perfumes(brand, limit=300)
+                q_items.extend(results or [])
+            except Exception as e:
+                print(f"  ! Brand fetch failed for {brand}: {e}", file=sys.stderr)
 
         # Classify Qogita items that aren't already in DB
         missing_candidates = []
@@ -404,12 +410,14 @@ def sync_all_series_and_qogita_completeness():
                         },
                     }
                     try:
+                        next_stock_id += 1
                         _hasura_graphql(
                             """mutation InsertMissingSeriesItem($obj: stocks_insert_input!) {
                               insert_stocks_one(object: $obj) { id }
                             }""",
                             {
                                 "obj": {
+                                    "id": next_stock_id,
                                     "slug": slug,
                                     "name": name,
                                     "title": name,
