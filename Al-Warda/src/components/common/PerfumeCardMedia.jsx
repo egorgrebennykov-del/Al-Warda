@@ -65,9 +65,9 @@ export default function PerfumeCardMedia({
             setPadPct(`${pct.toFixed(2)}%`);
             const visH = (bottomY - topY + 1) / s;
             const visW = (rightX - leftX + 1) / s;
-            const targetHScale = 0.86 / Math.max(0.25, visH);
-            const maxWScale = 0.9 / Math.max(0.25, visW);
-            const normScale = Math.max(0.92, Math.min(1.32, targetHScale, maxWScale));
+            const targetHScale = 1.02 / Math.max(0.25, visH);
+            const maxWScale = 1.02 / Math.max(0.25, visW);
+            const normScale = Math.max(1.08, Math.min(1.48, targetHScale, maxWScale));
             setFlaconScale(normScale.toFixed(3));
           }
         }

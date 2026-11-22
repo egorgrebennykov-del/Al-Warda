@@ -114,7 +114,7 @@
   object-fit: contain !important;
   object-position: center bottom !important;
   box-sizing: border-box !important;
-  padding: 1% 2% 0 !important;
+  padding: 0 !important;
   transform-origin: bottom center !important;
   transform: translate3d(0, calc(var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scale(var(--card-flacon-scale, 1)) !important;
   -webkit-box-reflect: none !important;
@@ -217,7 +217,7 @@
   object-fit: contain !important;
   object-position: center bottom !important;
   box-sizing: border-box !important;
-  padding: 1% 2% 0 !important;
+  padding: 0 !important;
   transform-origin: center center !important;
   transform: translateY(calc((1 - var(--card-flacon-scale, 1)) * 50% - var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1))) scaleY(-1) scale(var(--card-flacon-scale, 1)) !important;
   filter: brightness(0.8) saturate(1.08);
@@ -232,7 +232,7 @@
 
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img,
 .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__reflection-img {
-  padding: 1% 2% 0 !important;
+  padding: 0 !important;
 }
 
 .warda-perfume-card .warda-perfume-card__info,
