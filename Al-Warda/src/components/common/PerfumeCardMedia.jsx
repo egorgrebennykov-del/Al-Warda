@@ -16,12 +16,14 @@ export default function PerfumeCardMedia({
   const [prevSrc, setPrevSrc] = useState(src);
   const [overrideSrc, setOverrideSrc] = useState(null);
   const [padPct, setPadPct] = useState("0%");
+  const [flaconScale, setFlaconScale] = useState("1");
   const [loaded, setLoaded] = useState(false);
 
   if (src !== prevSrc) {
     setPrevSrc(src);
     setOverrideSrc(null);
     setPadPct("0%");
+    setFlaconScale("1");
     setLoaded(false);
   }
 
@@ -44,17 +46,30 @@ export default function PerfumeCardMedia({
         if (ctx) {
           ctx.drawImage(imgEl, 0, 0, s, s);
           const data = ctx.getImageData(0, 0, s, s).data;
-          let bottomY = s - 1;
-          outer: for (let y = s - 1; y >= 0; y--) {
+          let topY = s;
+          let bottomY = -1;
+          let leftX = s;
+          let rightX = -1;
+          for (let y = 0; y < s; y++) {
             for (let x = 0; x < s; x++) {
               if (data[(y * s + x) * 4 + 3] > 20) {
-                bottomY = y;
-                break outer;
+                if (y < topY) topY = y;
+                if (y > bottomY) bottomY = y;
+                if (x < leftX) leftX = x;
+                if (x > rightX) rightX = x;
               }
             }
           }
-          const pct = Math.max(0, Math.min(35, ((s - 1 - bottomY) / s) * 100));
-          setPadPct(`${pct.toFixed(2)}%`);
+          if (bottomY >= topY && rightX >= leftX) {
+            const pct = Math.max(0, Math.min(35, ((s - 1 - bottomY) / s) * 100));
+            setPadPct(`${pct.toFixed(2)}%`);
+            const visH = (bottomY - topY + 1) / s;
+            const visW = (rightX - leftX + 1) / s;
+            const targetHScale = 0.86 / Math.max(0.25, visH);
+            const maxWScale = 0.9 / Math.max(0.25, visW);
+            const normScale = Math.max(0.92, Math.min(1.32, targetHScale, maxWScale));
+            setFlaconScale(normScale.toFixed(3));
+          }
         }
       }
     } catch {
@@ -89,7 +104,10 @@ export default function PerfumeCardMedia({
     <div
       ref={mediaRef}
       className="warda-perfume-card__media"
-      style={{ "--card-flacon-pad-pct": padPct }}
+      style={{
+        "--card-flacon-pad-pct": padPct,
+        "--card-flacon-scale": flaconScale,
+      }}
     >
       {children}
       <div className="warda-perfume-card__bottom-glow" aria-hidden="true">
