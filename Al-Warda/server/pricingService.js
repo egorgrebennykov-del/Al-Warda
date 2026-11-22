@@ -887,9 +887,11 @@ export async function autoCalculateAllProductPrices(
     const info = stock?.info && typeof stock.info === "object" ? stock.info : {};
 
     const purchaseCostEur =
-      existing && Number(existing.purchase_cost_eur) > 0
-        ? round2(Number(existing.purchase_cost_eur))
-        : round2(Number(stock.price || 0));
+      Number(stock.price) > 0
+        ? round2(Number(stock.price))
+        : existing && Number(existing.purchase_cost_eur) > 0
+          ? round2(Number(existing.purchase_cost_eur))
+          : 0;
     const extraCostEur = existing ? round2(Number(existing.extra_cost_eur || 0)) : 0;
     const desiredNetProfitEur =
       existing?.desired_net_profit_eur !== null &&

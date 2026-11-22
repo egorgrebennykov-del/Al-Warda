@@ -37,14 +37,55 @@ function tokenize(str) {
   return normalizeName(str).split(/\s+/).filter((t) => t.length >= 2);
 }
 
-function findBestBrandMatch(stock, brandItems) {
-  const sTokens = tokenize(stock.name);
-  if (sTokens.length === 0 || !brandItems?.length) return null;
-  const sSet = new Set(sTokens);
-  let best = null;
-  let bestScore = 0;
+function extractVolumeMl(str) {
+  const m = String(str || "").match(/\b(\d+(?:[.,]\d+)?)\s*(ml|мл)\b/i);
+  if (!m) return null;
+  const val = Number(m[1].replace(",", "."));
+  return Number.isFinite(val) && val > 0 ? val : null;
+}
 
-  for (const qItem of brandItems) {
+const EXCLUDED_VARIANT_RE =
+  /\b(?:miniature|sample|travel|discovery|body\s*spray|deodorant|deo|mist|hair\s*mist|air\s*freshener|roll\s*on|bor\s*m|after\s*shave|lotion|shower\s*gel)\b/i;
+
+function isCompatibleCandidate(stock, qItem) {
+  const sName = String(stock.name || "");
+  const qName = String(qItem.name || "");
+
+  // Do not match a regular perfume to a deodorant/mist/miniature/sample/travel/bor m
+  if (EXCLUDED_VARIANT_RE.test(qName) && !EXCLUDED_VARIANT_RE.test(sName)) {
+    return false;
+  }
+
+  const sVol = extractVolumeMl(stock.name) ?? extractVolumeMl(stock.info?.volume);
+  const qVol = extractVolumeMl(qName);
+
+  if (sVol !== null && qVol !== null) {
+    const ratio = Math.max(sVol, qVol) / Math.min(sVol, qVol);
+    if (ratio > 1.25) return false;
+  } else if (sVol === null && qVol !== null) {
+    // Stock has no explicit volume: never match a <45ml travel/miniature unless stock itself is cheap (<10 EUR)
+    if (qVol < 45 && Number(stock.price || 0) >= 8) return false;
+  }
+
+  const sPrice = Number(stock.price || 0);
+  const qPrice = Number(qItem.searchPrice || 0);
+  if (sPrice > 0 && qPrice > 0) {
+    if (qPrice < sPrice * 0.4 || qPrice > sPrice * 2.5) return false;
+  }
+
+  return true;
+}
+
+function findBestBrandMatch(stock, candidates) {
+  const sTokens = tokenize(stock.name);
+  if (sTokens.length === 0 || !candidates?.length) return null;
+  const sSet = new Set(sTokens);
+  const sPrice = Number(stock.price || 0);
+  let best = null;
+  let bestRank = -1;
+
+  for (const qItem of candidates) {
+    if (!isCompatibleCandidate(stock, qItem)) continue;
     const qTokens = qItem.tokens;
     if (!qTokens?.length) continue;
     let overlap = 0;
@@ -53,12 +94,20 @@ function findBestBrandMatch(stock, brandItems) {
     }
     const union = new Set([...sSet, ...qTokens]).size;
     const score = union > 0 ? overlap / union : 0;
-    if (score > bestScore) {
-      bestScore = score;
+    if (score < 0.7) continue;
+
+    // Prefer higher token overlap, and break ties by price proximity
+    const pricePenalty =
+      sPrice > 0 && qItem.searchPrice > 0
+        ? Math.abs(qItem.searchPrice - sPrice) / Math.max(sPrice, qItem.searchPrice)
+        : 0;
+    const rank = score - pricePenalty * 0.15;
+    if (rank > bestRank) {
+      bestRank = rank;
       best = qItem;
     }
   }
-  return bestScore >= 0.7 ? best : null;
+  return best;
 }
 
 function extractVolumeFromTitle(title) {
@@ -191,7 +240,10 @@ async function fetchQogitaBrandCatalog(brands) {
           searchPrice: Number(item?.price?.amount || 0),
         };
         if (gtin) byGtin.set(gtin, entry);
-        if (nameKey) byName.set(nameKey, entry);
+        if (nameKey) {
+          if (!byName.has(nameKey)) byName.set(nameKey, []);
+          byName.get(nameKey).push(entry);
+        }
         byBrand.get(brandKey).push(entry);
       }
       if (!data?.next || results.length < 100 || page >= 30) break;
@@ -271,9 +323,10 @@ export async function runQogitaPriceSync({ visibleOnly = false } = {}) {
     const info = stock?.info && typeof stock.info === "object" ? stock.info : {};
     const gtin = String(info.gtin || "").trim();
     const brandKey = String(stock.brand || "").trim().toLowerCase();
+    const nameCandidates = byName.get(normalizeName(stock.name)) || [];
     let qItem =
       (gtin && byGtin.get(gtin)) ||
-      byName.get(normalizeName(stock.name)) ||
+      findBestBrandMatch(stock, nameCandidates) ||
       findBestBrandMatch(stock, byBrand.get(brandKey)) ||
       null;
 
