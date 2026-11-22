@@ -2131,25 +2131,6 @@ export default function Privileged() {
                     {language === "ru" ? "Создать пользователя" : "Create User"}
                   </span>
                 </button>
-                <button
-                  type="button"
-                  className="button privileged__gpu-gen-btn"
-                  onClick={() => {
-                    navigate(`${basePath}/products/images`);
-                  }}
-                  title={
-                    language === "ru"
-                      ? "Запустить генерацию фото на видеокарте устройства (GPU)"
-                      : "Start GPU image generation on device"
-                  }
-                >
-                  <i className="ri-cpu-line" />
-                  <span>
-                    {language === "ru"
-                      ? "Генерация на видеокарте (GPU)"
-                      : "GPU Generation"}
-                  </span>
-                </button>
               </div>
             </div>
 
