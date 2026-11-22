@@ -3527,10 +3527,28 @@ def select_candidates(rows, now, regenerate_completed=False):
     priority_eligible = []
     eligible = []
     attempts_today = 0
+
+    try:
+        from google_trends_filter import dedupe_perfume_key as _dedupe_key
+    except Exception:
+        _dedupe_key = None
+
+    completed_dedupe_keys = set()
+    if _dedupe_key and not regenerate_completed:
+        for r in rows:
+            r_info = r.get("info") or {}
+            r_gt = r_info.get("googleTrends") or {}
+            if r.get("in_stock") is False or r_gt.get("hiddenFromSite") is True:
+                continue
+            if image_generation(r_info).get("status") == "completed":
+                dk = _dedupe_key(r)
+                if dk:
+                    completed_dedupe_keys.add(dk)
+
     for row in rows:
         info = row.get("info") or {}
         gt = info.get("googleTrends") or {}
-        if row.get("in_stock") is False or gt.get("passed") is False or gt.get("hiddenFromSite") is True:
+        if row.get("in_stock") is False or gt.get("passed") is False or gt.get("hiddenFromSite") is True or info.get("duplicateOf"):
             continue
         if is_excluded_non_perfume(row.get("name") or row.get("title") or ""):
             continue
@@ -3557,6 +3575,28 @@ def select_candidates(rows, now, regenerate_completed=False):
         ):
             continue
         eligible.append(row)
+
+    if _dedupe_key and not regenerate_completed:
+        def _row_price(r):
+            p = r.get("price")
+            if p is None:
+                p = (r.get("info") or {}).get("price")
+            try:
+                return float(p) if p is not None else 999999.0
+            except Exception:
+                return 999999.0
+
+        seen_keys = set(completed_dedupe_keys)
+        deduped_eligible = []
+        for r in sorted(eligible, key=lambda x: (_row_price(x), int(x.get("id") or 0))):
+            dk = _dedupe_key(r)
+            if dk and dk in seen_keys:
+                continue
+            if dk:
+                seen_keys.add(dk)
+            deduped_eligible.append(r)
+        eligible = deduped_eligible
+
     return priority_eligible + eligible, attempts_today
 
 

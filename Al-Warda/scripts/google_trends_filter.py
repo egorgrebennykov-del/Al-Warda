@@ -587,13 +587,13 @@ def deduplicate_keep_cheapest(db_session, supabase_url, all_rows, dry_run=False)
             except Exception:
                 price_val = 999999.0
             img_done = 0 if (((row.get("info") or {}).get("imageGeneration") or {}).get("status") == "completed") else 1
-            return (price_val, img_done, int(row.get("id") or 0))
+            return (img_done, price_val, int(row.get("id") or 0))
 
         grp.sort(key=_rank)
         keeper = grp[0]
-        keeper_price = _rank(keeper)[0]
+        keeper_price = _rank(keeper)[1]
         for dup in grp[1:]:
-            dup_price = _rank(dup)[0]
+            dup_price = _rank(dup)[1]
             print(
                 f"  [Dedupe] HIDE {dup['id']} ({dup.get('name')}, €{dup_price:.2f}) -> "
                 f"keeping cheapest {keeper['id']} ({keeper.get('name')}, €{keeper_price:.2f})",
