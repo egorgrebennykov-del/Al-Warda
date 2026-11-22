@@ -2199,15 +2199,6 @@ export default function ProductImageQueue({
             <span>
               {displayOverallCompleted.toLocaleString()} /{" "}
               {siteCatalogTotal.toLocaleString()} ({overallProgress}%)
-              {status.pending > 0 && (
-                <>
-                  {" "}
-                  ·{" "}
-                  {isRussian
-                    ? `Резерв Qogita (скрыт с сайта): ${status.pending.toLocaleString()}`
-                    : `Qogita reserve (hidden from site): ${status.pending.toLocaleString()}`}
-                </>
-              )}
             </span>
           </div>
           <progress
@@ -2235,7 +2226,7 @@ export default function ProductImageQueue({
               ],
               [
                 "pending",
-                isRussian ? "Резерв Qogita (без фото)" : "Qogita reserve (no photo)",
+                isRussian ? "В ожидании" : "Pending",
                 "ri-time-line",
               ],
             ].map(([key, label, icon]) => (
