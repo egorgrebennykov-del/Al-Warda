@@ -718,6 +718,7 @@ const PAGE_SIZE = 24;
 export default function Featured() {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const [, setMarketPricesTick] = useState(0);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isInCart, toggleCart } = useCartState();
@@ -858,7 +859,9 @@ export default function Featured() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadPublicMarketPrices();
+    loadPublicMarketPrices().then(() => {
+      if (!cancelled) setMarketPricesTick((v) => v + 1);
+    });
     getPerfumes()
       .then((items) => {
         if (!cancelled) {
@@ -1797,7 +1800,7 @@ export default function Featured() {
                   ? `${getPerfumeUrl(perfume)}?sample=${defaultOpt.key}`
                   : `${getPerfumeUrl(perfume)}?size=${defaultOpt.key}`
                 : getPerfumeUrl(perfume);
-              const displayPrice = defaultOpt.price;
+              const displayPrice = getDefaultCatalogPrice(perfume, language);
               const displayVolume = defaultOpt.isSecondLargest
                 ? formatVolume(defaultOpt.ml || defaultOpt.labelEn, language)
                 : formatVolume(
