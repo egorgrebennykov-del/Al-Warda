@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   DEFAULT_PRICING_SETTINGS,
+  TARGET_COMPETITOR_SELLERS,
   applyPsychologicalRounding,
   calculateAllCountriesPricing,
+  calculateArithmeticMean,
   calculateMedian,
   calculateMinPrice,
   calculateProductCountryPricing,
@@ -88,9 +90,43 @@ test("4. Single competitor price uses that exact price as median", () => {
   assert.equal(res.status, "green");
 });
 
-test("5. Outlier competitor prices use median instead of skewed arithmetic mean", () => {
-  const median = calculateMedian([20, 22, 24, 25, 190]);
-  assert.equal(median, 24);
+test("5. Arithmetic mean averages only the 5 target sellers and falls back to Qogita recommended price when absent", () => {
+  assert.equal(TARGET_COMPETITOR_SELLERS.length, 5);
+  assert.equal(calculateArithmeticMean([20, 30, 40, 50]), 35);
+
+  // Uses arithmetic mean of target sellers (Notino, Douglas, Dubai Perfumery, AromaRay, Arabic Scents)
+  // and ignores non-target sellers ("RandomShop")
+  const withSellers = calculateProductCountryPricing({
+    productPricing: { purchaseCostEur: 15, qogitaRecommendedPriceEur: 60 },
+    competitors: [
+      { country: "BG", competitorName: "Notino", priceEur: 40 },
+      { country: "BG", competitorName: "Douglas", priceEur: 44 },
+      { country: "BG", competitorName: "Dubai Perfumery", priceEur: 38 },
+      { country: "BG", competitorName: "AromaRay", priceEur: 36 },
+      { country: "BG", competitorName: "Arabic Scents", priceEur: 42 },
+      { country: "BG", competitorName: "RandomShop", priceEur: 999 },
+    ],
+    settings: DEFAULT_PRICING_SETTINGS,
+    country: "BG",
+  });
+  // Mean of [40, 44, 38, 36, 42] = 40.00; 40 * 0.92 = 36.80 -> .99 -> 36.99
+  assert.equal(withSellers.competitorCount, 5);
+  assert.equal(withSellers.competitorMeanEur, 40);
+  assert.equal(withSellers.usedQogitaRecommended, false);
+  assert.equal(withSellers.finalPriceEur, 36.99);
+
+  // When no target seller data exists, falls back to Qogita recommended price
+  const withQogitaFallback = calculateProductCountryPricing({
+    productPricing: { purchaseCostEur: 15, qogitaRecommendedPriceEur: 45 },
+    competitors: [{ country: "BG", competitorName: "RandomShop", priceEur: 999 }],
+    settings: DEFAULT_PRICING_SETTINGS,
+    country: "BG",
+  });
+  assert.equal(withQogitaFallback.competitorCount, 0);
+  assert.equal(withQogitaFallback.competitorMeanEur, null);
+  assert.equal(withQogitaFallback.usedQogitaRecommended, true);
+  assert.equal(withQogitaFallback.marketRecommendedEur, 45);
+  assert.equal(withQogitaFallback.finalPriceEur, 44.99);
 });
 
 test("6. Separate competitor prices per country (BG, GR, HU, RO) and global fallback warning", () => {

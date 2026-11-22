@@ -71,6 +71,22 @@ function parsePositiveFloat(val, { allowZero = false } = {}) {
 }
 
 function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
+  const info = stock?.info && typeof stock.info === "object" ? stock.info : {};
+  const qogitaRecFromMeta = pricingRow?.calculation_meta?._meta?.qogitaRecommendedPriceEur;
+  const qogitaRecFromInfo = info.qogitaRecommendedPriceEur ?? info.recommendedRetailPrice;
+  const qogitaRecommendedPriceEur =
+    qogitaRecFromMeta !== null &&
+    qogitaRecFromMeta !== undefined &&
+    Number.isFinite(Number(qogitaRecFromMeta)) &&
+    Number(qogitaRecFromMeta) > 0
+      ? round2(Number(qogitaRecFromMeta))
+      : qogitaRecFromInfo !== null &&
+          qogitaRecFromInfo !== undefined &&
+          Number.isFinite(Number(qogitaRecFromInfo)) &&
+          Number(qogitaRecFromInfo) > 0
+        ? round2(Number(qogitaRecFromInfo))
+        : null;
+
   const pricingData = pricingRow
     ? {
         purchaseCostEur: Number(pricingRow.purchase_cost_eur || 0),
@@ -80,6 +96,7 @@ function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
           pricingRow.desired_net_profit_eur !== undefined
             ? Number(pricingRow.desired_net_profit_eur)
             : null,
+        qogitaRecommendedPriceEur,
         manualPrices: pricingRow.manual_prices || {},
         publishedPrices: pricingRow.published_prices || {},
       }
@@ -87,6 +104,7 @@ function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
         purchaseCostEur: round2(Number(stock.price || 0)),
         extraCostEur: 0,
         desiredNetProfitEur: null,
+        qogitaRecommendedPriceEur,
         manualPrices: {},
         publishedPrices: {},
       };
@@ -97,7 +115,6 @@ function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
     settings,
   });
 
-  const info = stock?.info && typeof stock.info === "object" ? stock.info : {};
   const volume = info.volume || "";
 
   return {
@@ -110,6 +127,7 @@ function buildProductPricingPayload(stock, pricingRow, competitors, settings) {
     purchaseCostEur: pricingData.purchaseCostEur,
     extraCostEur: pricingData.extraCostEur,
     desiredNetProfitEur: pricingData.desiredNetProfitEur,
+    qogitaRecommendedPriceEur: pricingData.qogitaRecommendedPriceEur,
     manualPrices: pricingData.manualPrices,
     publishedPrices: pricingData.publishedPrices,
     competitors: competitors.map((c) => ({
@@ -447,15 +465,22 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
     body.desiredNetProfitEur === ""
       ? null
       : parsePositiveFloat(body.desiredNetProfitEur, { allowZero: true });
+  const qogitaRecommendedPriceEur =
+    body.qogitaRecommendedPriceEur === null ||
+    body.qogitaRecommendedPriceEur === undefined ||
+    body.qogitaRecommendedPriceEur === ""
+      ? null
+      : parsePositiveFloat(body.qogitaRecommendedPriceEur, { allowZero: false });
 
   if (
     Number.isNaN(purchaseCostEur) ||
     purchaseCostEur === null ||
     Number.isNaN(extraCostEur) ||
     extraCostEur === null ||
-    Number.isNaN(desiredNetProfitEur)
+    Number.isNaN(desiredNetProfitEur) ||
+    Number.isNaN(qogitaRecommendedPriceEur)
   ) {
-    return json({ error: "Costs and profit must be valid non-negative numbers" }, 400);
+    return json({ error: "Costs, profit and Qogita recommended price must be valid numbers" }, 400);
   }
 
   const manualPrices = {};
@@ -519,6 +544,7 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
         purchaseCostEur,
         extraCostEur,
         desiredNetProfitEur,
+        qogitaRecommendedPriceEur,
         manualPrices,
       },
       competitors: cleanCompetitors,
@@ -585,7 +611,10 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
         marketPrices: calculated.recommendedPrices,
         manualPrices,
         publishedPrices: existingPublished,
-        calculationMeta: calculated.countries,
+        calculationMeta: {
+          ...calculated.countries,
+          _meta: { qogitaRecommendedPriceEur },
+        },
         updatedBy,
         competitors: cleanCompetitors,
       },
@@ -628,6 +657,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
             extra_cost_eur
             desired_net_profit_eur
             manual_prices
+            calculation_meta
           }
           competitor_prices(where: { stock_id: { _eq: $stockId } }) {
             country
@@ -646,7 +676,10 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
     }
 
     const calculated = calculateAllCountriesPricing({
-      productPricing: pricingRow,
+      productPricing: {
+        ...pricingRow,
+        calculationMeta: pricingRow.calculation_meta,
+      },
       competitors: res?.competitor_prices || [],
       settings,
     });
@@ -717,6 +750,7 @@ export async function handlePublicMarketPrices(env) {
           desired_net_profit_eur
           manual_prices
           published_prices
+          calculation_meta
         }
         competitor_prices {
           stock_id
@@ -767,6 +801,7 @@ export async function handlePublicMarketPrices(env) {
             productPricing: {
               ...pp,
               purchaseCostEur: baseCost,
+              calculationMeta: pp.calculation_meta,
             },
             competitors: compByStock.get(sid) || [],
             settings,

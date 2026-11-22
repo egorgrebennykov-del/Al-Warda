@@ -136,6 +136,10 @@ export default function PricingTab() {
         item.desiredNetProfitEur === null || item.desiredNetProfitEur === undefined
           ? ""
           : String(item.desiredNetProfitEur),
+      qogitaRecommendedPriceEur:
+        item.qogitaRecommendedPriceEur === null || item.qogitaRecommendedPriceEur === undefined
+          ? ""
+          : String(item.qogitaRecommendedPriceEur),
       manualPrices: {
         BG: item.manualPrices?.BG ?? "",
         GR: item.manualPrices?.GR ?? "",
@@ -145,6 +149,35 @@ export default function PricingTab() {
       competitors: Array.isArray(item.competitors)
         ? item.competitors.map((c) => ({ ...c }))
         : [],
+    });
+  };
+
+  const addTargetSellers = () => {
+    if (!editingItem) return;
+    const targetNames = [
+      "Notino",
+      "Douglas",
+      "Dubai Perfumery",
+      "AromaRay",
+      "Arabic Scents",
+    ];
+    const existing = new Set(
+      (editingItem.competitors || []).map((c) =>
+        String(c.competitorName || "").trim().toLowerCase(),
+      ),
+    );
+    const additions = targetNames
+      .filter((name) => !existing.has(name.toLowerCase()))
+      .map((name) => ({
+        country: "GLOBAL",
+        competitorName: name,
+        priceEur: "",
+        productUrl: "",
+      }));
+    if (additions.length === 0) return;
+    setEditingItem({
+      ...editingItem,
+      competitors: [...(editingItem.competitors || []), ...additions],
     });
   };
 
@@ -193,6 +226,10 @@ export default function PricingTab() {
           editingItem.desiredNetProfitEur === ""
             ? null
             : Number(editingItem.desiredNetProfitEur),
+        qogitaRecommendedPriceEur:
+          editingItem.qogitaRecommendedPriceEur === ""
+            ? null
+            : Number(editingItem.qogitaRecommendedPriceEur),
         manualPrices: {
           BG: editingItem.manualPrices?.BG === "" ? null : Number(editingItem.manualPrices?.BG),
           GR: editingItem.manualPrices?.GR === "" ? null : Number(editingItem.manualPrices?.GR),
@@ -462,7 +499,7 @@ export default function PricingTab() {
                 }
               />
               <span>
-                Использовать общую рыночную медиану, если по стране нет локальных данных конкурентов
+                Использовать общее среднее по 5 продавцам, если по стране нет локальных данных
               </span>
             </label>
 
@@ -602,14 +639,37 @@ export default function PricingTab() {
                     className="privileged__input"
                   />
                 </label>
+
+                <label style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                  <span>Рекомендуемая цена Qogita (€, опц.)</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="Если нет цен продавцов"
+                    value={editingItem.qogitaRecommendedPriceEur ?? ""}
+                    onChange={(e) =>
+                      setEditingItem({
+                        ...editingItem,
+                        qogitaRecommendedPriceEur: e.target.value,
+                      })
+                    }
+                    className="privileged__input"
+                  />
+                </label>
               </div>
 
               <div style={{ marginTop: "1.1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                  <strong>Цены конкурентов (EUR)</strong>
-                  <button type="button" className="privileged__btn" onClick={addCompetitorRow}>
-                    + Добавить конкурента
-                  </button>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <strong>Цены продавцов (Notino, Douglas, Dubai Perfumery, AromaRay, Arabic Scents)</strong>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button type="button" className="privileged__btn" onClick={addTargetSellers}>
+                      + 5 продавцов
+                    </button>
+                    <button type="button" className="privileged__btn" onClick={addCompetitorRow}>
+                      + Добавить строку
+                    </button>
+                  </div>
                 </div>
 
                 {editingItem.competitors.length === 0 ? (
@@ -709,8 +769,14 @@ export default function PricingTab() {
                           <span style={{ color: st.color, fontSize: "0.78rem" }}>{st.label}</span>
                         </div>
                         <div style={{ fontSize: "0.84rem", lineHeight: 1.5, opacity: 0.9 }}>
-                          <div>Медиана ({calc.competitorCount}): {fmtEur(calc.competitorMedianEur)}</div>
-                          <div>Рыночная (-скидка): {fmtEur(calc.marketRecommendedEur)}</div>
+                          <div>
+                            Среднее ({calc.competitorCount}):{" "}
+                            {fmtEur(calc.competitorMeanEur ?? calc.competitorMedianEur)}
+                          </div>
+                          {calc.usedQogitaRecommended && (
+                            <div>Реком. Qogita: {fmtEur(calc.qogitaRecommendedPriceEur)}</div>
+                          )}
+                          <div>Рыночная: {fmtEur(calc.marketRecommendedEur)}</div>
                           <div>Минимальная Pmin: {fmtEur(calc.minPriceEur)}</div>
                           <div>Авто-цена: <strong>{fmtEur(calc.calculatedPriceEur)}</strong></div>
                           <div>
@@ -790,7 +856,7 @@ export default function PricingTab() {
                     <th style={{ padding: "0.6rem" }}>Товар и объём</th>
                     <th style={{ padding: "0.6rem" }}>Закупка (C)</th>
                     <th style={{ padding: "0.6rem" }}>Доп. (E)</th>
-                    <th style={{ padding: "0.6rem" }}>Медиана / N</th>
+                    <th style={{ padding: "0.6rem" }}>Среднее / N</th>
                     <th style={{ padding: "0.6rem" }}>Pmin</th>
                     <th style={{ padding: "0.6rem" }}>BG / GR / HU / RO</th>
                     <th style={{ padding: "0.6rem" }}>Прибыль / Маржа</th>

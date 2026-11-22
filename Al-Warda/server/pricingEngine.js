@@ -1,5 +1,21 @@
 export const SUPPORTED_COUNTRIES = ["BG", "GR", "HU", "RO"];
 
+export const TARGET_COMPETITOR_SELLERS = Object.freeze([
+  "Notino",
+  "Douglas",
+  "Dubai Perfumery",
+  "AromaRay",
+  "Arabic Scents",
+]);
+
+const TARGET_SELLER_KEYS = TARGET_COMPETITOR_SELLERS.map((s) => s.toLowerCase());
+
+export function isTargetCompetitorSeller(name) {
+  const norm = String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!norm) return false;
+  return TARGET_SELLER_KEYS.some((key) => norm === key || norm.includes(key));
+}
+
 export const DEFAULT_PRICING_SETTINGS = Object.freeze({
   targetDiscountPct: 8,
   desiredNetProfitEur: 5,
@@ -21,6 +37,16 @@ export function normalizeNumber(value, fallback = 0, { min = 0, max = 1_000_000 
   const num = Number(value);
   if (!Number.isFinite(num)) return fallback;
   return Math.min(max, Math.max(min, num));
+}
+
+export function calculateArithmeticMean(values) {
+  const valid = (Array.isArray(values) ? values : [])
+    .map((v) => Number(v))
+    .filter((v) => Number.isFinite(v) && v > 0);
+
+  if (valid.length === 0) return null;
+  const sum = valid.reduce((acc, v) => acc + v, 0);
+  return round2(sum / valid.length);
 }
 
 export function calculateMedian(values) {
@@ -193,9 +219,14 @@ export function calculateProductCountryPricing({
     paymentFeePct: normSettings.paymentFeePct,
   });
 
-  const validCompetitors = (Array.isArray(competitors) ? competitors : []).filter(
-    (c) => Number.isFinite(Number(c?.priceEur ?? c?.price_eur)) && Number(c?.priceEur ?? c?.price_eur) > 0,
-  );
+  const validCompetitors = (Array.isArray(competitors) ? competitors : []).filter((c) => {
+    const price = Number(c?.priceEur ?? c?.price_eur);
+    if (!Number.isFinite(price) || price <= 0) return false;
+    const sellerName = String(c?.competitorName ?? c?.competitor_name ?? "").trim();
+    // If seller name is provided, only include the 5 target sellers
+    if (sellerName) return isTargetCompetitorSeller(sellerName);
+    return true;
+  });
 
   const localPrices = validCompetitors
     .filter((c) => String(c?.country || "").trim().toUpperCase() === countryCode)
@@ -212,12 +243,30 @@ export function calculateProductCountryPricing({
 
   const competitorCount = usedPrices.length;
   const localCompetitorCount = localPrices.length;
-  const competitorMedianEur = calculateMedian(usedPrices);
+  const competitorMeanEur = calculateArithmeticMean(usedPrices);
+  const competitorMedianEur = competitorMeanEur;
+
+  const qogitaRecRaw =
+    productPricing.qogitaRecommendedPriceEur ??
+    productPricing.qogita_recommended_price_eur ??
+    productPricing.calculationMeta?._meta?.qogitaRecommendedPriceEur;
+  const qogitaRecommendedPriceEur =
+    qogitaRecRaw !== null &&
+    qogitaRecRaw !== undefined &&
+    qogitaRecRaw !== "" &&
+    Number.isFinite(Number(qogitaRecRaw)) &&
+    Number(qogitaRecRaw) > 0
+      ? round2(Number(qogitaRecRaw))
+      : null;
+
+  const usedQogitaRecommended = competitorMeanEur === null && qogitaRecommendedPriceEur !== null;
 
   const marketRecommendedEur =
-    competitorMedianEur !== null
-      ? round2(competitorMedianEur * (1 - normSettings.targetDiscountPct / 100))
-      : null;
+    competitorMeanEur !== null
+      ? round2(competitorMeanEur * (1 - normSettings.targetDiscountPct / 100))
+      : usedQogitaRecommended
+        ? qogitaRecommendedPriceEur
+        : null;
 
   const rawFinalEur =
     marketRecommendedEur !== null
@@ -248,7 +297,9 @@ export function calculateProductCountryPricing({
   if (localCompetitorCount === 0) {
     status = "yellow";
     if (usedFallbackMarketData) {
-      warnings.push("Нет локальных данных по стране — использована общая рыночная медиана");
+      warnings.push("Нет локальных данных по стране — использовано среднее по целевым продавцам");
+    } else if (usedQogitaRecommended) {
+      warnings.push("Нет данных целевых продавцов — использована рекомендуемая цена Qogita");
     } else {
       warnings.push("Недостаточно данных конкурентов — установлена минимальная цена");
     }
@@ -279,6 +330,9 @@ export function calculateProductCountryPricing({
     purchaseCostEur,
     extraCostEur,
     desiredNetProfitEur,
+    qogitaRecommendedPriceEur,
+    usedQogitaRecommended,
+    competitorMeanEur,
     competitorMedianEur,
     competitorCount,
     localCompetitorCount,
