@@ -1779,12 +1779,33 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
         y1, y2 = int(ys_fg.min()), int(ys_fg.max())
         x1, x2 = int(xs_fg.min()), int(xs_fg.max())
         bbox_fill = float(np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120))
-        if bbox_fill > 0.94 and fg_ratio > 0.78:
+        if (bbox_fill > 0.94 and fg_ratio > 0.78) or (bbox_fill >= 0.96 and fg_ratio >= 0.68):
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
         top_band = alpha[y1:min(y2 + 1, y1 + max(2, int((y2 - y1) * 0.03))), x1:x2 + 1]
         top_cov = float(np.mean(top_band > 120)) if top_band.size > 0 else 0.0
         if bbox_fill > 0.92 and fg_ratio > 0.74 and top_cov > 0.88:
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
+        if not is_set and (x2 - x1 + 1) >= 60:
+            bw_seg = x2 - x1 + 1
+            col_cov = np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120, axis=0)
+            segs = []
+            in_seg = False
+            seg_w = 0
+            for c_val in col_cov:
+                if c_val > 0.08:
+                    if not in_seg:
+                        in_seg = True
+                        seg_w = 1
+                    else:
+                        seg_w += 1
+                elif in_seg:
+                    segs.append(seg_w)
+                    in_seg = False
+            if in_seg:
+                segs.append(seg_w)
+            big_segs = [s for s in segs if s >= bw_seg * 0.14]
+            if len(big_segs) >= 2:
+                return False, final_sharpness, "На фото несколько объектов (флакон и упаковка)"
 
     try:
         import cv2
@@ -3498,7 +3519,7 @@ def is_stale_processing(job, now):
 
 
 ALWAYS_EXCLUDED_NON_PERFUME_RE = re.compile(
-    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*sprays?|bodysprays?|all[\s_-]*over[\s_-]*sprays?|body\s*mists?|fragrance\s*mists?|hair\s*products?|hair\s*perfumes?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
+    r"\b(?:perfume\s*oils?|parfum\s*oils?|perfumed\s*oils?|concentrated\s+(?:perfume\s+)?oils?|attar\s*oils?|body\s*oils?|hair\s*oils?|beard\s*oils?|essential\s*oils?|massage\s*oils?|oils?|roll[-\s]*on|shampoos?|conditioners?|deodorants?|deodrants?|deo\s*sprays?|deo\s*sticks?|antiperspirants?|body\s*sprays?|bodysprays?|all[\s_-]*over[\s_-]*sprays?|body\s*mists?|fragrance\s*mists?|perfume\s*mists?|air\s*fresheners?|room\s*fresheners?|car\s*fresheners?|room\s*(?:and\s+fabric\s+)?(?:sprays?|mists?)|fabric\s*mists?|hair\s*products?|hair\s*perfumes?|bakhoor|bukhoor|incense|candles?|diffusers?|масл[оа]|шампун[ьи]|гель\s+для\s+душа|дезодорант)\b",
     re.I,
 )
 TOILETRY_WITHOUT_EDP_RE = re.compile(
@@ -4008,6 +4029,11 @@ def process_product(
             fetch_url = studio_asset.get("imageUrl")
             if not fetch_url:
                 continue
+            if not is_set:
+                url_fname = fetch_url.split("?")[0].rsplit("/", 1)[-1].lower()
+                if re.search(r"(?:boxed|with[-_]box|box[-_]and[-_]bottle|bottle[-_]and[-_]box|[-_]box(?:[-_.]|$))", url_fname):
+                    print(f"[{row['id']}] Skipping boxed studio candidate: {url_fname}", flush=True)
+                    continue
             print(f"[{row['id']}] Trying official studio image ({studio_asset.get('title')}): {fetch_url}", flush=True)
             try:
                 resp = requests.get(
