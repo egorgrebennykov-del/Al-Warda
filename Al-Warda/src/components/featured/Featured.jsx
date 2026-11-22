@@ -1094,9 +1094,6 @@ export default function Featured() {
   const filteredPerfumes = useMemo(() => {
     let result = [];
     if (totalActiveFilters === 0) {
-      if (sortBy === "popular") {
-        return shuffledPerfumes;
-      }
       result = [...perfumes];
     } else {
       result = perfumes.filter((p) => {
@@ -1203,6 +1200,13 @@ export default function Featured() {
       );
     } else if (sortBy === "popular") {
       result.sort((a, b) => {
+        const gtA = Number.isFinite(a.googleTrendsAverage)
+          ? a.googleTrendsAverage
+          : -1;
+        const gtB = Number.isFinite(b.googleTrendsAverage)
+          ? b.googleTrendsAverage
+          : -1;
+        if (gtB !== gtA) return gtB - gtA;
         const scoreA =
           (a.isBestSeller ? 50 : 0) +
           (a.isFeatured ? 25 : 0) +

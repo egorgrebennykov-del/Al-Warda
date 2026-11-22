@@ -363,6 +363,7 @@ export function translatePostgrest({
       colList.includes("name")
     ) {
       colList.push('series: info(path: "series")');
+      colList.push('googleTrends: info(path: "googleTrends")');
     }
     const fields = colList.join(" ");
     const root = rootField(table, "select");

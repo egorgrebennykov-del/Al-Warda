@@ -2136,12 +2136,23 @@ function mapStockRowLight(r) {
       ? Math.round(rawPrice * 100) / 100
       : (Number(r.price) || 0);
 
+  const gtRaw =
+    r.googleTrends?.average ??
+    r.googleTrends?.avg ??
+    r.info?.googleTrends?.average ??
+    r.info?.googleTrends?.avg;
+  const gtAvg =
+    gtRaw !== undefined && gtRaw !== null && gtRaw !== ""
+      ? Number(gtRaw)
+      : NaN;
+
   const perfumeObj = {
     id: String(r.id),
     slug: `stock-${r.id}`,
     name: cleanPerfumeName,
     title: cleanPerfumeName,
     brand: r.brand || "Al-Warda",
+    googleTrendsAverage: Number.isFinite(gtAvg) ? gtAvg : null,
     category: categorySlugFor(r.category),
     categoryRu: r.category || "Восточные",
     categoryEn: "Oriental",
@@ -2291,12 +2302,23 @@ function mapStockRowRich(r) {
       ? Math.round(rawPrice * 100) / 100
       : (Number(r.price) || 0);
 
+  const gtRaw =
+    r.googleTrends?.average ??
+    r.googleTrends?.avg ??
+    r.info?.googleTrends?.average ??
+    r.info?.googleTrends?.avg;
+  const gtAvg =
+    gtRaw !== undefined && gtRaw !== null && gtRaw !== ""
+      ? Number(gtRaw)
+      : NaN;
+
   const perfumeObj = {
     id: String(r.id),
     slug: `stock-${r.id}`,
     name: cleanPerfumeName,
     title: cleanPerfumeName,
     brand: r.brand || "Al-Warda",
+    googleTrendsAverage: Number.isFinite(gtAvg) ? gtAvg : null,
     category: catSlug,
     categoryRu: info.category || "Восточные",
     categoryEn: info.categoryEn || "Oriental",
