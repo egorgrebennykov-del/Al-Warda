@@ -1,12 +1,7 @@
 .warda-perfume-card.ornate-card {
   padding: 0 0 1.25rem !important;
   border-radius: 16px !important;
-  background: linear-gradient(
-    180deg,
-    rgba(22, 16, 11, 0.62) 0%,
-    rgba(12, 9, 6, 0.92) 66%,
-    rgba(8, 6, 5, 0.98) 100%
-  ) !important;
+  background: #080605 !important;
   border: 1px solid rgba(212, 175, 55, 0.14) !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
   min-width: 0 !important;
@@ -143,21 +138,40 @@
     drop-shadow(0 14px 26px rgba(0, 0, 0, 0.78)) !important;
 }
 
-.warda-perfume-card__horizon {
+.warda-perfume-card__bottom-glow {
   position: absolute;
-  left: 10%;
-  right: 10%;
-  bottom: 0;
-  height: 2px;
-  background: radial-gradient(
-    ellipse 70% 100% at 50% 50%,
-    rgba(248, 214, 130, 0.56) 0%,
-    rgba(212, 175, 55, 0.22) 55%,
-    rgba(8, 6, 5, 0) 100%
-  );
-  box-shadow: 0 0 14px rgba(212, 175, 55, 0.3);
+  bottom: -4.7%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 100%;
   pointer-events: none;
-  z-index: 3;
+  z-index: 1;
+}
+
+.warda-perfume-card__bottom-glow-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
+  mix-blend-mode: screen;
+  filter: brightness(1.06);
+  -webkit-mask-image: radial-gradient(
+    ellipse 54% 56% at 50% 56%,
+    #000 45%,
+    rgba(0, 0, 0, 0.65) 70%,
+    transparent 96%
+  );
+  mask-image: radial-gradient(
+    ellipse 54% 56% at 50% 56%,
+    #000 45%,
+    rgba(0, 0, 0, 0.65) 70%,
+    transparent 96%
+  );
+}
+
+.warda-perfume-card__horizon {
+  display: none;
 }
 
 .warda-perfume-card__reflection {

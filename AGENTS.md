@@ -103,7 +103,7 @@ Al-Warda/
   - If `!flaconLoaded || allSourcesExhausted || !activeImageSrc`, `.warda-flacon-processing-loader` renders an animated dual-ring golden spinner with localized status text, hides the reflection, and retries every 8 seconds until the cutout is available.
 
 ### 4.2. Catalog Grid (`Featured.jsx`, `SearchResults.jsx`, `Sets.jsx`, `Home.jsx`)
-- Cards render **only** clean transparent cutouts (`bustProductImageCache(perfume.image)`) directly on the card background — no stage backgrounds, no podium trays, and no dark rectangular boxes.
+- Cards render clean transparent cutouts (`bustProductImageCache(perfume.image)`) inside `PerfumeCardMedia.jsx` over the same `#080605` luxury golden horizon glow stage (`bottom_glow_stage.webp` with `mix-blend-mode: screen`), bottom-grounded via `--card-flacon-pad-pct` with a soft inverted floor reflection — matching the product details page format (with no podium trays or white-background supplier photos).
 - If a card's cutout is still being published, `onError` tries the GitHub raw asset URL once and then activates `.is-processing-photo` to display `.warda-perfume-card__processing-ring`.
 
 ---

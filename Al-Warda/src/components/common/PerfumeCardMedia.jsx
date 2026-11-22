@@ -92,6 +92,15 @@ export default function PerfumeCardMedia({
       style={{ "--card-flacon-pad-pct": padPct }}
     >
       {children}
+      <div className="warda-perfume-card__bottom-glow" aria-hidden="true">
+        <img
+          src="/assets/img/stage/bottom_glow_stage.webp"
+          alt=""
+          className="warda-perfume-card__bottom-glow-img"
+          loading={loading}
+          decoding="async"
+        />
+      </div>
       <div className="warda-perfume-card__processing" aria-hidden="true">
         <span className="warda-perfume-card__processing-ring" />
       </div>
