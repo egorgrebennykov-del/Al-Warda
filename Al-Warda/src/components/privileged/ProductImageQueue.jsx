@@ -177,6 +177,7 @@ function GalleryImageItem({
   onMarkFailed,
   onManualConfig,
   onCompare,
+  onDelete,
 }) {
   const [imgStatus, setImgStatus] = useState("initial"); // "initial" | "syncing" | "failed"
   const [sourceIndex, setSourceIndex] = useState(0); // 0 = primary, 1 = raw github
@@ -533,6 +534,19 @@ function GalleryImageItem({
           >
             <i className="ri-error-warning-line" />
             {isRussian ? "В ошибки" : "To errors"}
+          </button>
+          <button
+            type="button"
+            className="product-image-queue__gallery-btn product-image-queue__gallery-btn--delete"
+            onClick={() => onDelete?.(image)}
+            title={
+              isRussian
+                ? "Удалить фото этого товара"
+                : "Delete this product image"
+            }
+          >
+            <i className="ri-delete-bin-line" />
+            {isRussian ? "Удалить" : "Delete"}
           </button>
         </div>
       )}
@@ -1319,13 +1333,23 @@ export default function ProductImageQueue({
     })();
   };
 
-  const deleteImages = async () => {
-    const images = Object.entries(selectedImages).map(([id, imageUrl]) => ({
-      id,
-      imageUrl,
-    }));
+  const deleteImages = async (explicitImages = null) => {
+    const images = Array.isArray(explicitImages)
+      ? explicitImages
+          .filter((item) => item && item.id)
+          .map((item) => ({
+            id: String(item.id),
+            imageUrl: item.imageUrl || "",
+          }))
+      : Object.entries(selectedImages).map(([id, imageUrl]) => ({
+          id,
+          imageUrl,
+        }));
     if (!images.length) return;
-    const isAll = selectableImages.length > 0 && images.length >= selectableImages.length;
+    const isAll =
+      !Array.isArray(explicitImages) &&
+      selectableImages.length > 0 &&
+      images.length >= selectableImages.length;
     const approved = await confirm({
       title: isRussian
         ? isAll
@@ -2381,7 +2405,6 @@ export default function ProductImageQueue({
                   <button
                     type="button"
                     className="product-image-queue__start product-image-queue__start--danger"
-                    disabled={busy || deletingFailed}
                     onClick={() => deleteFailedFromDb()}
                     title={
                       selectedFailedIds.length === 0
@@ -2482,7 +2505,6 @@ export default function ProductImageQueue({
                           <button
                             type="button"
                             className="product-image-queue__failed-delete-one"
-                            disabled={busy || deletingFailed}
                             onClick={() => deleteFailedFromDb([itemId])}
                           >
                             <i className="ri-delete-bin-line" />
@@ -2776,7 +2798,6 @@ export default function ProductImageQueue({
                   <button
                     type="button"
                     className="product-image-queue__start product-image-queue__start--danger"
-                    disabled={busy || deleting}
                     onClick={() => {
                       if (Object.keys(selectedImages).length === 0) {
                         alert({
@@ -2838,11 +2859,6 @@ export default function ProductImageQueue({
                     <button
                       type="button"
                       className="product-image-queue__start product-image-queue__start--danger product-image-queue__start--danger-zone"
-                      disabled={
-                        busy ||
-                        deleting ||
-                        !selectableImages.length
-                      }
                       onClick={() => setShowDeleteAllModal(true)}
                       title={
                         isRussian
@@ -2895,6 +2911,9 @@ export default function ProductImageQueue({
                       onMarkFailed={(id) => markItemsAsFailed([id])}
                       onManualConfig={(item) => setManualConfigItem(item)}
                       onCompare={(item) => setCompareItem(item)}
+                      onDelete={(item) =>
+                        deleteImages([{ id: item.id, imageUrl: item.imageUrl }])
+                      }
                     />
                   ))}
                 </div>
@@ -3057,8 +3076,8 @@ export default function ProductImageQueue({
               <button
                 type="button"
                 className="product-image-queue__modal-btn product-image-queue__modal-btn--danger"
-                disabled={deleting || busy || !selectableImages.length}
                 onClick={async () => {
+                  if (!selectableImages.length) return;
                   setShowDeleteAllModal(false);
                   await executeDeleteAllImages();
                 }}

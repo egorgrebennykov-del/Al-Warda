@@ -591,7 +591,6 @@ export default function ProductsManager({ language = "ru" }) {
               <button
                 type="button"
                 className="products-manager__delete-bulk-btn"
-                disabled={deletingBulk}
                 onClick={handleDeleteBulk}
                 title={
                   Object.keys(selectedIds).length > 0
@@ -986,7 +985,6 @@ export default function ProductsManager({ language = "ru" }) {
                       type="button"
                       className="products-manager__delete-btn"
                       onClick={() => handleDelete(p)}
-                      disabled={isDeleting}
                       title={
                         isRussian
                           ? "Удалить товар из базы данных"

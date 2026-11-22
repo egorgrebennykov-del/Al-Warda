@@ -1105,6 +1105,19 @@
   color: #92400e;
 }
 
+.product-image-queue__gallery-btn--delete {
+  width: 100%;
+  border-color: rgba(220, 38, 38, 0.45);
+  background: rgba(254, 226, 226, 0.55);
+  color: #b91c1c;
+}
+
+.product-image-queue__gallery-btn--delete:hover {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #7f1d1d;
+}
+
 .product-image-queue__start--warning {
   border-color: rgba(217, 119, 6, 0.55) !important;
   background: rgba(217, 119, 6, 0.14) !important;
