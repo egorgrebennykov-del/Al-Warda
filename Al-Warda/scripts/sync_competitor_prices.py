@@ -215,9 +215,10 @@ def main() -> int:
             "country": "BG",
             "competitor_name": "Notino",
             "price_eur": price,
+            "product_url": url or "",
             "updated_at": now_iso,
         }
-        for sid, price, _, _ in matched_comp
+        for sid, price, url, _ in matched_comp
     ]
     if comp_objects:
         ins_comp = """
