@@ -1111,10 +1111,10 @@ export default function BookDetails() {
                     <button
                       key={opt.key}
                       type="button"
-                      className={`warda-volume-pill ${selectedVolume === opt.key ? "active" : ""}`}
+                      className={`warda-volume-pill ${selectedSizeOpt?.key === opt.key ? "active" : ""}`}
                       onClick={() => handleSelectVolume(opt.key)}
                       role="radio"
-                      aria-checked={selectedVolume === opt.key}
+                      aria-checked={selectedSizeOpt?.key === opt.key}
                     >
                       <span className="warda-volume-pill__title">
                         {formatVolume(opt.ml, language)}
