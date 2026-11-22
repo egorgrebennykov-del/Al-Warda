@@ -269,7 +269,7 @@
 /* User's Golden Horizon & Rising Glow Stage (bottom_glow_stage.webp) */
 .warda-details-bottom-glow {
   position: absolute;
-  bottom: 30px;
+  bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
   width: 126%;
@@ -471,16 +471,14 @@
   justify-content: center;
   -webkit-mask-image: linear-gradient(
     to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.85) 5%,
+    rgba(0, 0, 0, 0.85) 0%,
     rgba(0, 0, 0, 0.56) 42%,
     rgba(0, 0, 0, 0.22) 74%,
     transparent 96%
   );
   mask-image: linear-gradient(
     to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.85) 5%,
+    rgba(0, 0, 0, 0.85) 0%,
     rgba(0, 0, 0, 0.56) 42%,
     rgba(0, 0, 0, 0.22) 74%,
     transparent 96%

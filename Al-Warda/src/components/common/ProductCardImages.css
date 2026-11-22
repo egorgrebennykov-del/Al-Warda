@@ -111,25 +111,22 @@
   box-sizing: border-box !important;
   padding: 6% 7% 0 !important;
   transform-origin: bottom center !important;
-  transform: translateY(var(--card-flacon-pad-pct, 0%)) scale(1) !important;
+  transform: translate3d(0, var(--card-flacon-pad-pct, 0%), 0) !important;
   -webkit-box-reflect: none !important;
   image-rendering: auto;
-  transition: filter 0.3s ease, transform 0.3s ease;
-  filter:
-    brightness(1.03)
-    contrast(1.07)
-    saturate(1.12)
-    drop-shadow(0 0 22px rgba(212, 175, 55, 0.18))
-    drop-shadow(0 12px 22px rgba(0, 0, 0, 0.72)) !important;
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: brightness(1.03) contrast(1.07) saturate(1.12) !important;
 }
 
 .warda-perfume-card:hover .warda-perfume-card__img {
-  transform: translateY(calc(var(--card-flacon-pad-pct, 0%) - 18px)) !important;
+  transform: translate3d(0, calc(var(--card-flacon-pad-pct, 0%) - 18px), 0) !important;
 }
 
 .warda-perfume-card__bottom-glow {
   position: absolute;
-  bottom: -4.7%;
+  bottom: 2.9%;
   left: 50%;
   transform: translateX(-50%);
   width: 120%;
@@ -218,9 +215,9 @@
   padding: 6% 7% 0 !important;
   transform-origin: center center !important;
   transform: translateY(calc(-1 * var(--card-flacon-pad-pct, 0%))) scaleY(-1) !important;
-  filter: blur(0.65px) brightness(0.8) saturate(1.08);
+  filter: brightness(0.8) saturate(1.08);
   opacity: 0.9;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .warda-perfume-card:hover .warda-perfume-card__reflection-img {
@@ -354,6 +351,10 @@
     aspect-ratio: 1 / 0.9 !important;
   }
 
+  .warda-perfume-card__bottom-glow {
+    bottom: 1.2%;
+  }
+
   .warda-perfume-card__reflection {
     aspect-ratio: 1 / 0.28 !important;
   }
@@ -373,13 +374,8 @@
 
   .warda-perfume-card .warda-perfume-card__img {
     transform-origin: bottom center !important;
-    transform: translateY(var(--card-flacon-pad-pct, 0%)) scale(1) !important;
-    filter:
-      brightness(1.06)
-      contrast(1.09)
-      saturate(1.14)
-      drop-shadow(0 0 16px rgba(212, 175, 55, 0.2))
-      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.75)) !important;
+    transform: translate3d(0, var(--card-flacon-pad-pct, 0%), 0) !important;
+    filter: brightness(1.06) contrast(1.09) saturate(1.14) !important;
   }
 
   .warda-perfume-card .warda-perfume-card__media:has(.warda-perfume-card__set-tag) .warda-perfume-card__img,
