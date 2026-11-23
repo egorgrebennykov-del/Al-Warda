@@ -4072,6 +4072,29 @@ def process_product(
                 source_name = "Ручная загрузка"
                 source_type = "manual_upload"
 
+        # Respect admin error feedback & previously rejected source URLs
+        gen_meta = (row.get("info") or {}).get("imageGeneration") or {}
+        rejected_urls = {
+            str(u).strip()
+            for u in (gen_meta.get("rejectedSourceUrls") or [])
+            if str(u or "").strip()
+        }
+        prev_feedback = str(
+            gen_meta.get("previousFeedback") or gen_meta.get("error") or ""
+        ).strip()
+        if gen_meta.get("needsNewPhoto") or prev_feedback:
+            for u in (
+                gen_meta.get("sourceImageUrl"),
+                (row.get("info") or {}).get("imageSourceImageUrl"),
+            ):
+                if str(u or "").strip():
+                    rejected_urls.add(str(u).strip())
+        if rejected_urls or prev_feedback:
+            print(
+                f"[{row['id']}] Respecting feedback ({prev_feedback or 'new photo'}), skipping {len(rejected_urls)} rejected source URL(s)",
+                flush=True,
+            )
+
         # Requirement: Search for high-res official studio photo FIRST (unless admin uploaded a manual photo)
         studio_candidates = [] if source_bytes is not None else search_official_studio_candidates(
             row.get("name") or "",
@@ -4107,6 +4130,9 @@ def process_product(
         for idx_cand, studio_asset in enumerate(studio_candidates):
             fetch_url = studio_asset.get("imageUrl")
             if not fetch_url:
+                continue
+            if fetch_url.strip() in rejected_urls:
+                print(f"[{row['id']}] Skipping previously rejected photo: {fetch_url}", flush=True)
                 continue
             if not is_set:
                 url_fname = fetch_url.split("?")[0].rsplit("/", 1)[-1].lower()
@@ -4158,6 +4184,9 @@ def process_product(
 
         if source_bytes is None:
             raw_url = product_source(row)
+            if raw_url and raw_url.strip() in rejected_urls:
+                print(f"[{row['id']}] Skipping previously rejected catalog photo: {raw_url}", flush=True)
+                raw_url = None
             if raw_url:
                 raw_resp = requests.get(
                     raw_url,

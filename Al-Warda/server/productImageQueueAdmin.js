@@ -853,7 +853,21 @@ export async function requeueFailedProductItems(request, env) {
       for (const row of rows) {
         const info =
           row.info && typeof row.info === "object" ? { ...row.info } : {};
-        info.imageGeneration = { status: "pending" };
+        const prev =
+          info.imageGeneration && typeof info.imageGeneration === "object"
+            ? info.imageGeneration
+            : {};
+        const rejected = new Set(
+          Array.isArray(prev.rejectedSourceUrls) ? prev.rejectedSourceUrls : [],
+        );
+        if (prev.sourceImageUrl) rejected.add(prev.sourceImageUrl);
+        if (info.imageSourceImageUrl) rejected.add(info.imageSourceImageUrl);
+        info.imageGeneration = {
+          status: "pending",
+          rejectedSourceUrls: Array.from(rejected),
+          previousFeedback: prev.error || prev.reason || "",
+          needsNewPhoto: Boolean(prev.needsNewPhoto || prev.manualFailed),
+        };
         delete info.imageGenerationReplacement;
         const patchUrl = new URL(`${baseUrl}/rest/v1/stocks`);
         patchUrl.searchParams.set("id", `eq.${row.id}`);
