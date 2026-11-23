@@ -3364,7 +3364,7 @@ export function getPerfumeVolumeOptions(perfume) {
     });
   }
 
-  return Array.from(optionsMap.values()).sort((a, b) => b.ml - a.ml);
+  return Array.from(optionsMap.values()).sort((a, b) => a.ml - b.ml);
 }
 
 export function getDefaultPerfumeVolumeOption(perfume) {
@@ -3381,6 +3381,23 @@ export function getDefaultPerfumeVolumeOption(perfume) {
     };
   }
 
+  const options = getPerfumeVolumeOptions(perfume);
+  const hasMultipleSizes =
+    Array.isArray(perfume.availableSizes) && perfume.availableSizes.length > 1;
+  if (hasMultipleSizes && options.length > 0) {
+    const smallest = options[0];
+    return {
+      price: Number(smallest.price ?? perfume.price ?? 0),
+      ml: smallest.ml,
+      key: smallest.key || "full",
+      labelRu: smallest.labelRu || `${smallest.ml} мл`,
+      labelEn: smallest.labelEn || `${smallest.ml} ml`,
+      isSample: Boolean(smallest.isSample),
+      isSecondLargest: false,
+      canChangeVolume: true,
+    };
+  }
+
   const knownBottleMl =
     parseVolumeMl(perfume.volume) || parseVolumeMl(perfume.name);
   const bottleMl = knownBottleMl || 100;
@@ -3389,8 +3406,6 @@ export function getDefaultPerfumeVolumeOption(perfume) {
     : knownBottleMl
       ? `${bottleMl} мл`
       : "";
-  const hasMultipleSizes =
-    Array.isArray(perfume.availableSizes) && perfume.availableSizes.length > 1;
 
   return {
     price: Number(perfume.price || 0),

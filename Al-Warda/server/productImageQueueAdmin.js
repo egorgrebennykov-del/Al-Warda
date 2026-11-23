@@ -545,6 +545,7 @@ export async function getProductImageQueueStatus(request, env) {
           String(row.id || "") === "site-settings" ||
           String(row.id || "") === "999999" ||
           row.in_stock === false ||
+          Boolean(info.mergedIntoId) ||
           gt?.hiddenFromSite === true ||
           gt?.passed === false
         ) {
@@ -2025,7 +2026,8 @@ export async function getAllAdminProducts(request, env) {
           return false;
         }
         const gt = row.info && typeof row.info === "object" ? row.info.googleTrends : null;
-        if (row.in_stock === false || gt?.hiddenFromSite === true || gt?.passed === false) {
+        const mergedIntoId = row.info && typeof row.info === "object" ? row.info.mergedIntoId : null;
+        if (row.in_stock === false || Boolean(mergedIntoId) || gt?.hiddenFromSite === true || gt?.passed === false) {
           return false;
         }
         if (onlySite) {

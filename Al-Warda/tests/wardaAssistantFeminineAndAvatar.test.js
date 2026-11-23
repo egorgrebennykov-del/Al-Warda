@@ -449,9 +449,9 @@ test("getDefaultPerfumeVolumeOption returns genuine Qogita bottle volume and pri
     ],
   };
   const multiOpt = getDefaultPerfumeVolumeOption(multiBottle);
-  assert.equal(multiOpt.ml, 100);
-  assert.equal(multiOpt.price, 60);
-  assert.equal(getDefaultCatalogPrice(multiBottle), 60);
+  assert.equal(multiOpt.ml, 50);
+  assert.equal(multiOpt.price, 35);
+  assert.equal(getDefaultCatalogPrice(multiBottle), 35);
 
   // 2. Standard perfume: 100ml bottle -> returns full price from Qogita
   const asad = { name: "Lattafa Asad 100ml EDP", price: 29.90, volume: "100 мл" };
