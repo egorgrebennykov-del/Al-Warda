@@ -41,7 +41,9 @@ async function fetchCompetitorOffers(stockId) {
         competitors: Array.isArray(item.competitors) ? item.competitors : [],
         purchaseCostEur: item.purchaseCostEur ?? null,
       };
-      competitorOffersCache.set(key, result);
+      if (result.competitors.length > 0) {
+        competitorOffersCache.set(key, result);
+      }
       return result;
     })
     .catch(() => ({ competitors: [] }))
