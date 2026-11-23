@@ -390,8 +390,8 @@ export async function handleGetProductPricing(request, env, stockIdRaw) {
       fetchGlobalSettings(env),
       hasuraGraphQL(
         env,
-        `query GetSingleProductPricing($stockId: Int!) {
-          stocks(where: { id: { _eq: $stockId } }, limit: 1) {
+        `query GetSingleProductPricing($stockIdBig: bigint!, $stockId: Int!) {
+          stocks(where: { id: { _eq: $stockIdBig } }, limit: 1) {
             id
             name
             title
@@ -422,7 +422,7 @@ export async function handleGetProductPricing(request, env, stockIdRaw) {
             updated_at
           }
         }`,
-        { stockId },
+        { stockIdBig: stockId, stockId },
       ),
     ]);
 
@@ -522,15 +522,15 @@ export async function handleSaveProductPricing(request, env, stockIdRaw) {
       fetchGlobalSettings(env),
       hasuraGraphQL(
         env,
-        `query VerifyStockExists($stockId: Int!) {
-          stocks(where: { id: { _eq: $stockId } }, limit: 1) {
+        `query VerifyStockExists($stockIdBig: bigint!, $stockId: Int!) {
+          stocks(where: { id: { _eq: $stockIdBig } }, limit: 1) {
             id name title brand price in_stock info
           }
           product_pricing(where: { stock_id: { _eq: $stockId } }, limit: 1) {
             published_prices
           }
         }`,
-        { stockId },
+        { stockIdBig: stockId, stockId },
       ),
     ]);
 
@@ -647,8 +647,8 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
       fetchGlobalSettings(env),
       hasuraGraphQL(
         env,
-        `query LoadForPublish($stockId: Int!) {
-          stocks(where: { id: { _eq: $stockId } }, limit: 1) {
+        `query LoadForPublish($stockIdBig: bigint!, $stockId: Int!) {
+          stocks(where: { id: { _eq: $stockIdBig } }, limit: 1) {
             id price
           }
           product_pricing(where: { stock_id: { _eq: $stockId } }, limit: 1) {
@@ -664,7 +664,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
             price_eur
           }
         }`,
-        { stockId },
+        { stockIdBig: stockId, stockId },
       ),
     ]);
 
@@ -712,7 +712,7 @@ export async function handlePublishProductPrices(request, env, stockIdRaw) {
         const basePrice = round2(baseVals[0]);
         await hasuraGraphQL(
           env,
-          `mutation UpdateStockBasePrice($stockId: Int!, $price: numeric!) {
+          `mutation UpdateStockBasePrice($stockId: bigint!, $price: numeric!) {
             update_stocks(where: { id: { _eq: $stockId } }, _set: { price: $price }) {
               affected_rows
             }
