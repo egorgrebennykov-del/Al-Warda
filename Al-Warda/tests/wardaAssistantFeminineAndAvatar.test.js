@@ -787,3 +787,53 @@ test("formatTextWithCurrency dynamically formats assistant recommendation prices
   assert.ok(hufText.includes("8744 Fr") || hufText.includes("8 744 Fr"));
   assert.ok(hufText.includes("1270 Fr – 4356 Fr") || hufText.includes("1 270 Fr – 4 356 Fr"));
 });
+
+test("processWardaChat recommends cheapest perfumes when user says 'немного денег и нужно дешево'", async () => {
+  const { processWardaChat } = await import("../server/wardaAssistantService.js");
+  const testCatalog = [
+    {
+      id: "lux-200",
+      name: "Amouage Interlude Man 100ml",
+      brand: "Amouage",
+      price: 200.0,
+      gender: "Унисекс",
+      category: "Восточные",
+      notesSummary: "Уд · Ладан",
+      volume: "100ml",
+    },
+    {
+      id: "budget-15",
+      name: "Lattafa Yara Tous 100ml",
+      brand: "Lattafa",
+      price: 12.0,
+      gender: "Унисекс",
+      category: "Восточные",
+      notesSummary: "Ваниль · Манго",
+      volume: "100ml",
+    },
+    {
+      id: "mid-35",
+      name: "Armaf Club De Nuit 105ml",
+      brand: "Armaf",
+      price: 30.0,
+      gender: "Унисекс",
+      category: "Цитрусовые",
+      notesSummary: "Лимон · Бергамот",
+      volume: "105ml",
+    },
+  ];
+
+  const result = await processWardaChat({
+    messages: [
+      { role: "user", content: "Ищу духи в подарок" },
+      { role: "assistant", content: "С удовольствием помогу!" },
+      { role: "user", content: "у меня немного денег и нужно дешево" },
+    ],
+    language: "ru",
+    context: { catalog: testCatalog },
+  });
+
+  assert.ok(result.books.length > 0, "Should recommend budget perfumes");
+  assert.equal(result.books[0].id, "budget-15", "Cheapest perfume must be recommended first");
+  assert.ok(result.books[0].price < 50, "First recommended perfume must be affordable");
+});

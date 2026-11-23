@@ -773,17 +773,22 @@ export function extractDialogueMemory(history = [], currentMessage = "", userInf
 
   const preferredGender = inferInterlocutorGender(fullConversationText, cleanCurrent, userInfo);
 
-  const isGift = /(подарок|подарить|в подарок|для подарка|что подарить)/i.test(fullConversationText);
-  const isLuxury = /(подороже|люкс|премиум|эксклюзив|коллекционн)/i.test(cleanCurrent) || isGift;
-  const isBudget = /(подешевле|бюджетн|до 20|до 25|недорог)/i.test(cleanCurrent);
+  const isGift = /(подарок|подарить|в подарок|для подарка|что подарить|gift|present)/i.test(fullConversationText);
+  const isBudget =
+    /(дешев|дешёв|подешевле|недорог|бюджет|немного денег|мало денег|эконом|попроще|доступн|cheap|cheaper|cheapest|affordable|inexpensive|low\s*budget|tight\s*budget|not\s*much\s*money|little\s*money|on\s*a\s*budget)/i.test(
+      fullConversationText
+    ) && !/(подороже|люкс|премиум|эксклюзив|expensive|luxury|premium)/i.test(cleanCurrent);
+  const isLuxury =
+    !isBudget &&
+    (/(подороже|люкс|премиум|эксклюзив|коллекционн|expensive|luxury|premium)/i.test(cleanCurrent) || isGift);
 
   let maxPrice = null;
-  const priceMatch = cleanCurrent.match(/до\s*(\d+)/i);
+  const priceMatch = cleanCurrent.match(/(?:до|под|не\s*дороже|under|below|max|up\s*to)\s*(\d+)/i);
   if (priceMatch) {
     maxPrice = Number(priceMatch[1]);
   }
 
-  const priceOrder = isLuxury ? "desc" : isBudget ? "asc" : "relevance";
+  const priceOrder = isBudget ? "asc" : isLuxury ? "desc" : "relevance";
 
   return {
     previouslyRecommended,
@@ -1313,7 +1318,7 @@ function wantsProductSuggestions(text, memory, history) {
   ) {
     return true;
   }
-  if (memory?.isSpecificInquiry || memory?.isRejection || memory?.maxPrice) return true;
+  if (memory?.isSpecificInquiry || memory?.isRejection || memory?.maxPrice || memory?.isBudget) return true;
   const catalogBrands = new Set(ALL_PERFUMES.map((p) => (p.brand || "").toLowerCase()).filter((b) => b.length > 2));
   for (const brand of catalogBrands) if (q.includes(brand)) return true;
   const lastAssistant = [...(history || [])].reverse().find((m) => m.role === "assistant");
@@ -1438,8 +1443,18 @@ export async function processWardaChat({ messages = [], language = "ru", context
     }
 
     if (foundPerfumes.length === 0 && ALL_PERFUMES.length > 0) {
-      // Fallback: pick popular items matching preferred gender so user always receives concrete recommendations
-      const pool = ALL_PERFUMES.filter((p) => (sampleRequested || !isSamplePerfume(p)) && matchesTargetGender(p, memory.preferredGender));
+      // Fallback: pick popular items matching preferred gender (and budget/price order!) so user always receives appropriate recommendations
+      let pool = ALL_PERFUMES.filter((p) => {
+        if (!sampleRequested && isSamplePerfume(p)) return false;
+        if (!matchesTargetGender(p, memory.preferredGender)) return false;
+        if (memory.maxPrice !== null && p.price > memory.maxPrice) return false;
+        return true;
+      });
+      if (memory.priceOrder === "asc") {
+        pool = [...pool].sort((a, b) => a.price - b.price);
+      } else if (memory.priceOrder === "desc") {
+        pool = [...pool].sort((a, b) => b.price - a.price);
+      }
       foundPerfumes = pool.slice(0, 4);
     }
 
