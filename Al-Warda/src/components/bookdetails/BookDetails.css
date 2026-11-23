@@ -159,19 +159,6 @@
   overflow: visible;
   cursor: pointer;
   user-select: none;
-  /* Soft outer boundary roll-off into the dark background */
-  -webkit-mask-image: radial-gradient(
-    ellipse 88% 88% at 50% 48%,
-    #000 64%,
-    rgba(0, 0, 0, 0.5) 84%,
-    transparent 98%
-  );
-  mask-image: radial-gradient(
-    ellipse 88% 88% at 50% 48%,
-    #000 64%,
-    rgba(0, 0, 0, 0.5) 84%,
-    transparent 98%
-  );
 }
 
 /* Master Studio Stage Presentation */
@@ -287,16 +274,20 @@
   mix-blend-mode: screen;
   filter: brightness(1.08);
   -webkit-mask-image: radial-gradient(
-    ellipse 52% 54% at 50% 56%,
-    #000 45%,
-    rgba(0, 0, 0, 0.65) 68%,
-    transparent 96%
+    ellipse 45% 42% at 50% 56%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 40%,
+    rgba(0, 0, 0, 0.34) 64%,
+    rgba(0, 0, 0, 0.08) 84%,
+    transparent 98%
   );
   mask-image: radial-gradient(
-    ellipse 52% 54% at 50% 56%,
-    #000 45%,
-    rgba(0, 0, 0, 0.65) 68%,
-    transparent 96%
+    ellipse 45% 42% at 50% 56%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 40%,
+    rgba(0, 0, 0, 0.34) 64%,
+    rgba(0, 0, 0, 0.08) 84%,
+    transparent 98%
   );
 }
 
@@ -795,16 +786,20 @@
 
   .warda-details-bottom-glow-img {
     -webkit-mask-image: radial-gradient(
-      ellipse 46% 52% at 50% 56%,
-      #000 28%,
-      rgba(0, 0, 0, 0.58) 58%,
-      transparent 88%
+      ellipse 44% 40% at 50% 56%,
+      #000 16%,
+      rgba(0, 0, 0, 0.68) 38%,
+      rgba(0, 0, 0, 0.3) 62%,
+      rgba(0, 0, 0, 0.08) 82%,
+      transparent 96%
     );
     mask-image: radial-gradient(
-      ellipse 46% 52% at 50% 56%,
-      #000 28%,
-      rgba(0, 0, 0, 0.58) 58%,
-      transparent 88%
+      ellipse 44% 40% at 50% 56%,
+      #000 16%,
+      rgba(0, 0, 0, 0.68) 38%,
+      rgba(0, 0, 0, 0.3) 62%,
+      rgba(0, 0, 0, 0.08) 82%,
+      transparent 96%
     );
   }
 
