@@ -334,9 +334,20 @@
 
 @media (max-width: 768px) {
   .warda-perfume-card.ornate-card,
+  .warda-perfume-card {
+    padding: 0 0 12px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: hidden !important;
+  }
+
   .warda-perfume-card.ornate-card:hover,
-  .warda-perfume-card,
-  .warda-perfume-card:hover {
+  .warda-perfume-card:hover,
+  .warda-perfume-card:active,
+  .warda-perfume-card:focus-within {
     padding: 0 0 12px !important;
     background: linear-gradient(
       180deg,
@@ -344,7 +355,7 @@
       rgba(10, 8, 6, 0.94) 72%,
       rgba(8, 6, 5, 1) 100%
     ) !important;
-    border: 1px solid rgba(212, 175, 55, 0.14) !important;
+    border: 1px solid rgba(212, 175, 55, 0.22) !important;
     border-radius: 14px !important;
     box-shadow: none !important;
     transform: none !important;
