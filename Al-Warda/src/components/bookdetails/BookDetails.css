@@ -272,7 +272,7 @@
   display: block;
   object-fit: fill;
   mix-blend-mode: screen;
-  filter: brightness(1.08);
+  filter: brightness(1.06);
   -webkit-mask-image: radial-gradient(
     ellipse 48% 46% at 50% 56%,
     #000 42%,
@@ -315,9 +315,9 @@
   transform-origin: bottom center;
   transform: translateY(var(--flacon-pad-pct, 7.4%));
   filter:
-    brightness(1.02)
-    contrast(1.05)
-    saturate(1.10)
+    brightness(1.03)
+    contrast(1.07)
+    saturate(1.12)
     drop-shadow(0 0 24px rgba(212, 175, 55, 0.20))
     drop-shadow(0 14px 28px rgba(0, 0, 0, 0.72));
   transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
