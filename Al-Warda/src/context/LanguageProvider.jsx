@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LanguageContext } from "./languageContext";
 import { DEFAULT_LANGUAGE, getBundledTranslation, loadTranslation } from "./translations";
-import { getCookie, setCookie } from "../../utils/cookies";
 
-const COOKIE_KEY = "warda_language";
 const STORAGE_KEY = "warda_language";
 const LANGUAGE_CODES = ["ru", "en", "hu", "bg", "el", "ro"];
 
@@ -20,15 +18,12 @@ export function resolveLanguageFromCountry(countryCode) {
 }
 
 function getSavedLanguagePreference() {
-  if (typeof document === "undefined") return null;
+  if (typeof window === "undefined") return null;
   try {
-    const fromCookie = getCookie(COOKIE_KEY) || getCookie("language");
-    if (LANGUAGE_CODES.includes(fromCookie)) return fromCookie;
-
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = window.localStorage.getItem(STORAGE_KEY);
     if (LANGUAGE_CODES.includes(saved)) return saved;
   } catch {
-    // Ignore storage/cookie errors
+    // Ignore localStorage errors
   }
   return null;
 }
@@ -95,11 +90,10 @@ export default function LanguageProvider({ children, initialLanguage, initialDic
   useEffect(() => {
     document.documentElement.lang = language;
     if (!hasExplicitPrefRef.current) return;
-    setCookie(COOKIE_KEY, language);
     try {
-      localStorage.setItem(STORAGE_KEY, language);
+      window.localStorage.setItem(STORAGE_KEY, language);
     } catch {
-      // Ignore storage errors
+      // Ignore localStorage errors
     }
   }, [language]);
 
