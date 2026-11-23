@@ -21,13 +21,24 @@ export default function PhoneInput({
   className = "",
   placeholder = "",
 }) {
-  const { language, t } = useLanguage();
+  const { language, t, detectedCountry } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isSavedPhonesOpen, setIsSavedPhonesOpen] = useState(false);
   const [search, setSearch] = useState("");
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const savedPhonesRef = useRef(null);
+  const userPickedCountryRef = useRef(false);
+
+  useEffect(() => {
+    if (userPickedCountryRef.current || phone) return;
+    const code = String(detectedCountry || "").trim().toUpperCase();
+    if (!code) return;
+    const matched = countries.find((c) => c.iso2 === code);
+    if (matched && matched.iso2 !== countryIso) {
+      onCountryChange?.(matched.iso2);
+    }
+  }, [detectedCountry, phone, countryIso, onCountryChange]);
 
   const selectedCountry = useMemo(
     () => countries.find((c) => c.iso2 === countryIso) || countries.find((c) => c.iso2 === "IT") || countries[0],
@@ -90,6 +101,7 @@ export default function PhoneInput({
   }, []);
 
   const handleSelectCountry = (country) => {
+    userPickedCountryRef.current = true;
     onCountryChange?.(country.iso2);
     setIsOpen(false);
     setSearch("");
@@ -109,6 +121,7 @@ export default function PhoneInput({
       const sorted = [...countries].sort((a, b) => b.dialCode.length - a.dialCode.length);
       const matched = sorted.find((c) => trimmed.startsWith(c.dialCode));
       if (matched) {
+        userPickedCountryRef.current = true;
         onCountryChange?.(matched.iso2);
         let subscriber = trimmed.slice(matched.dialCode.length).trimStart();
         subscriber = subscriber.replace(/^0+/, "");
@@ -125,6 +138,7 @@ export default function PhoneInput({
     setIsSavedPhonesOpen(false);
     const matched = findCountryByPhone(savedNumber);
     if (matched) {
+      userPickedCountryRef.current = true;
       onCountryChange?.(matched.iso2);
       const sub = stripCountryCodeAndLeadingZero(savedNumber, matched.dialCode);
       onPhoneChange?.(sub);

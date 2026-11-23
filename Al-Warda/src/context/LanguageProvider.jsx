@@ -37,9 +37,22 @@ export function getInitialLanguage() {
   return getSavedLanguagePreference() || DEFAULT_LANGUAGE;
 }
 
+let geoCountryPromise = null;
+function fetchVisitorCountry() {
+  if (typeof window === "undefined") return Promise.resolve("");
+  if (!geoCountryPromise) {
+    geoCountryPromise = fetch("/api/geo", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => String(data?.country || "").trim().toUpperCase())
+      .catch(() => "");
+  }
+  return geoCountryPromise;
+}
+
 export default function LanguageProvider({ children, initialLanguage, initialDict }) {
   const hasExplicitPrefRef = useRef(Boolean(initialLanguage || getSavedLanguagePreference()));
   const [language, setLanguageState] = useState(() => initialLanguage || getInitialLanguage());
+  const [detectedCountry, setDetectedCountry] = useState("");
   const [dictionaries, setDictionaries] = useState(() => {
     const dicts = { [DEFAULT_LANGUAGE]: getBundledTranslation(DEFAULT_LANGUAGE) };
     if (initialDict) dicts[initialLanguage || DEFAULT_LANGUAGE] = initialDict;
@@ -52,19 +65,17 @@ export default function LanguageProvider({ children, initialLanguage, initialDic
   };
 
   useEffect(() => {
-    if (hasExplicitPrefRef.current || typeof window === "undefined") return undefined;
+    if (typeof window === "undefined") return undefined;
     let cancelled = false;
-    fetch("/api/geo", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (cancelled || hasExplicitPrefRef.current) return;
-        const detected = resolveLanguageFromCountry(data?.country);
+    fetchVisitorCountry().then((country) => {
+      if (cancelled) return;
+      if (country) setDetectedCountry(country);
+      if (!hasExplicitPrefRef.current) {
+        const detected = resolveLanguageFromCountry(country);
         hasExplicitPrefRef.current = true;
         setLanguageState(detected);
-      })
-      .catch(() => {
-        // Fallback to DEFAULT_LANGUAGE ("en")
-      });
+      }
+    });
     return () => {
       cancelled = true;
     };
@@ -111,8 +122,9 @@ export default function LanguageProvider({ children, initialLanguage, initialDic
       setLanguage,
       toggleLanguage,
       t,
+      detectedCountry,
     }),
-    [language, t],
+    [language, t, detectedCountry],
   );
 
   return (
