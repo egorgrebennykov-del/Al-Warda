@@ -69,16 +69,32 @@ def sync_prices(env: dict[str, str]) -> None:
             matched = entry
 
         if not matched:
+            if bool(s.get("in_stock")) or info.get("aromadealMatched") is not False:
+                info["aromadealMatched"] = False
+                info["aromadealAvailable"] = False
+                info["aromadealUpdatedAt"] = now_iso
+                pending_batch.append(
+                    (
+                        int(s["id"]),
+                        {
+                            "in_stock": False,
+                            "info": info,
+                        },
+                    )
+                )
+                updated += 1
+                if len(pending_batch) >= 25:
+                    batch_update_stocks(env, pending_batch)
+                    pending_batch.clear()
             continue
 
         new_price = matched["price"] if matched["price"] > 0 else float(s.get("price") or 0)
         hidden_by_trends = bool((info.get("googleTrends") or {}).get("hiddenFromSite"))
         is_merged_secondary = bool(info.get("mergedIntoId"))
-        has_completed_img = (info.get("imageGeneration") or {}).get("status") == "completed"
         new_in_stock = (
             False
-            if (hidden_by_trends or is_merged_secondary)
-            else (True if has_completed_img else bool(matched["available"]))
+            if (hidden_by_trends or is_merged_secondary or not matched["available"])
+            else True
         )
 
         price_changed = abs(float(s.get("price") or 0) - new_price) >= 0.01
