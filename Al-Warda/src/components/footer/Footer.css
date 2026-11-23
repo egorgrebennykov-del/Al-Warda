@@ -1,6 +1,6 @@
 .warda-footer {
   margin-top: auto;
-  padding: 5rem 0 1.75rem;
+  padding: 3.5rem 0 1.5rem;
   background: #14110f;
   border-top: 1px solid rgba(201, 168, 112, 0.24);
   color: #bfb2a2;
@@ -11,8 +11,8 @@
   display: grid;
   align-items: start;
   grid-template-columns: minmax(230px, 1.6fr) repeat(3, minmax(0, 1fr));
-  gap: clamp(2rem, 4vw, 4.5rem);
-  padding-bottom: 4rem;
+  gap: clamp(2rem, 4vw, 4rem);
+  padding-bottom: 2.75rem;
 }
 .warda-footer .footer__brand { width: auto; height: auto; overflow: visible; }
 .warda-footer__col--brand { display: flex; align-items: flex-start; flex-direction: column; gap: 1.25rem; }
@@ -91,9 +91,11 @@
   .warda-footer .footer__bottom { padding-top: 0.9rem; gap: 0.4rem; font-size: 0.7rem; }
 }
 @media (max-width: 600px) {
-  .warda-footer { padding: 1.5rem 0 1rem; }
-  .warda-footer .footer__container { gap: 1.15rem 0.9rem; padding-bottom: 1.2rem; }
+  .warda-footer { padding: 1.35rem 0 0.9rem; }
+  .warda-footer .footer__container { gap: 1rem 0.9rem; padding-bottom: 1rem; }
   .warda-footer__col--brand, .warda-footer__col:last-child { grid-column: 1 / -1; }
-  .warda-footer .footer__logo-image { width: 54px; height: 54px; }
-  .warda-footer .footer__bottom { flex-direction: column; }
+  .warda-footer__desc { max-width: none; }
+  .warda-footer .footer__logo-image { width: 48px; height: 48px; }
+  .warda-footer__info { flex-direction: row; flex-wrap: wrap; gap: 0.4rem 0.95rem; margin-bottom: 0.75rem; }
+  .warda-footer .footer__bottom { flex-direction: column; gap: 0.3rem; padding-top: 0.75rem; }
 }
