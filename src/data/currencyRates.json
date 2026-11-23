@@ -3,9 +3,9 @@
   "rates": {
     "EUR": 1,
     "RON": 5.3494,
-    "HUF": 365.6
+    "HUF": 373.55
   },
-  "lastUpdated": "2026-11-16T03:18:07.533Z",
+  "lastUpdated": "2026-11-23T11:55:47.466Z",
   "currencies": {
     "EUR": {
       "code": "EUR",
@@ -41,14 +41,14 @@
       "nameRu": "Венгерский форинт",
       "nameEn": "Hungarian Forint",
       "nameHu": "Magyar forint",
-      "rate": 365.6,
-      "lastSyncRate": 365.6,
-      "lastChecked": "2026-11-22T10:31:25.363Z",
+      "rate": 373.55,
+      "lastSyncRate": 373.55,
+      "lastChecked": "2026-11-23T11:55:47.466Z",
       "decimals": 0,
       "symbolPosition": "after",
       "latestObservedRate": 373.55,
       "observationDate": "2026-11-20",
-      "lastSyncDate": "2026-11-16T03:05:04.700Z"
+      "lastSyncDate": "2026-11-23T11:55:47.466Z"
     }
   }
 }
