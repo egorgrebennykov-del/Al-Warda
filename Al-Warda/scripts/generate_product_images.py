@@ -531,7 +531,6 @@ TRUSTED_RETAILER_DOMAINS = [
     "fragflex.com",
     "soghaat.co.uk",
     "emiratesoud.co.uk",
-    "filledwithbarakah.com",
     "aromaconcepts.com",
 ]
 
@@ -1789,8 +1788,28 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
             bw_seg = x2 - x1 + 1
             bh_seg = y2 - y1 + 1
             aspect_seg = bw_seg / float(max(1, bh_seg))
-            if aspect_seg >= 0.85 and bbox_fill >= 0.65:
+            if (aspect_seg >= 0.82 and bbox_fill >= 0.56) or (aspect_seg >= 0.78 and bbox_fill >= 0.68):
                 return False, final_sharpness, f"Широкий силуэт упаковки/коробки рядом с флаконом (aspect={aspect_seg:.2f}, fill={bbox_fill:.2f})"
+            if aspect_seg >= 0.70 and bw_seg >= 60 and bh_seg >= 80:
+                top25 = alpha[y1:y1 + max(10, int(bh_seg * 0.28)), x1:x2 + 1] > 120
+                top_col = np.mean(top25, axis=0)
+                t_segs = []
+                t_in = False
+                t_w = 0
+                for cv in top_col:
+                    if cv > 0.08:
+                        if not t_in:
+                            t_in = True
+                            t_w = 1
+                        else:
+                            t_w += 1
+                    elif t_in:
+                        t_segs.append(t_w)
+                        t_in = False
+                if t_in:
+                    t_segs.append(t_w)
+                if len([s for s in t_segs if s >= bw_seg * 0.12]) >= 2:
+                    return False, final_sharpness, "На фото коробка рядом с флаконом (два объекта в верхней зоне)"
         if not is_set and (x2 - x1 + 1) >= 60:
             bw_seg = x2 - x1 + 1
             col_cov = np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120, axis=0)
@@ -1856,15 +1875,19 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
                 l_xs = [int(np.where(fg_mask[y, :])[0].min()) for y in range(bot_y1, bot_y2) if np.any(fg_mask[y, :])]
                 r_xs = [int(np.where(fg_mask[y, :])[0].max()) for y in range(bot_y1, bot_y2) if np.any(fg_mask[y, :])]
                 if len(l_xs) >= 20 and len(r_xs) >= 20:
-                    l_flat = sum(1 for x in l_xs if x <= x1 + 1) / float(len(l_xs))
-                    r_flat = sum(1 for x in r_xs if x >= x2 - 1) / float(len(r_xs))
+                    l_flat = sum(1 for x in l_xs if x <= x1 + 2) / float(len(l_xs))
+                    r_flat = sum(1 for x in r_xs if x >= x2 - 2) / float(len(r_xs))
                     l_rng = max(l_xs) - min(l_xs)
                     r_rng = max(r_xs) - min(r_xs)
-                    if cx_offset >= 0.06 and (
-                        (l_flat >= 0.96 and l_rng <= 1 and r_rng >= 8)
-                        or (r_flat >= 0.96 and r_rng <= 1 and l_rng >= 8)
+                    if cx_offset >= 0.025 and (
+                        (l_flat >= 0.90 and l_rng <= 2 and r_rng >= 8)
+                        or (r_flat >= 0.90 and r_rng <= 2 and l_rng >= 8)
                     ):
                         return False, final_sharpness, "Флакон обрезан по вертикали (перекрытие упаковкой)"
+                    l_jumps = sum(1 for i in range(1, len(l_xs)) if abs(l_xs[i] - l_xs[i - 1]) >= 10)
+                    r_jumps = sum(1 for i in range(1, len(r_xs)) if abs(r_xs[i] - r_xs[i - 1]) >= 10)
+                    if l_jumps >= 4 or r_jumps >= 4:
+                        return False, final_sharpness, f"Рваный/повреждённый край вырезки флакона (jumps L={l_jumps}, R={r_jumps})"
 
     return True, final_sharpness, None
 
