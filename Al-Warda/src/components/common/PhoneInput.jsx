@@ -21,7 +21,7 @@ export default function PhoneInput({
   className = "",
   placeholder = "",
 }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isSavedPhonesOpen, setIsSavedPhonesOpen] = useState(false);
   const [search, setSearch] = useState("");
