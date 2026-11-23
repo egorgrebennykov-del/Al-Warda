@@ -295,6 +295,19 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "GET" && pathname === "/api/geo") {
+    const country = String(
+      req.headers["cf-ipcountry"] ||
+        req.headers["x-country"] ||
+        process.env.DEFAULT_COUNTRY ||
+        "",
+    )
+      .trim()
+      .toUpperCase();
+    respond(res, 200, { country }, req);
+    return;
+  }
+
   if (req.method === "GET" && pathname === "/api/admin/product-images/status") {
     const response = await getProductImageQueueStatus(req, process.env);
     respond(res, response.status, await response.json(), req);

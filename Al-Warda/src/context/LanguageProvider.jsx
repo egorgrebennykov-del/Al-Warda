@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LanguageContext } from "./languageContext";
 import { DEFAULT_LANGUAGE, getBundledTranslation, loadTranslation } from "./translations";
 import { getCookie, setCookie } from "../../utils/cookies";
@@ -7,8 +7,20 @@ const COOKIE_KEY = "warda_language";
 const STORAGE_KEY = "warda_language";
 const LANGUAGE_CODES = ["ru", "en", "hu", "bg", "el", "ro"];
 
-export function getInitialLanguage() {
-  if (typeof document === "undefined") return DEFAULT_LANGUAGE;
+export const COUNTRY_TO_LANGUAGE = {
+  HU: "hu",
+  RO: "ro",
+  BG: "bg",
+  GR: "el",
+};
+
+export function resolveLanguageFromCountry(countryCode) {
+  const code = String(countryCode || "").trim().toUpperCase();
+  return COUNTRY_TO_LANGUAGE[code] || DEFAULT_LANGUAGE;
+}
+
+function getSavedLanguagePreference() {
+  if (typeof document === "undefined") return null;
   try {
     const fromCookie = getCookie(COOKIE_KEY) || getCookie("language");
     if (LANGUAGE_CODES.includes(fromCookie)) return fromCookie;
@@ -18,16 +30,45 @@ export function getInitialLanguage() {
   } catch {
     // Ignore storage/cookie errors
   }
-  return DEFAULT_LANGUAGE;
+  return null;
+}
+
+export function getInitialLanguage() {
+  return getSavedLanguagePreference() || DEFAULT_LANGUAGE;
 }
 
 export default function LanguageProvider({ children, initialLanguage, initialDict }) {
-  const [language, setLanguage] = useState(() => initialLanguage || getInitialLanguage());
+  const hasExplicitPrefRef = useRef(Boolean(initialLanguage || getSavedLanguagePreference()));
+  const [language, setLanguageState] = useState(() => initialLanguage || getInitialLanguage());
   const [dictionaries, setDictionaries] = useState(() => {
     const dicts = { [DEFAULT_LANGUAGE]: getBundledTranslation(DEFAULT_LANGUAGE) };
     if (initialDict) dicts[initialLanguage || DEFAULT_LANGUAGE] = initialDict;
     return dicts;
   });
+
+  const setLanguage = (nextLang) => {
+    hasExplicitPrefRef.current = true;
+    setLanguageState(nextLang);
+  };
+
+  useEffect(() => {
+    if (hasExplicitPrefRef.current || typeof window === "undefined") return undefined;
+    let cancelled = false;
+    fetch("/api/geo", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || hasExplicitPrefRef.current) return;
+        const detected = resolveLanguageFromCountry(data?.country);
+        hasExplicitPrefRef.current = true;
+        setLanguageState(detected);
+      })
+      .catch(() => {
+        // Fallback to DEFAULT_LANGUAGE ("en")
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (dictionaries[language]) return undefined;
@@ -41,17 +82,19 @@ export default function LanguageProvider({ children, initialLanguage, initialDic
   }, [language, dictionaries]);
 
   useEffect(() => {
+    document.documentElement.lang = language;
+    if (!hasExplicitPrefRef.current) return;
     setCookie(COOKIE_KEY, language);
     try {
       localStorage.setItem(STORAGE_KEY, language);
     } catch {
       // Ignore storage errors
     }
-    document.documentElement.lang = language;
   }, [language]);
 
   const toggleLanguage = () => {
-    setLanguage((current) => {
+    hasExplicitPrefRef.current = true;
+    setLanguageState((current) => {
       const index = LANGUAGE_CODES.indexOf(current);
       return LANGUAGE_CODES[(index + 1) % LANGUAGE_CODES.length];
     });

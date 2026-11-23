@@ -356,6 +356,17 @@ export default {
         return clearDescriptions(request, env);
       }
 
+      if (method === "GET" && pathname === "/api/geo") {
+        const country = String(
+          request.cf?.country ||
+            request.headers.get("cf-ipcountry") ||
+            "",
+        )
+          .trim()
+          .toUpperCase();
+        return jsonResponse({ country });
+      }
+
       if (method === "GET" && pathname === "/api/admin/product-images/status") {
         return getProductImageQueueStatus(request, env);
       }

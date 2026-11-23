@@ -15,7 +15,7 @@ export { CURRENCIES, DEFAULT_RATES, convertPriceValue, formatPriceWithCurrency }
 const COOKIE_KEY = "warda_currency";
 const STORAGE_KEY = "warda_currency";
 
-function getInitialCurrency() {
+function getInitialCurrency(initialLanguage = "en") {
   if (typeof document === "undefined") return "EUR";
   try {
     const fromCookie = getCookie(COOKIE_KEY);
@@ -26,12 +26,14 @@ function getInitialCurrency() {
   } catch {
     // Ignore storage/cookie errors
   }
+  if (initialLanguage === "hu") return "HUF";
+  if (initialLanguage === "ro") return "RON";
   return "EUR";
 }
 
 export default function CurrencyProvider({ children }) {
   const { language } = useLanguage();
-  const [currency, setCurrencyState] = useState(getInitialCurrency);
+  const [currency, setCurrencyState] = useState(() => getInitialCurrency(language));
   const [rates, setRates] = useState(() => initialRatesData.rates || { EUR: 1, RON: 5.343, HUF: 362.99 });
   const prevLangRef = useRef(language);
 
