@@ -5,7 +5,20 @@ import {
   getPerfumeUrl,
   ensurePerfumeEnrichment,
   isPerfumeSet,
+  getPublishedMarketPrice,
+  calculateDefaultRetailPriceEur,
+  loadPublicMarketPrices,
+  getDefaultPerfumeVolumeOption,
 } from "../utils/perfumes.js";
+
+function resolveCustomerPriceEur(perfume, language = "") {
+  const published = getPublishedMarketPrice(perfume, language);
+  if (published !== null) return published;
+  const optPrice = Number(getDefaultPerfumeVolumeOption(perfume)?.price);
+  const baseCost = Number.isFinite(optPrice) && optPrice > 0 ? optPrice : Number(perfume?.price || 0);
+  if (!Number.isFinite(baseCost) || baseCost <= 0) return 29.99;
+  return calculateDefaultRetailPriceEur(baseCost) || baseCost;
+}
 
 const DEFAULT_API_KEY = "";
 
@@ -233,7 +246,9 @@ function normalizeCatalogItem(raw) {
     name: nameStr,
     brand,
     author: `${brand} • ${notesSummary || category}`,
-    price: Number(item.price) || 29.99,
+    rawPrice: Number(item.price) || 29.99,
+    price: resolveCustomerPriceEur(item),
+    availableSizes: item.availableSizes,
     currency: item.currency || "EUR",
     image: item.image || item.fullCardImage || "",
     url: item.url || getPerfumeUrl({ id, name: nameStr }),
@@ -1326,7 +1341,10 @@ export function stripUnsolicitedSampleMentions(message = "", sampleRequested = f
 }
 
 export async function processWardaChat({ messages = [], language = "ru", context = {}, onStatus } = {}) {
-  await ensureCatalogLoaded(context?.catalog);
+  await Promise.all([
+    ensureCatalogLoaded(context?.catalog),
+    loadPublicMarketPrices().catch(() => {}),
+  ]);
 
   const apiKey = getGeminiApiKey();
   const history = Array.isArray(messages) ? messages.slice(-12) : [];
@@ -1424,6 +1442,11 @@ export async function processWardaChat({ messages = [], language = "ru", context
       const pool = ALL_PERFUMES.filter((p) => (sampleRequested || !isSamplePerfume(p)) && matchesTargetGender(p, memory.preferredGender));
       foundPerfumes = pool.slice(0, 4);
     }
+
+    foundPerfumes = foundPerfumes.map((p) => ({
+      ...p,
+      price: resolveCustomerPriceEur({ ...p, price: p.rawPrice ?? p.price }, requestLanguage),
+    }));
   }
 
   const catalogBrandsSummary = Array.from(
