@@ -564,6 +564,9 @@ TRUSTED_RETAILER_DOMAINS = [
     "soghaat.co.uk",
     "emiratesoud.co.uk",
     "aromaconcepts.com",
+    "perfumebox.com",
+    "giftexpress.com",
+    "labelleperfumes.com",
 ]
 
 GENERIC_STOPWORDS = {
@@ -2421,7 +2424,8 @@ def strip_packaging_box_geometry(cutout):
     else:
         s_l = max(x1 + 4, best_gap[0] - 2)
         s_r = min(x2 - 4, best_gap[1] + 2)
-        col_counts = fg[y1:y2 + 1, s_l:s_r + 1].sum(axis=0)
+        upper_end = y1 + max(10, int(bh * 0.82))
+        col_counts = fg[y1:upper_end, s_l:s_r + 1].sum(axis=0)
         split_x = s_l + int(np.argmin(col_counts))
 
     total_fg = int(fg.sum())
@@ -2458,8 +2462,9 @@ def strip_packaging_box_geometry(cutout):
     if not erase_side:
         return cutout, False
 
-    col_overlap = int(fg[y1:y2 + 1, split_x].sum())
-    if col_overlap > max(3, int(bh * 0.03)):
+    upper_h = max(10, int(bh * 0.82))
+    col_overlap_upper = int(fg[y1:y1 + upper_h, split_x].sum())
+    if col_overlap_upper > max(6, int(bh * 0.08)):
         raise ValueError("На фото видна картонная упаковка вплотную к флакону")
 
     if erase_side == "left":
