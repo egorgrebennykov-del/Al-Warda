@@ -259,8 +259,8 @@
   bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 126%;
-  max-width: 740px;
+  width: 100%;
+  max-width: 680px;
   height: 740px;
   pointer-events: none;
   z-index: 1;
@@ -272,7 +272,7 @@
   display: block;
   object-fit: fill;
   mix-blend-mode: screen;
-  filter: brightness(1.06);
+  filter: brightness(1.32) saturate(1.22);
   -webkit-mask-image: radial-gradient(
     ellipse 48% 46% at 50% 56%,
     #000 42%,
