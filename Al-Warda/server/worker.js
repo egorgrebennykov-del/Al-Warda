@@ -35,6 +35,7 @@ import {
 } from "./descriptionQueue.js";
 import { handleRestProxy } from "./hasuraProxy.js";
 import { handlePricingRequest } from "./pricingService.js";
+import { handleAromadealAdminRequest } from "./aromadealAdminService.js";
 
 const actionStatuses = {
   "qogita-smart-sync": {
@@ -472,6 +473,11 @@ export default {
         pathname !== "/api/qogita/arabian-perfumes"
       ) {
         return handleQogitaWorker(request, env);
+      }
+
+      if (pathname.startsWith("/api/admin/aromadeal")) {
+        const aromaResp = await handleAromadealAdminRequest(request, env, urlObj);
+        if (aromaResp) return aromaResp;
       }
 
       if (

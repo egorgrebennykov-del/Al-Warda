@@ -5856,8 +5856,8 @@ export default function Privileged() {
               </strong>
               <p className="privileged__stats-text">
                 {language === "ru"
-                  ? "В системе Qogita параметр Stock показывает остаток товара на складе, а MOV — минимальную сумму заказа у поставщика (от 500 €). Все духи в каталоге доступны по 1 штуке (поштучно), оптовые бандлы исключены."
-                  : "In Qogita, Stock represents remaining supplier inventory, while MOV is the minimum order value (€500+). All perfumes in the boutique are available by 1 piece; wholesale multipacks/bundles are excluded."}
+                  ? "Основной поставщик — Aromadeal (aromadeal.de), без оптового минимума суммы заказа (MOQ: 1 шт.). Все духи в каталоге доступны поштучно, оптовые бандлы исключены."
+                  : "Primary supplier is Aromadeal (aromadeal.de) with no wholesale minimum order value (MOQ: 1 pc). All perfumes in the boutique are available individually; wholesale multipacks/bundles are excluded."}
               </p>
               <div className="privileged__form-row-2">
                 <div className="privileged__form-group">
