@@ -318,7 +318,14 @@ describe("product image queue admin API", () => {
     );
     assert.equal(res.status, 200);
     assert.equal((await res.json()).requeuedCount, 1);
-    assert.deepEqual(patched, [{ status: "pending" }]);
+    assert.deepEqual(patched, [
+      {
+        status: "pending",
+        rejectedSourceUrls: [],
+        previousFeedback: "e",
+        needsNewPhoto: false,
+      },
+    ]);
   });
 
   it("allows privileged users to manually move products to failed list", async () => {
