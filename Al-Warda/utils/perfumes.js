@@ -3455,8 +3455,10 @@ export function getPublishedMarketPrice(perfume, countryOrLang = "") {
   const country = ["BG", "GR", "HU", "RO"].includes(upper)
     ? upper
     : getMarketCountryForLanguage(countryOrLang);
-  if (!country) return null;
-  const val = Number(entry[country]);
+  const raw = country
+    ? entry[country]
+    : entry.BG ?? entry.RO ?? entry.HU ?? entry.GR;
+  const val = Number(raw);
   return Number.isFinite(val) && val > 0 ? val : null;
 }
 
