@@ -49,6 +49,38 @@ def _load_dotenv_if_needed():
             or "sb_publishable_lTPiPLbRAqlq5B1PzAE1Vw_nN58DXgB"
         )
 
+
+def _ensure_windows_ca_bundle():
+    """Merge Windows ROOT/CA store certs with certifi so requests trusts modern Let's Encrypt/Cloudflare CAs."""
+    if os.name != "nt" or os.environ.get("REQUESTS_CA_BUNDLE"):
+        return
+    try:
+        import ssl
+        import certifi
+        if not hasattr(ssl, "enum_certificates"):
+            return
+        bundle_path = Path(tempfile.gettempdir()) / "al_warda_windows_ca_bundle.pem"
+        if not bundle_path.exists() or (time.time() - bundle_path.stat().st_mtime) > 86400:
+            pems = []
+            for store in ("ROOT", "CA"):
+                try:
+                    for cert_bytes, encoding, _ in ssl.enum_certificates(store):
+                        if encoding == "x509_asn":
+                            pems.append(ssl.DER_cert_to_PEM_cert(cert_bytes))
+                except Exception:
+                    pass
+            if pems:
+                base_pem = Path(certifi.where()).read_text(encoding="utf-8", errors="ignore")
+                bundle_path.write_text(base_pem + "\n" + "\n".join(pems), encoding="utf-8")
+        if bundle_path.is_file():
+            os.environ["REQUESTS_CA_BUNDLE"] = str(bundle_path)
+            os.environ["SSL_CERT_FILE"] = str(bundle_path)
+    except Exception:
+        pass
+
+
+_ensure_windows_ca_bundle()
+
 _load_dotenv_if_needed()
 
 try:
@@ -566,14 +598,18 @@ def clean_product_name_for_search(name, brand=""):
     clean = name or ""
     if brand:
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
+        for bt in re.findall(r"[a-zA-Z]{4,}", brand):
+            clean = re.sub(rf"\b{re.escape(bt)}\b", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s+[-–|]\s+.*$", "", clean)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne|bor\s*[um]?|new in sealed box|package|collection|miniature|pieces?|pcs)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne|bor\s*[um]?|new in sealed box|package|collection|miniature|pieces?|pcs|with\s+atomizer|atomizer|adult)\b",
         "",
         clean,
         flags=re.IGNORECASE,
     )
-    clean = re.sub(r"\b(\d+\s*ml|\d+(\.\d+)?\s*fl\.?\s*oz)\b", "", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"\b\d+(?:[.,\s]\d+)?\s*(?:ml|milliliters?|fl\.?\s*oz|oz|grams?|g)\b", "", clean, flags=re.IGNORECASE)
+    if "highness" in clean.lower():
+        clean = re.sub(r"\b(maroon|red)\b", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"[^\w\s-]", " ", clean)
     clean = re.sub(r"\s+", " ", clean).strip()
     return clean
@@ -665,7 +701,8 @@ def search_official_studio_candidates(name, brand="", is_set=False):
         "by", "and", "the", "a", "an", "of", "in", "new", "sealed", "box",
         "original", "authentic", "long", "lasting", "best", "scent", "impression",
         "bottle", "flacon", "size", "travel", "mini", "miniature", "ml", "oz", "fl",
-        "grams", "g", "bor", "m", "u", "w", "s", "3", "4", "100", "50", "80", "90",
+        "milliliters", "milliliter", "atomizer", "adult",
+        "grams", "g", "bor", "m", "u", "w", "s", "3", "4", "6", "7", "76", "100", "50", "80", "90",
         "85", "75", "55", "150", "200", "30", "10", "15", "20", "60", "120", "125",
     }
 
@@ -4126,6 +4163,14 @@ def process_product(
                                 })
                 except Exception:
                     pass
+        has_active_account = (
+            not local_gpu and
+            bool(
+                (account_id and api_token) or
+                (account_pool and getattr(account_pool, "accounts", None))
+            )
+        )
+        precomputed_result = None
         angled_studio_fallback = None
         for idx_cand, studio_asset in enumerate(studio_candidates):
             fetch_url = studio_asset.get("imageUrl")
@@ -4170,6 +4215,19 @@ def process_product(
                         if angled_studio_fallback is None:
                             angled_studio_fallback = (cand_bytes, cand_q, studio_asset)
                         continue
+                    if not has_active_account:
+                        cand_out, cand_psize, cand_osize = preserve_original_product(
+                            cand_bytes, segmentation_session, allow_upscale=True, is_set=is_set
+                        )
+                        cand_q_ok, cand_sharp, cand_q_reason = validate_cutout_quality(cand_q, cand_out, is_set=is_set)
+                        cand_v_ok, cand_v_reason = (
+                            verify_cutout_with_vision(cand_out, row.get("name") or "", row.get("brand") or "", is_set=is_set)
+                            if cand_q_ok
+                            else (False, cand_q_reason)
+                        )
+                        if not cand_q_ok or not cand_v_ok:
+                            raise ValueError(cand_q_reason if not cand_q_ok else cand_v_reason)
+                        precomputed_result = (cand_out, cand_psize, cand_osize, cand_sharp)
                     source_bytes = cand_bytes
                     source_quality = cand_q
                     source_url = studio_asset["sourceUrl"]
@@ -4180,7 +4238,7 @@ def process_product(
                 if cand_min >= 300 and (best_small_studio is None or cand_min > best_small_studio[0]):
                     best_small_studio = (cand_min, cand_bytes, cand_q, studio_asset)
             except Exception as e:
-                print(f"[{row['id']}] Studio fetch error ({e}), trying next...", flush=True)
+                print(f"[{row['id']}] Studio candidate rejected ({e}), trying next...", flush=True)
 
         if source_bytes is None:
             raw_url = product_source(row)
@@ -4256,14 +4314,13 @@ def process_product(
         requires_manual_review = False
         text_restore_reason = "authentic_original_cutout"
 
-        has_active_account = (
-            not local_gpu and
-            bool(
-                (account_id and api_token) or
-                (account_pool and getattr(account_pool, "accounts", None))
-            )
-        )
-        if has_active_account:
+        if precomputed_result is not None:
+            output, processed_size, original_size, sharpness_val = precomputed_result
+            processing_method = "local_studio_photometry"
+            whether_upscaled = processed_size != original_size
+            quality_ok, quality_reason = True, "ok"
+            vision_ok, vision_reason = True, "ok"
+        elif has_active_account:
             try:
                 edited_bytes = (
                     account_pool.generate(requests, source_bytes)
@@ -4306,12 +4363,13 @@ def process_product(
             processing_method = "local_studio_photometry"
             whether_upscaled = processed_size != original_size
 
-        quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output, is_set=is_set)
-        vision_ok, vision_reason = (
-            verify_cutout_with_vision(output, row.get("name") or "", row.get("brand") or "", is_set=is_set)
-            if quality_ok
-            else (False, quality_reason)
-        )
+        if precomputed_result is None:
+            quality_ok, sharpness_val, quality_reason = validate_cutout_quality(source_quality, output, is_set=is_set)
+            vision_ok, vision_reason = (
+                verify_cutout_with_vision(output, row.get("name") or "", row.get("brand") or "", is_set=is_set)
+                if quality_ok
+                else (False, quality_reason)
+            )
         if not quality_ok or not vision_ok:
             # If we used a studio candidate and catalog raw photo exists (e.g. aromadeal.de), try fallback once before failing
             raw_fallback_url = product_source(row) if source_type in ("official_studio", "verified_retailer") else None
