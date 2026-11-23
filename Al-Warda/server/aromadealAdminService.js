@@ -1,5 +1,5 @@
 import { requirePrivilegedUser } from "./productImageQueueAdmin.js";
-import { hasuraGraphql } from "./hasuraProxy.js";
+import { hasuraGraphQL } from "./hasuraProxy.js";
 
 const AROMADEAL_BASE = "https://aromadeal.de";
 
@@ -26,7 +26,7 @@ export async function handleAromadealAdminRequest(request, env, urlObj) {
 
   if (method === "GET" && pathname === "/api/admin/aromadeal/overview") {
     try {
-      const res = await hasuraGraphql(
+      const res = await hasuraGraphQL(
         env,
         `query AromadealOverview {
           stocks(order_by: { id: asc }) {
