@@ -686,9 +686,27 @@ export default function BookDetails() {
         .map((s) => s.trim())
         .filter(Boolean);
     }
-    return (Array.isArray(raw) ? raw : []).map((n) =>
-      getLocalizedNote(n, language),
-    );
+    const splitCompound = (val) =>
+      String(val || "")
+        .split(/\s+(?:and|и|&|\+|\/|și|és|και)\s+|[,;]+/i)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const seen = new Set();
+    const out = [];
+    for (const item of Array.isArray(raw) ? raw : []) {
+      for (const part of splitCompound(item)) {
+        const localized = getLocalizedNote(part, language);
+        for (const sub of splitCompound(localized)) {
+          const formatted = sub.charAt(0).toUpperCase() + sub.slice(1);
+          const key = formatted.toLowerCase();
+          if (!formatted || seen.has(key)) continue;
+          seen.add(key);
+          out.push(formatted);
+        }
+      }
+    }
+    return out;
   };
 
   const topNotes = resolveNotes(
