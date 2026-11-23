@@ -2966,8 +2966,8 @@ def strip_baked_reflection(cutout):
                 out[best_seam + 1:, :, 3] = 0
                 return Image.fromarray(out, "RGBA")
 
-        # Case C: Crystal/bottle base reflection with sharp horizontal seam & mirror correlation (e.g. Sheikh)
-        lo_c = max(min_y + int(h_obj * 0.82), max_y - int(h_obj * 0.10))
+        # Case C: Crystal/bottle base reflection with sharp horizontal seam & mirror correlation (e.g. Sheikh, Amouage Guidance 46)
+        lo_c = min_y + int(h_obj * 0.62)
         hi_c = max_y - 22
         best_c_seam = None
         best_c_grad = 0.0
@@ -2982,7 +2982,7 @@ def strip_baked_reflection(cutout):
                 lum[y_seam - 1:y_seam + 1, min_x:max_x + 1].mean(axis=0)[mask]
                 - lum[y_seam + 1:y_seam + 3, min_x:max_x + 1].mean(axis=0)[mask]
             )))
-            if grad < 45.0:
+            if grad < 32.0:
                 continue
             above = lum[y_seam - d:y_seam, min_x:max_x + 1]
             below = lum[y_seam:y_seam + d, min_x:max_x + 1][::-1, :]
@@ -2990,7 +2990,10 @@ def strip_baked_reflection(cutout):
             b_c = below - float(np.mean(below))
             denom = float(np.sqrt(np.sum(a_c * a_c) * np.sum(b_c * b_c)))
             corr = float(np.sum(a_c * b_c) / denom) if denom > 1e-5 else 0.0
-            if corr >= 0.48 and float(np.max(row_widths[y_seam + 2 - min_y:])) < main_w * 0.92:
+            is_mirror = (corr >= 0.62 and grad >= 32.0) or (
+                corr >= 0.48 and grad >= 45.0 and float(np.max(row_widths[y_seam + 2 - min_y:])) < main_w * 0.92
+            )
+            if is_mirror:
                 if grad > best_c_grad:
                     best_c_grad = grad
                     best_c_seam = y_seam
@@ -4075,6 +4078,31 @@ def process_product(
             row.get("brand") or "",
             is_set=is_set,
         )
+        if source_bytes is None:
+            aroma_handle = str((row.get("info") or {}).get("aromadealHandle") or "").strip()
+            if aroma_handle:
+                try:
+                    ar_resp = requests.get(
+                        f"https://aromadeal.de/products/{aroma_handle}.json",
+                        headers={"User-Agent": "Al-Warda product image pipeline/1.0"},
+                        timeout=8,
+                    )
+                    if ar_resp.ok:
+                        ar_prod = (ar_resp.json() or {}).get("product") or {}
+                        seen_cand = {c.get("imageUrl") for c in studio_candidates if c.get("imageUrl")}
+                        for img_obj in ar_prod.get("images") or []:
+                            src_u = upgrade_shopify_image_url(str(img_obj.get("src") or ""))
+                            if src_u and src_u not in seen_cand:
+                                seen_cand.add(src_u)
+                                studio_candidates.append({
+                                    "title": row.get("name") or "",
+                                    "imageUrl": src_u,
+                                    "sourceUrl": f"https://aromadeal.de/products/{aroma_handle}",
+                                    "sourceName": "Aromadeal Catalog",
+                                    "sourceType": "aromadeal_catalog",
+                                })
+                except Exception:
+                    pass
         angled_studio_fallback = None
         for idx_cand, studio_asset in enumerate(studio_candidates):
             fetch_url = studio_asset.get("imageUrl")
