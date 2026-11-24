@@ -567,6 +567,9 @@ TRUSTED_RETAILER_DOMAINS = [
     "perfumebox.com",
     "giftexpress.com",
     "labelleperfumes.com",
+    "fragrancebuy.ca",
+    "filledwithbarakah.com",
+    "nisaraperfumes.com",
 ]
 
 GENERIC_STOPWORDS = {
@@ -603,9 +606,11 @@ def clean_product_name_for_search(name, brand=""):
         clean = re.sub(re.escape(brand), "", clean, flags=re.IGNORECASE)
         for bt in re.findall(r"[a-zA-Z]{4,}", brand):
             clean = re.sub(rf"\b{re.escape(bt)}\b", "", clean, flags=re.IGNORECASE)
-    clean = re.sub(r"\s+[-–|]\s+.*$", "", clean)
+    clean = re.sub(r"\bwith\s+free\s+(?:bag|gift|pouch)\b", "", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"\s+[-–|]\s+", " ", clean)
+    clean = re.sub(r"\bbade['’` ]*e\b", "Badee", clean, flags=re.IGNORECASE)
     clean = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|arabic|perfume|fragrances|fragrance|cologne|bor\s*[um]?|new in sealed box|package|collection|miniature|pieces?|pcs|with\s+atomizer|atomizer|adult)\b",
+        r"\b(eau de parfum|eau de toilette|extrait de parfum|eau de cologne|perfumed oil|concentrated perfume oil|perfume oil|alcoholfree|alcohol free|roll-on|roll on|rollon|edp|edt|epv|spray|vaporisateur|unisex|pour homme|pour femme|for men|for women|for him|for her|women's|men's|womens|mens|natural spray|concentrated|attar|ittar|luxury|luxurious|arabian|arabic|perfume|fragrances|fragrance|cologne|bor\s*[um]?|new in sealed box|package|collection|miniature|pieces?|pcs|with\s+atomizer|atomizer|adult|a\s+premium)\b",
         "",
         clean,
         flags=re.IGNORECASE,
@@ -704,7 +709,8 @@ def search_official_studio_candidates(name, brand="", is_set=False):
         "by", "and", "the", "a", "an", "of", "in", "new", "sealed", "box",
         "original", "authentic", "long", "lasting", "best", "scent", "impression",
         "bottle", "flacon", "size", "travel", "mini", "miniature", "ml", "oz", "fl",
-        "milliliters", "milliliter", "atomizer", "adult",
+        "milliliters", "milliliter", "atomizer", "adult", "pride", "luxurious", "arabian",
+        "premium", "free", "bag",
         "grams", "g", "bor", "m", "u", "w", "s", "3", "4", "6", "7", "76", "100", "50", "80", "90",
         "85", "75", "55", "150", "200", "30", "10", "15", "20", "60", "120", "125",
     }
