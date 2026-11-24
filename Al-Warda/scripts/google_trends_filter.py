@@ -739,14 +739,18 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
     until site-eligible visible count reaches min_visible."""
     visible_rows = [r for r in all_rows if is_row_site_eligible(r)]
     visible_count = len(visible_rows)
-    if visible_count >= min_visible:
-        print(f"[MinCatalog] Site-eligible visible products: {visible_count} >= {min_visible}. No backfill needed.", flush=True)
+    completed_visible_count = sum(
+        1 for r in visible_rows
+        if ((r.get("info") or {}).get("imageGeneration") or {}).get("status") == "completed"
+    )
+    if completed_visible_count >= min_visible:
+        print(f"[MinCatalog] Completed site-eligible products: {completed_visible_count} >= {min_visible}. No backfill needed.", flush=True)
         return 0
 
-    needed = min_visible - visible_count
+    needed = max(min_visible - visible_count, min_visible - completed_visible_count)
     print(
-        f"[MinCatalog] Site-eligible visible products: {visible_count} < {min_visible} (need {needed} more). "
-        f"Applying descending Google Trends thresholds (34/49, 33/48, ...)...",
+        f"[MinCatalog] Site-eligible visible products: {visible_count} (completed={completed_visible_count}) < {min_visible} "
+        f"(restoring up to {needed} available products). Applying descending Google Trends thresholds...",
         flush=True,
     )
 
@@ -757,6 +761,8 @@ def ensure_minimum_visible_perfumes(db_session, supabase_url, all_rows, min_visi
         r for r in all_rows
         if not is_row_visible(r)
         and not (r.get("info") or {}).get("duplicateOf")
+        and not (r.get("info") or {}).get("mergedIntoId")
+        and (r.get("info") or {}).get("aromadealAvailable") is not False
         and ((r.get("info") or {}).get("imageGeneration") or {}).get("status") not in ("failed", "segmentation_failed")
         and ((r.get("info") or {}).get("googleTrends") or {}).get("checkedAt")
     ]
