@@ -570,6 +570,13 @@ TRUSTED_RETAILER_DOMAINS = [
     "fragrancebuy.ca",
     "filledwithbarakah.com",
     "nisaraperfumes.com",
+    "samawa.ae",
+    "myperfumes.ae",
+    "alrashad.com",
+    "privateblends.com.au",
+    "beautyhouse.com",
+    "perfumania.com",
+    "fragrancesline.com",
 ]
 
 GENERIC_STOPWORDS = {
