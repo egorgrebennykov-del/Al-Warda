@@ -1824,6 +1824,8 @@ def validate_cutout_quality(source_quality, out_bytes, is_set=False):
         y1, y2 = int(ys_fg.min()), int(ys_fg.max())
         x1, x2 = int(xs_fg.min()), int(xs_fg.max())
         bbox_fill = float(np.mean(alpha[y1:y2 + 1, x1:x2 + 1] > 120))
+        if bbox_fill < 0.22 and fg_ratio < 0.12:
+            return False, final_sharpness, "Вырезка сильно фрагментирована или разрушена (большая часть объекта потеряна)"
         if (bbox_fill > 0.94 and fg_ratio > 0.78) or (bbox_fill >= 0.96 and fg_ratio >= 0.68):
             return False, final_sharpness, "Фон или студийная сцена не вырезаны"
         top_band = alpha[y1:min(y2 + 1, y1 + max(2, int((y2 - y1) * 0.03))), x1:x2 + 1]
@@ -2413,26 +2415,13 @@ def strip_packaging_box_geometry(cutout):
             best_gap = (cur_start, end_x)
 
     if not best_gap or (best_gap[1] - best_gap[0] + 1) < 3:
-        # Secondary check for touching bottle + box: look for a deep silhouette valley in the upper 45%
-        split_x = None
-        if (bw / float(bh)) >= 0.72:
-            col_top_ys = []
-            for x in range(x1 + margin, x2 - margin + 1):
-                col_ys = np.where(fg[y1:y2 + 1, x])[0]
-                col_top_ys.append(int(col_ys.min()) if len(col_ys) else bh)
-            if col_top_ys:
-                best_idx = int(np.argmax(col_top_ys))
-                if col_top_ys[best_idx] >= max(10, int(bh * 0.14)):
-                    split_x = (x1 + margin) + best_idx
-        if split_x is None:
-            return cutout, False
-        best_gap = (split_x, split_x)
-    else:
-        s_l = max(x1 + 4, best_gap[0] - 2)
-        s_r = min(x2 - 4, best_gap[1] + 2)
-        upper_end = y1 + max(10, int(bh * 0.82))
-        col_counts = fg[y1:upper_end, s_l:s_r + 1].sum(axis=0)
-        split_x = s_l + int(np.argmin(col_counts))
+        return cutout, False
+
+    s_l = max(x1 + 4, best_gap[0] - 2)
+    s_r = min(x2 - 4, best_gap[1] + 2)
+    upper_end = y1 + max(10, int(bh * 0.82))
+    col_counts = fg[y1:upper_end, s_l:s_r + 1].sum(axis=0)
+    split_x = s_l + int(np.argmin(col_counts))
 
     total_fg = int(fg.sum())
 
@@ -2445,14 +2434,14 @@ def strip_packaging_box_geometry(cutout):
         oy1, oy2 = int(sy.min()), int(sy.max())
         ow, oh = ox2 - ox1 + 1, oy2 - oy1 + 1
         area = int(len(sx))
-        if ow < 20 or oh < 40 or area < total_fg * 0.10:
+        if ow < max(24, int(bw * 0.18)) or oh < max(40, int(bh * 0.45)) or area < total_fg * 0.20:
             return None
         fill = area / float(ow * oh)
         top_h = max(4, int(oh * 0.14))
         top_band = sub[oy1:oy1 + top_h, ox1:ox2 + 1]
         top_cols = np.any(top_band, axis=0)
         top_ratio = float(top_cols.mean()) if top_cols.size else 0.0
-        return {"area": area, "fill": fill, "top_ratio": top_ratio, "is_box": (fill >= 0.78 and top_ratio >= 0.76), "is_bottle": (top_ratio < 0.78 or fill < 0.80)}
+        return {"area": area, "fill": fill, "top_ratio": top_ratio, "is_box": (fill >= 0.82 and top_ratio >= 0.84), "is_bottle": (top_ratio < 0.78 or fill < 0.80)}
 
     left_m = _side_metrics(x1, split_x)
     right_m = _side_metrics(split_x + 1, x2)
@@ -2470,7 +2459,7 @@ def strip_packaging_box_geometry(cutout):
 
     upper_h = max(10, int(bh * 0.82))
     col_overlap_upper = int(fg[y1:y1 + upper_h, split_x].sum())
-    if col_overlap_upper > max(6, int(bh * 0.08)):
+    if col_overlap_upper > 2:
         raise ValueError("На фото видна картонная упаковка вплотную к флакону")
 
     if erase_side == "left":
