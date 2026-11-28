@@ -43,11 +43,11 @@
       "nameHu": "Magyar forint",
       "rate": 373.55,
       "lastSyncRate": 373.55,
-      "lastChecked": "2026-11-27T11:36:21.202Z",
+      "lastChecked": "2026-11-28T11:07:03.432Z",
       "decimals": 0,
       "symbolPosition": "after",
-      "latestObservedRate": 372.23,
-      "observationDate": "2026-11-26",
+      "latestObservedRate": 369.73,
+      "observationDate": "2026-11-27",
       "lastSyncDate": "2026-11-23T11:55:47.466Z"
     }
   }
