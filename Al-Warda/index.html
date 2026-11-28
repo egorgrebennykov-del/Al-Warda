@@ -80,6 +80,21 @@
       ::-webkit-scrollbar-corner {
         background-color: #080605 !important;
       }
+      @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+        html,
+        body,
+        * {
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+        }
+        ::-webkit-scrollbar,
+        .dark-theme::-webkit-scrollbar,
+        html.dark-theme ::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+      }
       #root {
         background-color: #080605 !important;
         min-height: 100vh;
