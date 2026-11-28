@@ -7,7 +7,7 @@ import { useCurrency } from "../../context/currencyContext";
 import { useConfirm, useAlert } from "../../context/ConfirmContext";
 import { addToCart, getCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
-import { getPerfumeUrl, getDefaultPerfumeVolumeOption } from "../../../utils/perfumes";
+import { getPerfumeUrl, getDefaultPerfumeVolumeOption } from "../../../utils/perfumesLite";
 import { isLoggedIn, getCookieUser, isPrivileged } from "../../../utils/auth";
 import "./WardaAssistant.css";
 

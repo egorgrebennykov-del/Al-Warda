@@ -28,12 +28,14 @@ function resolveCardImage(img, gtin, rawImage) {
   return img || "";
 }
 
-export function bustProductImageCache(url, version = "cutout-clean-v12") {
-  if (!url || typeof url !== "string") return url;
-  if (!url.startsWith("/assets/img/")) return url;
-  const clean = url.split("?")[0];
-  return `${clean}?v=${version}`;
-}
+export {
+  bustProductImageCache,
+  getMarketCountryForLanguage,
+  loadPublicMarketPrices,
+  getPublishedMarketPrice,
+  calculateDefaultRetailPriceEur,
+  getDefaultCatalogPrice,
+} from "./perfumesLite.js";
 
 export function hasCompletedGeneratedImage(product) {
   return hasCompletedGeneratedImageImpl(product);
@@ -3445,70 +3447,7 @@ export function getDefaultPerfumeVolumeOption(perfume) {
   };
 }
 
-let publicMarketPricesCache = {};
-let publicMarketPricesPromise = null;
 
-export function getMarketCountryForLanguage(language) {
-  const code = String(language || "").trim().toLowerCase();
-  if (code === "bg") return "BG";
-  if (code === "el" || code === "gr") return "GR";
-  if (code === "hu") return "HU";
-  if (code === "ro") return "RO";
-  return "";
-}
-
-export async function loadPublicMarketPrices() {
-  if (typeof window === "undefined") return publicMarketPricesCache;
-  if (publicMarketPricesPromise) return publicMarketPricesPromise;
-  publicMarketPricesPromise = fetch("/api/pricing/public-market-prices")
-    .then((res) => (res.ok ? res.json() : null))
-    .then((data) => {
-      if (data && data.prices && typeof data.prices === "object") {
-        publicMarketPricesCache = data.prices;
-      }
-      return publicMarketPricesCache;
-    })
-    .catch(() => publicMarketPricesCache);
-  return publicMarketPricesPromise;
-}
-
-export function getPublishedMarketPrice(perfume, countryOrLang = "") {
-  if (!perfume) return null;
-  const sid = String(perfume.id ?? "");
-  const entry = publicMarketPricesCache?.[sid];
-  if (!entry || typeof entry !== "object") return null;
-  const upper = String(countryOrLang || "").trim().toUpperCase();
-  const country = ["BG", "GR", "HU", "RO"].includes(upper)
-    ? upper
-    : getMarketCountryForLanguage(countryOrLang);
-  const raw = country
-    ? entry[country]
-    : entry.BG ?? entry.RO ?? entry.HU ?? entry.GR;
-  const val = Number(raw);
-  return Number.isFinite(val) && val > 0 ? val : null;
-}
-
-export function calculateDefaultRetailPriceEur(costEur) {
-  const c = Number(costEur);
-  if (!Number.isFinite(c) || c <= 0) return 0;
-  // Matches server/pricingEngine.js defaults: €5 net profit, 10% tax, 2.9% payment fee, psych_99 rounding
-  const minPrice = (c + 5 / 0.9) / (1 - 0.029);
-  let candidate = Math.round(minPrice - 0.99) + 0.99;
-  if (candidate < 0.99) candidate = 0.99;
-  if (candidate + 1e-9 < minPrice) {
-    candidate = Math.ceil(minPrice - 0.99 - 1e-9) + 0.99;
-    if (candidate < 0.99) candidate = 0.99;
-  }
-  return Math.round((candidate + Number.EPSILON) * 100) / 100;
-}
-
-export function getDefaultCatalogPrice(perfume, countryOrLang = "") {
-  const published = getPublishedMarketPrice(perfume, countryOrLang);
-  if (published !== null) return published;
-  const basePrice = getDefaultPerfumeVolumeOption(perfume).price;
-  if (typeof window === "undefined") return basePrice;
-  return calculateDefaultRetailPriceEur(basePrice) || basePrice;
-}
 
 export function getPerfumeGtin(perfume) {
   if (!perfume) return "";

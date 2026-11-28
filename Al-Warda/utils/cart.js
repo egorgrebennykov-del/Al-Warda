@@ -1,9 +1,8 @@
 import { getCookieUser } from "./auth.js";
 import {
   getPerfumeUrl,
-  createSampleCartItem,
   getDefaultCatalogPrice,
-} from "./perfumes.js";
+} from "./perfumesLite.js";
 import { restUrl } from "./restBase.js";
 
 const TABLE_URL = restUrl("cart");
@@ -553,6 +552,7 @@ export async function togglePerfumeInCart(perfume, userIdInput, options = {}) {
   } else {
     let itemToAdd = perfume;
     if (isSample && volKey) {
+      const { createSampleCartItem } = await import("./perfumes.js");
       itemToAdd = createSampleCartItem(perfume, volKey, language);
     }
     const added = await addToCart(itemToAdd, userId, quantity, { language });

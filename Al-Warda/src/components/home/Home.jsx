@@ -5,8 +5,9 @@ import {
   getPerfumeUrl,
   getDefaultPerfumeVolumeOption,
   INITIAL_BEST_SELLERS,
+  getDefaultCatalogPrice,
+  loadPublicMarketPrices,
 } from "../../../utils/perfumesLite";
-import { getDefaultCatalogPrice, loadPublicMarketPrices } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
@@ -59,18 +60,15 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    let getBestSellerPerfumes;
-
-    const loadBestSellersModule = async () => {
-      const mod = await import("../../../utils/perfumes");
-      getBestSellerPerfumes = mod.getBestSellerPerfumes;
-    };
-    loadBestSellersModule();
+    let idleId = null;
+    let timeoutId = null;
 
     const fetchBestSellers = async () => {
-      if (cancelled || !getBestSellerPerfumes) return;
+      if (cancelled) return;
       try {
-        const items = await getBestSellerPerfumes();
+        const mod = await import("../../../utils/perfumes");
+        if (cancelled || !mod?.getBestSellerPerfumes) return;
+        const items = await mod.getBestSellerPerfumes();
         if (!cancelled && Array.isArray(items) && items.length > 0) {
           setBestSellers(items.slice(0, 5));
         }
@@ -79,10 +77,22 @@ export default function Home() {
       }
     };
 
-    fetchBestSellers();
+    if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(() => {
+        fetchBestSellers();
+      }, { timeout: 1200 });
+    } else {
+      timeoutId = setTimeout(fetchBestSellers, 200);
+    }
 
     return () => {
       cancelled = true;
+      if (idleId !== null && typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
     };
   }, []);
 

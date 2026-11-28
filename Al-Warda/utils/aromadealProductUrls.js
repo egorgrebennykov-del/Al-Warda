@@ -1,4 +1,4 @@
-import { slugifyPerfumeName } from "./perfumes.js";
+import { slugifyPerfumeName } from "./perfumesLite.js";
 
 const AROMADEAL_BASE = "https://aromadeal.de";
 

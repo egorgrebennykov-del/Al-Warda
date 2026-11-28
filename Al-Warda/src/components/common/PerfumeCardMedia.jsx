@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { bustProductImageCache } from "../../../utils/perfumes";
+import { bustProductImageCache } from "../../../utils/perfumesLite";
 
 /**
  * Renders a luxury perfume card stage with a bottom-grounded cutout flacon,
