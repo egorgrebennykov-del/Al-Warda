@@ -1,5 +1,9 @@
 import { getCookieUser } from "./auth.js";
-import { getPerfumeUrl, createSampleCartItem } from "./perfumes.js";
+import {
+  getPerfumeUrl,
+  createSampleCartItem,
+  getDefaultCatalogPrice,
+} from "./perfumes.js";
 import { restUrl } from "./restBase.js";
 
 const TABLE_URL = restUrl("cart");
@@ -117,7 +121,7 @@ export async function getCartItemCount(userIdInput) {
  *
  * Automatically normalizes parameters and falls back to local storage if network/db fails.
  */
-export async function addToCart(perfume, arg2, arg3) {
+export async function addToCart(perfume, arg2, arg3, arg4 = {}) {
   if (!perfume) return null;
 
   let userId = null;
@@ -164,7 +168,18 @@ export async function addToCart(perfume, arg2, arg3) {
   }
 
   const qty = quantityToAdd;
-  const price = Number(perfume.price) || 45;
+  const isSampleItem = Boolean(
+    perfume?.isSample ||
+    String(perfume?.id || "").startsWith("sample-") ||
+    String(perfume?.url || perfume?.link || "").includes("sample="),
+  );
+  const catalogRetailPrice = !isSampleItem
+    ? getDefaultCatalogPrice(perfume, arg4?.language || "")
+    : null;
+  const price =
+    (Number.isFinite(catalogRetailPrice) && catalogRetailPrice > 0
+      ? catalogRetailPrice
+      : Number(perfume.price)) || 45;
   const link = perfume.url || perfume.link || getPerfumeUrl(perfume);
   const title = perfume.name || perfume.title || "Al-Warda Perfume";
   const image =
@@ -540,7 +555,26 @@ export async function togglePerfumeInCart(perfume, userIdInput, options = {}) {
     if (isSample && volKey) {
       itemToAdd = createSampleCartItem(perfume, volKey, language);
     }
-    const added = await addToCart(itemToAdd, userId, quantity);
+    const added = await addToCart(itemToAdd, userId, quantity, { language });
     return { action: "added", item: added };
   }
+}
+
+export function resolveLiveCartItems(items, catalog, language = "") {
+  if (!Array.isArray(items) || !Array.isArray(catalog) || catalog.length === 0) {
+    return Array.isArray(items) ? items : [];
+  }
+  return items.map((item) => {
+    const itId = String(item?.id || "").toLowerCase();
+    const itLink = String(item?.link || "").toLowerCase();
+    const isSample =
+      Boolean(item?.isSample) || itId.startsWith("sample-") || itLink.includes("sample=") || itLink.includes("size=");
+    if (isSample) return item;
+
+    const matched = catalog.find((p) => findCartItem([item], p, "full"));
+    if (!matched) return item;
+    const retailPrice = getDefaultCatalogPrice(matched, language);
+    if (!Number.isFinite(retailPrice) || retailPrice <= 0) return item;
+    return { ...item, price: retailPrice };
+  });
 }

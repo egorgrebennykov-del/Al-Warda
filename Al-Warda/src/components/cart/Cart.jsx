@@ -4,7 +4,13 @@ import {
   getCart,
   removeFromCart,
   updateQuantity,
+  resolveLiveCartItems,
 } from "../../../utils/cart";
+import {
+  getPerfumes,
+  getCachedPerfumes,
+  loadPublicMarketPrices,
+} from "../../../utils/perfumes";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
 import { useAuth } from "../../context/AuthContext";
@@ -47,8 +53,16 @@ export default function Cart({ onSearch }) {
   const loadItems = async () => {
     try {
       setLoading(true);
-      const rows = await getCart(user?.id);
-      setItems(rows);
+      const [rows, catalog] = await Promise.all([
+        getCart(user?.id),
+        (async () => {
+          await loadPublicMarketPrices().catch(() => {});
+          const cached = getCachedPerfumes();
+          if (Array.isArray(cached) && cached.length > 0) return cached;
+          return getPerfumes().catch(() => []);
+        })(),
+      ]);
+      setItems(resolveLiveCartItems(rows, catalog, language));
     } catch (err) {
       setError(err.message);
     } finally {

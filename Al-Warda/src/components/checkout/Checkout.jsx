@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { clearCart, getCart } from "../../../utils/cart";
+import { clearCart, getCart, resolveLiveCartItems } from "../../../utils/cart";
+import { getPerfumes, getCachedPerfumes, loadPublicMarketPrices } from "../../../utils/perfumes";
 import {
   deleteUserAddress,
   deleteUserPhone,
@@ -193,9 +194,16 @@ export default function Checkout() {
     let cancelled = false;
 
     if (!loggedIn) {
-      getCart(null)
-        .then((cartRows) => {
-          if (!cancelled) setItems(cartRows);
+      Promise.all([
+        getCart(null),
+        (async () => {
+          await loadPublicMarketPrices().catch(() => {});
+          const cached = getCachedPerfumes();
+          return Array.isArray(cached) && cached.length > 0 ? cached : getPerfumes().catch(() => []);
+        })(),
+      ])
+        .then(([cartRows, catalog]) => {
+          if (!cancelled) setItems(resolveLiveCartItems(cartRows, catalog, language));
         })
         .catch((err) => !cancelled && setError(err.message))
         .finally(() => !cancelled && setLoading(false));
@@ -208,10 +216,15 @@ export default function Checkout() {
       getCart(user?.id),
       getProfile(),
       getUserPhones(user?.id),
+      (async () => {
+        await loadPublicMarketPrices().catch(() => {});
+        const cached = getCachedPerfumes();
+        return Array.isArray(cached) && cached.length > 0 ? cached : getPerfumes().catch(() => []);
+      })(),
     ])
-      .then(([cartRows, profile, fetchedPhones]) => {
+      .then(([cartRows, profile, fetchedPhones, catalog]) => {
         if (cancelled) return;
-        setItems(cartRows);
+        setItems(resolveLiveCartItems(cartRows, catalog, language));
         if (profile?.firstName || profile?.lastName) {
           const defaultName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
           setAddressForm((current) => ({
