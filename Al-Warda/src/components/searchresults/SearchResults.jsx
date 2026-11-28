@@ -10,7 +10,10 @@ import {
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
-import { matchesPerfumeSearch } from "../../../utils/searchNormalize";
+import {
+  matchesPerfumeSearch,
+  sortPerfumesBySearchAndTrends,
+} from "../../../utils/searchNormalize";
 import { useCartState } from "../../hooks/useCartState";
 import { useLanguage } from "../../context/languageContext";
 import { useCurrency } from "../../context/currencyContext";
@@ -214,7 +217,7 @@ export default function SearchResults() {
       });
     }
 
-    setResults(filtered);
+    setResults(sortPerfumesBySearchAndTrends(filtered, query));
   }, [query, allPerfumes, filterType, selectedBrand]);
 
   const handleAddToCart = async (perfume, e) => {

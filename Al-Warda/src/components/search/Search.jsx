@@ -8,7 +8,10 @@ import {
   hasCompletedGeneratedImage,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
-import { matchesPerfumeSearch } from "../../../utils/searchNormalize";
+import {
+  matchesPerfumeSearch,
+  sortPerfumesBySearchAndTrends,
+} from "../../../utils/searchNormalize";
 import "./Search.css";
 import "../common/ProductCardImages.css";
 
@@ -84,7 +87,9 @@ export default function Search({ show, onClose }) {
       return matchesPerfumeSearch(p, query);
     });
 
-    setMatchingPerfumes(filtered);
+    setMatchingPerfumes(
+      sortPerfumesBySearchAndTrends(filtered, q === "bestseller" ? "" : query),
+    );
   }, [query, allPerfumes]);
 
   const handleSubmit = (e) => {

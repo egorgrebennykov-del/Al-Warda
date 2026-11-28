@@ -26,37 +26,104 @@ export function tokenizeSearchQuery(query) {
 }
 
 /**
+ * Computes a relevance score (0 = no match) for a perfume against a search query.
+ */
+export function scorePerfumeSearch(perfume, rawQuery) {
+  const compactQuery = normalizeSearchCompact(rawQuery);
+  if (!compactQuery) return 1;
+  if (!perfume) return 0;
+
+  const nameCompact = normalizeSearchCompact(perfume.name || perfume.title || "");
+  const brandCompact = normalizeSearchCompact(perfume.brand || "");
+  const seriesCompact = normalizeSearchCompact(perfume.series || "");
+
+  if (nameCompact === compactQuery) return 100;
+  if (nameCompact.startsWith(compactQuery)) return 85;
+  if (nameCompact.includes(compactQuery)) return 70;
+
+  if (brandCompact === compactQuery || seriesCompact === compactQuery) return 60;
+  if (brandCompact.startsWith(compactQuery) || seriesCompact.startsWith(compactQuery)) return 50;
+  if (brandCompact.includes(compactQuery) || seriesCompact.includes(compactQuery)) return 40;
+
+  const tokens = tokenizeSearchQuery(rawQuery);
+  const nameBrandCombined = `${nameCompact}${brandCompact}${seriesCompact}`;
+  if (tokens.length > 1 && tokens.every((tok) => nameBrandCombined.includes(tok))) {
+    return 35;
+  }
+
+  const noteFields = [
+    perfume.category,
+    perfume.notesSummary,
+    ...(Array.isArray(perfume.topNotes) ? perfume.topNotes : []),
+    ...(Array.isArray(perfume.heartNotes) ? perfume.heartNotes : []),
+    ...(Array.isArray(perfume.baseNotes) ? perfume.baseNotes : []),
+  ]
+    .map(normalizeSearchCompact)
+    .filter(Boolean);
+
+  if (noteFields.some((f) => f.includes(compactQuery))) return 25;
+
+  const descCompact = normalizeSearchCompact(perfume.description || "");
+  if (descCompact.includes(compactQuery)) return 15;
+
+  const combinedCompact = `${nameBrandCombined}${noteFields.join("")}${descCompact}`;
+  if (combinedCompact.includes(compactQuery)) return 15;
+  if (tokens.length > 1 && tokens.every((tok) => combinedCompact.includes(tok))) {
+    return 10;
+  }
+
+  return 0;
+}
+
+/**
  * Returns true if a perfume matches a search query regardless of case,
  * spaces, apostrophes, dashes, commas, or other punctuation.
  */
 export function matchesPerfumeSearch(perfume, rawQuery) {
-  const compactQuery = normalizeSearchCompact(rawQuery);
-  if (!compactQuery) return true;
-  if (!perfume) return false;
+  return scorePerfumeSearch(perfume, rawQuery) > 0;
+}
 
-  const fields = [
-    perfume.name,
-    perfume.title,
-    perfume.brand,
-    perfume.series,
-    perfume.category,
-    perfume.notesSummary,
-    perfume.description,
-    ...(Array.isArray(perfume.topNotes) ? perfume.topNotes : []),
-    ...(Array.isArray(perfume.heartNotes) ? perfume.heartNotes : []),
-    ...(Array.isArray(perfume.baseNotes) ? perfume.baseNotes : []),
-  ];
+function getGoogleTrendsValue(perfume) {
+  const avg = Number(
+    perfume?.googleTrendsAverage ??
+      perfume?.googleTrends?.average ??
+      perfume?.googleTrends?.avg ??
+      perfume?.info?.googleTrends?.average ??
+      perfume?.info?.googleTrends?.avg,
+  );
+  if (Number.isFinite(avg)) return avg;
+  const max = Number(
+    perfume?.googleTrendsMax ??
+      perfume?.googleTrends?.max ??
+      perfume?.info?.googleTrends?.max,
+  );
+  return Number.isFinite(max) ? max : -1;
+}
 
-  const compactFields = fields.map(normalizeSearchCompact).filter(Boolean);
-  if (compactFields.some((f) => f.includes(compactQuery))) {
-    return true;
-  }
+function getGoogleTrendsMaxValue(perfume) {
+  const max = Number(
+    perfume?.googleTrendsMax ??
+      perfume?.googleTrends?.max ??
+      perfume?.info?.googleTrends?.max,
+  );
+  return Number.isFinite(max) ? max : -1;
+}
 
-  const combinedCompact = compactFields.join("");
-  if (combinedCompact.includes(compactQuery)) {
-    return true;
-  }
+/**
+ * Sorts perfumes first by search relevance (descending), then by Google Trends rating (descending).
+ */
+export function sortPerfumesBySearchAndTrends(list, rawQuery) {
+  if (!Array.isArray(list) || list.length <= 1) return Array.isArray(list) ? [...list] : [];
+  return [...list].sort((a, b) => {
+    const scoreDiff = scorePerfumeSearch(b, rawQuery) - scorePerfumeSearch(a, rawQuery);
+    if (scoreDiff !== 0) return scoreDiff;
 
-  const tokens = tokenizeSearchQuery(rawQuery);
-  return tokens.length > 1 && tokens.every((tok) => combinedCompact.includes(tok));
+    const gtAvgDiff = getGoogleTrendsValue(b) - getGoogleTrendsValue(a);
+    if (gtAvgDiff !== 0) return gtAvgDiff;
+
+    const gtMaxDiff = getGoogleTrendsMaxValue(b) - getGoogleTrendsMaxValue(a);
+    if (gtMaxDiff !== 0) return gtMaxDiff;
+
+    return Number(a?.id || 0) - Number(b?.id || 0);
+  });
 }
