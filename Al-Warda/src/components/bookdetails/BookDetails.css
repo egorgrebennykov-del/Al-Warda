@@ -323,9 +323,18 @@
     drop-shadow(0 14px 28px rgba(0, 0, 0, 0.76));
 }
 
-@media (hover: none) {
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
   .warda-details-photo.is-hover-zooming {
-    transform: none;
+    transform: none !important;
+  }
+
+  .warda-details-photo.is-hover-zooming .warda-details-img {
+    filter:
+      brightness(1.03)
+      contrast(1.07)
+      saturate(1.12)
+      drop-shadow(0 0 24px rgba(212, 175, 55, 0.20))
+      drop-shadow(0 14px 28px rgba(0, 0, 0, 0.72));
   }
 }
 

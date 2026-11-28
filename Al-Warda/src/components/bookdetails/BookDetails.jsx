@@ -809,8 +809,24 @@ export default function BookDetails() {
             <div className="warda-details-card">
               <div
                 className="warda-details-img-wrap"
-                onMouseEnter={() => setIsHoverZooming(true)}
+                onMouseEnter={() => {
+                  if (
+                    typeof window !== "undefined" &&
+                    (window.innerWidth <= 768 ||
+                      window.matchMedia("(hover: none), (pointer: coarse)").matches)
+                  ) {
+                    return;
+                  }
+                  setIsHoverZooming(true);
+                }}
                 onMouseMove={(e) => {
+                  if (
+                    typeof window !== "undefined" &&
+                    (window.innerWidth <= 768 ||
+                      window.matchMedia("(hover: none), (pointer: coarse)").matches)
+                  ) {
+                    return;
+                  }
                   const rect = e.currentTarget.getBoundingClientRect();
                   const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
                   const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
