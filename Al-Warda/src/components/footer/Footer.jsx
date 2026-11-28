@@ -44,22 +44,22 @@ export default function Footer() {
           <ul className="footer__links">
             <li>
               <Link to="/featured?category=oud" className="footer__link">
-                {t("footer.oudWoody")}
+                {t("footer.oudAndWoody") || t("footer.oudWoody")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=gourmand" className="footer__link">
-                {t("footer.gourmandVanilla")}
+                {t("footer.gourmandAndVanilla") || t("footer.gourmandVanilla")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=floral" className="footer__link">
-                {t("footer.floralRose")}
+                {t("footer.floralAndRose") || t("footer.floralRose")}
               </Link>
             </li>
             <li>
               <Link to="/featured?category=fresh" className="footer__link">
-                {t("footer.freshAquatic")}
+                {t("footer.freshAndAquatic") || t("footer.freshAquatic")}
               </Link>
             </li>
             <li>

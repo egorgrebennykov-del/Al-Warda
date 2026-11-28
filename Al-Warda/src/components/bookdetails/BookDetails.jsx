@@ -730,7 +730,7 @@ export default function BookDetails() {
   const notesStatus =
     hasDisplayNotes || hasStoredNotes
       ? null
-      : indexNotesState === "loading"
+      : loading || perfume?.isLight || indexNotesState === "loading"
         ? "loading"
         : indexNotesState === "found"
           ? "not_found"

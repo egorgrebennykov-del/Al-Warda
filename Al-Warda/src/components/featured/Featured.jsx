@@ -12,6 +12,7 @@ import {
   loadPublicMarketPrices,
   parseVolumeMl,
   hasCompletedGeneratedImage,
+  getPerfumeDetailsById,
 } from "../../../utils/perfumes";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import QogitaPriceBadge from "../common/QogitaPriceBadge";
@@ -1911,6 +1912,12 @@ export default function Featured() {
                 <OrnateCard
                   key={perfume.id}
                   className="warda-perfume-card"
+                  onMouseEnter={() => {
+                    if (perfume?.isLight) getPerfumeDetailsById(perfume.id).catch(() => {});
+                  }}
+                  onPointerDown={() => {
+                    if (perfume?.isLight) getPerfumeDetailsById(perfume.id).catch(() => {});
+                  }}
                   onClick={() => {
                     const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
                     sessionStorage.setItem(scrollKey, String(window.scrollY));

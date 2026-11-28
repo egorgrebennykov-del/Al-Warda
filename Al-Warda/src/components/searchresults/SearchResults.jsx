@@ -8,6 +8,7 @@ import {
   getDefaultCatalogPrice,
   loadPublicMarketPrices,
   hasCompletedGeneratedImage,
+  getPerfumeDetailsById,
 } from "../../../utils/perfumes";
 import { addToCart } from "../../../utils/cart";
 import {
@@ -403,6 +404,12 @@ export default function SearchResults() {
                 <OrnateCard
                   key={perfume.id}
                   className="warda-perfume-card"
+                  onMouseEnter={() => {
+                    if (perfume?.isLight) getPerfumeDetailsById(perfume.id).catch(() => {});
+                  }}
+                  onPointerDown={() => {
+                    if (perfume?.isLight) getPerfumeDetailsById(perfume.id).catch(() => {});
+                  }}
                   onClick={() => {
                     const scrollKey = `warda_scroll_${window.location.pathname}${window.location.search}`;
                     sessionStorage.setItem(scrollKey, String(window.scrollY));
