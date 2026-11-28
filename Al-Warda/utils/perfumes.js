@@ -2876,10 +2876,10 @@ export function getPerfumeDedupeKey(perfume) {
     .replace(/\b(pour\s+homme|for\s+men|for\s+him|men's|mens|men|man)\b/g, " homme ")
     .replace(/\b(eau\s+de\s+toilette|edt)\b/g, " edt ")
     .replace(/\b(eau\s+de\s+cologne|edc|cologne)\b/g, " edc ")
-    .replace(/\b(eau\s+de\s+parfum|extrait\s+de\s+parfum|extract\s+de\s+parfum|edp|extrait|extract|parfum)\b/g, " ")
+    .replace(/\b(eau\s+de\s+parfum|eau\s+de\s+perfume|extrait\s+de\s+parfum|extract\s+de\s+parfum|edp|extrait|extract|parfum)\b/g, " ")
     .replace(/\bblue\s+iconic\b/g, " iconic ")
     .replace(/\b(spray|vaporisateur|natural|fragrance|fragrances|perfume|arabic|luxury|unisex|bor\s*[um]?)\b/g, " ")
-    .replace(/\b\d+(?:\.\d+)?\s*(?:ml|fl\.?\s*oz|oz|g|grams)\b/g, " ");
+    .replace(/\b\d+(?:\.\d+)?\s*(?:ml|мл|milliliters?|fl\.?\s*oz|oz|g|grams)\b/g, " ");
   const stop = new Set(["the", "a", "an", "by", "of", "and", "for", "in"]);
   const tokens = Array.from(
     new Set((name.match(/[a-z0-9]+/g) || []).filter((t) => !stop.has(t))),
@@ -2901,7 +2901,33 @@ export function deduplicatePerfumesKeepCheapest(list) {
     }
   }
   const keepSet = new Set(Array.from(bestByKey.values()).map((v) => v.item));
-  return list.filter((item) => keepSet.has(item));
+  const byNamePass = list.filter((item) => keepSet.has(item));
+
+  // Secondary guard: if two items have the exact same generated image AND same volume, keep the cheaper one
+  const bestByImageVol = new Map();
+  for (const item of byNamePass) {
+    const img = String(item?.image || "").trim().toLowerCase();
+    if (!img || !img.includes("/generated-products/")) continue;
+    const vol = String(item?.volume || "").trim().toLowerCase().replace(/\s+/g, "");
+    const imgKey = `${img}::${vol}`;
+    const price = Number(item?.price);
+    const normPrice = Number.isFinite(price) && price > 0 ? price : Infinity;
+    const prev = bestByImageVol.get(imgKey);
+    if (!prev || normPrice < prev.normPrice) {
+      bestByImageVol.set(imgKey, { item, normPrice });
+    }
+  }
+  const dropSet = new Set();
+  for (const item of byNamePass) {
+    const img = String(item?.image || "").trim().toLowerCase();
+    if (!img || !img.includes("/generated-products/")) continue;
+    const vol = String(item?.volume || "").trim().toLowerCase().replace(/\s+/g, "");
+    const winner = bestByImageVol.get(`${img}::${vol}`)?.item;
+    if (winner && winner !== item) {
+      dropSet.add(item);
+    }
+  }
+  return byNamePass.filter((item) => !dropSet.has(item));
 }
 
 export async function getPerfumes(options = {}) {
