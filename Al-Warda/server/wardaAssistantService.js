@@ -367,7 +367,8 @@ export async function ensureCatalogLoaded(contextCatalog = null) {
 // ============================================================================
 const NOTE_SYNONYMS = {
   ягоды: ["ягод", "клубник", "малин", "земляник", "смородин", "ежевик", "черник", "брусник", "клюкв", "вишн", "черешн", "барбарис", "гранат", "смородина", "черная смородина", "berry", "berries", "strawberry", "raspberry", "blackberry", "blueberry", "currant", "blackcurrant", "cherry", "cranberry", "pomegranate"],
-  ваниль: ["ваниль", "карамел", "сливк", "пралине", "маршмеллоу", "бобы тонка", "гурман", "сладк", "vanilla", "caramel", "gourmand", "sweet", "tonka"],
+  ваниль: ["ваниль", "ванилин", "vanilla", "vanille"],
+  сладкий: ["сладк", "гурман", "карамел", "сливк", "пралине", "маршмеллоу", "бобы тонка", "sweet", "gourmand", "caramel", "tonka"],
   уд: ["уд", "агар", "смол", "смолист", "ладан", "oud", "agarwood", "smoke", "incense", "frankincense"],
   роза: ["роз", "таиф", "лепестк", "дамасск", "rose", "taif", "damask"],
   амбра: ["амбр", "янтарь", "amber", "ambroxan"],
@@ -546,13 +547,18 @@ export function searchPerfumesInDatabase(query, options = {}) {
       else if (nameLower.includes(mb)) score += 40;
     }
 
+    const hasStructuredNotes = Boolean(topStr || heartStr || baseStr);
+    const noteSearchText = hasStructuredNotes
+      ? `${nameLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr}`
+      : `${nameLower} ${notesSummary} ${descStr}`;
+
     for (const synGroup of matchedNoteCategories) {
-      const groupMatched = synGroup.some((syn) => allText.includes(syn));
+      const groupMatched = synGroup.some((syn) => noteSearchText.includes(syn));
       if (groupMatched) {
         score += 40;
         if (synGroup.some((syn) => notesSummary.includes(syn))) score += 25;
         if (synGroup.some((syn) => topStr.includes(syn) || heartStr.includes(syn) || baseStr.includes(syn))) {
-          score += 25;
+          score += 35;
         }
         if (synGroup.some((syn) => nameLower.includes(syn))) score += 50;
       }
@@ -591,8 +597,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
   const positiveMatches = scored.filter((x) => x.score > 0).map((x) => x.perfume);
   const combined = [...positiveMatches];
 
-  // Pad with same brand if a specific brand was matched (respecting gender filter!)
-  if (combined.length > 0 && combined.length < limit) {
+  // Pad with same brand ONLY when user asked for a brand without a specific note filter
+  if (combined.length > 0 && combined.length < limit && matchedBrands.length > 0 && matchedNoteCategories.length === 0) {
     const primaryBrand = combined[0].brand?.toLowerCase();
     if (primaryBrand) {
       for (const p of ALL_PERFUMES) {
@@ -610,8 +616,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
     }
   }
 
-  // Pad with remaining gender-matching catalog items only when matches exist or no specific query terms were given
-  if ((combined.length > 0 || !hasQueryTerms) && combined.length < limit) {
+  // Pad with remaining gender-matching catalog items ONLY when no specific query terms were given
+  if (!hasQueryTerms && combined.length < limit) {
     for (const item of scored.map((s) => s.perfume)) {
       if ((allowSamples || !isSamplePerfume(item)) && !combined.some((c) => c.id === item.id)) {
         combined.push(item);

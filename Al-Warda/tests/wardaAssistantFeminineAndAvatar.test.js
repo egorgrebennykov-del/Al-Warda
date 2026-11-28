@@ -853,3 +853,47 @@ test("processWardaChat returns empty books when user asks for a non-existent or 
     "Must NOT attach unrelated catalog items or invent perfumes for non-existent scents"
   );
 });
+
+test("processWardaChat only recommends perfumes with actual vanilla when user asks for vanilla", async () => {
+  const vanillaCatalog = [
+    {
+      id: "lattafa-yara-tous-no-vanilla",
+      name: "Lattafa Yara Tous EDP",
+      brand: "Lattafa",
+      category: "Восточные гурманские",
+      categoryRu: "Восточные гурманские",
+      gender: "Унисекс",
+      price: 25.99,
+      image: "/assets/img/generated-products/yara-tous.png",
+      topNotesRu: ["Манго", "Кокос", "Маракуйя"],
+      heartNotesRu: ["Жасмин", "Гелиотроп", "Флёрдоранж"],
+      baseNotesRu: ["Кашмеран", "Мускус"],
+      notesSummaryRu: "Манго · Кокос · Жасмин · Мускус",
+      descriptionRu: "Солнечный тропический гурманский аромат с манго, кокосом и жасмином.",
+    },
+    {
+      id: "lattafa-nebras-vanilla",
+      name: "Lattafa Nebras EDP",
+      brand: "Lattafa",
+      category: "Восточные гурманские",
+      categoryRu: "Восточные гурманские",
+      gender: "Унисекс",
+      price: 29.99,
+      image: "/assets/img/generated-products/nebras.png",
+      topNotesRu: ["Красные ягоды", "Мандарин"],
+      heartNotesRu: ["Ваниль", "Какао", "Роза"],
+      baseNotesRu: ["Бобы тонка", "Амбра", "Мускус"],
+      notesSummaryRu: "Красные ягоды · Ваниль · Какао",
+      descriptionRu: "Сладкий восточный аромат с насыщенной ванилью и какао.",
+    },
+  ];
+
+  const result = await processWardaChat({
+    messages: [{ role: "user", content: "дай духи с ванилью" }],
+    language: "ru",
+    context: { catalog: vanillaCatalog },
+  });
+
+  assert.equal(result.books.length, 1, "Should only return the perfume that actually has vanilla");
+  assert.equal(result.books[0].id, "lattafa-nebras-vanilla", "Must recommend the vanilla perfume, not Yara Tous");
+});

@@ -1053,7 +1053,7 @@ export function inferPerfumeProfile(perfume) {
   if (
     name.includes("vanilla") ||
     name.includes("khamrah") ||
-    name.includes("yara") ||
+    (name.includes("yara") && !name.includes("yara tous")) ||
     name.includes("caramel") ||
     cat === "gourmand" ||
     cat.includes("гурман")
