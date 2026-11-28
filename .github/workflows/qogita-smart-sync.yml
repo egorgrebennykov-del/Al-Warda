@@ -1,4 +1,4 @@
-name: "Qogita Smart Sync: Catalog Updates & Image Queue"
+name: "Aromadeal Smart Sync: Catalog, Prices & Trends"
 
 on:
   schedule:

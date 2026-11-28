@@ -113,20 +113,33 @@ def hasura_graphql(env: dict[str, str], query: str, variables: dict[str, Any] | 
 
 
 def fetch_all_aromadeal_products() -> list[dict[str, Any]]:
+    import time
     all_products: list[dict[str, Any]] = []
     page = 1
     while True:
         url = f"{AROMADEAL_BASE}/products.json?limit=250&page={page}"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 Al-Warda-Migration/1.0"})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-        batch = payload.get("products") or []
+        payload = None
+        for attempt in range(5):
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 Al-Warda-Sync/1.0"})
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+                break
+            except urllib.error.HTTPError as exc:
+                if exc.code in (429, 502, 503, 504) and attempt < 4:
+                    wait_s = min(60, 4 * (2 ** attempt))
+                    print(f"Aromadeal HTTP {exc.code} on page {page}, retrying in {wait_s}s...", flush=True)
+                    time.sleep(wait_s)
+                    continue
+                raise
+        batch = (payload or {}).get("products") or []
         if not batch:
             break
         all_products.extend(batch)
         if len(batch) < 250:
             break
         page += 1
+        time.sleep(0.4)
     return all_products
 
 
