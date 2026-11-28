@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Only Sets",
     "featured.onlySetsTitle": "Show sets and gift sets only",
     "featured.clearFilters": "Clear all filters",
+    "featured.priceRange": "Price Range",
     "featured.sort": "Sort by",
     "featured.sortPopular": "Most Popular",
     "featured.sortPriceAsc": "Price: Low to High",

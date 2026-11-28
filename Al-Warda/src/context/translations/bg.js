@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Само комплекти",
     "featured.onlySetsTitle": "Показване само на комплекти и подаръчни сетове",
     "featured.clearFilters": "Изчисти всички филтри",
+    "featured.priceRange": "Ценови диапазон",
     "featured.sort": "Сортиране",
     "featured.sortPopular": "Най-популярни",
     "featured.sortPriceAsc": "Цена: от ниска към висока",

@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Только сеты",
     "featured.onlySetsTitle": "Показать только парфюмерные сеты и наборы",
     "featured.clearFilters": "Сбросить все фильтры",
+    "featured.priceRange": "Цена",
     "featured.sort": "Сортировка",
     "featured.sortPopular": "Самые популярные",
     "featured.sortPriceAsc": "Сначала дешевле",

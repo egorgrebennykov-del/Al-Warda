@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Μόно σετ",
     "featured.onlySetsTitle": "Εμφάνιση μόνο σετ και σετ δώρου",
     "featured.clearFilters": "Καθαρισμός όλων των φίλτρων",
+    "featured.priceRange": "Εύρος τιμής",
     "featured.sort": "Ταξινόμηση",
     "featured.sortPopular": "Δημοφιλή",
     "featured.sortPriceAsc": "Τιμή: Χαμηλή προς Υψηλή",

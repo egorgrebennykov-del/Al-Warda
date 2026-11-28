@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Csak szettek",
     "featured.onlySetsTitle": "Csak illatszettek és ajándékkészletek megjelenítése",
     "featured.clearFilters": "Szűrők törlése",
+    "featured.priceRange": "Ártartomány",
     "featured.sort": "Rendezés",
     "featured.sortPopular": "Legnépszerűbb",
     "featured.sortPriceAsc": "Ár: alacsonytól a magasig",

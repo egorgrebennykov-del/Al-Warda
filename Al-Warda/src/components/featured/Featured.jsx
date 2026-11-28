@@ -810,6 +810,18 @@ export default function Featured() {
       ? raw
       : "popular";
   });
+  const [priceMin, setPriceMin] = useState(() => {
+    const raw = searchParams.get("minPrice");
+    if (raw === null || raw === "") return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  });
+  const [priceMax, setPriceMax] = useState(() => {
+    const raw = searchParams.get("maxPrice");
+    if (raw === null || raw === "") return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  });
 
   // Sync state back to URL query parameters without resetting scroll position
   useEffect(() => {
@@ -831,6 +843,10 @@ export default function Featured() {
       params.set("format", selectedFormat);
     if (notesCombination) params.set("combination", "1");
     if (sortBy && sortBy !== "popular") params.set("sort", sortBy);
+    if (priceMin !== null && Number.isFinite(priceMin))
+      params.set("minPrice", String(priceMin));
+    if (priceMax !== null && Number.isFinite(priceMax))
+      params.set("maxPrice", String(priceMax));
     setSearchParams(params, { replace: true, preventScrollReset: true });
   }, [
     selectedCategories,
@@ -843,6 +859,8 @@ export default function Featured() {
     selectedFormat,
     notesCombination,
     sortBy,
+    priceMin,
+    priceMax,
     setSearchParams,
   ]);
 
@@ -980,6 +998,36 @@ export default function Featured() {
     setSelectedFormat((prev) => (prev === "sets" ? "all" : "sets"));
   };
 
+  const priceBounds = useMemo(() => {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const p of perfumes || []) {
+      const val = Number(getDefaultCatalogPrice(p, language) || 0);
+      if (Number.isFinite(val) && val > 0) {
+        if (val < min) min = val;
+        if (val > max) max = val;
+      }
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) {
+      return { min: 0, max: 200 };
+    }
+    const flooredMin = Math.max(0, Math.floor(min));
+    const ceiledMax = Math.max(flooredMin + 1, Math.ceil(max));
+    return { min: flooredMin, max: ceiledMax };
+  }, [perfumes, language]);
+
+  const effectiveMinPrice =
+    priceMin !== null
+      ? Math.max(priceBounds.min, Math.min(priceMin, priceBounds.max))
+      : priceBounds.min;
+  const effectiveMaxPrice =
+    priceMax !== null
+      ? Math.min(priceBounds.max, Math.max(priceMax, effectiveMinPrice))
+      : priceBounds.max;
+  const isPriceFilterActive =
+    (priceMin !== null && effectiveMinPrice > priceBounds.min) ||
+    (priceMax !== null && effectiveMaxPrice < priceBounds.max);
+
   const resetAllFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
@@ -990,6 +1038,8 @@ export default function Featured() {
     setSelectedLongevities([]);
     setSelectedFormat("all");
     setNotesCombination(false);
+    setPriceMin(null);
+    setPriceMax(null);
     setSortBy("popular");
     setVisibleLimit(PAGE_SIZE);
     setSearchParams({}, { replace: true, preventScrollReset: true });
@@ -1004,7 +1054,8 @@ export default function Featured() {
     selectedNotes.length +
     selectedVolumes.length +
     selectedLongevities.length +
-    (selectedFormat !== "all" ? 1 : 0);
+    (selectedFormat !== "all" ? 1 : 0) +
+    (isPriceFilterActive ? 1 : 0);
 
   const perfumeNotesTexts = useMemo(
     () => (perfumes || []).map((p) => buildPerfumeNotesText(p)),
@@ -1183,6 +1234,14 @@ export default function Featured() {
           if (!matchesNotes) return false;
         }
 
+        // 5. Price range filter
+        if (isPriceFilterActive) {
+          const pPrice = Number(getDefaultCatalogPrice(p, language) || 0);
+          if (pPrice < effectiveMinPrice || pPrice > effectiveMaxPrice) {
+            return false;
+          }
+        }
+
         return true;
       });
     }
@@ -1242,6 +1301,10 @@ export default function Featured() {
     selectedLongevities,
     selectedFormat,
     notesCombination,
+    isPriceFilterActive,
+    effectiveMinPrice,
+    effectiveMaxPrice,
+    language,
     sortBy,
   ]);
 
@@ -1850,6 +1913,84 @@ export default function Featured() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* PRICE RANGE SLIDER SECTION */}
+              <div className="warda-filter-price-section">
+                <div className="warda-filter-section-header">
+                  <div className="warda-filter-section-title">
+                    💎 {t("featured.priceRange")}
+                  </div>
+                  {isPriceFilterActive && (
+                    <button
+                      type="button"
+                      className="warda-filter-section-clear-btn"
+                      onClick={() => {
+                        setPriceMin(null);
+                        setPriceMax(null);
+                      }}
+                    >
+                      ✕ {t("featured.resetSection")}
+                    </button>
+                  )}
+                </div>
+
+                <div className="warda-price-range-values">
+                  <span className="warda-price-range-badge">
+                    {formatPrice(effectiveMinPrice)}
+                  </span>
+                  <span className="warda-price-range-sep">—</span>
+                  <span className="warda-price-range-badge">
+                    {formatPrice(effectiveMaxPrice)}
+                  </span>
+                </div>
+
+                {(() => {
+                  const span = Math.max(1, priceBounds.max - priceBounds.min);
+                  const minPct = ((effectiveMinPrice - priceBounds.min) / span) * 100;
+                  const maxPct = ((effectiveMaxPrice - priceBounds.min) / span) * 100;
+                  return (
+                    <div
+                      className="warda-price-slider"
+                      style={{
+                        "--min-pct": `${minPct}%`,
+                        "--max-pct": `${maxPct}%`,
+                      }}
+                    >
+                      <div className="warda-price-slider__track">
+                        <div className="warda-price-slider__range" />
+                      </div>
+                      <input
+                        type="range"
+                        min={priceBounds.min}
+                        max={priceBounds.max}
+                        step={1}
+                        value={effectiveMinPrice}
+                        aria-label={`${t("featured.priceRange")} (min)`}
+                        className="warda-price-slider__input warda-price-slider__input--min"
+                        onChange={(e) => {
+                          const next = Math.min(Number(e.target.value), effectiveMaxPrice);
+                          setVisibleLimit(PAGE_SIZE);
+                          setPriceMin(next <= priceBounds.min ? null : next);
+                        }}
+                      />
+                      <input
+                        type="range"
+                        min={priceBounds.min}
+                        max={priceBounds.max}
+                        step={1}
+                        value={effectiveMaxPrice}
+                        aria-label={`${t("featured.priceRange")} (max)`}
+                        className="warda-price-slider__input warda-price-slider__input--max"
+                        onChange={(e) => {
+                          const next = Math.max(Number(e.target.value), effectiveMinPrice);
+                          setVisibleLimit(PAGE_SIZE);
+                          setPriceMax(next >= priceBounds.max ? null : next);
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* CLEAR ALL EXPANDED FOOTER */}

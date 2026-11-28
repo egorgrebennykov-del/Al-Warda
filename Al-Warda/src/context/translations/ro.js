@@ -512,6 +512,7 @@ export default {
     "featured.onlySets": "Doar seturi",
     "featured.onlySetsTitle": "Afișează doar seturi și cadouri",
     "featured.clearFilters": "Șterge toate filtrele",
+    "featured.priceRange": "Interval de preț",
     "featured.sort": "Sortare",
     "featured.sortPopular": "Cele mai populare",
     "featured.sortPriceAsc": "Preț: crescător",
