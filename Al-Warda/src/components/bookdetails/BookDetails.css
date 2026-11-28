@@ -308,7 +308,19 @@
 }
 
 .warda-details-photo.is-hover-zooming {
-  transform: scale(1.26);
+  transform: scale(1.26) translateZ(0);
+}
+
+.warda-details-photo.is-hover-zooming .warda-details-img {
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
+  filter:
+    url(#warda-hover-sharpen)
+    brightness(1.04)
+    contrast(1.11)
+    saturate(1.14)
+    drop-shadow(0 0 24px rgba(212, 175, 55, 0.24))
+    drop-shadow(0 14px 28px rgba(0, 0, 0, 0.76));
 }
 
 @media (hover: none) {

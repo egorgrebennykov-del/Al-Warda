@@ -823,6 +823,22 @@ export default function BookDetails() {
                 }}
                 aria-label="Perfume flacon preview"
               >
+                <svg
+                  width="0"
+                  height="0"
+                  aria-hidden="true"
+                  style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
+                >
+                  <defs>
+                    <filter id="warda-hover-sharpen" colorInterpolationFilters="sRGB">
+                      <feConvolveMatrix
+                        order="3"
+                        preserveAlpha="true"
+                        kernelMatrix="0 -0.28 0 -0.28 2.12 -0.28 0 -0.28 0"
+                      />
+                    </filter>
+                  </defs>
+                </svg>
                 <div
                   className="warda-stage-assembly"
                   style={{
