@@ -1098,12 +1098,15 @@ export default function Featured() {
 
   const availableSeries = useMemo(() => {
     if (!perfumes || perfumes.length === 0) return [];
-    const set = new Set();
+    const counts = new Map();
     for (const p of perfumes) {
       const s = String(p?.series || "").trim();
-      if (s) set.add(s);
+      if (s) counts.set(s, (counts.get(s) || 0) + 1);
     }
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
+    return Array.from(counts.entries())
+      .filter(([, count]) => count >= 2)
+      .map(([name]) => name)
+      .sort((a, b) => a.localeCompare(b));
   }, [perfumes]);
 
   const availableCategories = useMemo(() => {
@@ -1199,9 +1202,13 @@ export default function Featured() {
         // 2.5 Series / Collection filter (OR within series)
         if (selectedSeries.length > 0) {
           const pSeries = (p.series || "").toLowerCase();
-          const matchesSeries = selectedSeries.some(
-            (s) => pSeries === s.toLowerCase(),
-          );
+          const pName = (p.name || p.title || "").toLowerCase();
+          const matchesSeries = selectedSeries.some((s) => {
+            const sLower = s.toLowerCase();
+            if (pSeries === sLower) return true;
+            const escaped = sLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return new RegExp(`\\b${escaped}\\b`, "i").test(pName);
+          });
           if (!matchesSeries) return false;
         }
 

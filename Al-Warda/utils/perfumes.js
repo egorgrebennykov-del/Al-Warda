@@ -1826,21 +1826,58 @@ const CURATED_SERIES_PATTERNS = [
   [/french\s*avenue|fragrance\s*world/i, /\bliquid\s*brun\b|\bsweet\s*pleasure\b/i, "Sweet Pleasure Collection"],
   [/french\s*avenue/i, /\broyal\s*blend\b/i, "Royal Blend"],
   [/french\s*avenue/i, /\bspectre\b/i, "Spectre"],
+  [/french\s*avenue/i, /\bvulcan\b/i, "Vulcan"],
   [/lattafa/i, /\bkhamrah\b/i, "Khamrah"],
   [/lattafa/i, /\bbade['’]?e\s*al\s*oud\b|\bbadee\s*al\s*oud\b|\boud\s*for\s*glory\b|\bhonor\s*&\s*glory\b|\bnoble\s*blush\b/i, "Bade'e Al Oud"],
   [/lattafa|ard\s*al\s*zaafaran/i, /\byara\b/i, "Yara"],
   [/lattafa/i, /\basad\b/i, "Asad"],
   [/lattafa/i, /\beclaire\b/i, "Eclaire"],
+  [/lattafa/i, /\b(?:her|his)?\s*confession\b/i, "Confession"],
+  [/lattafa/i, /\bangham\b/i, "Angham"],
+  [/lattafa/i, /\batlas\b/i, "Atlas"],
+  [/lattafa/i, /\bpetra\b/i, "Petra"],
+  [/lattafa/i, /\bteriaq\b/i, "Teriaq"],
+  [/lattafa/i, /\bfakhar\b/i, "Fakhar"],
+  [/lattafa/i, /\bmayar\b/i, "Mayar"],
+  [/lattafa/i, /\bmaahir\b/i, "Maahir"],
+  [/lattafa/i, /\bana\s*abiyedh\b/i, "Ana Abiyedh"],
+  [/lattafa/i, /\bqaed\s*al\s*fursan\b/i, "Qaed Al Fursan"],
+  [/lattafa/i, /\bthe\s*kingdom\b/i, "The Kingdom"],
+  [/lattafa/i, /\bhayati\b/i, "Hayati"],
+  [/lattafa/i, /\bajwad\b/i, "Ajwad"],
+  [/lattafa/i, /\bopulent\b/i, "Opulent"],
   [/armaf/i, /\bclub\s*de\s*nuit\b|\bcdn\b/i, "Club De Nuit"],
   [/armaf/i, /\bodyssey\b/i, "Odyssey"],
   [/al\s*haramain/i, /\bamber\s*oud\b/i, "Amber Oud"],
   [/al\s*haramain/i, /\bl['’]?\s*aventure\b/i, "L'Aventure"],
+  [/al\s*haramain/i, /\bdetour\b/i, "Detour"],
   [/afnan/i, /\b(?:9\s*pm|9pm|9\s*am|9am)\b/i, "9PM / 9AM"],
   [/afnan/i, /\bsupremacy\b/i, "Supremacy"],
+  [/afnan/i, /\bturathi\b/i, "Turathi"],
   [/rasasi/i, /\bhawas\b/i, "Hawas"],
+  [/rasasi/i, /\bla\s*yuqawam\b/i, "La Yuqawam"],
+  [/rasasi/i, /\bqasamat\b/i, "Qasamat"],
   [/swiss\s*arabian/i, /\bshaghaf\b/i, "Shaghaf"],
   [/paris\s*corner/i, /\bkhair\b/i, "Khair"],
+  [/paris\s*corner/i, /\btaskeen\b/i, "Taskeen"],
+  [/maison\s*alhambra/i, /\bjean\s*lowe\b/i, "Jean Lowe"],
+  [/maison\s*alhambra/i, /\bglacier\b/i, "Glacier"],
+  [/maison\s*alhambra/i, /\bvictorioso\b/i, "Victorioso"],
+  [/maison\s*alhambra/i, /\byour\s*touch\b/i, "Your Touch"],
+  [/zimaya/i, /\bsharaf\b/i, "Sharaf"],
+  [/zimaya/i, /\btiramisu\b/i, "Tiramisu"],
+  [/zimaya/i, /\bmazaaj\b/i, "Mazaaj"],
+  [/zimaya/i, /\bitqan\b/i, "Itqan"],
 ];
+
+function normalizeRawSeriesName(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/^(?:her|his)\s+confession$/i.test(s)) return "Confession";
+  if (/^badee?\s*al\s*oud$/i.test(s)) return "Bade'e Al Oud";
+  if (/^club\s*de\s*nuit$/i.test(s)) return "Club De Nuit";
+  return s;
+}
 
 export function extractPerfumeSeriesFallback(p) {
   const combined = `${p?.brand || ""} ${p?.name || p?.title || ""}`.trim();
@@ -2043,9 +2080,9 @@ export function ensurePerfumeEnrichment(p) {
     : p.concentration || "Eau De Parfum";
 
   const cleanName = isSet ? name : stripVolumeFromName(name);
-  const series = String(
-    p.series || info.series || extractPerfumeSeriesFallback(p) || "",
-  ).trim();
+  const curatedSeries = extractPerfumeSeriesFallback(p);
+  const rawSeries = normalizeRawSeriesName(p.series || info.series || "");
+  const series = curatedSeries || rawSeries;
 
   return {
     ...p,
