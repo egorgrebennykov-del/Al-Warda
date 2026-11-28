@@ -531,6 +531,25 @@ function getPerfumeMl(p) {
   );
 }
 
+function buildPerfumePaletteText(p) {
+  return [
+    ...(p.topNotes || []),
+    ...(p.heartNotes || []),
+    ...(p.baseNotes || []),
+    ...(p.topNotesRu || []),
+    ...(p.heartNotesRu || []),
+    ...(p.baseNotesRu || []),
+    ...(p.topNotesEn || []),
+    ...(p.heartNotesEn || []),
+    ...(p.baseNotesEn || []),
+    p.notesSummary || "",
+    p.notesSummaryRu || "",
+    p.notesSummaryEn || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
 function buildPerfumeNotesText(p) {
   return [
     ...(p.topNotes || []),
@@ -1055,6 +1074,11 @@ export default function Featured() {
     [perfumes],
   );
 
+  const perfumePaletteTexts = useMemo(
+    () => (perfumes || []).map((p) => buildPerfumePaletteText(p)),
+    [perfumes],
+  );
+
   // Synced filter options: only show brands, scent categories, and notes actually present on the site
   const availableBrands = useMemo(() => {
     if (!perfumes || perfumes.length === 0) return [];
@@ -1114,10 +1138,47 @@ export default function Featured() {
 
   const availableNotes = useMemo(() => {
     if (!perfumes || perfumes.length === 0) return [];
-    return POPULAR_NOTES.filter((note) =>
-      perfumeNotesTexts.some((txt) => matchesNoteKey(note.id, txt)),
-    );
-  }, [perfumes, perfumeNotesTexts]);
+    const matchedPopular = POPULAR_NOTES.map((note) => {
+      let count = 0;
+      for (const txt of perfumePaletteTexts) {
+        if (txt && matchesNoteKey(note.id, txt)) count++;
+      }
+      return { note, count };
+    })
+      .filter((entry) => entry.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .map((entry) => entry.note);
+
+    // Also include frequent real palette notes from verified DB pyramids not in POPULAR_NOTES
+    const extraCounts = new Map();
+    for (const p of perfumes) {
+      if (!p.notesVerified) continue;
+      const seenInPerfume = new Set();
+      const rawList = [
+        ...(Array.isArray(p.topNotesEn) ? p.topNotesEn : []),
+        ...(Array.isArray(p.heartNotesEn) ? p.heartNotesEn : []),
+        ...(Array.isArray(p.baseNotesEn) ? p.baseNotesEn : []),
+      ];
+      for (const raw of rawList) {
+        const clean = String(raw || "").trim();
+        const key = clean.toLowerCase();
+        if (!key || key.length < 3 || seenInPerfume.has(key)) continue;
+        seenInPerfume.add(key);
+        if (matchedPopular.some((pn) => matchesNoteKey(pn.id, key))) continue;
+        const prev = extraCounts.get(key);
+        if (prev) prev.count++;
+        else extraCounts.set(key, { id: key, label: clean, count: 1 });
+      }
+    }
+
+    const extras = Array.from(extraCounts.values())
+      .filter((e) => e.count >= 4)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, Math.max(0, 28 - matchedPopular.length))
+      .map((e) => ({ id: e.id, nameRu: e.label, nameEn: e.label }));
+
+    return [...matchedPopular, ...extras];
+  }, [perfumes, perfumePaletteTexts]);
 
   // Deterministic shuffled collection for default assortment (вразброс)
   const shuffledPerfumes = useMemo(() => {
@@ -1222,11 +1283,12 @@ export default function Featured() {
           if (!matchesGender) return false;
         }
 
-        // 4. Notes filter (OR logic; ranked later by number of matched notes descending)
+        // 4. Notes filter (OR logic against real olfactory palette; ranked by matched note count)
         if (selectedNotes.length > 0) {
+          const paletteText = buildPerfumePaletteText(p);
           let matchedCount = 0;
           for (const noteKey of selectedNotes) {
-            if (matchesNoteKey(noteKey, allNotesText)) {
+            if (paletteText && matchesNoteKey(noteKey, paletteText)) {
               matchedCount++;
             }
           }
@@ -1923,7 +1985,9 @@ export default function Featured() {
                         onClick={() => toggleNote(note.id)}
                       >
                         {isActive && "✓ "}
-                        {getLocalizedNote(note.id, language)}
+                        {getLocalizedNote(note.id, language) !== note.id
+                          ? getLocalizedNote(note.id, language)
+                          : (language === "ru" ? note.nameRu : note.nameEn) || note.id}
                       </button>
                     );
                   })}
