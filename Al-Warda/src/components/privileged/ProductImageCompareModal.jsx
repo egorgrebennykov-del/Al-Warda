@@ -339,10 +339,6 @@ export default function ProductImageCompareModal({
         <footer className="product-compare-modal__footer">
           <div className="product-compare-modal__metrics">
             <span className="product-compare-pill">
-              <i className="ri-money-dollar-circle-line" />
-              <strong>$0.00</strong> {isRussian ? "затрат на API" : "API cost"}
-            </span>
-            <span className="product-compare-pill">
               <i className="ri-cpu-line" />
               <strong>U2Net ONNX</strong> ({isRussian ? "локальный CPU" : "local CPU"})
             </span>
