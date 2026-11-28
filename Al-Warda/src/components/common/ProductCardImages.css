@@ -410,13 +410,17 @@
   }
 
   .warda-perfume-card:hover .warda-perfume-card__img,
-  .warda-perfume-card:active .warda-perfume-card__img {
+  .warda-perfume-card:active .warda-perfume-card__img,
+  .warda-perfume-card:focus .warda-perfume-card__img,
+  .warda-perfume-card:focus-within .warda-perfume-card__img {
     transform: translate3d(0, calc(var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scale(var(--card-flacon-scale, 1)) !important;
   }
 
   .warda-perfume-card__reflection-img,
   .warda-perfume-card:hover .warda-perfume-card__reflection-img,
-  .warda-perfume-card:active .warda-perfume-card__reflection-img {
+  .warda-perfume-card:active .warda-perfume-card__reflection-img,
+  .warda-perfume-card:focus .warda-perfume-card__reflection-img,
+  .warda-perfume-card:focus-within .warda-perfume-card__reflection-img {
     transform: translate3d(0, calc((1 - var(--card-flacon-scale, 1)) * 50% - var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scaleY(-1) scale(var(--card-flacon-scale, 1)) !important;
     opacity: 0.9 !important;
     transition: none !important;
@@ -430,12 +434,16 @@
 
 @media (hover: none), (pointer: coarse) {
   .warda-perfume-card:hover .warda-perfume-card__img,
-  .warda-perfume-card:active .warda-perfume-card__img {
+  .warda-perfume-card:active .warda-perfume-card__img,
+  .warda-perfume-card:focus .warda-perfume-card__img,
+  .warda-perfume-card:focus-within .warda-perfume-card__img {
     transform: translate3d(0, calc(var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scale(var(--card-flacon-scale, 1)) !important;
   }
 
   .warda-perfume-card:hover .warda-perfume-card__reflection-img,
-  .warda-perfume-card:active .warda-perfume-card__reflection-img {
+  .warda-perfume-card:active .warda-perfume-card__reflection-img,
+  .warda-perfume-card:focus .warda-perfume-card__reflection-img,
+  .warda-perfume-card:focus-within .warda-perfume-card__reflection-img {
     transform: translate3d(0, calc((1 - var(--card-flacon-scale, 1)) * 50% - var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scaleY(-1) scale(var(--card-flacon-scale, 1)) !important;
     opacity: 0.9 !important;
   }

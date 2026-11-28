@@ -639,8 +639,10 @@
     transform: none !important;
     transition: none !important;
   }
-  .warda-perfume-card:hover .warda-perfume-card__img {
-    transform: translateY(-20px) !important;
+  .warda-perfume-card:hover .warda-perfume-card__img,
+  .warda-perfume-card:active .warda-perfume-card__img,
+  .warda-perfume-card:focus .warda-perfume-card__img {
+    transform: translate3d(0, calc(var(--card-flacon-pad-pct, 0%) * var(--card-flacon-scale, 1)), 0) scale(var(--card-flacon-scale, 1)) !important;
     animation: none !important;
   }
   .warda-perfume-card:hover .warda-perfume-card__aura,
