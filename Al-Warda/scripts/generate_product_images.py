@@ -3297,17 +3297,32 @@ def normalize_flacon_cutout(cutout, target_max_h=880, target_max_w=880, canvas_s
 
     canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
     pos_x = (canvas_size[0] - new_w) // 2
+    if not is_set and new_h >= 40:
+        res_alpha = np.array(resized.convert("RGBA"))[:, :, 3]
+        by1, by2 = int(new_h * 0.45), int(new_h * 0.95)
+        _, bxs = np.where(res_alpha[by1:by2 + 1, :] > 120)
+        if len(bxs) > 50:
+            body_cx = (int(bxs.min()) + int(bxs.max())) / 2.0
+            desired_pos_x = int(round(canvas_size[0] / 2.0 - body_cx))
+            if desired_pos_x >= 12 and desired_pos_x + new_w <= canvas_size[0] - 12:
+                pos_x = desired_pos_x
     bottom_pad = max(36, (canvas_size[1] - target_max_h) // 2)
     pos_y = max(12, canvas_size[1] - bottom_pad - new_h)
     canvas.paste(resized, (pos_x, pos_y), resized)
 
-    # Sub-pixel anti-aliasing fine-tuning: ensure canvas flacon center is exactly canvas_size[0] // 2
+    # Sub-pixel anti-aliasing fine-tuning: ensure canvas flacon body center is exactly canvas_size[0] // 2
     final_arr = np.array(canvas)
     f_ys, f_xs = np.where(final_arr[:, :, 3] > 25)
     if len(f_xs) > 0:
-        cur_cx = (f_xs.min() + f_xs.max()) / 2.0
+        if not is_set:
+            fy1, fy2 = int(f_ys.min()), int(f_ys.max())
+            fbh = fy2 - fy1 + 1
+            _, fbxs = np.where(final_arr[fy1 + int(fbh * 0.45):fy1 + int(fbh * 0.95) + 1, :, 3] > 120)
+            cur_cx = (fbxs.min() + fbxs.max()) / 2.0 if len(fbxs) > 50 else (f_xs.min() + f_xs.max()) / 2.0
+        else:
+            cur_cx = (f_xs.min() + f_xs.max()) / 2.0
         err = int(round(canvas_size[0] / 2.0 - cur_cx))
-        if err != 0 and abs(err) <= 20:
+        if err != 0 and abs(err) <= 20 and pos_x + err >= 12 and pos_x + err + new_w <= canvas_size[0] - 12:
             canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
             canvas.paste(resized, (pos_x + err, pos_y), resized)
 
@@ -3535,7 +3550,7 @@ def level_tilted_bottle(canvas, target_max_h=880, target_max_w=880):
     if l_deg * r_deg <= 0 or abs(l_deg - r_deg) > 4.0:
         return canvas
     v_deg = (l_deg + r_deg) / 2.0
-    if not (2.0 <= abs(v_deg) <= 45.0):
+    if not (1.1 <= abs(v_deg) <= 45.0):
         return canvas
 
     # Also verify bottom edge tilts in the matching direction
