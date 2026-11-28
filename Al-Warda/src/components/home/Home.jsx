@@ -80,9 +80,9 @@ export default function Home() {
     if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
       idleId = window.requestIdleCallback(() => {
         fetchBestSellers();
-      }, { timeout: 1200 });
+      }, { timeout: 2500 });
     } else {
-      timeoutId = setTimeout(fetchBestSellers, 200);
+      timeoutId = setTimeout(fetchBestSellers, 800);
     }
 
     return () => {

@@ -195,10 +195,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-    <link rel="preconnect" href="https://mfvenfrmlkxqgvdtedet.supabase.co" crossorigin />
     <link rel="preload" href="/assets/img/al-warda-header-logo-mobile.webp" as="image" type="image/webp" />
     <link rel="preload" href="/assets/img/perfumes/al-warda-rose-smoke-mobile.webp" as="image" type="image/webp" media="(max-width: 640px)" />
-    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/styles.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="/assets/css/styles.css" />
+    </noscript>
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"

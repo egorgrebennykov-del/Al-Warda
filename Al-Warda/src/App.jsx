@@ -27,7 +27,7 @@ if (typeof window !== "undefined") {
     } catch {}
   };
   if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(warmCatalog, { timeout: 3500 });
+    window.requestIdleCallback(warmCatalog, { timeout: 4500 });
   } else if (document.readyState === "complete") {
     warmCatalog();
   } else {
