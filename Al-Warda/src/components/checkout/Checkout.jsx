@@ -109,6 +109,7 @@ export default function Checkout() {
   const [couponValidating, setCouponValidating] = useState(false);
   const [deliveryMethodId, setDeliveryMethodId] = useState("");
   const [blazoQuote, setBlazoQuote] = useState(null);
+  const [isTestOrder, setIsTestOrder] = useState(false);
 
   const selectedCountry = useMemo(
     () => countries.find((c) => c.iso2 === selectedCountryIso) || countries.find((c) => c.iso2 === "IT") || countries[0],
@@ -527,8 +528,10 @@ export default function Checkout() {
     try {
       let finalShippingAddress = currentAddress;
 
+      const isDryRunTestOrder = isPrivileged(user) && isTestOrder;
+
       // Save address if user opted in for new address (saves address only, not phone)
-      if (selectedAddressId === "new" && saveAddressOption) {
+      if (!isDryRunTestOrder && selectedAddressId === "new" && saveAddressOption) {
         try {
           const addressToSave = {
             recipientName: addressForm.recipientName.trim(),
@@ -547,7 +550,7 @@ export default function Checkout() {
       }
 
       // Save phone to user's phone list if not already saved
-      if (fullPhone && user?.id) {
+      if (!isDryRunTestOrder && fullPhone && user?.id) {
         try {
           const updatedPhones = await saveUserPhone(user.id, fullPhone);
           setSavedPhones(updatedPhones);
@@ -564,33 +567,38 @@ export default function Checkout() {
         phone: fullPhone,
       };
 
-      // Record order in Supabase orders_in_progress
-      await createOrderInProgress({
-        userId: user?.id || null,
-        orderNumber,
-        currency,
-        items,
-        address: finalOrderAddress,
-        itemsSubtotal,
-        shippingCost: effectiveShipping,
-        finalTotal,
-        coupon: appliedCoupon
-          ? {
-              id: appliedCoupon.id,
-              code: appliedCoupon.code,
-              name: appliedCoupon.name || "",
-              deduction: isFreeShipping ? baseShippingCost : couponDeduction,
-              type: appliedCoupon.action?.type,
-            }
-          : null,
-      });
+      if (isDryRunTestOrder) {
+        // Simulate real checkout processing without sending anything to DB or external APIs
+        await new Promise((resolve) => setTimeout(resolve, 450));
+      } else {
+        // Record order in Supabase orders_in_progress
+        await createOrderInProgress({
+          userId: user?.id || null,
+          orderNumber,
+          currency,
+          items,
+          address: finalOrderAddress,
+          itemsSubtotal,
+          shippingCost: effectiveShipping,
+          finalTotal,
+          coupon: appliedCoupon
+            ? {
+                id: appliedCoupon.id,
+                code: appliedCoupon.code,
+                name: appliedCoupon.name || "",
+                deduction: isFreeShipping ? baseShippingCost : couponDeduction,
+                type: appliedCoupon.action?.type,
+              }
+            : null,
+        });
 
-      // Increment coupon usage count if coupon applied
-      if (appliedCoupon?.id && user?.id) {
-        try {
-          await redeemCoupon(appliedCoupon.id, user.id);
-        } catch (couponErr) {
-          console.warn("Could not redeem coupon:", couponErr);
+        // Increment coupon usage count if coupon applied
+        if (appliedCoupon?.id && user?.id) {
+          try {
+            await redeemCoupon(appliedCoupon.id, user.id);
+          } catch (couponErr) {
+            console.warn("Could not redeem coupon:", couponErr);
+          }
         }
       }
 
@@ -600,6 +608,7 @@ export default function Checkout() {
       // Record successful order
       setOrderComplete({
         orderNumber,
+        isTest: isDryRunTestOrder,
         items: [...items],
         address: finalOrderAddress,
         itemsSubtotal,
@@ -637,6 +646,11 @@ export default function Checkout() {
             <div className="checkout__order-info-item">
               <span className="checkout__meta-label">{t("checkout.orderNumber")}:</span>
               <strong>#{orderComplete.orderNumber}</strong>
+              {orderComplete.isTest && (
+                <span className="checkout__test-order-badge">
+                  TEST
+                </span>
+              )}
               <a
                 href={`${BLAZO_TRACK_URL}?order=${encodeURIComponent(orderComplete.orderNumber)}`}
                 target="_blank"
@@ -1239,6 +1253,22 @@ export default function Checkout() {
                     </strong>
                   </div>
                 </div>
+
+                {/* Developer-only Test Order checkbox */}
+                {isPrivileged(user) && (
+                  <label className="checkout__test-order-toggle">
+                    <input
+                      type="checkbox"
+                      checked={isTestOrder}
+                      onChange={(e) => setIsTestOrder(e.target.checked)}
+                    />
+                    <span>
+                      {language === "ru"
+                        ? "Тест (не отправлять заказ, имитировать оформление)"
+                        : "Test (do not submit order, simulate checkout)"}
+                    </span>
+                  </label>
+                )}
 
                 {/* Pay button directly beneath the final price */}
                 <button

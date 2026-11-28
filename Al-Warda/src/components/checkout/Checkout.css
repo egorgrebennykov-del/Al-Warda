@@ -1350,3 +1350,41 @@
 .checkout__contact-card {
   margin-top: 1rem;
 }
+
+.checkout__test-order-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.55rem;
+  border: 1px dashed rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+  color: #f3e5ab;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkout__test-order-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #d4af37;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkout__test-order-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.48rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.16);
+  color: #ffd700;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
