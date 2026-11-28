@@ -88,10 +88,36 @@ const PAGE_SIZE = 21;
 export default function SearchResults() {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const [params] = useSearchParams();
+  const [params, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isInCart, toggleCart } = useCartState();
   const query = (params.get("q") || "").trim();
+  const [inputQuery, setInputQuery] = useState(query);
+
+  useEffect(() => {
+    setInputQuery(query);
+  }, [query]);
+
+  const handleSearchInputChange = (e) => {
+    const val = e.target.value;
+    setInputQuery(val);
+    const trimmed = val.trim();
+    if (trimmed) {
+      setSearchParams({ q: trimmed }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = inputQuery.trim();
+    if (trimmed) {
+      setSearchParams({ q: trimmed });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const [loading, setLoading] = useState(true);
   const [allPerfumes, setAllPerfumes] = useState([]);
@@ -270,6 +296,33 @@ export default function SearchResults() {
             ? `${t("search.resultsFor")} "${query}"`
             : t("search.allPerfumes")}
         </h1>
+        <form className="warda-search-page__form" onSubmit={handleSearchSubmit}>
+          <div className="warda-search-page__input-wrap">
+            <i className="ri-search-line" aria-hidden="true" />
+            <input
+              type="search"
+              value={inputQuery}
+              onChange={handleSearchInputChange}
+              placeholder={t("search.inputPlaceholder") || t("search.placeholder")}
+              aria-label={t("search.inputPlaceholder") || t("search.placeholder")}
+              className="warda-search-page__input"
+              autoFocus={!query}
+            />
+            {inputQuery && (
+              <button
+                type="button"
+                className="warda-search-page__clear"
+                onClick={() => {
+                  setInputQuery("");
+                  setSearchParams({}, { replace: true });
+                }}
+                aria-label="Clear search"
+              >
+                <i className="ri-close-line" />
+              </button>
+            )}
+          </div>
+        </form>
         <p className="results__count">
           {loading
             ? ""

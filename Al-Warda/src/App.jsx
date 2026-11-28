@@ -55,7 +55,6 @@ const loadSignUp = () => import("./components/signup/SignUp");
 const loadJoin = () => import("./components/join/Join");
 const loadNotFound = () => import("./components/notfound/NotFound");
 const loadWardaAssistant = () => import("./components/warda/WardaAssistant");
-const loadSearch = () => import("./components/search/Search");
 
 const Featured = lazy(loadFeatured);
 const Sets = lazy(loadSets);
@@ -77,7 +76,6 @@ const SignUp = lazy(loadSignUp);
 const Join = lazy(loadJoin);
 const NotFound = lazy(loadNotFound);
 const WardaAssistant = lazy(loadWardaAssistant);
-const Search = lazy(loadSearch);
 
 function DeferredWardaAssistant() {
   const [ready, setReady] = useState(false);
@@ -156,7 +154,6 @@ function PrivateRoute({ children, redirectTo, privilegedOnly = false }) {
 
 function App() {
   const [lightTheme, setLightTheme] = useState(getInitialTheme);
-  const [showSearch, setShowSearch] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -282,13 +279,8 @@ function App() {
       <Header
         theme={theme}
         isLight={lightTheme}
-        onSearch={() => setShowSearch(true)}
+        onSearch={() => navigate("/search")}
       />
-      {showSearch && (
-        <Suspense fallback={null}>
-          <Search show={showSearch} onClose={() => setShowSearch(false)} />
-        </Suspense>
-      )}
       {announcements.length > 0 && (
         <div className="container" style={{ paddingTop: "1rem", paddingBottom: "0.25rem" }}>
           <SmallAnnouncements items={announcements} />
@@ -418,7 +410,7 @@ function App() {
           />
           <Route
             path="/cart"
-            element={<Cart onSearch={() => setShowSearch(true)} />}
+            element={<Cart onSearch={() => navigate("/search")} />}
           />
           <Route
             path="/checkout"

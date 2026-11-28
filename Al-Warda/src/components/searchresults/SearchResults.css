@@ -844,3 +844,65 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.warda-search-page__form {
+  max-width: 640px;
+  margin: 1.25rem auto 0.9rem;
+}
+
+.warda-search-page__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.warda-search-page__input-wrap > i {
+  position: absolute;
+  left: 1.15rem;
+  color: #d4af37;
+  font-size: 1.15rem;
+  pointer-events: none;
+}
+
+.warda-search-page__input {
+  width: 100%;
+  height: 52px;
+  padding: 0 3rem 0 3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(14, 11, 8, 0.9);
+  color: #fff8ea;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.warda-search-page__input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.16);
+}
+
+.warda-search-page__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.warda-search-page__clear {
+  position: absolute;
+  right: 0.85rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: rgba(212, 175, 55, 0.1);
+  color: #f3d778;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.warda-search-page__clear:hover {
+  background: rgba(212, 175, 55, 0.22);
+}
+
