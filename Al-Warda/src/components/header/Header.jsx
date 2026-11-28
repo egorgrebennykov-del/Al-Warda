@@ -287,6 +287,11 @@ export default function Header({ theme, isLight, onSearch }) {
                 </NavLink>
               </li>
               <li className="warda-nav__item">
+                <NavLink to="/delivery" className={navClass}>
+                  <span>{t("nav.delivery").toUpperCase()}</span>
+                </NavLink>
+              </li>
+              <li className="warda-nav__item">
                 <NavLink to="/contacts" className={navClass}>
                   <span>{t("nav.contacts").toUpperCase()}</span>
                 </NavLink>

@@ -97,6 +97,11 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/delivery" className="footer__link">
+                {t("footer.delivery")}
+              </Link>
+            </li>
+            <li>
               <Link to="/contacts" className="footer__link">
                 {t("footer.contactBoutique") || t("footer.contactsBoutique")}
               </Link>

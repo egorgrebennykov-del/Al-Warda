@@ -38,6 +38,7 @@ if (typeof window !== "undefined") {
 const loadFeatured = () => import("./components/featured/Featured");
 const loadSets = () => import("./components/sets/Sets");
 const loadAbout = () => import("./components/about/About");
+const loadDelivery = () => import("./components/delivery/Delivery");
 const loadDiscount = () => import("./components/discount/Discount");
 const loadNewBooks = () => import("./components/newbooks/NewBooks");
 const loadTestimonial = () => import("./components/testimonial/Testimonial");
@@ -59,6 +60,7 @@ const loadSearch = () => import("./components/search/Search");
 const Featured = lazy(loadFeatured);
 const Sets = lazy(loadSets);
 const About = lazy(loadAbout);
+const Delivery = lazy(loadDelivery);
 const Discount = lazy(loadDiscount);
 const NewBooks = lazy(loadNewBooks);
 const Testimonial = lazy(loadTestimonial);
@@ -436,6 +438,8 @@ function App() {
           <Route path="/discount" element={<Discount />} />
           <Route path="/new" element={<NewBooks />} />
           <Route path="/about" element={<About />} />
+          <Route path="/delivery" element={<Delivery />} />
+          <Route path="/shipping" element={<Delivery />} />
           <Route path="/testimonial" element={<About />} />
           <Route path="/reviews" element={<Testimonial />} />
           <Route path="/contacts" element={<Contacts />} />
