@@ -100,8 +100,7 @@ export default function BookDetails() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [lightboxScale, setLightboxScale] = useState(1.5);
+  const [isHoverZooming, setIsHoverZooming] = useState(false);
   const [zoomPoint, setZoomPoint] = useState({ x: 50, y: 50 });
   const [selectedVolume, setSelectedVolume] = useState("full");
   const [imgSourceIndex, setImgSourceIndex] = useState(0);
@@ -441,17 +440,6 @@ export default function BookDetails() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [targetId]);
-
-  useEffect(() => {
-    if (!isLightboxOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setIsLightboxOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isLightboxOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -821,24 +809,19 @@ export default function BookDetails() {
             <div className="warda-details-card">
               <div
                 className="warda-details-img-wrap"
-                onClick={() => setIsLightboxOpen(true)}
+                onMouseEnter={() => setIsHoverZooming(true)}
                 onMouseMove={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
-                  setZoomPoint({
-                    x: ((e.clientX - rect.left) / rect.width) * 100,
-                    y: ((e.clientY - rect.top) / rect.height) * 100,
-                  });
+                  const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                  const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+                  setIsHoverZooming(true);
+                  setZoomPoint({ x, y });
                 }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setIsLightboxOpen(true);
-                  }
+                onMouseLeave={() => {
+                  setIsHoverZooming(false);
+                  setZoomPoint({ x: 50, y: 50 });
                 }}
-                aria-label="Inspect perfume flacon details"
-                title={t("details.clickToView")}
+                aria-label="Perfume flacon preview"
               >
                 <div
                   className="warda-stage-assembly"
@@ -846,6 +829,8 @@ export default function BookDetails() {
                     "--flacon-pad-pct": `${flaconBottomPadPct}%`,
                     "--flacon-last-pad-pct": `${flaconLastPadPct}%`,
                     "--flacon-scale": flaconScale,
+                    "--zoom-x": `${zoomPoint.x}%`,
+                    "--zoom-y": `${zoomPoint.y}%`,
                   }}
                 >
                   {/* Large Warm Glow & Reflective Horizon Stage */}
@@ -858,7 +843,7 @@ export default function BookDetails() {
                   </div>
 
                   {/* Flacon Image or Processing Loader */}
-                  <div className="warda-details-photo">
+                  <div className={`warda-details-photo ${isHoverZooming ? "is-hover-zooming" : ""}`}>
                     {(!flaconLoaded || allSourcesExhausted || !activeImageSrc) && (
                       <div
                         className="warda-flacon-processing-loader"
@@ -1363,75 +1348,6 @@ export default function BookDetails() {
         </div>
       </div>
 
-      {/* FULLSCREEN LIGHTBOX / HIGH-RES INSPECTION MODAL */}
-      {isLightboxOpen && (
-        <div
-          className="warda-lightbox-backdrop"
-          onClick={() => setIsLightboxOpen(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="warda-lightbox-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header / Controls */}
-            <div className="warda-lightbox-header">
-              <div className="warda-lightbox-title-box">
-                <span className="warda-lightbox-brand">{perfume.brand}</span>
-                <h2 className="warda-lightbox-title">{perfume.name}</h2>
-              </div>
-
-              <div className="warda-lightbox-controls">
-                <div className="warda-lightbox-zoom-pills">
-                  {[1, 1.3, 1.6, 2].map((scale) => (
-                    <button
-                      key={scale}
-                      type="button"
-                      className={`warda-lightbox-scale-btn ${lightboxScale === scale ? "active" : ""}`}
-                      onClick={() => setLightboxScale(scale)}
-                    >
-                      {scale}×
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className="warda-lightbox-close"
-                  onClick={() => setIsLightboxOpen(false)}
-                  aria-label="Close inspection modal"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Viewport with Zoomable Image */}
-            <div className="warda-lightbox-viewport">
-              <div className="warda-lightbox-stage">
-                <img
-                  src={activeImageSrc || perfume?.image}
-                  alt={perfume.name}
-                  className="warda-lightbox-img"
-                  style={{
-                    transform: `scale(${lightboxScale})`,
-                  }}
-                  onError={handleFlaconImgError}
-                />
-              </div>
-            </div>
-
-            {/* Footer Hint */}
-            <div className="warda-lightbox-footer">
-              <span className="warda-lightbox-hint">
-                <i className="ri-information-line" />
-                {t("details.lightboxHint")}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

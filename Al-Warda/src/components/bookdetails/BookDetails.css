@@ -300,6 +300,19 @@
   height: auto;
   min-height: 220px;
   z-index: 4;
+  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+}
+
+.warda-details-photo.is-hover-zooming {
+  transform: scale(1.26);
+}
+
+@media (hover: none) {
+  .warda-details-photo.is-hover-zooming {
+    transform: none;
+  }
 }
 
 .warda-details-img {
