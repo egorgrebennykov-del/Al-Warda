@@ -289,12 +289,16 @@
   font-weight: 600;
   font-size: 1.06rem;
   margin-top: 0.2rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.45rem;
+}
+
+.warda-perfume-card .warda-perfume-card__action {
+  padding-top: 0.35rem;
 }
 
 .warda-qogita-price-badge {

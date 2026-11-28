@@ -582,8 +582,7 @@
   font-weight: 700;
   color: #d4af37;
   margin-top: 0.35rem;
-  height: 1.6rem;
-  line-height: 1.6rem;
+  min-height: 1.6rem;
 }
 
 .warda-perfume-card__action {
