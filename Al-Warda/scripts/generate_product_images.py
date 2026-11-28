@@ -2376,6 +2376,86 @@ def is_three_quarter_cube_source(source_bytes, segmentation_session):
         return False
 
 
+def detect_cutout_facing(cutout):
+    """Detect horizontal 3/4 facing ('left', 'right', or 'front') from the bottom edge slope.
+    Never mirrors images (which would flip label text); used only to pick consistent-angle candidates."""
+    try:
+        import numpy as np
+        arr = np.array(cutout.convert("RGBA"))
+        alpha = arr[:, :, 3]
+        ys, xs = np.where(alpha > 120)
+        if len(xs) < 200:
+            return "front"
+        min_x, max_x = int(xs.min()), int(xs.max())
+        w_obj = max_x - min_x + 1
+        if w_obj < 60:
+            return "front"
+        l_x0, l_x1 = min_x + int(w_obj * 0.05), min_x + int(w_obj * 0.25)
+        r_x0, r_x1 = min_x + int(w_obj * 0.75), min_x + int(w_obj * 0.95)
+        l_bots = [int(np.where(alpha[:, x] > 120)[0].max()) for x in range(l_x0, l_x1) if np.any(alpha[:, x] > 120)]
+        r_bots = [int(np.where(alpha[:, x] > 120)[0].max()) for x in range(r_x0, r_x1) if np.any(alpha[:, x] > 120)]
+        if not l_bots or not r_bots:
+            return "front"
+        diff = float(np.median(l_bots) - np.median(r_bots))
+        if abs(diff) <= max(3.5, w_obj * 0.005):
+            return "front"
+        return "right" if diff > 0 else "left"
+    except Exception:
+        return "front"
+
+
+def detect_source_facing(source_bytes, segmentation_session):
+    try:
+        src = decode_source(source_bytes)
+        cut = segment_source(src, segmentation_session)
+        return detect_cutout_facing(cut)
+    except Exception:
+        return "front"
+
+
+def get_row_series_key(row):
+    info = row.get("info") or {}
+    brand = str(row.get("brand") or "").strip().lower()
+    series = str(info.get("series") or "").strip().lower()
+    if series:
+        return f"{brand}:{series}"
+    return ""
+
+
+def build_series_facing_map(rows):
+    """Inspect existing completed cutouts per series to determine each series's canonical facing."""
+    counts = {}
+    for r in rows:
+        skey = get_row_series_key(r)
+        if not skey:
+            continue
+        ig = (r.get("info") or {}).get("imageGeneration") or {}
+        if ig.get("status") != "completed":
+            continue
+        img_url = str(ig.get("imageUrl") or "")
+        if not img_url.startswith("/assets/img/generated-products/"):
+            continue
+        fname = img_url.rsplit("/", 1)[-1]
+        fpath = GENERATED_DIR / fname
+        if not fpath.is_file():
+            continue
+        try:
+            facing = detect_cutout_facing(Image.open(fpath))
+        except Exception:
+            continue
+        if facing in ("left", "right"):
+            bucket = counts.setdefault(skey, {"left": 0, "right": 0})
+            weight = 2 if ig.get("sourceType") == "official_studio" else 1
+            bucket[facing] += weight
+    result = {}
+    for skey, bucket in counts.items():
+        if bucket["left"] > bucket["right"]:
+            result[skey] = "left"
+        elif bucket["right"] > bucket["left"]:
+            result[skey] = "right"
+    return result
+
+
 def strip_packaging_box_geometry(cutout):
     """Deterministically detect and erase an outer cardboard packaging box placed
     beside a perfume bottle (0 API cost, works even when Gemini Vision quota is 429)."""
@@ -4068,6 +4148,7 @@ def process_product(
     account_pool=None,
     local_gpu=False,
     publish_immediate=False,
+    series_target_facing=None,
 ):
     info = dict(row.get("info") or {})
     job_key = "imageGenerationReplacement" if regenerate_completed else "imageGeneration"
@@ -4232,11 +4313,22 @@ def process_product(
                 cand_low_sharp = (cand_q.get("qualityStatus") == "low_sharpness") or bool(cand_q.get("low_sharpness"))
                 if cand_min >= 500 and not cand_low_sharp:
                     has_more = (idx_cand + 1 < len(studio_candidates)) or bool(product_source(row))
-                    if not is_set and has_more and is_three_quarter_cube_source(cand_bytes, segmentation_session):
-                        print(f"[{row['id']}] Candidate is 3/4 angled cube; checking for front-facing photo...", flush=True)
-                        if angled_studio_fallback is None:
-                            angled_studio_fallback = (cand_bytes, cand_q, studio_asset)
-                        continue
+                    if not is_set and has_more:
+                        if series_target_facing in ("left", "right"):
+                            cand_facing = detect_source_facing(cand_bytes, segmentation_session)
+                            if cand_facing in ("left", "right") and cand_facing != series_target_facing:
+                                print(
+                                    f"[{row['id']}] Candidate faces {cand_facing} (series is {series_target_facing}); checking for matching-angle photo...",
+                                    flush=True,
+                                )
+                                if angled_studio_fallback is None:
+                                    angled_studio_fallback = (cand_bytes, cand_q, studio_asset)
+                                continue
+                        elif is_three_quarter_cube_source(cand_bytes, segmentation_session):
+                            print(f"[{row['id']}] Candidate is 3/4 angled cube; checking for front-facing photo...", flush=True)
+                            if angled_studio_fallback is None:
+                                angled_studio_fallback = (cand_bytes, cand_q, studio_asset)
+                            continue
                     if not has_active_account:
                         cand_out, cand_psize, cand_osize = preserve_original_product(
                             cand_bytes, segmentation_session, allow_upscale=True, is_set=is_set
@@ -5232,6 +5324,7 @@ def main():
         except Exception:
             pass
 
+    series_facing_map = build_series_facing_map(rows)
     consecutive_db_errors = 0
     for idx, row in enumerate(candidates[:args.max_images]):
         if stop_requested:
@@ -5248,6 +5341,8 @@ def main():
             except Exception:
                 pass
         try:
+            skey = get_row_series_key(row)
+            target_facing = series_facing_map.get(skey) if skey else None
             url = process_product(
                 session,
                 row,
@@ -5260,6 +5355,7 @@ def main():
                 account_pool,
                 local_gpu=is_local_gpu,
                 publish_immediate=is_local_gpu,
+                series_target_facing=target_facing,
             )
             completed += 1
             consecutive_db_errors = 0
