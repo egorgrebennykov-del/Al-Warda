@@ -799,10 +799,6 @@ export default function Featured() {
       return "sets";
     return "all";
   });
-  const [notesCombination, setNotesCombination] = useState(() => {
-    const raw = searchParams.get("combination") || searchParams.get("combo");
-    return raw === "1" || raw === "true";
-  });
   const [sortBy, setSortBy] = useState(() => {
     const raw = searchParams.get("sort");
     return raw &&
@@ -841,7 +837,6 @@ export default function Featured() {
       params.set("longevity", selectedLongevities.join(","));
     if (selectedFormat && selectedFormat !== "all")
       params.set("format", selectedFormat);
-    if (notesCombination) params.set("combination", "1");
     if (sortBy && sortBy !== "popular") params.set("sort", sortBy);
     if (priceMin !== null && Number.isFinite(priceMin))
       params.set("minPrice", String(priceMin));
@@ -857,7 +852,6 @@ export default function Featured() {
     selectedVolumes,
     selectedLongevities,
     selectedFormat,
-    notesCombination,
     sortBy,
     priceMin,
     priceMax,
@@ -1037,7 +1031,6 @@ export default function Featured() {
     setSelectedVolumes([]);
     setSelectedLongevities([]);
     setSelectedFormat("all");
-    setNotesCombination(false);
     setPriceMin(null);
     setPriceMax(null);
     setSortBy("popular");
@@ -1147,6 +1140,7 @@ export default function Featured() {
 
   // Filtered perfumes calculation
   const filteredPerfumes = useMemo(() => {
+    const matchedNoteCountById = new Map();
     let result = [];
     if (totalActiveFilters === 0) {
       result = [...perfumes];
@@ -1228,17 +1222,16 @@ export default function Featured() {
           if (!matchesGender) return false;
         }
 
-        // 4. Notes filter:
-        //    - Unchecked ("Комбинация" off): OR logic — matches any selected note
-        //    - Checked ("Комбинация" on): AND logic — must contain ALL selected notes simultaneously
+        // 4. Notes filter (OR logic; ranked later by number of matched notes descending)
         if (selectedNotes.length > 0) {
-          const checkSingleNote = (noteKey) =>
-            matchesNoteKey(noteKey, allNotesText);
-
-          const matchesNotes = notesCombination
-            ? selectedNotes.every(checkSingleNote)
-            : selectedNotes.some(checkSingleNote);
-          if (!matchesNotes) return false;
+          let matchedCount = 0;
+          for (const noteKey of selectedNotes) {
+            if (matchesNoteKey(noteKey, allNotesText)) {
+              matchedCount++;
+            }
+          }
+          if (matchedCount === 0) return false;
+          matchedNoteCountById.set(p.id, matchedCount);
         }
 
         // 5. Price range filter
@@ -1253,7 +1246,44 @@ export default function Featured() {
       });
     }
 
-    if (sortBy === "price-asc") {
+    if (selectedNotes.length > 1) {
+      result.sort((a, b) => {
+        const countDiff =
+          (matchedNoteCountById.get(b.id) || 0) -
+          (matchedNoteCountById.get(a.id) || 0);
+        if (countDiff !== 0) return countDiff;
+        if (sortBy === "price-asc") {
+          return (
+            (getDefaultCatalogPrice(a, language) || 0) -
+            (getDefaultCatalogPrice(b, language) || 0)
+          );
+        }
+        if (sortBy === "price-desc") {
+          return (
+            (getDefaultCatalogPrice(b, language) || 0) -
+            (getDefaultCatalogPrice(a, language) || 0)
+          );
+        }
+        const gtA = Number.isFinite(a.googleTrendsAverage)
+          ? a.googleTrendsAverage
+          : -1;
+        const gtB = Number.isFinite(b.googleTrendsAverage)
+          ? b.googleTrendsAverage
+          : -1;
+        if (gtB !== gtA) return gtB - gtA;
+        const scoreA =
+          (a.isBestSeller ? 50 : 0) +
+          (a.isFeatured ? 25 : 0) +
+          (Number(a.rating) || 4.5) * 10 +
+          (Number(a.reviewsCount) || 0);
+        const scoreB =
+          (b.isBestSeller ? 50 : 0) +
+          (b.isFeatured ? 25 : 0) +
+          (Number(b.rating) || 4.5) * 10 +
+          (Number(b.reviewsCount) || 0);
+        return scoreB - scoreA;
+      });
+    } else if (sortBy === "price-asc") {
       result.sort(
         (a, b) =>
           (getDefaultCatalogPrice(a, language) || 0) -
@@ -1307,7 +1337,6 @@ export default function Featured() {
     selectedVolumes,
     selectedLongevities,
     selectedFormat,
-    notesCombination,
     isPriceFilterActive,
     effectiveMinPrice,
     effectiveMaxPrice,
@@ -1875,7 +1904,6 @@ export default function Featured() {
                       onClick={() => {
                         setVisibleLimit(PAGE_SIZE);
                         setSelectedNotes([]);
-                        setNotesCombination(false);
                       }}
                       title={t("featured.clear")}
                     >
@@ -1884,26 +1912,6 @@ export default function Featured() {
                   )}
                 </div>
 
-                <div className="warda-combination-block">
-                  <label className="warda-combination-checkbox-label">
-                    <input
-                      type="checkbox"
-                      className="warda-combination-checkbox"
-                      checked={notesCombination}
-                      onChange={(e) => {
-                        setVisibleLimit(PAGE_SIZE);
-                        setNotesCombination(e.target.checked);
-                      }}
-                    />
-                    <span
-                      className="warda-combination-custom-check"
-                      aria-hidden="true"
-                    />
-                    <span className="warda-combination-label-text">
-                      {t("featured.combination")}
-                    </span>
-                  </label>
-                </div>
                 <div className="warda-pills-wrap">
                   {availableNotes.map((note) => {
                     const isActive = selectedNotes.includes(note.id);
