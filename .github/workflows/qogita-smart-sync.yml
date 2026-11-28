@@ -28,25 +28,35 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: "requirements.txt"
 
-      - name: Install Python AI Dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install requests
 
-      - name: Sync Qogita catalog and enqueue new source photos
+      - name: Sync Aromadeal catalog, prices & availability
         run: |
-          python Al-Warda/scripts/qogita_weekly_sync_upscayl.py \
-            --cloud \
-            --incremental \
-            --all
+          python Al-Warda/scripts/aromadeal_sync.py --prices
         env:
-          QOGITA_EMAIL: ${{ secrets.QOGITA_EMAIL }}
-          QOGITA_PASSWORD: ${{ secrets.QOGITA_PASSWORD }}
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
+
+      - name: Sync competitor prices & recalculate retail prices
+        run: |
+          python Al-Warda/scripts/sync_competitor_prices.py
+        env:
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
+
+      - name: Ensure minimum visible catalog (500)
+        run: |
+          python Al-Warda/scripts/google_trends_filter.py --ensure-min-500
+        env:
           SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SECRET_KEY }}
+          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
+          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -58,14 +68,6 @@ jobs:
         run: |
           npm --prefix Al-Warda install
 
-      - name: Sync Supabase Stocks & Olfactory Notes
-        run: |
-          node --use-system-ca Al-Warda/scripts/sync-stocks-supabase.js
-        env:
-          SUPABASE_URL: https://al-warda.egor-grebennykov.workers.dev
-          NHOST_ADMIN_SECRET: ${{ secrets.NHOST_ADMIN_SECRET }}
-          NHOST_GRAPHQL_URL: https://jopiirogydgupiwqiwac.graphql.eu-central-1.nhost.run/v1
-
       - name: Rebuild Web Application
         run: |
           npm --prefix Al-Warda run build
@@ -73,11 +75,11 @@ jobs:
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action [Qogita Smart Sync]"
-          git add Al-Warda/server/data/ Al-Warda/public/assets/img/dropship/ Al-Warda/public/assets/img/products/
+          git config --local user.name "GitHub Action [Aromadeal Smart Sync]"
+          git add Al-Warda/server/data/
           if git diff --staged --quiet; then
             echo "No changes to commit. Catalog is already up to date."
           else
-            git commit -m "chore(sync): update Qogita catalog and image queue [skip ci]"
+            git commit -m "chore(sync): update Aromadeal catalog and Trends cache [skip ci]"
             git push origin main
           fi
