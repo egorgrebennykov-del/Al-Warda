@@ -48,3 +48,18 @@ test("sortPerfumesBySearchAndTrends sorts by relevance first, then by Google Tre
     [2, 3, 1, 4],
   );
 });
+
+test("searching 'pm' ranks 'Afnan 9 PM EDP' first and does not match 'EDP' + 'Maison' across words", () => {
+  const items = [
+    { id: 10, name: "Maison Alhambra Mysterious Amber EDP", brand: "Maison Alhambra", googleTrendsAverage: 90 },
+    { id: 11, name: "Afnan 9 PM EDP", brand: "Afnan", googleTrendsAverage: 75 },
+  ];
+
+  assert.equal(matchesPerfumeSearch(items[0], "pm"), false);
+  assert.equal(matchesPerfumeSearch(items[1], "pm"), true);
+  const sorted = sortPerfumesBySearchAndTrends(
+    items.filter((x) => matchesPerfumeSearch(x, "pm")),
+    "pm",
+  );
+  assert.deepEqual(sorted.map((x) => x.id), [11]);
+});

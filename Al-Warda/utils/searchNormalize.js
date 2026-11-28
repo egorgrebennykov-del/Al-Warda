@@ -33,42 +33,97 @@ export function scorePerfumeSearch(perfume, rawQuery) {
   if (!compactQuery) return 1;
   if (!perfume) return 0;
 
-  const nameCompact = normalizeSearchCompact(perfume.name || perfume.title || "");
-  const brandCompact = normalizeSearchCompact(perfume.brand || "");
-  const seriesCompact = normalizeSearchCompact(perfume.series || "");
+  const rawName = perfume.name || perfume.title || "";
+  const rawBrand = perfume.brand || "";
+  const rawSeries = perfume.series || "";
+
+  const nameCompact = normalizeSearchCompact(rawName);
+  const brandCompact = normalizeSearchCompact(rawBrand);
+  const seriesCompact = normalizeSearchCompact(rawSeries);
+  const nameTokens = tokenizeSearchQuery(rawName);
+  const brandTokens = tokenizeSearchQuery(rawBrand);
+  const seriesTokens = tokenizeSearchQuery(rawSeries);
+  const queryTokens = tokenizeSearchQuery(rawQuery);
 
   if (nameCompact === compactQuery) return 100;
+  if (nameTokens.includes(compactQuery)) return 92;
+  if (
+    queryTokens.length === 1 &&
+    nameTokens.some((t) => t.startsWith(compactQuery) && compactQuery.length >= 2)
+  ) {
+    return 86;
+  }
   if (nameCompact.startsWith(compactQuery)) return 85;
-  if (nameCompact.includes(compactQuery)) return 70;
-
-  if (brandCompact === compactQuery || seriesCompact === compactQuery) return 60;
-  if (brandCompact.startsWith(compactQuery) || seriesCompact.startsWith(compactQuery)) return 50;
-  if (brandCompact.includes(compactQuery) || seriesCompact.includes(compactQuery)) return 40;
-
-  const tokens = tokenizeSearchQuery(rawQuery);
-  const nameBrandCombined = `${nameCompact}${brandCompact}${seriesCompact}`;
-  if (tokens.length > 1 && tokens.every((tok) => nameBrandCombined.includes(tok))) {
-    return 35;
+  if (compactQuery.length >= 3 && nameCompact.includes(compactQuery)) return 70;
+  if (
+    compactQuery.length <= 2 &&
+    nameTokens.some((t) => t.includes(compactQuery))
+  ) {
+    return 70;
   }
 
-  const noteFields = [
+  if (brandCompact === compactQuery || seriesCompact === compactQuery) return 60;
+  if (brandTokens.includes(compactQuery) || seriesTokens.includes(compactQuery)) return 58;
+  if (brandCompact.startsWith(compactQuery) || seriesCompact.startsWith(compactQuery)) return 50;
+  if (
+    compactQuery.length >= 3 &&
+    (brandCompact.includes(compactQuery) || seriesCompact.includes(compactQuery))
+  ) {
+    return 40;
+  }
+
+  const nameBrandTokens = new Set([...nameTokens, ...brandTokens, ...seriesTokens]);
+  if (
+    queryTokens.length > 1 &&
+    queryTokens.every(
+      (tok) => nameBrandTokens.has(tok) || (tok.length >= 3 && `${nameCompact} ${brandCompact} ${seriesCompact}`.includes(tok)),
+    )
+  ) {
+    return 45;
+  }
+
+  const noteList = [
     perfume.category,
     perfume.notesSummary,
     ...(Array.isArray(perfume.topNotes) ? perfume.topNotes : []),
     ...(Array.isArray(perfume.heartNotes) ? perfume.heartNotes : []),
     ...(Array.isArray(perfume.baseNotes) ? perfume.baseNotes : []),
+  ].filter(Boolean);
+
+  const noteTokens = noteList.flatMap(tokenizeSearchQuery);
+  if (noteTokens.includes(compactQuery)) return 30;
+  if (
+    compactQuery.length >= 3 &&
+    noteList.map(normalizeSearchCompact).some((f) => f.includes(compactQuery))
+  ) {
+    return 25;
+  }
+
+  const descTokens = tokenizeSearchQuery(perfume.description || "");
+  if (descTokens.includes(compactQuery)) return 18;
+  const descCompact = normalizeSearchCompact(perfume.description || "");
+  if (compactQuery.length >= 3 && descCompact.includes(compactQuery)) return 15;
+
+  // Multi-word queries across separate fields (space-separated so adjacent words never fuse into fake tokens)
+  const spaceJoined = [
+    rawName,
+    rawBrand,
+    rawSeries,
+    ...noteList,
+    perfume.description || "",
   ]
     .map(normalizeSearchCompact)
-    .filter(Boolean);
+    .filter(Boolean)
+    .join(" ");
 
-  if (noteFields.some((f) => f.includes(compactQuery))) return 25;
-
-  const descCompact = normalizeSearchCompact(perfume.description || "");
-  if (descCompact.includes(compactQuery)) return 15;
-
-  const combinedCompact = `${nameBrandCombined}${noteFields.join("")}${descCompact}`;
-  if (combinedCompact.includes(compactQuery)) return 15;
-  if (tokens.length > 1 && tokens.every((tok) => combinedCompact.includes(tok))) {
+  if (
+    queryTokens.length > 1 &&
+    queryTokens.every((tok) =>
+      tok.length <= 2
+        ? [...nameBrandTokens, ...noteTokens, ...descTokens].includes(tok)
+        : spaceJoined.includes(tok),
+    )
+  ) {
     return 10;
   }
 
