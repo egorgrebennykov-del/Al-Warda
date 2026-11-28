@@ -1,4 +1,10 @@
 import workerEnv from "./workerEnv.js";
+import {
+  calculateBlazoShippingQuote,
+  fetchBlazoStoreShippingConfig,
+  BLAZO_API_URL,
+  BLAZO_STORE_ID,
+} from "../utils/blazoDelivery.js";
 import { isGeneratedProductImage } from "../utils/generatedProductImage.js";
 import cachedArabianPerfumes from "./data/cachedArabianPerfumes.json" with { type: "json" };
 import {
@@ -539,6 +545,33 @@ export default {
           return finalRes;
         } catch (e) {
           return new Response(e.message, { status: 502 });
+        }
+      }
+
+      // Blazo Delivery Quote API
+      if ((method === "POST" || method === "GET") && pathname === "/api/delivery/quote") {
+        try {
+          const body =
+            method === "POST"
+              ? await request.json().catch(() => ({}))
+              : Object.fromEntries(urlObj.searchParams.entries());
+          const blazoConfig = await fetchBlazoStoreShippingConfig({
+            apiUrl: env?.BLAZO_API_URL || workerEnv?.BLAZO_API_URL || BLAZO_API_URL,
+            storeId: env?.BLAZO_STORE_ID || workerEnv?.BLAZO_STORE_ID || BLAZO_STORE_ID,
+            appSecret: env?.BLAZO_APP_SECRET || workerEnv?.BLAZO_APP_SECRET || "",
+          });
+          const quote = calculateBlazoShippingQuote({
+            country: body?.country || "",
+            countryIso: body?.countryIso || "",
+            city: body?.city || "",
+            street: body?.street || "",
+            methodId: body?.methodId || "",
+            subtotalEur: Number(body?.subtotalEur || 0),
+            blazoConfig,
+          });
+          return jsonResponse(quote);
+        } catch (err) {
+          return jsonResponse({ error: err.message }, 500);
         }
       }
 

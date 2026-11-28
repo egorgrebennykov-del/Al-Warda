@@ -31,6 +31,12 @@ import {
   executeCatalogActionById,
 } from "./catalogActionsService.js";
 import { setHttpAdapter } from "./httpClient.js";
+import {
+  calculateBlazoShippingQuote,
+  fetchBlazoStoreShippingConfig,
+  BLAZO_API_URL,
+  BLAZO_STORE_ID,
+} from "../utils/blazoDelivery.js";
 import qogitaClient, { QogitaClient } from "./qogitaClient.js";
 import {
   handleInboundWebhook,
@@ -1173,6 +1179,34 @@ const server = createServer(async (req, res) => {
         success: true,
         message: `Действие ${actionId} запущено.`,
       });
+    } catch (err) {
+      respond(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // Blazo Delivery Quote API
+  if ((req.method === "POST" || req.method === "GET") && pathname === "/api/delivery/quote") {
+    try {
+      const body =
+        req.method === "POST"
+          ? await readJson(req)
+          : Object.fromEntries(urlObj.searchParams.entries());
+      const blazoConfig = await fetchBlazoStoreShippingConfig({
+        apiUrl: process.env.BLAZO_API_URL || BLAZO_API_URL,
+        storeId: process.env.BLAZO_STORE_ID || BLAZO_STORE_ID,
+        appSecret: process.env.BLAZO_APP_SECRET || "",
+      });
+      const quote = calculateBlazoShippingQuote({
+        country: body?.country || "",
+        countryIso: body?.countryIso || "",
+        city: body?.city || "",
+        street: body?.street || "",
+        methodId: body?.methodId || "",
+        subtotalEur: Number(body?.subtotalEur || 0),
+        blazoConfig,
+      });
+      respond(res, 200, quote);
     } catch (err) {
       respond(res, 500, { error: err.message });
     }

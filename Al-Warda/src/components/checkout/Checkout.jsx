@@ -33,18 +33,22 @@ import {
   stripCountryCodeAndLeadingZero,
 } from "../../../utils/phone.js";
 import { countries } from "./countryPhoneCodes.js";
+import {
+  calculateBlazoShippingQuote,
+  BLAZO_TRACK_URL,
+} from "../../../utils/blazoDelivery.js";
 import "./Checkout.css";
 
-// Base shipping calculation - can be customized by the user with any formula
-function calculateShipping(address) {
+function calculateShipping(address, options = {}) {
   if (!address) return 0;
-  const hasCityOrStreet = Boolean(
-    (address.city && address.city.trim().length > 0) ||
-      (address.street && address.street.trim().length > 0),
-  );
-  if (!hasCityOrStreet) return 0;
-  // Default delivery fee in EUR (user will customize this later)
-  return 5.0;
+  return calculateBlazoShippingQuote({
+    country: address.country || "",
+    countryIso: options.countryIso || "",
+    city: address.city || "",
+    street: address.street || "",
+    methodId: options.methodId || "",
+    subtotalEur: options.subtotalEur || 0,
+  }).shippingCostEur;
 }
 
 const LOCALE_MAP = { ru: "ru-RU", en: "en-GB", hu: "hu-HU", bg: "bg-BG", el: "el-GR", ro: "ro-RO" };
@@ -103,6 +107,8 @@ export default function Checkout() {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
   const [couponValidating, setCouponValidating] = useState(false);
+  const [deliveryMethodId, setDeliveryMethodId] = useState("");
+  const [blazoQuote, setBlazoQuote] = useState(null);
 
   const selectedCountry = useMemo(
     () => countries.find((c) => c.iso2 === selectedCountryIso) || countries.find((c) => c.iso2 === "IT") || countries[0],
@@ -323,8 +329,64 @@ export default function Checkout() {
 
   const currentAddress = selectedSavedAddress || addressForm;
 
-  // Shipping cost calculation based on address
-  const baseShippingCost = calculateShipping(currentAddress);
+  const localQuote = useMemo(
+    () =>
+      calculateBlazoShippingQuote({
+        country: currentAddress?.country || "",
+        countryIso: selectedCountryIso,
+        city: currentAddress?.city || "",
+        street: currentAddress?.street || "",
+        methodId: deliveryMethodId,
+        subtotalEur: itemsSubtotal,
+      }),
+    [
+      currentAddress?.country,
+      currentAddress?.city,
+      currentAddress?.street,
+      selectedCountryIso,
+      deliveryMethodId,
+      itemsSubtotal,
+    ],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const payload = {
+      country: currentAddress?.country || "",
+      countryIso: selectedCountryIso,
+      city: currentAddress?.city || "",
+      street: currentAddress?.street || "",
+      methodId: deliveryMethodId,
+      subtotalEur: itemsSubtotal,
+    };
+    fetch("/api/delivery/quote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && typeof data.shippingCostEur === "number") {
+          setBlazoQuote(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentAddress?.country,
+    currentAddress?.city,
+    currentAddress?.street,
+    selectedCountryIso,
+    deliveryMethodId,
+    itemsSubtotal,
+  ]);
+
+  const activeQuote = blazoQuote && blazoQuote.countryCode === localQuote.countryCode ? blazoQuote : localQuote;
+
+  // Shipping cost calculation tied to Blazo delivery platform
+  const baseShippingCost = activeQuote.shippingCostEur;
   const hasValidAddress = Boolean(
     (currentAddress.city && currentAddress.city.trim().length > 0) &&
       (currentAddress.street && currentAddress.street.trim().length > 0),
@@ -575,6 +637,14 @@ export default function Checkout() {
             <div className="checkout__order-info-item">
               <span className="checkout__meta-label">{t("checkout.orderNumber")}:</span>
               <strong>#{orderComplete.orderNumber}</strong>
+              <a
+                href={`${BLAZO_TRACK_URL}?order=${encodeURIComponent(orderComplete.orderNumber)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginLeft: "0.65rem", color: "#d4af37", fontSize: "0.85rem", textDecoration: "underline" }}
+              >
+                {language === "ru" ? "Отследить в Blazo ↗" : "Track via Blazo ↗"}
+              </a>
             </div>
             <div className="checkout__order-info-item">
               <span className="checkout__meta-label">{t("checkout.deliveryAddress")}:</span>
@@ -985,6 +1055,36 @@ export default function Checkout() {
                 </h3>
 
                 <div className="checkout__summary-rows">
+                  {Array.isArray(activeQuote?.methods) && activeQuote.methods.length > 1 && (
+                    <div className="checkout__delivery-methods" style={{ marginBottom: "0.85rem" }}>
+                      <label
+                        htmlFor="blazo-delivery-method"
+                        style={{ display: "block", fontSize: "0.8rem", color: "#c5a059", marginBottom: "0.35rem" }}
+                      >
+                        {language === "ru" ? "Служба доставки (Blazo):" : "Delivery service (Blazo):"}
+                      </label>
+                      <select
+                        id="blazo-delivery-method"
+                        value={activeQuote.methodId}
+                        onChange={(e) => setDeliveryMethodId(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "0.55rem 0.75rem",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(212, 175, 55, 0.3)",
+                          background: "rgba(12, 10, 8, 0.9)",
+                          color: "#fff8ea",
+                          fontSize: "0.88rem",
+                        }}
+                      >
+                        {activeQuote.methods.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {(language === "ru" ? m.labelRu : m.labelEn)} — {formatPrice(m.priceEur, "EUR", language)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="checkout__summary-row">
                     <span>{t("checkout.itemsTotal")}</span>
                     <span>{formatPrice(itemsSubtotal, "EUR", language)}</span>
@@ -994,6 +1094,11 @@ export default function Checkout() {
                     <span className="checkout__shipping-label">
                       <i className="ri-truck-line" />
                       {t("checkout.shipping")}
+                      {activeQuote?.carrier && (
+                        <small style={{ display: "block", fontSize: "0.75rem", color: "#9c8f78" }}>
+                          Blazo · {activeQuote.carrier} ({language === "ru" ? activeQuote.etaRu : activeQuote.etaEn})
+                        </small>
+                      )}
                     </span>
                     <span className="checkout__shipping-val">
                       {hasValidAddress ? (
