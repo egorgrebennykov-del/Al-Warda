@@ -442,7 +442,7 @@ export default {
     "privileged.gitActions.wfFullRefreshTitle": "Пълно обновяване на базата (Full Refresh)",
     "privileged.gitActions.wfFullRefreshDesc": "Генерално обновяване на всички 44+ марки, пълна синхронизация на таблиците 'stocks' в Supabase, проверка на цени и статуси.",
     "assistant.name": "Жасмин",
-    "assistant.title": "Парфюмен консиерж",
+    "assistant.title": "Вашият личен асистент",
     "assistant.statusOnline": "На линия",
     "assistant.openChat": "Попитай Жасмин",
     "assistant.closeChat": "Свий",

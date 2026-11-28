@@ -442,7 +442,7 @@ export default {
     "privileged.gitActions.wfFullRefreshTitle": "Full Database Refresh",
     "privileged.gitActions.wfFullRefreshDesc": "Comprehensive scan of all 44+ brands, full Supabase stocks database synchronization, price checks, and production catalog rebuild.",
     "assistant.name": "Jázmin",
-    "assistant.title": "Személyes illat-tanácsadó",
+    "assistant.title": "Az Ön személyes asszisztense",
     "assistant.statusOnline": "Elérhető",
     "assistant.openChat": "Illat-tanácsadó megnyitása",
     "assistant.closeChat": "Bezárás",

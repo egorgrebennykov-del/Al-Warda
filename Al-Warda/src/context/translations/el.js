@@ -442,7 +442,7 @@ export default {
     "privileged.gitActions.wfFullRefreshTitle": "Πλήρης ανανέωση βάσης δεδομένων (Full Refresh)",
     "privileged.gitActions.wfFullRefreshDesc": "Γενική ανανέωση όλων των 44+ οίκων, πλήρης συγχρονισμός πινάκων 'stocks' στο Supabase και επανασύνταξη καταλόγου.",
     "assistant.name": "Γιασμίν",
-    "assistant.title": "Αρωματική Concierge",
+    "assistant.title": "Ο προσωπικός σας βοηθός",
     "assistant.statusOnline": "Σε σύνδεση",
     "assistant.openChat": "Ρωτήστε τη Γιασμίν",
     "assistant.closeChat": "Σύμπτυξη",

@@ -442,7 +442,7 @@ export default {
     "privileged.gitActions.wfFullRefreshTitle": "Actualizare completă a bazei de date (Full Refresh)",
     "privileged.gitActions.wfFullRefreshDesc": "Actualizare generală pentru toate cele 44+ branduri, sincronizare completă a tabelelor 'stocks' în Supabase și reconstruire catalog.",
     "assistant.name": "Yasmin",
-    "assistant.title": "Concierge de Parfumuri",
+    "assistant.title": "Asistentul dumneavoastră personal",
     "assistant.statusOnline": "Online",
     "assistant.openChat": "Întreab-o pe Yasmin",
     "assistant.closeChat": "Restrânge",
