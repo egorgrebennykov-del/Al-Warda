@@ -20,7 +20,10 @@ import html as html_lib
 import json
 import math
 import os
+import random
 import re
+import threading
+import time
 import unicodedata
 import urllib.parse
 import urllib.request
@@ -53,10 +56,11 @@ def norm_tokens(text: str) -> set[str]:
     s = re.sub(r"['’`´]", "", s)
     s = re.sub(r"[^a-z0-9]+", " ", s).strip()
     stop = {
-        "eau", "de", "parfum", "parfume", "toilette", "cologne", "extrait", "edp", "edt",
-        "spray", "for", "men", "mens", "women", "womens", "unisex", "fragrance", "perfume",
-        "perfumes", "parfyum", "damski", "mazhki", "arabski", "ml", "fl", "oz", "the", "and",
-        "by", "of", "za", "nego", "neya", "voda", "parfyumna", "ekstrakt", "мл",
+        "eau", "de", "parfum", "parfume", "perfume", "perfumes", "toilette", "cologne", "extrait", "edp", "edt",
+        "spray", "for", "men", "mens", "women", "womens", "unisex", "uniseks", "fragrance",
+        "parfyum", "parfyumen", "damski", "mazhki", "arabski", "ml", "fl", "oz", "the", "and",
+        "by", "of", "za", "nego", "neya", "voda", "parfyumna", "toaletna", "odekolon", "ekstrakt",
+        "pour", "homme", "femme", "vaporisateur", "natural", "мл",
     }
     return {t for t in s.split() if t and t not in stop and not re.fullmatch(r"\d+(ml)?", t)}
 
@@ -69,9 +73,9 @@ def is_set_name(text: str) -> bool:
 def clean_search_query(product: dict[str, Any]) -> str:
     name = (product.get("name") or product.get("title") or "").strip()
     brand = (product.get("brand") or "").strip()
-    clean_q = re.sub(r"\b\d+(?:[.,]\d+)?\s*ml\b", "", name, flags=re.I)
+    clean_q = re.sub(r"\b\d+(?:[.,]\d+)?\s*(?:ml|мл)\b", "", name, flags=re.I)
     clean_q = re.sub(
-        r"\b(eau de parfum|eau de toilette|extrait de parfum|unisex|for men|for women|fragrance|spray|edp|edt)\b",
+        r"\b(eau de perfume|eau de parfum|eau de toilette|extrait de parfum|eau de cologne|pour homme|pour femme|natural spray|vaporisateur|unisex|for men|for women|fragrance|perfume|parfum|spray|edp|edt)\b",
         "",
         clean_q,
         flags=re.I,
@@ -199,23 +203,48 @@ def match_in_memory_catalog(target_tokens: set[str], want_set: bool, catalog: li
     return best if best_score >= 0.72 else None
 
 
-def query_notino(clean_q: str, target_tokens: set[str], want_set: bool) -> tuple[float, str] | None:
-    url = f"https://www.notino.bg/search.asp?exps={urllib.parse.quote_plus(clean_q)}"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "bg-BG,bg;q=0.9"})
-        html = urllib.request.urlopen(req, timeout=15).read().decode("utf-8", "ignore")
-    except Exception:
-        return None
-    m = re.search(
-        r'<script type="application/ld\+json">(\{"@context":"https://schema\.org","@type":"CollectionPage".*?)</script>',
-        html,
-        re.S,
+_NOTINO_SEM = threading.Semaphore(2)
+
+
+def _fetch_text_with_retry(req: urllib.request.Request, timeout: int = 15, retries: int = 2) -> str | None:
+    for attempt in range(retries + 1):
+        try:
+            return urllib.request.urlopen(req, timeout=timeout).read().decode("utf-8", "ignore")
+        except Exception:
+            if attempt < retries:
+                time.sleep(0.7 * (attempt + 1) + random.uniform(0.1, 0.4))
+    return None
+
+
+def _query_notino_once(query_str: str, target_tokens: set[str], want_set: bool) -> tuple[float, str] | None:
+    url = f"https://www.notino.bg/search.asp?exps={urllib.parse.quote_plus(query_str)}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": UA,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "bg-BG,bg;q=0.9,en;q=0.7",
+        },
     )
-    if not m:
+    with _NOTINO_SEM:
+        html = _fetch_text_with_retry(req, timeout=15, retries=2)
+    if not html:
         return None
-    try:
-        data = json.loads(m.group(1))
-    except Exception:
+    blocks = re.findall(
+        r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        html,
+        re.S | re.I,
+    )
+    data = None
+    for raw_json in blocks:
+        try:
+            parsed = json.loads(raw_json.strip())
+        except Exception:
+            continue
+        if isinstance(parsed, dict) and parsed.get("@type") == "CollectionPage":
+            data = parsed
+            break
+    if not data:
         return None
     best_score = 0.0
     best = None
@@ -240,6 +269,16 @@ def query_notino(clean_q: str, target_tokens: set[str], want_set: bool) -> tuple
     return best if best_score >= 0.72 else None
 
 
+def query_notino(clean_q: str, target_tokens: set[str], want_set: bool) -> tuple[float, str] | None:
+    hit = _query_notino_once(clean_q, target_tokens, want_set)
+    if hit:
+        return hit
+    words = clean_q.split()
+    if len(words) > 4:
+        return _query_notino_once(" ".join(words[:4]), target_tokens, want_set)
+    return None
+
+
 def query_douglas(clean_q: str, target_tokens: set[str], want_set: bool) -> tuple[float, str] | None:
     gql = json.dumps({
         "query": "{ products(search: " + json.dumps(clean_q) + ", pageSize: 6) { items { name url_key price_range { minimum_price { final_price { value currency } } } } } }"
@@ -255,8 +294,11 @@ def query_douglas(clean_q: str, target_tokens: set[str], want_set: bool) -> tupl
         },
         method="POST",
     )
+    raw_res = _fetch_text_with_retry(req, timeout=12, retries=2)
+    if not raw_res:
+        return None
     try:
-        res = json.loads(urllib.request.urlopen(req, timeout=12).read().decode("utf-8", "ignore"))
+        res = json.loads(raw_res)
         items = ((res.get("data") or {}).get("products") or {}).get("items") or []
     except Exception:
         return None
@@ -284,10 +326,9 @@ def query_douglas(clean_q: str, target_tokens: set[str], want_set: bool) -> tupl
 
 def query_arabic_scents(clean_q: str, target_tokens: set[str], want_set: bool) -> tuple[float, str] | None:
     url = f"https://arabicscents.bg/rezultati-tyrsene?search={urllib.parse.quote_plus(clean_q)}"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
-        html = urllib.request.urlopen(req, timeout=15).read().decode("utf-8", "ignore")
-    except Exception:
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    html = _fetch_text_with_retry(req, timeout=15, retries=2)
+    if not html:
         return None
     best_score = 0.0
     best = None
