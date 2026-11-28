@@ -60,7 +60,7 @@ def norm_tokens(text: str) -> set[str]:
         "spray", "for", "men", "mens", "women", "womens", "unisex", "uniseks", "fragrance",
         "parfyum", "parfyumen", "damski", "mazhki", "arabski", "ml", "fl", "oz", "the", "and",
         "by", "of", "za", "nego", "neya", "voda", "parfyumna", "toaletna", "odekolon", "ekstrakt",
-        "pour", "homme", "femme", "vaporisateur", "natural", "мл",
+        "pour", "vaporisateur", "natural", "мл",
     }
     return {t for t in s.split() if t and t not in stop and not re.fullmatch(r"\d+(ml)?", t)}
 
