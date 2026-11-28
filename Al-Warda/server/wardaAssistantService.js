@@ -394,8 +394,12 @@ const STOP_WORDS = new Set([
   "find", "show", "search", "recommend", "suggest", "perfume", "perfumes", "fragrance",
   "fragrances", "scent", "scents", "smell", "smells", "smelling", "odor", "odour", "like", "that",
   "notes", "parfum", "catalog", "what", "have", "has", "had", "you", "your", "the", "with", "for", "and", "are", "is", "can", "will", "this", "from",
+  "of", "to", "in", "on", "at", "by", "or", "as", "an", "am", "it", "my", "me", "we", "he", "us", "do", "so", "if", "be", "de", "la", "le", "not", "but", "all",
+  "от", "до", "по", "за", "ко", "об", "не", "ни", "бы", "же", "то", "вы", "ты", "он", "мы", "их", "ее", "её", "его", "как", "так", "вот", "еще", "ещё", "уже",
   "cheap", "cheapest", "budget", "inexpensive", "affordable", "expensive", "price", "money", "little", "less",
-  "something", "want", "need", "looking", "good", "best",
+  "something", "want", "need", "looking", "good", "best", "give", "please", "any", "aroma", "aromas",
+  "person", "people", "human", "thing", "stuff", "anything", "someone", "somebody",
+  "дай", "дайте", "давай", "давайте", "скинь", "пришли", "человек", "человека", "людей", "меня", "тебя", "нас",
   "дешево", "дешевые", "дешевый", "недорого", "недорогие", "цена", "цены", "денег", "немного", "бюджет", "чтото"
 ]);
 
@@ -525,7 +529,7 @@ export function searchPerfumesInDatabase(query, options = {}) {
     if (meaningfulTokens.length > 0 && q.includes(nameLower) && nameLower.length > 3) score += 100;
 
     for (const tok of meaningfulTokens) {
-      if (tok.length < 2) continue;
+      if (tok.length < 3) continue;
       if (nameLower === tok) {
         score += 85;
       } else if (
@@ -564,10 +568,16 @@ export function searchPerfumesInDatabase(query, options = {}) {
       }
     }
 
+    const allWords = allText.split(/[\s,·+!?.;:()«»"'-]+/).filter(Boolean);
     for (const tok of meaningfulTokens) {
-      if (notesSummary.includes(tok)) score += 25;
-      else if (allText.includes(tok)) score += 15;
-      else if (tok.length >= 4 && allText.includes(tok.slice(0, 4))) score += 12;
+      if (tok.length < 3) continue;
+      if (allWords.some((w) => w === tok || (tok.length >= 4 && w.startsWith(tok)))) {
+        if (notesSummary.includes(tok)) score += 25;
+        else score += 15;
+      } else if (tok.length >= 5) {
+        const stem = tok.slice(0, 5);
+        if (allWords.some((w) => w.startsWith(stem))) score += 12;
+      }
     }
 
     if (score > 0 || !hasQueryTerms) {

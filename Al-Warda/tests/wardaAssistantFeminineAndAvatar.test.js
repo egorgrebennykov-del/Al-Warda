@@ -897,3 +897,29 @@ test("processWardaChat only recommends perfumes with actual vanilla when user as
   assert.equal(result.books.length, 1, "Should only return the perfume that actually has vanilla");
   assert.equal(result.books[0].id, "lattafa-nebras-vanilla", "Must recommend the vanilla perfume, not Yara Tous");
 });
+
+test("processWardaChat returns empty books for 'духи с запахом бомжа дай мне' without false prefix matches", async () => {
+  const catalog = [
+    {
+      id: "ajmal-song-of-oud",
+      name: "Ajmal Song Of Oud Eau De Parfum",
+      brand: "Ajmal",
+      category: "Восточные древесные",
+      gender: "Унисекс",
+      price: 93.99,
+      image: "/assets/img/generated-products/ajmal.png",
+      description: "A timeless home fragrance and woody oud perfume.",
+    },
+  ];
+
+  const ruResult = await processWardaChat({
+    messages: [{ role: "user", content: "духи с запахом бомжа дай мне" }],
+    language: "ru",
+    context: { catalog },
+  });
+  assert.equal(ruResult.books.length, 0, "Must return 0 books for 'духи с запахом бомжа дай мне'");
+
+  const { searchPerfumesInDatabase } = await import("../server/wardaAssistantService.js");
+  const enMatches = searchPerfumesInDatabase("give me perfumes that smell like a homeless person");
+  assert.equal(enMatches.length, 0, "Must not match 'home' from 'homeless' or 'perfume' from 'perfumes'");
+});
