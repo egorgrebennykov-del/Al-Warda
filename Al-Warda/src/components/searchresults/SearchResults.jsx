@@ -18,6 +18,7 @@ import { formatVolume } from "../../utils/localization";
 import { OrnateCard } from "../common/OrnateCard";
 import PerfumeCardMedia from "../common/PerfumeCardMedia";
 import QogitaPriceBadge from "../common/QogitaPriceBadge";
+import "../featured/Featured.css";
 import "./SearchResults.css";
 import "../common/ProductCardImages.css";
 
@@ -229,7 +230,7 @@ export default function SearchResults() {
         volKey,
         isSample,
         quantity: 1,
-        language: isRu ? "ru" : "en",
+        language,
       });
       if (!currentlyInCart) {
         setAddedIds((prev) => ({ ...prev, [perfume.id]: true }));
@@ -351,8 +352,6 @@ export default function SearchResults() {
                     sessionStorage.setItem(scrollKey, String(window.scrollY));
                     navigate(productUrl);
                   }}
-                  onMouseMove={handleCardMouseMove}
-                  onMouseLeave={handleCardMouseLeave}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -363,26 +362,28 @@ export default function SearchResults() {
                     }
                   }}
                 >
-                  <PerfumeCardMedia src={perfume.image} alt={perfume.name}>
-                    <div className="warda-perfume-card__aura" />
-                    <div className="warda-perfume-card__sheen" />
+                  <PerfumeCardMedia
+                    src={perfume.image}
+                    alt={perfume.name}
+                    onMissingImage={() =>
+                      setAllPerfumes((prev) =>
+                        prev.filter((item) => String(item.id) !== String(perfume.id)),
+                      )
+                    }
+                  >
+                    <span className="warda-perfume-card__aura" />
+                    <span className="warda-perfume-card__sheen" />
                   </PerfumeCardMedia>
 
                   <div className="warda-perfume-card__info">
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "1px",
-                        color: "#d4af37",
-                        fontWeight: 600,
-                      }}
+                    <h3
+                      className="warda-perfume-card__title"
+                      title={perfume.name}
                     >
-                      {perfume.brand || "Al-Warda"}
-                    </span>
-                    <h3 className="warda-perfume-card__title">{perfume.name}</h3>
+                      {perfume.name}
+                    </h3>
                     <p className="warda-perfume-card__notes">
-                      {perfume.brand}
+                      {perfume.brand || "Al-Warda"}
                       {displayVolume && (
                         <span style={{ marginLeft: "0.4rem", opacity: 0.75, fontSize: "0.8rem" }}>
                           · {displayVolume}
