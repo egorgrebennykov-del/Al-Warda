@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Routes,
   Route,
@@ -225,7 +225,12 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  const prevPathnameRef = useRef(location.pathname);
+
   useEffect(() => {
+    const prevPathname = prevPathnameRef.current;
+    prevPathnameRef.current = location.pathname;
+
     // When returning via Back button (POP navigation):
     if (navigationType === "POP") {
       const path = location.pathname || "";
@@ -247,6 +252,11 @@ function App() {
           return;
         }
       }
+    }
+
+    // Only query-string changed on the same page (e.g. catalog filters) -> keep scroll position
+    if (prevPathname === location.pathname && navigationType !== "POP") {
+      return;
     }
 
     if (shouldRestoreScroll) return;
