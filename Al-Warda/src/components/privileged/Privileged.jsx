@@ -20,6 +20,7 @@ import {
   createUserByAdmin,
 } from "../../../utils/auth";
 import { getAllOrdersAdmin, updateOrderStatus } from "../../../utils/orders";
+import { buildAromadealCartPermalink } from "../../../utils/aromadealProductUrls";
 import {
   createCoupon,
   deleteCoupon,
@@ -3979,6 +3980,10 @@ export default function Privileged() {
                 const orderNum = content.orderNumber || order.id?.slice(0, 8);
                 const isCompleted =
                   (order.status || "").toLowerCase() === "completed";
+                const aromadealCartUrl =
+                  order.link ||
+                  content.aromadealCartUrl ||
+                  buildAromadealCartPermalink(items);
 
                 return (
                   <div className="privileged__order-card" key={order.id}>
@@ -4033,6 +4038,23 @@ export default function Privileged() {
                               : t("privileged.orders.markCompleted")}
                           </span>
                         </button>
+
+                        {aromadealCartUrl && (
+                          <a
+                            href={aromadealCartUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="privileged__order-status-btn"
+                            title="Добавить все товары заказа в корзину Aromadeal"
+                          >
+                            <i className="ri-shopping-cart-2-line" />
+                            <span>
+                              {language === "ru"
+                                ? "В корзину Aromadeal ↗"
+                                : "Add to Aromadeal Cart ↗"}
+                            </span>
+                          </a>
+                        )}
                       </div>
                     </div>
 

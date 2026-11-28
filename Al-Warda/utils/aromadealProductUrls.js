@@ -50,3 +50,29 @@ export function getAromadealProductUrl(perfume) {
     return `${AROMADEAL_BASE}/collections/all`;
   }
 }
+
+/**
+ * Builds a Shopify Cart Permalink URL that adds all ordered items (with exact quantities)
+ * directly to the Aromadeal cart: https://aromadeal.de/cart/<variantId>:<qty>,...
+ */
+export function buildAromadealCartPermalink(items = []) {
+  if (!Array.isArray(items) || items.length === 0) return "";
+  const qtyByVariant = new Map();
+  for (const item of items) {
+    if (!item) continue;
+    const rawVariant =
+      item.aromadealVariantId ||
+      item.info?.aromadealVariantId ||
+      item.variantId ||
+      "";
+    const cleanId = String(rawVariant).replace(/[^\d]/g, "");
+    if (!cleanId) continue;
+    const qty = Math.max(1, Math.round(Number(item.quantity || 1)));
+    qtyByVariant.set(cleanId, (qtyByVariant.get(cleanId) || 0) + qty);
+  }
+  if (qtyByVariant.size === 0) return "";
+  const pairs = Array.from(qtyByVariant.entries()).map(
+    ([variantId, qty]) => `${variantId}:${qty}`,
+  );
+  return `${AROMADEAL_BASE}/cart/${pairs.join(",")}`;
+}

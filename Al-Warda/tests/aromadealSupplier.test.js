@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getAromadealProductUrl } from "../utils/aromadealProductUrls.js";
+import {
+  getAromadealProductUrl,
+  buildAromadealCartPermalink,
+} from "../utils/aromadealProductUrls.js";
 
 test("getAromadealProductUrl resolves explicit aromadealUrl, handle, or search fallback", () => {
   assert.equal(
@@ -25,4 +28,17 @@ test("getAromadealProductUrl resolves explicit aromadealUrl, handle, or search f
     getAromadealProductUrl({ name: "Armaf Club De Nuit", brand: "Armaf" }),
     "https://aromadeal.de/search?q=Armaf%20Club%20De%20Nuit",
   );
+});
+
+test("buildAromadealCartPermalink builds Shopify cart permalink with aggregated quantities", () => {
+  assert.equal(
+    buildAromadealCartPermalink([
+      { id: "1", aromadealVariantId: "4912345678", quantity: 2 },
+      { id: "2", info: { aromadealVariantId: "4987654321" }, quantity: 1 },
+      { id: "3", aromadealVariantId: "4912345678", quantity: 1 },
+    ]),
+    "https://aromadeal.de/cart/4912345678:3,4987654321:1",
+  );
+
+  assert.equal(buildAromadealCartPermalink([{ id: "99", quantity: 1 }]), "");
 });

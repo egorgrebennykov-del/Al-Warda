@@ -375,6 +375,8 @@ export function translatePostgrest({
       colList.push('notesVerified: info(path: "notesVerified")');
       colList.push('notesSummary: info(path: "notesSummary")');
       colList.push('notesSummaryEn: info(path: "notesSummaryEn")');
+      colList.push('aromadealVariantId: info(path: "aromadealVariantId")');
+      colList.push('aromadealHandle: info(path: "aromadealHandle")');
     }
     const fields = colList.join(" ");
     const root = rootField(table, "select");

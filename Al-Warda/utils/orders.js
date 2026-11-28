@@ -1,7 +1,47 @@
 import { getCookieUser } from "./auth.js";
 import { restUrl } from "./restBase.js";
+import { buildAromadealCartPermalink } from "./aromadealProductUrls.js";
 
 const TABLE_URL = restUrl("orders_in_progress");
+const STOCKS_URL = restUrl("stocks");
+
+async function enrichOrderItemsWithAromadeal(items = []) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  return Promise.all(
+    items.map(async (item) => {
+      if (!item) return item;
+      if (item.aromadealVariantId || item.info?.aromadealVariantId) {
+        return {
+          ...item,
+          aromadealVariantId:
+            item.aromadealVariantId || item.info?.aromadealVariantId || "",
+          aromadealHandle:
+            item.aromadealHandle || item.info?.aromadealHandle || "",
+        };
+      }
+      const stockId = String(item.id || "").replace(/^stock-/, "").trim();
+      if (!/^\d+$/.test(stockId)) return item;
+      try {
+        const res = await fetch(
+          `${STOCKS_URL}?select=id,info&id=eq.${stockId}&limit=1`,
+          { headers: { apikey: "", Authorization: "" } },
+        );
+        if (!res.ok) return item;
+        const rows = await res.json();
+        const row = Array.isArray(rows) ? rows[0] : null;
+        const info = row?.info && typeof row.info === "object" ? row.info : {};
+        return {
+          ...item,
+          aromadealVariantId: info.aromadealVariantId || "",
+          aromadealHandle: info.aromadealHandle || item.aromadealHandle || "",
+          aromadealUrl: info.aromadealUrl || item.aromadealUrl || "",
+        };
+      } catch {
+        return item;
+      }
+    }),
+  );
+}
 
 export async function createOrderInProgress({
   userId,
@@ -14,6 +54,8 @@ export async function createOrderInProgress({
   coupon,
 }) {
   try {
+    const enrichedItems = await enrichOrderItemsWithAromadeal(items);
+    const aromadealCartUrl = buildAromadealCartPermalink(enrichedItems);
     const response = await fetch(TABLE_URL, {
       method: "POST",
       headers: {
@@ -24,14 +66,16 @@ export async function createOrderInProgress({
       },
       body: JSON.stringify({
         user_id: userId,
+        link: aromadealCartUrl || null,
         content: {
           orderNumber,
-          items,
+          items: enrichedItems,
           address,
           itemsSubtotal,
           shippingCost,
           finalTotal,
           coupon: coupon || null,
+          aromadealCartUrl: aromadealCartUrl || null,
           createdAt: new Date().toISOString(),
         },
         status: "in_progress",
