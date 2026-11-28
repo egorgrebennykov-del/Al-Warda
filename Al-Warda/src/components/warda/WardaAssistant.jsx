@@ -256,6 +256,22 @@ export default function WardaAssistant() {
     }
   }, [isOpen, isMobile]);
 
+  // Lock background scroll & touch interaction when open on mobile
+  useEffect(() => {
+    if (!isOpen || !isMobile || typeof document === "undefined") return;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyTouchAction = document.body.style.touchAction;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.touchAction = prevBodyTouchAction;
+    };
+  }, [isOpen, isMobile]);
+
   // Auto-resize input textarea on desktop; on mobile ONLY resize when user purposefully toggles isExpanded
   useEffect(() => {
     const textarea = inputRef.current;
@@ -707,7 +723,16 @@ export default function WardaAssistant() {
 
       {/* Interactive Chat Window */}
       {isOpen && (
-        <div className="warda-window-wrapper">
+        <>
+          <div
+            className="warda-mobile-backdrop"
+            aria-hidden="true"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          />
+          <div className="warda-window-wrapper">
           {/* Side character companion (Desktop) */}
           <div className="warda-companion-dock">
             <div className="warda-companion-dock__character-box">
@@ -1130,6 +1155,7 @@ export default function WardaAssistant() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

@@ -390,20 +390,37 @@
   gap: 5px;
 }
 
+.warda-mobile-backdrop {
+  display: none;
+}
+
 @media (max-width: 819px) {
   .warda-assistant-root.warda-assistant-root--open {
-    top: calc(env(safe-area-inset-top, 0px) + 16px);
-    bottom: calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px)) !important;
-    left: 14px;
-    right: 14px;
+    inset: 0 !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 14px calc(var(--mobile-tabbar-height, 4rem) + 14px + env(safe-area-inset-bottom, 0px));
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    pointer-events: none;
+    pointer-events: auto;
+    z-index: 10050;
+  }
+
+  .warda-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 6, 5, 0.72);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 0;
+    pointer-events: auto;
+    touch-action: none;
   }
 
   .warda-assistant-root--open .warda-window-wrapper {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 410px;
     height: 100%;
