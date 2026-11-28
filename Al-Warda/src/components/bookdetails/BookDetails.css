@@ -236,6 +236,7 @@
   justify-content: flex-start;
   padding-top: 0;
   z-index: 2;
+  pointer-events: none;
 }
 
 /* Soft studio backlight behind the flacon/box so dark bottles never merge into the #080605 backdrop */
@@ -301,8 +302,9 @@
   min-height: 220px;
   z-index: 4;
   transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  transition: transform 0.18s ease-out;
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+  pointer-events: none;
 }
 
 .warda-details-photo.is-hover-zooming {
@@ -328,23 +330,14 @@
   image-rendering: auto;
   transform-origin: bottom center;
   transform: translateY(var(--flacon-pad-pct, 7.4%));
+  pointer-events: none;
   filter:
     brightness(1.03)
     contrast(1.07)
     saturate(1.12)
     drop-shadow(0 0 24px rgba(212, 175, 55, 0.20))
     drop-shadow(0 14px 28px rgba(0, 0, 0, 0.72));
-  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
-}
-
-.warda-details-img-wrap:hover .warda-details-img {
-  max-height: calc(650px * var(--flacon-scale, 1));
-}
-
-@media (hover: none) {
-  .warda-details-img-wrap:hover .warda-details-img {
-    max-height: calc(640px * var(--flacon-scale, 1));
-  }
+  transition: filter 0.35s ease;
 }
 
 /* Luxury Processing / Loading Animation when Photo Cutout is Still Processing */
