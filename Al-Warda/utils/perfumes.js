@@ -2255,11 +2255,14 @@ function mapStockRowRich(r) {
   else if (catLower.includes("пряные") || catLower.includes("специи"))
     catSlug = "spicy";
 
-  const notesVerified = info.notesVerified === true;
-  const notesObj =
-    notesVerified && info.notes && typeof info.notes === "object"
+  const notesVerified = info.notesVerified === true || r.notesVerified === true;
+  const rawNotesObj =
+    info.notes && typeof info.notes === "object"
       ? info.notes
-      : {};
+      : r.notes && typeof r.notes === "object"
+        ? r.notes
+        : null;
+  const notesObj = notesVerified && rawNotesObj ? rawNotesObj : {};
   const asNotes = (value) => {
     if (Array.isArray(value)) return value;
     if (typeof value === "string" && value.trim())
@@ -2340,13 +2343,13 @@ function mapStockRowRich(r) {
     categoryEn: info.categoryEn || "Oriental",
     categoryName: info.category || "Восточные",
     notesSummary: notesVerified
-      ? info.notesSummary || r.notes_summary || ""
+      ? info.notesSummary || r.notesSummary || r.notes_summary || ""
       : "",
     notesSummaryRu: notesVerified
-      ? info.notesSummary || r.notes_summary || ""
+      ? info.notesSummary || r.notesSummary || r.notes_summary || ""
       : "",
     notesSummaryEn: notesVerified
-      ? info.notesSummaryEn || info.notesSummary || ""
+      ? info.notesSummaryEn || r.notesSummaryEn || info.notesSummary || r.notesSummary || ""
       : "",
     notesVerified,
     notesSource: info.notesSource || null,

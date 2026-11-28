@@ -63,3 +63,42 @@ test("searching 'pm' ranks 'Afnan 9 PM EDP' first and does not match 'EDP' + 'Ma
   );
   assert.deepEqual(sorted.map((x) => x.id), [11]);
 });
+
+test("matchesPerfumeSearch matches both perfume name and olfactory palette across languages", () => {
+  const byName = {
+    id: 101,
+    name: "Kayali Vanilla 28",
+    brand: "Kayali",
+    baseNotes: ["Amber"],
+  };
+  const byPaletteEn = {
+    id: 102,
+    name: "Lattafa Nebras",
+    brand: "Lattafa",
+    baseNotesEn: ["Madagascar Vanilla", "Tonka Bean"],
+  };
+  const byPaletteRu = {
+    id: 103,
+    name: "Lattafa Eclaire",
+    brand: "Lattafa",
+    heartNotesRu: ["Карамель"],
+    baseNotesRu: ["Ваниль", "Пралине"],
+  };
+  const unrelated = {
+    id: 104,
+    name: "Fresh Citrus",
+    brand: "Armaf",
+    topNotesEn: ["Lemon", "Bergamot"],
+  };
+
+  assert.equal(matchesPerfumeSearch(byName, "ваниль"), true);
+  assert.equal(matchesPerfumeSearch(byPaletteEn, "ваниль"), true);
+  assert.equal(matchesPerfumeSearch(byPaletteRu, "vanilla"), true);
+  assert.equal(matchesPerfumeSearch(unrelated, "ваниль"), false);
+
+  const ranked = sortPerfumesBySearchAndTrends(
+    [byPaletteEn, byName, byPaletteRu],
+    "ваниль",
+  );
+  assert.equal(ranked[0].id, 101);
+});

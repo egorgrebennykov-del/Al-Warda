@@ -223,16 +223,21 @@ function normalizeCatalogItem(raw) {
     item.notesSummary ||
     (heartNotes.length > 0 ? heartNotes.join(" · ") : category);
 
+  const topNotesEn = Array.isArray(item.topNotesEn) ? item.topNotesEn : [];
+  const heartNotesEn = Array.isArray(item.heartNotesEn) ? item.heartNotesEn : [];
+  const baseNotesEn = Array.isArray(item.baseNotesEn) ? item.baseNotesEn : [];
+  const notesSummaryEn = item.notesSummaryEn || "";
+
   const nameStr = item.name || item.title;
   const genderStr = item.genderRu || item.gender || "Унисекс";
   const nameLower = nameStr.toLowerCase();
   const brandLower = brand.toLowerCase();
-  const notesSummaryLower = notesSummary.toLowerCase();
+  const notesSummaryLower = `${notesSummary} ${notesSummaryEn}`.trim().toLowerCase();
   const categoryLower = category.toLowerCase();
   const genderLower = genderStr.toLowerCase();
-  const topStr = topNotes.join(" ").toLowerCase();
-  const heartStr = heartNotes.join(" ").toLowerCase();
-  const baseStr = baseNotes.join(" ").toLowerCase();
+  const topStr = [...topNotes, ...topNotesEn].join(" ").toLowerCase();
+  const heartStr = [...heartNotes, ...heartNotesEn].join(" ").toLowerCase();
+  const baseStr = [...baseNotes, ...baseNotesEn].join(" ").toLowerCase();
   const isWomen = genderLower.includes("жен") || genderLower.includes("women") || genderLower.includes("femme");
   const isMen = (genderLower.includes("муж") || genderLower.includes("men") || genderLower.includes("homme")) && !isWomen;
   const isUnisex = genderLower.includes("уни") || genderLower.includes("uni") || (!isWomen && !isMen);

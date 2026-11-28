@@ -25,6 +25,54 @@ export function tokenizeSearchQuery(query) {
     .filter(Boolean);
 }
 
+const SEARCH_NOTE_GROUPS = [
+  ["ваниль", "ванилин", "ванилью", "vanilla", "vanille", "vanilie", "vanilia", "ванилия", "βανιλια"],
+  ["уд", "удовый", "удом", "oud", "oudh", "agarwood", "агаровое"],
+  ["роза", "розой", "розы", "rose", "taif", "trandafir", "rozsa", "τριανταφυλλο"],
+  ["амбра", "амброй", "amber", "ambre", "ambroxan", "амброксан", "κεχριμπαρι"],
+  ["мускус", "мускусом", "musk", "musc", "mosc", "mosusz", "μοσχος"],
+  ["карамель", "карамелью", "caramel", "toffee", "ириска", "καραμελα"],
+  ["кофе", "coffee", "espresso", "cafea", "kave", "καφες", "капучино", "cappuccino"],
+  ["шоколад", "какао", "chocolate", "cacao", "cocoa", "ciocolata", "csokolade", "σοκολατα"],
+  ["шафран", "saffron", "safran", "sofran", "шафран", "σαφραν"],
+  ["жасмин", "jasmine", "jasmin", "iasomie", "jazmin", "γιασεμι"],
+  ["бергамот", "bergamot", "bergamote", "bergamota", "μπεργαμοτο"],
+  ["цитрус", "лимон", "апельсин", "мандарин", "лайм", "грейпфрут", "citrus", "lemon", "orange", "mandarin", "lime", "grapefruit"],
+  ["кокос", "coconut", "coco", "nucadecocos", "kokusz", "καρυδα"],
+  ["вишня", "черешня", "cherry", "cerise", "cirese", "cseresznye", "κερασι"],
+  ["персик", "peach", "peche", "piersica", "barack", "ροδακινο"],
+  ["мед", "мёд", "honey", "miel", "miere", "mez", "μελι"],
+  ["кожа", "кожей", "leather", "cuir", "piele", "bor", "δερμα"],
+  ["табак", "tobacco", "tabac", "tutun", "dohany", "καπνος"],
+  ["сандал", "sandalwood", "santal", "santali", "szantalfa", "σανταλοξυλο"],
+  ["кедр", "cedar", "cedarwood", "cedre", "cedru", "cedrus", "κεδρος"],
+  ["пачули", "patchouli", "paciuli", "pacsuli", "πατσουλι"],
+  ["лаванда", "lavender", "lavande", "lavanda", "levendula", "λεβαντα"],
+  ["корица", "cinnamon", "cannelle", "scortisoara", "fahej", "κανελα"],
+  ["кардамон", "cardamom", "cardamome", "kardamom", "καρδαμο"],
+  ["фисташка", "фисташки", "pistachio", "pistache", "fistic", "pisztacia", "φιστικι"],
+  ["манго", "mango", "μανγκο"],
+  ["клубника", "ягода", "ягоды", "малина", "berry", "berries", "strawberry", "raspberry", "fraise", "capsuni", "eper", "malna", "φραουλα"],
+  ["яблоко", "apple", "pomme", "mar", "alma", "μηλο"],
+  ["бобытонка", "тонка", "tonka", "tonkabean"],
+];
+
+function getSearchNoteSynonyms(compactQuery, queryTokens) {
+  const matched = new Set();
+  for (const group of SEARCH_NOTE_GROUPS) {
+    const hit = group.some(
+      (syn) =>
+        syn === compactQuery ||
+        (compactQuery.length >= 4 && (syn.includes(compactQuery) || compactQuery.includes(syn))) ||
+        queryTokens.some((tok) => tok.length >= 3 && (syn === tok || syn.startsWith(tok) || tok.startsWith(syn))),
+    );
+    if (hit) {
+      for (const syn of group) matched.add(syn);
+    }
+  }
+  return Array.from(matched);
+}
+
 /**
  * Computes a relevance score (0 = no match) for a perfume against a search query.
  */
@@ -84,19 +132,46 @@ export function scorePerfumeSearch(perfume, rawQuery) {
 
   const noteList = [
     perfume.category,
+    perfume.categoryRu,
+    perfume.categoryEn,
     perfume.notesSummary,
+    perfume.notesSummaryRu,
+    perfume.notesSummaryEn,
     ...(Array.isArray(perfume.topNotes) ? perfume.topNotes : []),
     ...(Array.isArray(perfume.heartNotes) ? perfume.heartNotes : []),
     ...(Array.isArray(perfume.baseNotes) ? perfume.baseNotes : []),
+    ...(Array.isArray(perfume.topNotesRu) ? perfume.topNotesRu : []),
+    ...(Array.isArray(perfume.heartNotesRu) ? perfume.heartNotesRu : []),
+    ...(Array.isArray(perfume.baseNotesRu) ? perfume.baseNotesRu : []),
+    ...(Array.isArray(perfume.topNotesEn) ? perfume.topNotesEn : []),
+    ...(Array.isArray(perfume.heartNotesEn) ? perfume.heartNotesEn : []),
+    ...(Array.isArray(perfume.baseNotesEn) ? perfume.baseNotesEn : []),
   ].filter(Boolean);
 
   const noteTokens = noteList.flatMap(tokenizeSearchQuery);
+  const noteCompactList = noteList.map(normalizeSearchCompact);
   if (noteTokens.includes(compactQuery)) return 30;
   if (
     compactQuery.length >= 3 &&
-    noteList.map(normalizeSearchCompact).some((f) => f.includes(compactQuery))
+    noteCompactList.some((f) => f.includes(compactQuery))
   ) {
     return 25;
+  }
+
+  const noteSynonyms = getSearchNoteSynonyms(compactQuery, queryTokens);
+  if (noteSynonyms.length > 0) {
+    if (noteSynonyms.some((syn) => nameTokens.includes(syn) || nameCompact.includes(syn))) {
+      return 68;
+    }
+    if (
+      noteSynonyms.some(
+        (syn) =>
+          noteTokens.includes(syn) ||
+          noteCompactList.some((f) => f.includes(syn)),
+      )
+    ) {
+      return 28;
+    }
   }
 
   const descTokens = tokenizeSearchQuery(perfume.description || "");
