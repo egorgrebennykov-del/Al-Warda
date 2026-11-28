@@ -840,3 +840,16 @@ test("processWardaChat recommends cheapest perfumes when user says 'немног
   assert.equal(result.books[0].id, "budget-15", "Cheapest perfume must be recommended first");
   assert.ok(result.books[0].price < 50, "First recommended perfume must be affordable");
 });
+
+test("processWardaChat returns empty books when user asks for a non-existent or absurd scent", async () => {
+  const result = await processWardaChat({
+    messages: [{ role: "user", content: "найди духи с запахом говна" }],
+    language: "ru",
+  });
+
+  assert.equal(
+    result.books.length,
+    0,
+    "Must NOT attach unrelated catalog items or invent perfumes for non-existent scents"
+  );
+});

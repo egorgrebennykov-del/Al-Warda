@@ -272,7 +272,7 @@ function normalizeCatalogItem(raw) {
     _topStr: topStr,
     _heartStr: heartStr,
     _baseStr: baseStr,
-    _allText: `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummaryLower} ${topStr} ${heartStr} ${baseStr}`,
+    _allText: `${nameLower} ${brandLower} ${categoryLower} ${genderLower} ${notesSummaryLower} ${topStr} ${heartStr} ${baseStr} ${String(raw.descriptionRu || raw.description || item.descriptionRu || item.description || "").toLowerCase()}`,
     _genderFlags: { isWomen, isMen, isUnisex },
   };
 
@@ -386,12 +386,16 @@ const STOP_WORDS = new Set([
   "найди", "посоветуй", "порекомендуй", "подбери", "выбери", "покажи", "какие", "какой",
   "какая", "какое", "есть", "ли", "у", "вас", "хочу", "хочется", "ищу", "ищем", "купить",
   "духи", "духов", "парфюм", "парфюма", "парфюмы", "парфюмерия", "аромат", "ароматы", "ароматов",
-  "ноты", "нотами", "нотах", "запах", "флакон", "пожалуйста", "мне", "что", "чтото", "что-то",
+  "ноты", "нотами", "нотах", "запах", "запахом", "запаха", "запахи", "ароматом", "флакон", "пожалуйста", "мне", "что", "чтото", "что-то",
   "чтонибудь", "что-нибудь", "какой-то", "какойто", "какой-нибудь", "какойнибудь", "чем", "для",
   "про", "каталоге", "каталог", "сайте", "в", "на", "с", "со", "из", "без", "и", "или",
   "нужен", "нужно", "нужна", "нужны", "вариант", "варианты", "расскажи", "опиши", "предложи",
   "find", "show", "search", "recommend", "suggest", "perfume", "perfumes", "fragrance",
-  "fragrances", "scent", "notes", "parfum", "catalog", "what", "have", "you", "the", "with", "for"
+  "fragrances", "scent", "scents", "smell", "smells", "smelling", "odor", "odour", "like", "that",
+  "notes", "parfum", "catalog", "what", "have", "has", "had", "you", "your", "the", "with", "for", "and", "are", "is", "can", "will", "this", "from",
+  "cheap", "cheapest", "budget", "inexpensive", "affordable", "expensive", "price", "money", "little", "less",
+  "something", "want", "need", "looking", "good", "best",
+  "дешево", "дешевые", "дешевый", "недорого", "недорогие", "цена", "цены", "денег", "немного", "бюджет", "чтото"
 ]);
 
 // ============================================================================
@@ -479,6 +483,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
     new Set(ALL_PERFUMES.map((p) => (p.brand || "").toLowerCase().trim()).filter(Boolean))
   );
   const matchedBrands = catalogBrands.filter((b) => q.includes(b));
+  const hasQueryTerms =
+    meaningfulTokens.length > 0 || matchedNoteCategories.length > 0 || matchedBrands.length > 0;
 
   const scored = [];
 
@@ -510,7 +516,9 @@ export function searchPerfumesInDatabase(query, options = {}) {
     const heartStr = p._heartStr ?? p.heartNotes.join(" ").toLowerCase();
     const baseStr = p._baseStr ?? p.baseNotes.join(" ").toLowerCase();
     const descStr = (p.description || p.descriptionRu || p.descriptionEn || "").toLowerCase();
-    const allText = p._allText || `${nameLower} ${brandLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descStr}`;
+    const allText = p._allText
+      ? (descStr ? `${p._allText} ${descStr}` : p._allText)
+      : `${nameLower} ${brandLower} ${notesSummary} ${topStr} ${heartStr} ${baseStr} ${descStr}`;
 
     if (meaningfulTokens.length > 0 && nameLower.includes(q) && q.length > 2) score += 100;
     if (meaningfulTokens.length > 0 && q.includes(nameLower) && nameLower.length > 3) score += 100;
@@ -556,15 +564,17 @@ export function searchPerfumesInDatabase(query, options = {}) {
       else if (tok.length >= 4 && allText.includes(tok.slice(0, 4))) score += 12;
     }
 
-    const { isWomen, isMen, isUnisex } = getPerfumeGenderFlags(p);
-    if (preferredGender === "мужской") {
-      if (isMen) score += 35;
-      else if (isUnisex) score += 12;
-    } else if (preferredGender === "женский") {
-      if (isWomen) score += 35;
-      else if (isUnisex) score += 12;
-    } else if (isUnisex) {
-      score += 20;
+    if (score > 0 || !hasQueryTerms) {
+      const { isWomen, isMen, isUnisex } = getPerfumeGenderFlags(p);
+      if (preferredGender === "мужской") {
+        if (isMen) score += 35;
+        else if (isUnisex) score += 12;
+      } else if (preferredGender === "женский") {
+        if (isWomen) score += 35;
+        else if (isUnisex) score += 12;
+      } else if (isUnisex) {
+        score += 20;
+      }
     }
 
     scored.push({ perfume: p, score });
@@ -600,8 +610,8 @@ export function searchPerfumesInDatabase(query, options = {}) {
     }
   }
 
-  // Pad with remaining gender-matching catalog items
-  if (combined.length < limit) {
+  // Pad with remaining gender-matching catalog items only when matches exist or no specific query terms were given
+  if ((combined.length > 0 || !hasQueryTerms) && combined.length < limit) {
     for (const item of scored.map((s) => s.perfume)) {
       if ((allowSamples || !isSamplePerfume(item)) && !combined.some((c) => c.id === item.id)) {
         combined.push(item);
@@ -1442,8 +1452,23 @@ export async function processWardaChat({ messages = [], language = "ru", context
       });
     }
 
-    if (foundPerfumes.length === 0 && ALL_PERFUMES.length > 0) {
-      // Fallback: pick popular items matching preferred gender (and budget/price order!) so user always receives appropriate recommendations
+    const GENERIC_INTENT_TOKENS = new Set([
+      "cheap", "cheapest", "budget", "inexpensive", "affordable", "expensive", "price", "money", "little", "less",
+      "recommend", "suggest", "find", "show", "want", "need", "looking", "please", "any", "something", "good", "best",
+      "perfume", "perfumes", "fragrance", "fragrances", "scent", "scents", "smell", "smells", "smelling", "aroma", "like", "with",
+      "for", "men", "man", "women", "woman", "unisex", "him", "her", "sample", "samples", "decant", "decants", "gift", "set",
+      "дешево", "дешевые", "дешевый", "недорого", "недорогие", "цена", "цены", "денег", "немного", "бюджет", "нужно", "надо",
+      "посоветуй", "посоветуйте", "подбери", "подберите", "найди", "найдите", "покажи", "покажите", "хочу", "ищу",
+      "духи", "парфюм", "парфюмерия", "аромат", "ароматы", "запах", "запахом", "ароматом", "для", "мужчин", "женщин", "унисекс",
+      "чтото", "что", "нибудь", "какие", "какой", "есть", "вас", "меня", "мне",
+    ]);
+    const specificTokens = `${englishLatestMessage || ""} ${latestMessage || ""}`
+      .toLowerCase()
+      .split(/[\s,·+!?.;:()«»"'-]+/)
+      .filter((t) => t.length > 1 && !STOP_WORDS.has(t) && !GENERIC_INTENT_TOKENS.has(t));
+
+    if (foundPerfumes.length === 0 && ALL_PERFUMES.length > 0 && specificTokens.length === 0) {
+      // Fallback ONLY for generic/budget requests without a specific scent/note/brand query
       let pool = ALL_PERFUMES.filter((p) => {
         if (!sampleRequested && isSamplePerfume(p)) return false;
         if (!matchesTargetGender(p, memory.preferredGender)) return false;
@@ -1533,7 +1558,7 @@ CRITICAL INSTRUCTIONS:
     promptText += isPerfumeSearch
       ? `
 INSTRUCTION:
-The customer seems interested in perfumes but no matching catalog items were found. Say so honestly, ask one useful clarifying question and offer to look again. Do NOT invent perfume names or prices. Set "bookIds": []. Compose your message in ENGLISH.
+The customer asked for a perfume, scent, or note that DOES NOT exist in our catalog (0 matching items). Honestly and politely state that we do NOT have a fragrance with that scent/note in our catalog. NEVER invent perfume names, notes, or prices, and NEVER recommend unrelated bottles as matching that scent. Set "bookIds": []. Compose your message in ENGLISH.
 `
       : isFaithOrIdentityQuery
       ? `
@@ -1572,7 +1597,7 @@ No catalog items are attached to this turn. Respond to what the customer actuall
 
   // Validate that Gemini did not hallucinate non-catalog bookIds and respected target gender & sample policy
   let resolvedAI = [];
-  if (aiResult && Array.isArray(aiResult.bookIds)) {
+  if (aiResult && Array.isArray(aiResult.bookIds) && !(isPerfumeSearch && foundPerfumes.length === 0)) {
     resolvedAI = aiResult.bookIds
       .map((id) => PERFUME_BY_ID.get(String(id).toLowerCase()))
       .filter((p) => p && (sampleRequested || !isSamplePerfume(p)) && (memory.isSpecificInquiry || matchesTargetGender(p, memory.preferredGender)));
